@@ -5,6 +5,7 @@ RUTA_EXCEL = "smartur_formulario.xlsx"
 RUTA_MODELO = "modelos_guardados/modelo_smartur.pkl"
 RUTA_ENCODER = "modelos_guardados/encoder_servicio.pkl"
 SHEET_NAME = "Formulario"
+RUTA_PRECISION = "modelos_guardados/precision.txt"
 
 COLUMNAS_CATEGORICAS = [
     "ciudad_visita",

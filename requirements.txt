@@ -1,6 +1,8 @@
-pandas
-scikit-learn
-openpyxl
+python -m venv venv   
+source venv/bin/activate
+# dentro del entorno virtual, instala las dependencias necesarias
+SMARTUR ❯ pip install fastapi uvicorn pandas openpyxl scikit-learn
+(para salirse del entorno virtual, usa el comando `deactivate`)
 
 
 pasos para construir el modelo:
