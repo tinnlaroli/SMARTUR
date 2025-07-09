@@ -8,6 +8,9 @@ import pandas as pd
 # Cargar el archivo Excel
 df_formulario = pd.read_excel("smartur_formulario.xlsx", sheet_name="Formulario")
 
+# Limpiar nombres de columnas eliminando espacios
+df_formulario.columns = df_formulario.columns.str.strip()
+
 # Columnas categóricas que deben codificarse
 columnas_para_label_encoder = [
     "ciudad_visita",
