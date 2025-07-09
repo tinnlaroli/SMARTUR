@@ -1,66 +1,210 @@
-// src/pages/Landing.jsx
+
 import React, { useEffect, useState } from "react";
-import { FaMapMarkedAlt, FaMagic, FaUsers, FaCheckCircle, FaClipboardList, FaMap, FaSmileBeam } from "react-icons/fa";
-import { FaFacebook, FaInstagram, FaEnvelope } from "react-icons/fa";
+import { FaMapMarkedAlt, FaMagic, FaUsers, FaCheckCircle, FaClipboardList, FaMap, FaSmileBeam, FaChevronDown } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaEnvelope, FaXTwitter } from "react-icons/fa6";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import LoginModal from "../components/LoginModal";
 import RegisterModal from "../components/RegisterModal";
+import { motion } from "framer-motion";
+import smarturLogo from "../assets/smartur_logo.png";
+import galardon from "../assets/galardon.png";
+import expNacional from "../assets/exp_nacional.png";
 
 export default function Landing() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    AOS.init({ duration: 1000 });
+    AOS.init({ duration: 1000, once: true });
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 font-sans scroll-smooth relative">
-      {/* Navbar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 sm:px-8 py-4 bg-gradient-to-br from-purple to-blue text-white">
-        <h1 className="text-xl sm:text-2xl font-bold">SMARTUR</h1>
-        <nav className="hidden md:flex space-x-4 lg:space-x-6">
-          <a href="#hero" className="hover:text-orange transition-colors">Inicio</a>
-          <a href="#benefits" className="hover:text-orange transition-colors">Beneficios</a>
-          <a href="#funciona" className="hover:text-orange transition-colors">¿Cómo funciona?</a>
-          <a href="#validacion" className="hover:text-orange transition-colors">Validación</a>
-          <a href="#fotos" className="hover:text-orange transition-colors">Galería</a>
-        </nav>
-        {/* Menú móvil */}
-        <button className="md:hidden text-white hover:text-orange transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+    <div className="min-h-screen bg-white text-gray-800 font-sans scroll-smooth relative overflow-x-hidden">
+      {/* Navbar mejorada */}
+      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg bg-purple' : 'py-4 bg-gradient-to-br from-purple to-blue'}`}>
+        <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+          <motion.h1 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-xl sm:text-2xl font-bold text-white flex items-center"
+          >
+            <img src={smarturLogo} alt="Logo SMARTUR" className="h-10 w-10 mr-2" />
+            <span className="bg-white text-purple px-2 py-1 rounded mr-2">SMARTUR</span>
+            <span className="hidden sm:inline">Tu guía turística inteligente</span>
+          </motion.h1>
+          
+          {/* Menú desktop */}
+          <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center">
+            {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
+              <a 
+                key={index}
+                href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                className="text-white hover:text-orange transition-colors relative group"
+              >
+                {item}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            ))}
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="ml-4 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg transition transform hover:scale-105"
+            >
+              Iniciar sesión
+            </button>
+          </nav>
+          
+          {/* Menú móvil */}
+          <div className="md:hidden flex items-center">
+            <button 
+              onClick={() => setShowLoginModal(true)}
+              className="mr-4 bg-orange text-white p-2 rounded-full shadow"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white hover:text-orange transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        {/* Menú móvil desplegable */}
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-purple/95 backdrop-blur-sm"
+          >
+            <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
+              {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
+                <a 
+                  key={index}
+                  href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                  className="text-white hover:text-orange py-2 transition-colors border-b border-white/10"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item}
+                </a>
+              ))}
+              <button
+                onClick={() => {
+                  setShowLoginModal(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="mt-2 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow transition w-full"
+              >
+                Iniciar sesión
+              </button>
+            </div>
+          </motion.div>
+        )}
       </header>
 
-      {/* HERO */}
-      <section id="hero" className="relative bg-gradient-to-br from-purple to-blue text-white text-center py-20 sm:py-32 px-4 sm:px-6">
-        <div className="absolute inset-0 bg-[url('assets/veracruz-hero.jpg')] bg-cover bg-center opacity-30 z-0" />
-        <div className="relative z-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 drop-shadow">Tu próxima aventura comienza aquí</h1>
-          <p className="text-lg sm:text-xl mb-8 max-w-2xl mx-auto px-4">
-            Vive Veracruz como nunca antes. SMARTUR te guía con IA hacia lo mejor de tu entorno.
-          </p>
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg shadow transition"
-            data-aos="zoom-in"
+      {/* HERO mejorado */}
+      <section id="hero" className="relative bg-gradient-to-br from-purple to-blue text-white pt-32 pb-20 sm:pt-40 sm:pb-32 px-4 sm:px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('assets/veracruz-hero.jpg')] bg-cover bg-center opacity-20 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-purple/80 to-blue/60 z-0" />
+        
+        {/* Elementos decorativos */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          {[...Array(10)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-white/10"
+              style={{
+                width: Math.random() * 100 + 50,
+                height: Math.random() * 100 + 50,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, Math.random() * 100 - 50],
+                x: [0, Math.random() * 100 - 50],
+                opacity: [0.1, 0.2, 0.1],
+              }}
+              transition={{
+                duration: Math.random() * 20 + 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+              }}
+            />
+          ))}
+        </div>
+        
+        <div className="relative z-10 container mx-auto text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight"
           >
-            Comenzar mi experiencia
-          </button>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange to-yellow-400">Descubre Veracruz</span><br />
+            con inteligencia artificial
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-lg sm:text-xl mb-8 max-w-2xl mx-auto px-4 leading-relaxed"
+          >
+            Recomendaciones personalizadas que transformarán tu experiencia turística en el estado más fascinante de México.
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-col sm:flex-row justify-center gap-4"
+          >
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition transform hover:scale-105"
+            >
+              Comenzar mi experiencia
+            </button>
+            <a 
+              href="#benefits" 
+              className="flex items-center justify-center gap-2 text-white hover:text-orange transition-colors"
+            >
+              Conoce más <FaChevronDown className="animate-bounce" />
+            </a>
+          </motion.div>
+        </div>
+        <div className="absolute right-2 top-2 sm:right-16 sm:top-16 opacity-20 z-0 pointer-events-none select-none">
         </div>
       </section>
 
-      {/* CTA flotante */}
-      <button
+      {/* CTA flotante mejorado */}
+      <motion.button
         onClick={() => setShowLoginModal(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-orange text-white px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:bg-orange/90 z-40 text-sm sm:text-base"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-6 right-6 bg-orange text-white p-4 rounded-full shadow-xl z-40 flex items-center justify-center"
+        style={{ boxShadow: '0 4px 20px rgba(255, 140, 0, 0.5)' }}
       >
-        <span className="hidden sm:inline">Comenzar mi experiencia</span>
-        <span className="sm:hidden">Comenzar</span>
-      </button>
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <span className="ml-2 hidden sm:inline">Comenzar</span>
+      </motion.button>
 
       {/* MODALES */}
       {showLoginModal && (
@@ -76,94 +220,318 @@ export default function Landing() {
         />
       )}
 
-      {/* BENEFICIOS */}
-      <section id="benefits" className="py-12 sm:py-20 px-4 sm:px-6 bg-gray-50 text-center" data-aos="fade-up">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12">¿Por qué SMARTUR?</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-center">
-          {[
-            {
-              icon: <FaMagic className="text-orange" />,
-              title: "Recomendaciones Inteligentes",
-              desc: "Basadas en tus gustos, no en anuncios.",
-            },
-            {
-              icon: <FaMapMarkedAlt className="text-green" />,
-              title: "Explora con Mapa",
-              desc: "Visualiza destinos reales y validados.",
-            },
-            {
-              icon: <FaUsers className="text-purple" />,
-              title: "Impulsa lo Local",
-              desc: "Conectamos turistas con prestadores verificados.",
-            },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="bg-white text-black p-4 sm:p-6 rounded-lg shadow-md"
-              data-aos="fade-up"
-              data-aos-delay={i * 100}
+      {/* BENEFICIOS mejorados */}
+      <section id="benefits" className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl sm:text-4xl font-bold mb-12 text-center"
+          >
+            <span className="relative inline-block">
+              <span className="relative z-10">Beneficios exclusivos</span>
+              <span className="absolute bottom-0 left-0 w-full h-3 bg-orange/30 -z-1" style={{ bottom: '5px' }}></span>
+            </span>
+          </motion.h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <FaMagic className="text-5xl" />,
+                title: "Recomendaciones Inteligentes",
+                desc: "Nuestra IA analiza tus preferencias para sugerirte los mejores lugares, actividades y servicios que realmente disfrutarás.",
+                color: "from-orange/10 to-orange/5"
+              },
+              {
+                icon: <FaMapMarkedAlt className="text-5xl" />,
+                title: "Mapa Interactivo",
+                desc: "Explora destinos verificados con información en tiempo real, rutas optimizadas y puntos de interés cercanos.",
+                color: "from-green/10 to-green/5"
+              },
+              {
+                icon: <FaUsers className="text-5xl" />,
+                title: "Turismo Sostenible",
+                desc: "Conectamos turistas con prestadores locales verificados, impulsando la economía de la región de manera responsable.",
+                color: "from-purple/10 to-purple/5"
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                className={`bg-gradient-to-br ${item.color} p-8 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300`}
+              >
+                <div className="text-orange mb-6 flex justify-center">
+                  {item.icon}
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-center">{item.title}</h3>
+                <p className="text-gray-600 text-center">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FUNCIONAMIENTO mejorado */}
+      <section id="funciona" className="py-16 sm:py-24 px-4 sm:px-6 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('assets/pattern.svg')] opacity-5 z-0"></div>
+        <div className="container mx-auto relative z-10">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl sm:text-4xl font-bold mb-16 text-center"
+          >
+            <span className="relative inline-block">
+              <span className="relative z-10">¿Cómo funciona SMARTUR?</span>
+              <span className="absolute bottom-0 left-0 w-full h-3 bg-purple/30 -z-1" style={{ bottom: '5px' }}></span>
+            </span>
+          </motion.h2>
+          
+          <div className="relative">
+            {/* Línea de tiempo */}
+            <div className="hidden sm:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple to-orange transform -translate-y-1/2 z-0"></div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-4 relative z-10">
+              {[
+                { 
+                  icon: <FaClipboardList className="text-4xl mx-auto" />, 
+                  text: "Responde nuestro breve formulario de preferencias", 
+                  step: "1" 
+                },
+                { 
+                  icon: <FaCheckCircle className="text-4xl mx-auto" />, 
+                  text: "Recibe recomendaciones personalizadas en segundos", 
+                  step: "2" 
+                },
+                { 
+                  icon: <FaMap className="text-4xl mx-auto" />, 
+                  text: "Explora opciones en nuestro mapa interactivo", 
+                  step: "3" 
+                },
+                { 
+                  icon: <FaSmileBeam className="text-4xl mx-auto" />, 
+                  text: "Disfruta una experiencia turística única", 
+                  step: "4" 
+                },
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                  className="bg-white p-6 rounded-xl shadow-md border border-gray-100 text-center hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="relative mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple to-blue rounded-full flex items-center justify-center mx-auto text-white text-xl font-bold">
+                      {step.step}
+                    </div>
+                    <div className="mt-4 text-purple">
+                      {step.icon}
+                    </div>
+                  </div>
+                  <p className="text-gray-700 font-medium">{step.text}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VALIDACIÓN mejorada */}
+      <section id="validacion" className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-br from-purple to-blue text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('assets/pattern-dots.svg')]"></div>
+        <div className="container mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-8 justify-center">
+            {/* Carrusel de logos */}
+            <LogoCarousel />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="max-w-2xl mx-auto text-center md:text-left"
             >
-              <div className="text-4xl sm:text-5xl mb-4 flex justify-center">{item.icon}</div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">{item.title}</h3>
-              <p className="text-sm sm:text-base">{item.desc}</p>
+              <div className="inline-block px-4 py-1 rounded-full mb-6 border border-yellow-400/60 relative overflow-hidden" style={{ background: 'linear-gradient(90deg, #fffbe6 0%, #ffe066 50%, #fffbe6 100%)', boxShadow: '0 0 16px 2px #ffe066, 0 0 32px 8px #fffbe6' }}>
+                <span className="text-sm font-semibold text-yellow-700 animate-gold-shine relative z-10">PROYECTO GANADOR</span>
+                <span className="absolute inset-0 animate-gold-glow" style={{ background: 'linear-gradient(120deg, transparent 0%, #fffbe6 40%, #ffe066 60%, transparent 100%)', opacity: 0.7 }}></span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-6">Impacto académico y social</h2>
+              <div className="prose prose-lg mx-auto text-white/90">
+                <p className="mb-4">
+                  <span className="font-semibold">Plataforma inteligente de recomendación de servicios para el desarrollo turístico del estado de Veracruz</span> (SMARTUR) nació como proyecto ganador del Galardón Turístico "Mi Veracruz 2024", desarrollado por estudiantes de la Universidad Tecnológica del Centro de Veracruz.
+                </p>
+                <p className="mb-4">
+                  Nuestra propuesta "Manual de procedimientos para la implementación de un Chatbot a través de IA como estrategia de innovación en la industria hotelera de Veracruz" fue reconocida en la categoría <span className="font-semibold">Propuesta de innovación implementada en la calidad del servicio</span>.
+                </p>
+                <p className="mb-4">
+                  <span className="font-semibold text-yellow-300">Proyecto acreditado con pase a ExpoCiencias Nacional 2025, Tamaulipas.</span>
+                </p>
+                <p>
+                  Alineado al <span className="font-semibold">ODS 8</span> de la ONU, promovemos el crecimiento económico sostenible mediante la transformación digital del sector turístico veracruzano.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* GALERÍA mejorada */}
+      <section id="fotos" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
+        <div className="container mx-auto">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl sm:text-4xl font-bold mb-12 text-center"
+          >
+            <span className="relative inline-block">
+              <span className="relative z-10">Nuestro equipo en acción</span>
+              <span className="absolute bottom-0 left-0 w-full h-3 bg-orange/30 -z-1" style={{ bottom: '5px' }}></span>
+            </span>
+          </motion.h2>
+          
+          <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <motion.div
+                  key={n}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: (n % 3) * 0.1 }}
+                  className="group relative overflow-hidden rounded-xl shadow-lg"
+                >
+                  <img
+                    src={`https://picsum.photos/800/600?random=${n}`}
+                    alt={`Exposición ${n}`}
+                    className="w-full h-64 sm:h-80 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div>
+                      <h3 className="text-white font-bold text-lg">Evento {n}</h3>
+                      <p className="text-white/80 text-sm">Presentación del proyecto SMARTUR</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* FUNCIONAMIENTO */}
-      <section id="funciona" className="py-12 sm:py-16 px-4 sm:px-6 bg-white text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-10" data-aos="fade-up">¿Cómo funciona?</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          {[
-            { icon: <FaClipboardList className="text-pink text-4xl mx-auto mb-2" />, text: "Responde el formulario" },
-            { icon: <FaCheckCircle className="text-orange text-4xl mx-auto mb-2" />, text: "Recibe tu recomendación" },
-            { icon: <FaMap className="text-green text-4xl mx-auto mb-2" />, text: "Explora el mapa interactivo" },
-            { icon: <FaSmileBeam className="text-purple text-4xl mx-auto mb-2" />, text: "Disfruta tu experiencia" },
-          ].map((step, i) => (
-            <div key={i} data-aos="fade-up" data-aos-delay={i * 100} className="px-2">
-              <div className="text-3xl sm:text-4xl mx-auto mb-2">{step.icon}</div>
-              <p className="text-sm sm:text-base">{step.text}</p>
+      {/* FOOTER mejorado */}
+      <footer className="bg-gradient-to-br from-purple to-blue text-white pt-12 pb-6 px-4 sm:px-6">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4 flex items-center">
+                <img src={smarturLogo} alt="Logo SMARTUR" className="h-8 w-8 inline-block mr-2 rounded-full bg-white shadow" />
+                <span>SMARTUR</span>
+              </h3>
+              <p className="text-white/80">Plataforma inteligente de recomendación de servicios para el desarrollo turístico del estado de Veracruz.</p>
             </div>
-          ))}
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Enlaces rápidos</h4>
+              <ul className="space-y-2">
+                {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
+                  <li key={index}>
+                    <a 
+                      href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                      className="text-white/80 hover:text-orange transition-colors"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contacto</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="mailto:smartur@utcv.edu.mx" className="text-white/80 hover:text-orange transition-colors flex items-center">
+                    <FaEnvelope className="mr-2" /> smartur@utcv.edu.mx
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+522281234567" className="text-white/80 hover:text-orange transition-colors">
+                    +52 228 123 4567
+                  </a>
+                </li>
+                <li className="text-white/80">
+                  UTCV, Av. Universidad Tecnológica del Centro de Veracruz, Col. San Juan de las Huertas, C.P. 91000, Xalapa, Ver.
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Síguenos</h4>
+              <div className="flex space-x-4">
+                <a href="#" className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
+                  <FaFacebook className="text-lg" />
+                </a>
+                <a href="https://www.instagram.com/smar_tur/" className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
+                  <FaInstagram className="text-lg" />
+                </a>
+                <a href="#" className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
+                  <FaXTwitter className="text-lg" />
+                </a>
+              </div>
+              
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-full text-sm shadow transition"
+                >
+                  Acceder a la plataforma
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-6 border-t border-white/10 text-center text-sm text-white/60">
+            <p>© {new Date().getFullYear()} SMARTUR - Proyecto desarrollado por estudiantes de la Universidad Tecnológica del Centro de Veracruz</p>
+          </div>
         </div>
-      </section>
-
-      {/* VALIDACIÓN */}
-      <section id="validacion" className="py-12 sm:py-20 px-4 sm:px-6 bg-purple text-white text-center" data-aos="zoom-in">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4">Proyecto con impacto académico y social</h2>
-        <p className="max-w-2xl mx-auto text-base sm:text-lg px-4">
-          Inspirado por la convocatoria del Galardón Turístico “Mi Veracruz 2024”, SMARTUR es una plataforma desarrollada por estudiantes de la Universidad Tecnológica del Centro de Veracruz.
-          Su proyecto, “Manual de procedimientos para la implementación de un Chatbot a través de IA como estrategia de innovación en la industria hotelera de Veracruz”, fue el proyecto ganador en la categoría Propuesta de innovación implementada en la calidad del servicio.
-          Esta iniciativa, alineada al ODS 8, impulsa el crecimiento económico sostenible mediante la transformación digital del sector turístico.
-        </p>
-      </section>
-
-      {/* CARRUSEL */}
-      <section id="fotos" className="py-12 sm:py-20 px-4 sm:px-6 bg-white text-center" data-aos="fade-up">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-10">Exposiciones del equipo</h2>
-        <div className="flex overflow-x-auto space-x-4 sm:space-x-6 px-2 sm:px-4 max-w-6xl mx-auto">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <img
-              key={n}
-              src={`https://picsum.photos/800/500?random=${n}`}
-              alt={`Exposición ${n}`}
-              className="rounded-lg shadow-md w-[280px] h-[175px] sm:w-[400px] sm:h-[250px] md:w-[600px] md:h-[375px] lg:w-[800px] lg:h-[500px] object-cover flex-shrink-0"
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-purple text-white py-6 px-4 text-center">
-        <div className="flex justify-center space-x-4 sm:space-x-6 text-lg sm:text-xl mb-4">
-          <a href="#" className="hover:text-orange transition-colors"><FaFacebook /></a>
-          <a href="#" className="hover:text-green transition-colors"><FaInstagram /></a>
-          <a href="mailto:smartur@utcv.edu.mx" className="hover:text-blue transition-colors"><FaEnvelope /></a>
-        </div>
-        <p className="text-sm sm:text-base">¿Quieres colaborar o registrar tu servicio turístico? Contáctanos.</p>
-        <p className="mt-2 text-xs sm:text-sm">Equipo SMARTUR - UTCV © 2025</p>
       </footer>
+    </div>
+  );
+}
+
+// Componente LogoCarousel
+function LogoCarousel() {
+  const logos = [
+    { src: galardon, alt: "Galardón Turístico Veracruz" },
+    { src: expNacional, alt: "ExpoCiencias Nacional 2025" },
+  ];
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % logos.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [logos.length]);
+  return (
+    <div className="w-40 sm:w-56 h-32 sm:h-40 flex items-center justify-center relative">
+      {logos.map((logo, i) => (
+        <img
+          key={logo.alt}
+          src={logo.src}
+          alt={logo.alt}
+          className={`absolute left-0 top-0 w-full h-full object-contain transition-opacity duration-700 ${i === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+          style={{ filter: i === 0 ? 'drop-shadow(0 0 16px #ffe066)' : 'drop-shadow(0 0 8px #fff)' }}
+        />
+      ))}
     </div>
   );
 }
