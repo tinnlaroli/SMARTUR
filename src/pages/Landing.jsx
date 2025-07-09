@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import smarturLogo from "../assets/smartur_logo.png";
 import galardon from "../assets/galardon.png";
 import expNacional from "../assets/exp_nacional.png";
+import VeracruzMap from "../components/VeracruzMap";
 
 export default function Landing() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -27,6 +28,14 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const navLinks = [
+    { label: 'Inicio', target: 'hero' },
+    { label: 'Beneficios', target: 'benefits' },
+    { label: '¿Cómo funciona?', target: 'funciona' },
+    { label: 'Validación', target: 'validacion' },
+    { label: 'Galería', target: 'fotos' },
+  ];
+
   return (
     <div className="min-h-screen bg-white text-gray-800 font-sans scroll-smooth relative overflow-x-hidden">
       {/* Navbar mejorada */}
@@ -40,18 +49,17 @@ export default function Landing() {
           >
             <img src={smarturLogo} alt="Logo SMARTUR" className="h-10 w-10 mr-2" />
             <span className="bg-white text-purple px-2 py-1 rounded mr-2">SMARTUR</span>
-            <span className="hidden sm:inline">Tu guía turística inteligente</span>
           </motion.h1>
           
           {/* Menú desktop */}
           <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center">
-            {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
-              <a 
+            {navLinks.map((item, index) => (
+              <a
                 key={index}
-                href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                href={`#${item.target}`}
                 className="text-white hover:text-orange transition-colors relative group"
               >
-                {item}
+                {item.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
@@ -93,14 +101,14 @@ export default function Landing() {
             className="md:hidden bg-purple/95 backdrop-blur-sm"
           >
             <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
-              {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
-                <a 
+              {navLinks.map((item, index) => (
+                <a
                   key={index}
-                  href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                  href={`#${item.target}`}
                   className="text-white hover:text-orange py-2 transition-colors border-b border-white/10"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
               <button
@@ -442,13 +450,13 @@ export default function Landing() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Enlaces rápidos</h4>
               <ul className="space-y-2">
-                {['Inicio', 'Beneficios', '¿Cómo funciona?', 'Validación', 'Galería'].map((item, index) => (
+                {navLinks.map((item, index) => (
                   <li key={index}>
                     <a 
-                      href={`#${item.toLowerCase().replace('¿cómo funciona?', 'funciona').replace(' ', '-')}`}
+                      href={`#${item.target}`}
                       className="text-white/80 hover:text-orange transition-colors"
                     >
-                      {item}
+                      {item.label}
                     </a>
                   </li>
                 ))}
@@ -469,7 +477,7 @@ export default function Landing() {
                   </a>
                 </li>
                 <li className="text-white/80">
-                  UTCV, Av. Universidad Tecnológica del Centro de Veracruz, Col. San Juan de las Huertas, C.P. 91000, Xalapa, Ver.
+                  UTCV, Avenida Universidad 350, 94910 Cuitláhuac, Ver.
                 </li>
               </ul>
             </div>
@@ -522,7 +530,7 @@ function LogoCarousel() {
     return () => clearInterval(interval);
   }, [logos.length]);
   return (
-    <div className="w-40 sm:w-56 h-32 sm:h-40 flex items-center justify-center relative">
+    <div className="w-64 sm:w-80 h-44 sm:h-56 flex items-center justify-center relative">
       {logos.map((logo, i) => (
         <img
           key={logo.alt}
