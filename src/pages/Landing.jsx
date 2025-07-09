@@ -1,22 +1,37 @@
-
-import React, { useEffect, useState } from "react";
-import { FaMapMarkedAlt, FaMagic, FaUsers, FaCheckCircle, FaClipboardList, FaMap, FaSmileBeam, FaChevronDown } from "react-icons/fa";
-import { FaFacebook, FaInstagram, FaEnvelope, FaXTwitter } from "react-icons/fa6";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import LoginModal from "../components/LoginModal";
-import RegisterModal from "../components/RegisterModal";
-import { motion } from "framer-motion";
-import smarturLogo from "../assets/smartur_logo.png";
-import galardon from "../assets/galardon.png";
-import expNacional from "../assets/exp_nacional.png";
-import VeracruzMap from "../components/VeracruzMap";
+import React, { useEffect, useState } from 'react'
+import {
+  FaMapMarkedAlt,
+  FaMagic,
+  FaUsers,
+  FaCheckCircle,
+  FaClipboardList,
+  FaMap,
+  FaSmileBeam,
+  FaChevronDown,
+} from 'react-icons/fa'
+import {
+  FaFacebook,
+  FaInstagram,
+  FaEnvelope,
+  FaXTwitter,
+} from 'react-icons/fa6'
+import AOS from 'aos'
+import 'aos/dist/aos.css'
+import LoginModal from '../components/LoginModal'
+import RegisterModal from '../components/RegisterModal'
+import MultiStepFormModal from '../components/MultiStepFormModal'
+import { useAuth } from '../context/AuthContext'
+import { motion } from 'framer-motion'
+import smarturLogo from '../assets/smartur_logo.png'
+import galardon from '../assets/galardon.png'
+import expNacional from '../assets/exp_nacional.png'
 
 export default function Landing() {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const { user, showFormModal, showMultiStepForm, hideMultiStepForm } = useAuth()
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -36,19 +51,42 @@ export default function Landing() {
     { label: 'Galería', target: 'fotos' },
   ];
 
+  const handleStartExperience = () => {
+    if (user) {
+      // If user is logged in, show the form modal directly
+      showMultiStepForm()
+    } else {
+      // If user is not logged in, just show login modal
+      setShowLoginModal(true)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-800 font-sans scroll-smooth relative overflow-x-hidden">
       {/* Navbar mejorada */}
-      <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg bg-purple' : 'py-4 bg-gradient-to-br from-purple to-blue'}`}>
+      <header
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? 'py-2 shadow-lg bg-purple/95 backdrop-blur-md'
+            : 'py-4 bg-gradient-to-br from-purple to-blue/90 backdrop-blur-md'
+        }`}
+        role="banner"
+      >
         <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
           <motion.h1 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-xl sm:text-2xl font-bold text-white flex items-center"
+            className="text-xl sm:text-2xl font-bold text-white flex items-center drop-shadow-lg"
           >
-            <img src={smarturLogo} alt="Logo SMARTUR" className="h-10 w-10 mr-2" />
-            <span className="bg-white text-purple px-2 py-1 rounded mr-2">SMARTUR</span>
+            <img
+              src={smarturLogo}
+              alt="Logo SMARTUR"
+              className="h-10 w-10 mr-2 rounded-full bg-white shadow"
+            />
+            <span className="bg-white text-purple px-2 py-1 rounded mr-2 shadow-sm">
+              SMARTUR
+            </span>
           </motion.h1>
           
           {/* Menú desktop */}
@@ -56,37 +94,66 @@ export default function Landing() {
             {navLinks.map((item, index) => (
               <a
                 key={index}
-                href={`#${item.target}`}
-                className="text-white hover:text-orange transition-colors relative group"
+                href={item.href}
+                className="text-white hover:text-orange transition-colors relative group px-2 py-1 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+                tabIndex={0}
               >
                 {item.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
             <button
-              onClick={() => setShowLoginModal(true)}
-              className="ml-4 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg transition transform hover:scale-105"
+              onClick={handleStartExperience}
+              className="ml-4 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg transition transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
             >
-              Iniciar sesión
+              {user ? 'Mi Experiencia' : 'Iniciar sesión'}
             </button>
           </nav>
           
           {/* Menú móvil */}
           <div className="md:hidden flex items-center">
-            <button 
-              onClick={() => setShowLoginModal(true)}
-              className="mr-4 bg-orange text-white p-2 rounded-full shadow"
+            <button
+              onClick={handleStartExperience}
+              className="mr-4 bg-orange text-white p-2 rounded-full shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              aria-label="Iniciar sesión o experiencia"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
               </svg>
             </button>
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white hover:text-orange transition-colors"
+              className="text-white hover:text-orange transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              aria-label="Abrir menú móvil"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={
+                    mobileMenuOpen
+                      ? 'M6 18L18 6M6 6l12 12'
+                      : 'M4 6h16M4 12h16M4 18h16'
+                  }
+                />
               </svg>
             </button>
           </div>
@@ -98,27 +165,28 @@ export default function Landing() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-purple/95 backdrop-blur-sm"
+            className="md:hidden bg-purple/95 backdrop-blur-sm shadow-lg rounded-b-xl"
           >
             <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
               {navLinks.map((item, index) => (
                 <a
                   key={index}
-                  href={`#${item.target}`}
-                  className="text-white hover:text-orange py-2 transition-colors border-b border-white/10"
+                  href={item.href}
+                  className="text-white hover:text-orange py-2 transition-colors border-b border-white/10 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
                   onClick={() => setMobileMenuOpen(false)}
+                  tabIndex={0}
                 >
                   {item.label}
                 </a>
               ))}
               <button
                 onClick={() => {
-                  setShowLoginModal(true);
-                  setMobileMenuOpen(false);
+                  handleStartExperience()
+                  setMobileMenuOpen(false)
                 }}
-                className="mt-2 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow transition w-full"
+                className="mt-2 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-4 rounded-full text-sm shadow transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
               >
-                Iniciar sesión
+                {user ? 'Mi Experiencia' : 'Iniciar sesión'}
               </button>
             </div>
           </motion.div>
@@ -126,7 +194,11 @@ export default function Landing() {
       </header>
 
       {/* HERO mejorado */}
-      <section id="hero" className="relative bg-gradient-to-br from-purple to-blue text-white pt-32 pb-20 sm:pt-40 sm:pb-32 px-4 sm:px-6 overflow-hidden">
+      <section
+        id="hero"
+        className="relative bg-gradient-to-br from-purple to-blue text-white pt-32 pb-20 sm:pt-40 sm:pb-32 px-4 sm:px-6 overflow-hidden shadow-lg rounded-b-3xl"
+        aria-label="Hero SMARTUR"
+      >
         <div className="absolute inset-0 bg-[url('assets/veracruz-hero.jpg')] bg-cover bg-center opacity-20 z-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-purple/80 to-blue/60 z-0" />
         
@@ -161,10 +233,13 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight"
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-xl"
           >
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange to-yellow-400">Descubre Veracruz</span><br />
-            con inteligencia artificial
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange to-yellow-400">
+              Descubre Veracruz
+            </span>
+            <br />
+            <span className="text-white">con inteligencia artificial</span>
           </motion.h1>
           
           <motion.p 
@@ -183,14 +258,15 @@ export default function Landing() {
             className="flex flex-col sm:flex-row justify-center gap-4"
           >
             <button
-              onClick={() => setShowLoginModal(true)}
-              className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition transform hover:scale-105"
+              onClick={handleStartExperience}
+              className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
             >
               Comenzar mi experiencia
             </button>
-            <a 
-              href="#benefits" 
-              className="flex items-center justify-center gap-2 text-white hover:text-orange transition-colors"
+            <a
+              href="#benefits"
+              className="flex items-center justify-center gap-2 text-white hover:text-orange transition-colors link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              tabIndex={0}
             >
               Conoce más <FaChevronDown className="animate-bounce" />
             </a>
@@ -202,7 +278,7 @@ export default function Landing() {
 
       {/* CTA flotante mejorado */}
       <motion.button
-        onClick={() => setShowLoginModal(true)}
+        onClick={handleStartExperience}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className="fixed bottom-6 right-6 bg-orange text-white p-4 rounded-full shadow-xl z-40 flex items-center justify-center"
@@ -226,6 +302,9 @@ export default function Landing() {
           onClose={() => setShowRegisterModal(false)} 
           onShowLogin={() => setShowLoginModal(true)}
         />
+      )}
+      {showFormModal && (
+        <MultiStepFormModal onClose={hideMultiStepForm} />
       )}
 
       {/* BENEFICIOS mejorados */}
@@ -498,7 +577,7 @@ export default function Landing() {
               
               <div className="mt-6">
                 <button
-                  onClick={() => setShowLoginModal(true)}
+                  onClick={handleStartExperience}
                   className="bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-full text-sm shadow transition"
                 >
                   Acceder a la plataforma
