@@ -7,11 +7,13 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
 
   const login = (email, password) => {
     if (email === "admin@smartur.com" && password === "123456") {
       setUser({ email, role: "admin" });
-      navigate("/dashboard");
+      // Show the form modal after successful login
+      setShowFormModal(true);
     } else {
       alert("Credenciales incorrectas");
     }
@@ -19,11 +21,29 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setUser(null);
+    setShowFormModal(false);
     navigate("/login");
   };
 
+  const showMultiStepForm = () => {
+    if (user) {
+      setShowFormModal(true);
+    }
+  };
+
+  const hideMultiStepForm = () => {
+    setShowFormModal(false);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      showFormModal, 
+      showMultiStepForm, 
+      hideMultiStepForm 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,13 +1,20 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginModal({ onClose, onShowRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
+  const [error, setError] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // Aquí puedes hacer la lógica de autenticación
-    console.log("Iniciar sesión con:", email, password);
+    const result = login(email, password);
+    if (result !== false) {
+      onClose();
+    } else {
+      setError("Credenciales incorrectas");
+    }
   };
 
   return (
@@ -45,6 +52,8 @@ export default function LoginModal({ onClose, onShowRegister }) {
               required
             />
           </div>
+
+          {error && <div className="text-red-600 text-sm text-center animate-fadeInUp">{error}</div>}
 
           <div className="text-center text-xs sm:text-sm">
             <a href="#" className="text-blue hover:underline">¿Olvidaste tu contraseña?</a>
