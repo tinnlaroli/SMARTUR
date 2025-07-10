@@ -25,3 +25,7 @@ pasos para construir el modelo:
 8. Mostrar los resultados de la predicción.
 9. Guardar los resultados en un archivo Excel.
     ejecuta: python main.py
+
+
+
+    uvicorn api:app --reload
