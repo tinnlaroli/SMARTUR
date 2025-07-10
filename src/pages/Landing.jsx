@@ -44,12 +44,27 @@ export default function Landing() {
   }, []);
 
   const navLinks = [
-    { label: 'Inicio', target: 'hero' },
-    { label: 'Beneficios', target: 'benefits' },
-    { label: '¿Cómo funciona?', target: 'funciona' },
-    { label: 'Validación', target: 'validacion' },
-    { label: 'Galería', target: 'fotos' },
+    { label: 'Inicio', target: 'hero', href: '#hero' },
+    { label: 'Beneficios', target: 'benefits', href: '#benefits' },
+    { label: '¿Cómo funciona?', target: 'funciona', href: '#funciona' },
+    { label: 'Validación', target: 'validacion', href: '#validacion' },
+    { label: 'Galería', target: 'fotos', href: '#fotos' },
   ];
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerOffset = 80; // Altura del header fijo
+      const elementPosition = element.offsetTop;
+      const offsetPosition = elementPosition - headerOffset;
+
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const handleStartExperience = () => {
     if (user) {
@@ -65,7 +80,7 @@ export default function Landing() {
     <div className="min-h-screen bg-white text-gray-800 font-sans scroll-smooth relative overflow-x-hidden">
       {/* Navbar mejorada */}
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 navbar-glass ${
           scrolled
             ? 'py-2 shadow-lg bg-purple/95 backdrop-blur-md'
             : 'py-4 bg-gradient-to-br from-purple to-blue/90 backdrop-blur-md'
@@ -92,15 +107,15 @@ export default function Landing() {
           {/* Menú desktop */}
           <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center">
             {navLinks.map((item, index) => (
-              <a
+              <button
                 key={index}
-                href={item.href}
-                className="text-white hover:text-orange transition-colors relative group px-2 py-1 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+                onClick={() => scrollToSection(item.target)}
+                className="text-white hover:text-orange transition-colors relative group px-2 py-1 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange cursor-pointer nav-button"
                 tabIndex={0}
               >
                 {item.label}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </button>
             ))}
             <button
               onClick={handleStartExperience}
@@ -169,15 +184,17 @@ export default function Landing() {
           >
             <div className="container mx-auto px-4 py-3 flex flex-col space-y-3">
               {navLinks.map((item, index) => (
-                <a
+                <button
                   key={index}
-                  href={item.href}
-                  className="text-white hover:text-orange py-2 transition-colors border-b border-white/10 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    scrollToSection(item.target);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-white hover:text-orange py-2 transition-colors border-b border-white/10 rounded link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange text-left cursor-pointer"
                   tabIndex={0}
                 >
                   {item.label}
-                </a>
+                </button>
               ))}
               <button
                 onClick={() => {
@@ -259,17 +276,20 @@ export default function Landing() {
           >
             <button
               onClick={handleStartExperience}
-              className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+              className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg transition transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange pulse-on-click"
             >
               Comenzar mi experiencia
             </button>
-            <a
-              href="#benefits"
-              className="flex items-center justify-center gap-2 text-white hover:text-orange transition-colors link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection('benefits');
+              }}
+              className="flex items-center justify-center gap-2 text-white hover:text-orange transition-colors link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-orange cursor-pointer nav-button"
               tabIndex={0}
             >
               Conoce más <FaChevronDown className="animate-bounce" />
-            </a>
+            </button>
           </motion.div>
         </div>
         <div className="absolute right-2 top-2 sm:right-16 sm:top-16 opacity-20 z-0 pointer-events-none select-none">
@@ -531,12 +551,12 @@ export default function Landing() {
               <ul className="space-y-2">
                 {navLinks.map((item, index) => (
                   <li key={index}>
-                    <a 
-                      href={`#${item.target}`}
-                      className="text-white/80 hover:text-orange transition-colors"
+                    <button 
+                      onClick={() => scrollToSection(item.target)}
+                      className="text-white/80 hover:text-orange transition-colors cursor-pointer text-left"
                     >
                       {item.label}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
