@@ -12,8 +12,10 @@ export function AuthProvider({ children }) {
   const login = (email, password) => {
     if (email === "admin@smartur.com" && password === "123456") {
       setUser({ email, role: "admin" });
-      // Show the form modal after successful login
-      setShowFormModal(true);
+      navigate("/dashboard");
+    } else if (email === "usuario@smartur.com" && password === "123456") {
+      setUser({ email, role: "usuario" });
+      setShowFormModal(true); // Muestra el modal directamente
     } else {
       alert("Credenciales incorrectas");
     }
@@ -26,7 +28,7 @@ export function AuthProvider({ children }) {
   };
 
   const showMultiStepForm = () => {
-    if (user) {
+    if (user?.role === "usuario") {
       setShowFormModal(true);
     }
   };
