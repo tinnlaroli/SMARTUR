@@ -216,7 +216,7 @@ export default function Landing() {
         className="relative bg-gradient-to-br from-purple to-blue text-white pt-32 pb-20 sm:pt-40 sm:pb-32 px-4 sm:px-6 overflow-hidden shadow-lg rounded-b-3xl"
         aria-label="Hero SMARTUR"
       >
-        <div className="absolute inset-0 bg-[url('assets/veracruz-hero.jpg')] bg-cover bg-center opacity-20 z-0" />
+        <div className="absolute inset-0 bg-[url('assets/veracruz-hero.jpg')] bg-cover bg-center opacity-50 z-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-purple/80 to-blue/60 z-0" />
         
         {/* Elementos decorativos */}
