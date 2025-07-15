@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import React, { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 export default function LoginModal({ onClose, onShowRegister }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useAuth();
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { login } = useAuth()
+  const [error, setError] = useState('')
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const result = login(email, password);
-    if (result !== false) {
-      onClose();
-    } else {
-      setError("Credenciales incorrectas");
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setError('')
+    try {
+      await login(email, password)
+    } catch (err) {
+      setError('Credenciales incorrectas o error de red')
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -28,11 +28,15 @@ export default function LoginModal({ onClose, onShowRegister }) {
           &times;
         </button>
 
-        <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-purple">Iniciar sesión</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-purple">
+          Iniciar sesión
+        </h2>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Correo electrónico</label>
+            <label className="block text-sm text-gray-600 mb-1">
+              Correo electrónico
+            </label>
             <input
               type="email"
               className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple text-sm sm:text-base"
@@ -43,7 +47,9 @@ export default function LoginModal({ onClose, onShowRegister }) {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Contraseña</label>
+            <label className="block text-sm text-gray-600 mb-1">
+              Contraseña
+            </label>
             <input
               type="password"
               className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple text-sm sm:text-base"
@@ -53,10 +59,16 @@ export default function LoginModal({ onClose, onShowRegister }) {
             />
           </div>
 
-          {error && <div className="text-red-600 text-sm text-center animate-fadeInUp">{error}</div>}
+          {error && (
+            <div className="text-red-600 text-sm text-center animate-fadeInUp">
+              {error}
+            </div>
+          )}
 
           <div className="text-center text-xs sm:text-sm">
-            <a href="#" className="text-blue hover:underline">¿Olvidaste tu contraseña?</a>
+            <a href="#" className="text-blue hover:underline">
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
 
           <button
@@ -72,8 +84,8 @@ export default function LoginModal({ onClose, onShowRegister }) {
           <button
             className="text-purple font-semibold hover:underline text-xs sm:text-sm"
             onClick={() => {
-              onClose();
-              onShowRegister();
+              onClose()
+              onShowRegister()
             }}
           >
             Regístrate
@@ -81,5 +93,5 @@ export default function LoginModal({ onClose, onShowRegister }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
