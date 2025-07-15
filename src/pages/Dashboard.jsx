@@ -1,86 +1,146 @@
 import React, { useEffect, useState } from 'react'
 import {
-  FaUserCog, FaTools, FaBrain, FaSignOutAlt,
-  FaChartBar, FaUsers, FaMapMarkedAlt, FaClipboardCheck
+  FaUserCog,
+  FaTools,
+  FaBrain,
+  FaSignOutAlt,
+  FaChartBar,
+  FaUsers,
+  FaMapMarkedAlt,
+  FaClipboardCheck,
 } from 'react-icons/fa'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import smarturLogo from '../assets/smartur_logo.png'
 import LineamientosModal from '../components/LineamientosModal'
+import Landing from './Landing'
+import { useAuth } from '../context/AuthContext'
 
 export default function Dashboard() {
-  const [showLineamientosModal, setShowLineamientosModal] = useState(false)
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const [showLineamientosModal, setShowLineamientosModal, Landing] =
+    useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true })
   }, [])
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    navigate('/')
+  }
+
   const panels = [
-    { title: 'Gestión de usuarios', icon: <FaUsers className="text-3xl text-green" />, color: 'from-purple/10 to-purple/5' },
-    { title: 'Gestión de servicios', icon: <FaTools className="text-3xl text-orange" />, color: 'from-orange/10 to-orange/5' },
-    { title: 'Evaluación IA', icon: <FaBrain className="text-3xl text-pink" />, color: 'from-blue/10 to-blue/5' },
+    {
+      title: 'Gestión de usuarios',
+      icon: <FaUsers className="text-3xl text-green" />,
+      color: 'from-purple/10 to-purple/5',
+    },
+    {
+      title: 'Gestión de servicios',
+      icon: <FaTools className="text-3xl text-orange" />,
+      color: 'from-orange/10 to-orange/5',
+    },
+    {
+      title: 'Evaluación IA',
+      icon: <FaBrain className="text-3xl text-pink" />,
+      color: 'from-blue/10 to-blue/5',
+    },
   ]
 
   const stats = [
-    { label: 'Usuarios registrados', value: 154, icon: <FaUserCog className="text-white text-2xl" />, color: 'from-purple to-blue' },
-    { label: 'Servicios turísticos', value: 38, icon: <FaMapMarkedAlt className="text-white text-2xl" />, color: 'from-orange to-yellow-400' },
-    { label: 'Recomendaciones generadas', value: 482, icon: <FaChartBar className="text-white text-2xl" />, color: 'from-green to-blue' },
+    {
+      label: 'Usuarios registrados',
+      value: 154,
+      icon: <FaUserCog className="text-white text-2xl" />,
+      color: 'from-purple to-blue',
+    },
+    {
+      label: 'Servicios turísticos',
+      value: 38,
+      icon: <FaMapMarkedAlt className="text-white text-2xl" />,
+      color: 'from-orange to-yellow-400',
+    },
+    {
+      label: 'Recomendaciones generadas',
+      value: 482,
+      icon: <FaChartBar className="text-white text-2xl" />,
+      color: 'from-green to-blue',
+    },
   ]
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[auto,1fr] font-sans text-gray-700">
-
       {/* Menú lateral */}
-      <aside className={`
+      <aside
+        className={`
   fixed lg:static z-50 top-0 left-0 h-full w-64 bg-gradient-to-br from-purple to-blue text-white shadow-xl rounded-r-3xl
   transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
   lg:translate-x-0 transition-transform duration-300 ease-in-out
   flex flex-col
-`}>
-  {/* Encabezado del logo */}
-  <div className="p-6 flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <img src={smarturLogo} className="h-10 w-10 rounded-full bg-white shadow" alt="Logo" />
-      <span className="text-xl font-bold">SMARTUR</span>
-    </div>
-    <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white text-2xl">
-      ✕
-    </button>
-  </div>
-
-  {/* Navegación (se expande automáticamente) */}
-  <div className="flex-grow overflow-y-auto px-6 pb-6">
-    <nav className="flex flex-col gap-2">
-      {panels.map((panel, i) => (
-        <button key={i} className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-white/10 transition-all">
-          {panel.icon}
-          <span>{panel.title}</span>
-        </button>
-      ))}
-      <button
-        onClick={() => setShowLineamientosModal(true)}
-        className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-white/10 transition-all"
+`}
       >
-        <FaClipboardCheck className="text-2xl text-yellow-300" />
-        <span>Lineamientos Restauranteros</span>
-      </button>
-    </nav>
-  </div>
+        {/* Encabezado del logo */}
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src={smarturLogo}
+              className="h-10 w-10 rounded-full bg-white shadow"
+              alt="Logo"
+            />
+            <span className="text-xl font-bold">SMARTUR</span>
+            {/* Mostrar el nombre del usuario si está logueado */}
+            {user && (
+              <span className="ml-2 text-base font-normal">{user.name}</span>
+            )}
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-white text-2xl"
+          >
+            ✕
+          </button>
+        </div>
 
-  {/* Botón fijo abajo */}
-  <div className="p-6 border-t border-white/10">
-    <button className="flex items-center gap-2 bg-orange hover:bg-orange/90 text-white py-2 px-4 rounded-full shadow transition-all w-full justify-center">
-      <FaSignOutAlt /> Cerrar sesión
-    </button>
-  </div>
-</aside>
+        {/* Navegación (se expande automáticamente) */}
+        <div className="flex-grow overflow-y-auto px-6 pb-6">
+          <nav className="flex flex-col gap-2">
+            {panels.map((panel, i) => (
+              <button
+                key={i}
+                className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-white/10 transition-all"
+              >
+                {panel.icon}
+                <span>{panel.title}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setShowLineamientosModal(true)}
+              className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-white/10 transition-all"
+            >
+              <FaClipboardCheck className="text-2xl text-yellow-300" />
+              <span>Lineamientos Restauranteros</span>
+            </button>
+          </nav>
+        </div>
 
+        {/* Botón fijo abajo */}
+        <div className="p-6 border-t border-white/10">
+          <button
+            className="flex items-center gap-2 bg-orange hover:bg-orange/90 text-white py-2 px-4 rounded-full shadow transition-all w-full justify-center"
+            onClick={logout}
+          >
+            <FaSignOutAlt /> Cerrar sesión
+          </button>
+        </div>
+      </aside>
 
       {/* Panel principal */}
       <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto relative">
-
         {/* Botón hamburguesa */}
         <button
           className="lg:hidden absolute top-4 left-4 bg-purple text-white p-2 rounded-md z-40 shadow"
@@ -107,9 +167,7 @@ export default function Dashboard() {
               data-aos="fade-up"
               className={`rounded-xl shadow-lg bg-gradient-to-br ${stat.color} text-white p-6 flex items-center gap-4`}
             >
-              <div className="p-4 bg-white/10 rounded-full">
-                {stat.icon}
-              </div>
+              <div className="p-4 bg-white/10 rounded-full">{stat.icon}</div>
               <div>
                 <p className="text-sm opacity-80">{stat.label}</p>
                 <p className="text-2xl font-bold">{stat.value}</p>
@@ -130,7 +188,9 @@ export default function Dashboard() {
               <div className="text-center">
                 <div className="flex justify-center mb-4">{panel.icon}</div>
                 <h3 className="text-xl font-bold">{panel.title}</h3>
-                <p className="text-gray-600 mt-2">Ir al módulo de {panel.title.toLowerCase()}.</p>
+                <p className="text-gray-600 mt-2">
+                  Ir al módulo de {panel.title.toLowerCase()}.
+                </p>
               </div>
             </motion.div>
           ))}
