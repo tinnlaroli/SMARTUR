@@ -25,6 +25,7 @@ import { motion } from 'framer-motion'
 import smarturLogo from '../assets/smartur_logo.png'
 import galardon from '../assets/galardon.png'
 import expNacional from '../assets/exp_nacional.png'
+import TimelineDemo from '../components/timeline-demo'
 
 export default function Landing() {
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -405,6 +406,7 @@ export default function Landing() {
         </div>
       </section>
 
+
       {/* FUNCIONAMIENTO mejorado */}
       <section
         id="funciona"
@@ -565,45 +567,8 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="text-3xl sm:text-4xl font-bold mb-12 text-center"
           >
-            <span className="relative inline-block">
-              <span className="relative z-10">Nuestro equipo en acción</span>
-              <span
-                className="absolute bottom-0 left-0 w-full h-3 bg-orange/30 -z-1"
-                style={{ bottom: '5px' }}
-              ></span>
-            </span>
           </motion.h2>
-
-          <div className="relative">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <motion.div
-                  key={n}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: (n % 3) * 0.1 }}
-                  className="group relative overflow-hidden rounded-xl shadow-lg"
-                >
-                  <img
-                    src={`https://picsum.photos/800/600?random=${n}`}
-                    alt={`Exposición ${n}`}
-                    className="w-full h-64 sm:h-80 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div>
-                      <h3 className="text-white font-bold text-lg">
-                        Evento {n}
-                      </h3>
-                      <p className="text-white/80 text-sm">
-                        Presentación del proyecto SMARTUR
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+          <TimelineDemo />
         </div>
       </section>
 

@@ -14,11 +14,15 @@
     "vite": "^7.0.2"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.34.0",
     "aos": "^2.3.4",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.3",
+    "motion": "^12.23.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^6.14.2"
+    "react-router-dom": "^6.14.2",
+    "tailwind-merge": "^3.3.1"
   }
 }
