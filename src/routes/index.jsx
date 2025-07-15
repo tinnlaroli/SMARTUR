@@ -1,9 +1,10 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import About from "../pages/About";
-import Landing from "../pages/Landing";
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Login from '../pages/Login'
+import Dashboard from '../pages/Dashboard'
+import About from '../pages/About'
+import Landing from '../pages/Landing'
+import SignUpModal from '../components/SignUpModal'
 
 export default function AppRoutes() {
   return (
@@ -13,5 +14,5 @@ export default function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/" element={<Landing />} />
     </Routes>
-  );
+  )
 }

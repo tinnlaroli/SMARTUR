@@ -18,7 +18,7 @@ import {
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import LoginModal from '../components/LoginModal'
-import RegisterModal from '../components/RegisterModal'
+import SignUpModal from '../components/SignUpModal'
 import MultiStepFormModal from '../components/MultiStepFormModal'
 import { useAuth } from '../context/AuthContext'
 import { motion } from 'framer-motion'
@@ -44,7 +44,6 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  
   useEffect(() => {
     if (showFormModal && showLoginModal) {
       setShowLoginModal(false)
@@ -335,7 +334,7 @@ export default function Landing() {
         />
       )}
       {showRegisterModal && (
-        <RegisterModal
+        <SignUpModal
           onClose={() => setShowRegisterModal(false)}
           onShowLogin={() => setShowLoginModal(true)}
         />

@@ -9,8 +9,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [showFormModal, setShowFormModal] = useState(false)
 
-
-
   const handleLogin = async (email, password) => {
     try {
       const response = await fetch('http://localhost:3000/api/login', {
@@ -22,23 +20,25 @@ export function AuthProvider({ children }) {
       })
 
       if (!response.ok) {
-        throw new Error('Login fallido')
+        return {
+          success: false,
+          message: 'Credenciales incorrectas o error de red',
+        }
       }
       const data = await response.json()
       localStorage.setItem('token', data.token)
       setUser(data.user)
 
-     
       if (data.user.role === 'user') {
         setShowFormModal(true)
-        
       } else if (data.user.role === 'admin') {
         navigate('/dashboard')
       } else {
-        alert('Rol no reconocido')
+        return { success: false, message: 'Rol no reconocido' }
       }
+      return { success: true }
     } catch (error) {
-      alert(error.message)
+      return { success: false, message: error.message || 'Error desconocido' }
     }
   }
 
