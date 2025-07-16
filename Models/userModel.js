@@ -52,9 +52,66 @@ class User {
       INSERT INTO "user" (name, email, password, role_id) 
       VALUES ($1, $2, $3, $4) 
       RETURNING user_id, name, email, role_id, registered_at
-    `, [name, email, hashedPassword, role_id]);
+    `, [name, email, hashedPassword, role_id || 2]);
 
     return result.rows[0];
+  }
+
+  // Método específico para registro de usuarios
+  static async register(data) {
+    const { name, email, password, role_id = 2 } = data;
+   
+    // Verificar si el usuario ya existe
+    const existingUser = await this.findByEmail(email);
+    if (existingUser) {
+      return {
+        status: 400,
+        message: "El email ya está registrado"
+      };
+    }
+
+    try {
+      // Crear el usuario
+      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+      
+      const result = await pool.query(`
+        INSERT INTO "user" (name, email, password, role_id) 
+        VALUES ($1, $2, $3, $4) 
+        RETURNING user_id, name, email, role_id, registered_at
+      `, [name, email, hashedPassword, role_id || 2]);
+
+      const newUser = result.rows[0];
+
+      // Generar token JWT
+      const token = jwt.sign(
+        { 
+          user_id: newUser.user_id, 
+          email: newUser.email, 
+          role_id: newUser.role_id 
+        },
+        process.env.JWT_SECRET || 'secret_key',
+        { expiresIn: '24h' }
+      );
+
+      return {
+        status: 201,
+        message: "Usuario registrado exitosamente",
+        user: {
+          id: newUser.user_id,
+          name: newUser.name,
+          email: newUser.email,
+          role_id: newUser.role_id,
+          registered_at: newUser.registered_at
+        },
+        token
+      };
+    } catch (error) {
+      console.error("Error en registro:", error);
+      return {
+        status: 500,
+        message: "Error interno del servidor"
+      };
+    }
   }
 
 

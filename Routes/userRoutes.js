@@ -11,6 +11,7 @@ router.put('/users/:id', UserController.updateUser);
 router.delete('/users/:id', UserController.deleteUser);
 
 // Rutas de autenticación
+router.post('/register', UserController.registerUser);
 router.post('/login', UserController.loginUser);
 router.post('/logout', UserController.logoutUser);
 router.get('/verify-token', UserController.verifyToken);

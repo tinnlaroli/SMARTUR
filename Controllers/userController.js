@@ -116,6 +116,24 @@ class UserController {
     }
   }
 
+  static async registerUser(req, res) {
+    const { name, email, password, role_id } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "Nombre, email y contraseña son requeridos"
+      });
+    }
+
+    try {
+      const result = await User.register({ name, email, password, role_id });
+      return res.status(result.status).json(result);
+    } catch (error) {
+      console.error("Error en registerUser controller:", error);
+      return res.status(500).json({ message: "Error del servidor" });
+    }
+  }
+
   static async logoutUser(req, res) {
     try {
       const result = await User.logout();
