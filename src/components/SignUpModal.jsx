@@ -141,7 +141,10 @@ export default function SignUpModal({ onClose, onShowLogin }) {
             <span className="text-sm">¿Ya tienes cuenta? </span>
             <button
               className="text-purple font-semibold text-sm hover:underline"
-              onClick={onShowLogin}
+              onClick={() => {
+                onClose()
+                onShowLogin()
+              }}
             >
               Inicia sesión
             </button>
