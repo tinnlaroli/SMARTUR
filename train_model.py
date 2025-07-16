@@ -1,6 +1,7 @@
 import pickle
 import os
-from sklearn.ensemble import RandomForestClassifier
+# from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
@@ -19,7 +20,8 @@ def entrenar_y_guardar():
     )
 
     # Entrenar modelo
-    modelo = RandomForestClassifier(n_estimators=100, random_state=42)
+    # modelo = RandomForestClassifier(n_estimators=100, random_state=42)
+    modelo = XGBClassifier(n_estimators=100, use_label_encoder=False, eval_metric='mlogloss', random_state=42)
     modelo.fit(X_train, y_train)
 
     # Evaluación
