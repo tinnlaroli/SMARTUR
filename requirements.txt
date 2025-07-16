@@ -1,5 +1,6 @@
 pandas
 scikit-learn
 openpyxl
-
 xgboost
+fastapi 
+uvicorn  
