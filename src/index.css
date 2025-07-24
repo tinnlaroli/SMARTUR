@@ -12,6 +12,12 @@
   .fade-in-up.visible {
     @apply opacity-100 translate-y-0;
   }
+  
+  /* Asegurar que las secciones tengan posición relativa para el scroll */
+  section[id] {
+    position: relative;
+    scroll-margin-top: 80px; /* Compensa la altura del header fijo */
+  }
 }
 
 /* Colores primarios personalizados (ajustar según tu tailwind.config.js) */

@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import smarturLogo from '../../assets/smartur_logo.png'
+import ColorWheel from '../ui/ColorWheel'
 
 export default function Navbar({
   scrolled,
@@ -29,11 +30,16 @@ export default function Navbar({
           transition={{ duration: 0.5 }}
           className="text-xl sm:text-2xl font-bold text-white flex items-center drop-shadow-lg font-sans tracking-wide"
         >
-          <img
-            src={smarturLogo}
-            alt="Logo SMARTUR"
-            className="h-10 w-10 mr-2 rounded-full bg-white shadow"
-          />
+          <div className="flex items-center m-2 rounded-full bg-white p-2">
+            <div>
+              <ColorWheel className="h-16 w-16" />
+            </div>
+            <img
+              src={smarturLogo}
+              alt="Logo SMARTUR"
+              className="h-20 w-20"
+            />
+          </div>
           <span className="bg-gradient-to-r from-orange to-pink text-white px-2 py-1 rounded mr-2 shadow-sm font-sans">
             SMARTUR
           </span>

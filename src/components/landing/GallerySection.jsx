@@ -4,7 +4,7 @@ import TimelineDemo from '../timeline-demo'
 
 export default function GallerySection() {
   return (
-    <section id="fotos" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
+    <section id="fotos" className="relative py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
       <div className="container mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}

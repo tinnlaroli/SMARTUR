@@ -97,6 +97,7 @@ export default function Footer({ handleStartExperience, scrollToSection, navLink
           </p>
         </div>
       </div>
+      
     </footer>
   )
 }

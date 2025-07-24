@@ -6,7 +6,7 @@ export default function BenefitsSection() {
   return (
     <section
       id="benefits"
-      className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-blue-50 to-white"
+      className="relative py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-blue-50 to-white"
     >
       <div className="container mx-auto">
         <motion.h2
