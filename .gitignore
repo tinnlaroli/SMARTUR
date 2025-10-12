@@ -37,3 +37,6 @@ Thumbs.db
 
 # optional
 *.local
+
+#pnpm
+pnpm-lock.yaml
