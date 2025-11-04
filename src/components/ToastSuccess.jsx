@@ -14,7 +14,7 @@ export default function ToastSuccess({ message, onClose, duration = 3000 }) {
   return (
     <div
       className="fixed top-6 right-6 z-[9999] min-w-[260px] max-w-xs flex items-center px-4 py-3 rounded border border-green-700 bg-green-700 text-white shadow-lg animate-fadeInUp transition-all"
-      style={{ backgroundColor: '#15803d', color: '#fff', opacity: 1 }}
+      style={{ backgroundColor: '#15803d', color: '#fff'}}
       role="alert"
     >
       <span className="mr-2">
