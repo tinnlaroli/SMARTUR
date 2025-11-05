@@ -37,3 +37,8 @@ Thumbs.db
 
 # optional
 *.local
+
+#pnpm
+pnpm-lock.yaml
+
+package-lock.json
