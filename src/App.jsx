@@ -2,7 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Landing from './pages/Landing'
-import MultiStepForm from './pages/form/MultiStepForm'
+import MultiStepForm from './features/form/MultiStepForm'
 
 export default function AppRoutes() {
     return (

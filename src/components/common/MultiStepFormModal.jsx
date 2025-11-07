@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import Step1PerfilBasico from '../pages/form/Step1PerfilBasico'
-import Step2Preferencias from '../pages/form/Step2Preferencias'
-import Step3Contexto from '../pages/form/Step3Contexto'
-import Step4Condiciones from '../pages/form/Step4Condiciones'
-import ProgressIndicator from '../pages/form/ProgressIndicator'
-import '../pages/form/FormStyles.css'
+
+import Step1PerfilBasico from '../../features/form/Step1PerfilBasico'
+import Step2Preferencias from '../../features/form/Step2Preferencias'
+import Step3Contexto from '../../features/form/Step3Contexto'
+import Step4Condiciones from '../../features/form/Step4Condiciones'
+import ProgressIndicator from '../../features/form/ProgressIndicator'
+import '../../features/form/FormStyles.css'
 
 const steps = [
   'Perfil básico',

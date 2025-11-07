@@ -4,7 +4,7 @@ import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
 import About from '../pages/About'
 import Landing from '../pages/Landing'
-import SignUpModal from '../components/SignUpModal'
+
 
 export default function AppRoutes() {
   return (
@@ -13,6 +13,7 @@ export default function AppRoutes() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/about" element={<About />} />
       <Route path="/" element={<Landing />} />
+      <Route path="/*" element={<Landing />} />
     </Routes>
   )
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import TimelineDemo from '../timeline-demo'
+import TimelineDemo from '../../components/timeline-demo'
 
 export default function GallerySection() {
   return (

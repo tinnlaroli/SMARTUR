@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
-import ToastSuccess from '../ToastSuccess'
-import ToastError from '../ToastError'
+import ToastSuccess from '../../components/common/ToastSuccess'
+import ToastError from '../../components/common/ToastError'
 
 function Loader() {
     return (
@@ -37,11 +37,14 @@ export default function ForgotPasswordModal({ onClose }) {
         setShowSuccess(false)
 
         try {
-            const res = await fetch('http://localhost:3002/api/users/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            })
+            const res = await fetch(
+                'http://localhost:3002/api/users/forgot-password',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                }
+            )
             const data = await res.json()
             setLoading(false)
 
@@ -87,11 +90,14 @@ export default function ForgotPasswordModal({ onClose }) {
         setShowSuccess(false)
 
         try {
-            const res = await fetch('http://localhost:3002/api/users/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, token, newPassword })
-            })
+            const res = await fetch(
+                'http://localhost:3002/api/users/reset-password',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, token, newPassword }),
+                }
+            )
             const data = await res.json()
             setLoading(false)
 
@@ -132,22 +138,39 @@ export default function ForgotPasswordModal({ onClose }) {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             {loading && <Loader />}
-            {showSuccess && <ToastSuccess message={toastMsg} onClose={() => setShowSuccess(false)} />}
-            {showError && <ToastError message={toastMsg} onClose={() => setShowError(false)} />}
-            
+            {showSuccess && (
+                <ToastSuccess
+                    message={toastMsg}
+                    onClose={() => setShowSuccess(false)}
+                />
+            )}
+            {showError && (
+                <ToastError
+                    message={toastMsg}
+                    onClose={() => setShowError(false)}
+                />
+            )}
+
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 sm:p-8 relative animate-fadeInUp">
-                <button className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl" onClick={onClose}>
+                <button
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+                    onClick={onClose}
+                >
                     &times;
                 </button>
 
                 <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-purple">
-                    {step === 1 ? 'Recuperar contraseña' : 'Restablecer contraseña'}
+                    {step === 1
+                        ? 'Recuperar contraseña'
+                        : 'Restablecer contraseña'}
                 </h2>
 
                 {step === 1 && (
                     <form onSubmit={handleRequestCode} className="space-y-4">
                         <div>
-                            <label className="block text-sm text-gray-600 mb-1">Correo electrónico</label>
+                            <label className="block text-sm text-gray-600 mb-1">
+                                Correo electrónico
+                            </label>
                             <input
                                 type="email"
                                 className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple text-sm sm:text-base"
@@ -156,7 +179,10 @@ export default function ForgotPasswordModal({ onClose }) {
                                 required
                             />
                         </div>
-                        <button type="submit" className="w-full bg-orange text-white py-2 rounded-md font-semibold hover:bg-orange/90 transition text-sm sm:text-base">
+                        <button
+                            type="submit"
+                            className="w-full bg-orange text-white py-2 rounded-md font-semibold hover:bg-orange/90 transition text-sm sm:text-base"
+                        >
                             Enviar código
                         </button>
                     </form>
@@ -165,7 +191,8 @@ export default function ForgotPasswordModal({ onClose }) {
                 {step === 2 && (
                     <form onSubmit={handleResetPassword} className="space-y-4">
                         <p className="text-sm text-gray-600 mb-4 text-center">
-                            Ingresa el código de verificación y tu nueva contraseña
+                            Ingresa el código de verificación y tu nueva
+                            contraseña
                         </p>
                         <div className="flex justify-center space-x-3 mb-4">
                             {code.map((digit, index) => (
@@ -176,13 +203,17 @@ export default function ForgotPasswordModal({ onClose }) {
                                     maxLength="1"
                                     className="w-12 h-12 text-center text-xl font-semibold border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple"
                                     value={digit}
-                                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                                    onChange={(e) =>
+                                        handleCodeChange(index, e.target.value)
+                                    }
                                     onKeyDown={(e) => handleKeyDown(index, e)}
                                 />
                             ))}
                         </div>
                         <div>
-                            <label className="block text-sm text-gray-600 mb-1">Nueva contraseña</label>
+                            <label className="block text-sm text-gray-600 mb-1">
+                                Nueva contraseña
+                            </label>
                             <input
                                 type="password"
                                 className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple text-sm sm:text-base"
@@ -192,10 +223,17 @@ export default function ForgotPasswordModal({ onClose }) {
                             />
                         </div>
                         <div className="flex space-x-3">
-                            <button type="button" className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-md font-semibold hover:bg-gray-300 transition text-sm sm:text-base" onClick={() => setStep(1)}>
+                            <button
+                                type="button"
+                                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-md font-semibold hover:bg-gray-300 transition text-sm sm:text-base"
+                                onClick={() => setStep(1)}
+                            >
                                 Cancelar
                             </button>
-                            <button type="submit" className="flex-1 bg-orange text-white py-2 rounded-md font-semibold hover:bg-orange/90 transition text-sm sm:text-base">
+                            <button
+                                type="submit"
+                                className="flex-1 bg-orange text-white py-2 rounded-md font-semibold hover:bg-orange/90 transition text-sm sm:text-base"
+                            >
                                 Restablecer contraseña
                             </button>
                         </div>

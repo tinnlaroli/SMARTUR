@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import ToastSuccess from '../ToastSuccess'
-import ToastError from '../ToastError'
+import { useAuth } from './AuthContext'
+import ToastSuccess from '../../components/common/ToastSuccess'
+import ToastError from '../../components/common/ToastError'
 
 function Loader() {
     return (
@@ -194,7 +194,7 @@ export default function LoginModal({ onClose, onShowRegister }) {
                                     Campo requerido
                                 </span>
                             )}
-                            
+
                             <button
                                 type="button"
                                 className="text-purple font-semibold hover:underline text-xs sm:text-sm"

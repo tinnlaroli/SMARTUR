@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { useSignUp } from '../../context/SignUpContext'
-import ToastSuccess from '../ToastSuccess'
-import ToastError from '../ToastError'
+import { useSignUp } from './SignUpContext'
+import ToastSuccess from '../../components/common/ToastSuccess'
+import ToastError from '../../components/common/ToastError'
 
 export default function SignUpModal({ onClose, onShowLogin }) {
     const [name, setName] = useState('')
