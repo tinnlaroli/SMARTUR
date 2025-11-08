@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa'
 import smarturLogo from '../assets/smartur_logo.png'
 import { useAuth } from '../features/auth/AuthContext.jsx'
+import { title } from 'framer-motion/client'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ export default function Dashboard() {
   const menu = [
     { title: 'Inicio', path: '/dashboard' },
     { title: 'Gestión de usuarios', icon: <FaUsers className="text-2xl" />, path: '/dashboard/users' },
+    {title: 'Gestion de administradorres ', icon: <FaUserCog className="text-2xl" />, path: '/dashboard/admin' },
     { title: 'Gestión de servicios', icon: <FaTools className="text-2xl" />, path: '/dashboard/services' },
     { title: 'Evaluación IA', icon: <FaBrain className="text-2xl" />, path: '/dashboard/ai' },
   ]

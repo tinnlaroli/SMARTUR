@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { createUser } from './usersService'
+import { createAdmin } from './adminService'
 import ToastSuccess from '../../components/common/ToastSuccess'
 import ToastError from '../../components/common/ToastError'
 
-export default function UserCreateModal({ isOpen, onClose, onSuccess }) {
+export default function AdminCreateModal({ isOpen, onClose, onSuccess }) {
     const [form, setForm] = useState({ name: '', email: '', password: '' })
     const [loading, setLoading] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
@@ -21,8 +21,8 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }) {
         setShowSuccess(false)
 
         try {
-            await createUser(form)
-            setToastMessage('Usuario creado correctamente')
+            await createAdmin(form)
+            setToastMessage('Administrador creado correctamente')
             setShowSuccess(true)
             setForm({ name: '', email: '', password: '' })
             setTimeout(() => {
@@ -33,9 +33,9 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }) {
                 }
             }, 1500)
         } catch (err) {
-            console.error('Error al crear usuario:', err)
+            console.error('Error al crear Administrador:', err)
             setToastMessage(
-                err.message || 'Error al crear usuario. Intenta nuevamente.'
+                err.message || 'Error al crear Administrador. Intenta nuevamente.'
             )
             setShowError(true)
         } finally {
@@ -76,7 +76,7 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }) {
                         ×
                     </button>
                     <h2 className="text-xl pb-4 sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple to-blue drop-shadow-xl">
-                        Registrar nuevo usuario
+                        Registrar nuevo administrador
                     </h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>

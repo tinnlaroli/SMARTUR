@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { getAllUsers, deleteUser } from './usersService'
-import UserTable from './UserTable'
-import UserCreateModal from './UserCreate'
+import { getAllAdmins, deleteAdmin } from './adminService'
+import AdminTable from './AdminTable'
+import AdminCreateModal from './AdminCreate'
 import ToastSuccess from '../../components/common/ToastSuccess'
 import ToastError from '../../components/common/ToastError'
 import ConfirmModal from '../../components/common/ConfirmModal'
 
-export default function UsersList() {
+export default function AdminList() {
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [users, setUsers] = useState([])
+    const [admins, setAdmins] = useState([]) // ← Esta es la variable correcta
     const [showSuccess, setShowSuccess] = useState(false)
     const [showError, setShowError] = useState(false)
     const [toastMessage, setToastMessage] = useState('')
@@ -23,13 +23,13 @@ export default function UsersList() {
     const load = async () => {
         try {
             setLoading(true)
-            const data = await getAllUsers()
-            const usersArray = Array.isArray(data) ? data : data?.data || []
-            setUsers(usersArray)
+            const data = await getAllAdmins()
+            const adminsArray = Array.isArray(data) ? data : data?.data || []
+            setAdmins(adminsArray) // ← Guardando en 'admins'
         } catch (error) {
-            console.error('Error al cargar usuarios:', error)
+            console.error('Error al cargar Administradors:', error)
             setToastMessage(
-                error.message || 'Error al cargar la lista de usuarios'
+                error.message || 'Error al cargar la lista de Administradors'
             )
             setShowError(true)
         } finally {
@@ -43,14 +43,14 @@ export default function UsersList() {
 
     const handleDeleteClick = (id, userName) => {
         if (!id && id !== 0) {
-            setToastMessage('ID de usuario no válido')
+            setToastMessage('ID de Administrador no válido')
             setShowError(true)
             return
         }
         setDeleteConfirm({
             isOpen: true,
             userId: id,
-            userName: userName || 'este usuario',
+            userName: userName || 'este Administrador',
         })
     }
 
@@ -58,7 +58,7 @@ export default function UsersList() {
         const { userId } = deleteConfirm
 
         if (!userId && userId !== 0) {
-            setToastMessage('ID de usuario no válido')
+            setToastMessage('ID de Administrador no válido')
             setShowError(true)
             setDeleteConfirm({ isOpen: false, userId: null, userName: '' })
             return
@@ -68,11 +68,11 @@ export default function UsersList() {
             setDeleting(true)
             setDeleteConfirm({ isOpen: false, userId: null, userName: '' })
 
-            console.log('Eliminando usuario con ID:', userId)
-            const result = await deleteUser(userId)
-            console.log('Usuario eliminado exitosamente:', result)
+            console.log('Eliminando Administrador con ID:', userId)
+            const result = await deleteAdmin(userId)
+            console.log('Administrador eliminado exitosamente:', result)
 
-            setToastMessage('Usuario eliminado correctamente')
+            setToastMessage('Administrador eliminado correctamente')
             setShowSuccess(true)
 
             // Recargar la lista después de un breve delay
@@ -80,10 +80,10 @@ export default function UsersList() {
                 load()
             }, 500)
         } catch (error) {
-            console.error('Error al eliminar usuario:', error)
+            console.error('Error al eliminar Administrador:', error)
             setToastMessage(
                 error.message ||
-                    'Error al eliminar usuario. Intenta nuevamente.'
+                    'Error al eliminar Administrador. Intenta nuevamente.'
             )
             setShowError(true)
         } finally {
@@ -97,7 +97,7 @@ export default function UsersList() {
 
     const handleUserCreated = () => {
         setIsModalOpen(false)
-        setToastMessage('Usuario creado correctamente')
+        setToastMessage('Administrador creado correctamente')
         setShowSuccess(true)
         load()
     }
@@ -121,7 +121,7 @@ export default function UsersList() {
                 isOpen={deleteConfirm.isOpen}
                 onClose={handleCancelDelete}
                 onConfirm={handleConfirmDelete}
-                title="Eliminar usuario"
+                title="Eliminar Administrador"
                 message={`¿Estás seguro de que deseas eliminar a ${deleteConfirm.userName}? Esta acción no se puede deshacer.`}
                 confirmText={deleting ? 'Eliminando...' : 'Eliminar'}
                 cancelText="Cancelar"
@@ -129,45 +129,44 @@ export default function UsersList() {
             />
 
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Información de usuarios</h2>
+                <h2 className="text-2xl font-bold">Información de administradores</h2>
 
                 <label
                     className="bg-white flex items-center border border-gray-300 py-2 px-4 rounded-lg gap-2 shadow-sm focus-within:border-purple transition-colors"
-                    for="search-bar"
+                    htmlFor="search-bar"
                 >
                     <input
                         id="search-bar"
-                        placeholder="Buscar usuarios..."
+                        placeholder="Buscar Administrador..."
                         className="flex-1 outline-none bg-transparent text-gray-700 min-w-[200px]"
                     />
-
 
                     <button className="px-3 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700 active:scale-95 transition-all duration-150">
                         <span className="text-sm font-medium">Buscar</span>
                     </button>
-                    
                 </label>
 
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="bg-purple text-white px-4 py-2 rounded-lg hover:bg-purple/90 transition-all font-medium"
                 >
-                    + Nuevo Usuario
+                    + Nuevo Administrador
                 </button>
             </div>
-            <UserCreateModal
+            <AdminCreateModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={handleUserCreated}
             />
 
-            {loading && users.length === 0 ? (
+            {/* CORRECCIÓN: Cambiar 'users' por 'admins' */}
+            {loading && admins.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                    Cargando usuarios...
+                    Cargando Administrador...
                 </div>
             ) : (
-                <UserTable
-                    data={users}
+                <AdminTable
+                    data={admins} 
                     onDelete={handleDeleteClick}
                     deleting={deleting}
                 />

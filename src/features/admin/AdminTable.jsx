@@ -13,7 +13,7 @@ const TrashIcon = () => (
     </svg>
 )
 
-export default function UserTable({ data, onDelete, deleting = false }) {
+export default function adminTable({ data, onDelete, deleting = false }) {
     return (
         <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="min-w-full text-sm text-left border-collapse">
