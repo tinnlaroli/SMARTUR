@@ -35,7 +35,7 @@ export default function Landing() {
             href: '#mision-vision-valores',
         },
         { label: 'Validación', target: 'validacion', href: '#validacion' },
-        { label: 'Galería', target: 'fotos', href: '#fotos' },
+        { label: 'Galería', target: 'fotos', href: '#fotos' }
     ]
 
     useEffect(() => {

@@ -14,6 +14,7 @@ export default function Navbar({
   setMobileMenuOpen,
   scrollToSection,
 }) {
+
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 navbar-glass ${
@@ -59,10 +60,11 @@ export default function Navbar({
             </button>
           ))}
           <button
+            
             onClick={handleStartExperience}
             className="ml-4 bg-gradient-to-r from-orange to-pink hover:from-pink hover:to-orange text-white font-bold py-2 px-4 rounded-full text-sm shadow-lg transition transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink font-sans"
           >
-            {user ? 'Mi Experiencia' : 'Iniciar sesión'}
+            {user ? 'Cerrar sesión' : 'Iniciar sesión'}
           </button>
         </nav>
 

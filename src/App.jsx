@@ -1,15 +1,6 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Landing from './pages/Landing'
-import MultiStepForm from './features/form/MultiStepForm'
+import AppRoutes from './routes/index.jsx'
 
-export default function AppRoutes() {
-    return (
-        <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/multistepform" element={<MultiStepForm />} />
-        </Routes>
-    )
+export default function App() {
+    return <AppRoutes />
 }
