@@ -7,40 +7,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Vibrant Mexican color palette
         orange: {
           DEFAULT: "#FF7D1F",
-          light: "#FF9E4D",
+          light: "#FF7D1F",
           dark: "#E05D00"
         },
         green: {
           DEFAULT: "#9CCC44",
-          light: "#C1E57D",
+          light: "#9CCC44",
           dark: "#7AAB20"
         },
         blue: {
           DEFAULT: "#4DB9CA",
-          light: "#7FD1E0",
+          light: "#4DB9CA",
           dark: "#2D8FA0"
         },
         purple: {
           DEFAULT: "#984EFD",
-          light: "#BB8AFF",
+          light: "#984EFD",
           dark: "#7A2CE8"
         },
         pink: {
           DEFAULT: "#FC478E",
-          light: "#FF7EAD",
+          light: "#FC478E",
           dark: "#E01A6B"
         },
-        // Additional colors for more vibrancy
         yellow: "#FFD700",
-        red: "#E53E3E",
+        red: "#FFD700",
         teal: "#38B2AC",
         indigo: "#5C6BC0"
       },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['"Cal Sans"', 'Outfit', 'sans-serif'],
         // Adding decorative font options
         decorative: ['"Cinzel Decorative"', 'serif'],
         handwritten: ['"Dancing Script"', 'cursive']

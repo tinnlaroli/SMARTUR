@@ -13,7 +13,12 @@ import { SignUpProvider } from './features/auth/SignUpContext.jsx'
 AOS.init()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <BrowserRouter>
+    <BrowserRouter
+        future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+        }}
+    >
         <AuthProvider>
             <SignUpProvider>
                 <React.StrictMode>

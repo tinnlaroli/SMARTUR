@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -34,7 +34,8 @@
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Cal Sans', 'Outfit', sans-serif;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--color-text);
   background: var(--color-bg);

@@ -11,7 +11,7 @@ import BenefitsSection from '../features/landing/BenefitsSection'
 import TimelineSection from '../features/landing/TimelineSection'
 import MissionVisionValuesSection from '../features/landing/MissionVisionValuesSection'
 import ValidationSection from '../features/landing/ValidationSection'
-import GallerySection from '../features/landing/GallerySection'
+import Steps from '../features/landing/Steps.jsx'
 import Footer from '../components/layout/Footer'
 import ForgotPasswordModal from '../features/auth/forgotPassword'
 
@@ -101,9 +101,9 @@ export default function Landing() {
 
             <MissionVisionValuesSection />
 
-            <ValidationSection />
+            <Steps />
 
-            <GallerySection />
+            <ValidationSection />
 
             <Footer
                 user={user}

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -14,6 +14,7 @@
     "vite": "^7.0.2"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tabler/icons-react": "^3.34.0",
     "aos": "^2.3.4",
     "clsx": "^2.1.1",
