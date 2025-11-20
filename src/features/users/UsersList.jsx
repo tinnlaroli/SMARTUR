@@ -133,7 +133,7 @@ export default function UsersList() {
 
                 <label
                     className="bg-white flex items-center border border-gray-300 py-2 px-4 rounded-lg gap-2 shadow-sm focus-within:border-purple transition-colors"
-                    for="search-bar"
+                    htmlFor="search-bar"
                 >
                     <input
                         id="search-bar"

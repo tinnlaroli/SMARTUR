@@ -3,8 +3,8 @@ import React from 'react'
 const TrashIcon = () => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="9"
-        height="9"
+        width="16"
+        height="16"
         fill="currentColor"
         viewBox="0 0 16 16"
         className="w-4 h-4"
@@ -13,19 +13,20 @@ const TrashIcon = () => (
     </svg>
 )
 
-export default function adminTable({ data, onDelete, deleting = false }) {
+// ✅ Cambiado a AdminTable (con mayúscula)
+export default function AdminTable({ data, onDelete, deleting = false }) {
     return (
         <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-gray-100 text-gray-700">
                     <tr>
-                        <th className="px-4 py-2 border-b">ID Usuario</th>
-                        <th className="px-4 py-2 border-b">Nombre</th>
-                        <th className="px-4 py-2 border-b">Email</th>
-                        <th className="px-4 py-2 border-b">
+                        <th className="px-4 py-3 border-b">ID Usuario</th>
+                        <th className="px-4 py-3 border-b">Nombre</th>
+                        <th className="px-4 py-3 border-b">Email</th>
+                        <th className="px-4 py-3 border-b">
                             Fecha de Registro
                         </th>
-                        <th className="px-4 py-2 border-b text-center">
+                        <th className="px-4 py-3 border-b text-center">
                             Acciones
                         </th>
                     </tr>
@@ -33,25 +34,24 @@ export default function adminTable({ data, onDelete, deleting = false }) {
                 <tbody>
                     {data && data.length > 0 ? (
                         data.map((u, i) => {
-                            
                             const userId =
                                 u.user_id || u.id || u.userId || u.UserID
 
                             return (
                                 <tr
                                     key={userId || i}
-                                    className="hover:bg-gray-50"
+                                    className="hover:bg-gray-50 border-b"
                                 >
-                                    <td className="px-4 py-2 border-b">
-                                        {i + 1}
+                                    <td className="px-4 py-3">
+                                        {userId || i + 1}
                                     </td>
-                                    <td className="px-4 py-2 border-b">
+                                    <td className="px-4 py-3">
                                         {u.name || u.nombre || '-'}
                                     </td>
-                                    <td className="px-4 py-2 border-b">
+                                    <td className="px-4 py-3">
                                         {u.email || u.correo || '-'}
                                     </td>
-                                    <td className="px-4 py-2 border-b">
+                                    <td className="px-4 py-3">
                                         {u.registered_at ||
                                         u.created_at ||
                                         u.fecha_registro
@@ -62,7 +62,7 @@ export default function adminTable({ data, onDelete, deleting = false }) {
                                               ).toLocaleDateString()
                                             : '-'}
                                     </td>
-                                    <td className="px-4 py-2 border-b text-center">
+                                    <td className="px-4 py-3 text-center">
                                         <button
                                             type="button"
                                             onClick={(e) => {
@@ -82,12 +82,10 @@ export default function adminTable({ data, onDelete, deleting = false }) {
                                                 }
                                             }}
                                             disabled={!userId || deleting}
-                                            className="bg-orange hover:bg-orange-600 text-white px-2 py-2 rounded-lg hover:bg-orange/90 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
+                                            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                                        >
                                             <TrashIcon />
-                                            {deleting
-                                                ? 'Eliminando...'
-                                                : 'Eliminar'}
+                                            {deleting ? 'Eliminando...' : 'Eliminar'}
                                         </button>
                                     </td>
                                 </tr>
@@ -97,9 +95,9 @@ export default function adminTable({ data, onDelete, deleting = false }) {
                         <tr>
                             <td
                                 colSpan="5"
-                                className="text-center py-4 text-gray-500 italic"
+                                className="text-center py-8 text-gray-500 italic"
                             >
-                                No hay usuarios registrados
+                                No hay administradores registrados
                             </td>
                         </tr>
                     )}

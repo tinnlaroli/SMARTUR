@@ -10,10 +10,11 @@ import {
   FaBrain,
   FaSignOutAlt,
   FaUsers,
+  FaMapMarkedAlt,
+  FaChartBar
 } from 'react-icons/fa'
 import smarturLogo from '../assets/smartur_logo.png'
 import { useAuth } from '../features/auth/AuthContext.jsx'
-import { title } from 'framer-motion/client'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -33,9 +34,7 @@ export default function Dashboard() {
   const menu = [
     { title: 'Inicio', path: '/dashboard' },
     { title: 'Gestión de usuarios', icon: <FaUsers className="text-2xl" />, path: '/dashboard/users' },
-    {title: 'Gestion de administradorres ', icon: <FaUserCog className="text-2xl" />, path: '/dashboard/admin' },
-    { title: 'Gestión de servicios', icon: <FaTools className="text-2xl" />, path: '/dashboard/services' },
-    { title: 'Evaluación IA', icon: <FaBrain className="text-2xl" />, path: '/dashboard/ai' },
+    { title: 'Gestion de administradores', icon: <FaUserCog className="text-2xl" />, path: '/dashboard/admin' },
   ]
 
   return (
@@ -75,7 +74,6 @@ export default function Dashboard() {
         </div>
       </aside>
 
-
       <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto relative bg-gray-50">
         <button className="lg:hidden absolute top-4 left-4 bg-purple text-white p-2 rounded-md z-40 shadow" onClick={() => setSidebarOpen(true)}>☰</button>
 
@@ -92,7 +90,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Aquí se renderizan las páginas hijas (UsersList, ServicesList, etc.) */}
         <Outlet />
       </main>
     </div>

@@ -18,7 +18,8 @@ export async function getAllAdmins() {
             const errorText = await res.text()
             throw new Error(errorText || 'Error al obtener administradores')
         }
-        return await res.json()
+        const data = await res.json()
+        return data.admins
     } catch (error) {
         throw error
     }
@@ -44,39 +45,38 @@ export async function createAdmin(data) {
 export const deleteAdmin = async (userId) => {
     try {
         if (!userId && userId !== 0) {
-            throw new Error('ID de usuario no válido');
+            throw new Error('ID de usuario no válido')
         }
 
-        const url = `${API_URL}/admin/delete/${userId}`;
-        
+        const url = `${API_URL}/admin/delete/${userId}`
+
         const response = await fetch(url, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-        });
+        })
 
         if (!response.ok) {
-            let errorMessage = 'Error al eliminar usuario';       
+            let errorMessage = 'Error al eliminar usuario'
             try {
-                const errorData = await response.json(); 
-                errorMessage = errorData.message || errorMessage;
-            } catch (parseError) {               
-                errorMessage = `Error ${response.status}: ${response.statusText}`;
+                const errorData = await response.json()
+                errorMessage = errorData.message || errorMessage
+            } catch (parseError) {
+                errorMessage = `Error ${response.status}: ${response.statusText}`
             }
-            
-            throw new Error(errorMessage);
+
+            throw new Error(errorMessage)
         }
 
         try {
-            const result = await response.json();
-            return result;
+            const result = await response.json()
+            return result
         } catch (jsonError) {
-            return { success: true, message: 'Usuario eliminado correctamente' };
+            return { success: true, message: 'Usuario eliminado correctamente' }
         }
-
     } catch (error) {
-        throw error;
+        throw error
     }
-};
+}

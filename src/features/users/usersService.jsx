@@ -19,7 +19,8 @@ export async function getAllUsers() {
             const errorText = await res.text()
             throw new Error(errorText || 'Error al obtener usuarios')
         }
-        return await res.json()
+        const data = await res.json()
+        return data.users
     } catch (error) {
         console.error('Error en getAllUsers:', error)
         throw error
@@ -48,12 +49,9 @@ export async function deleteUser(id) {
     try {
         const endpoint = `${API_URL}/users/delete/${id}`
 
-
-        const headers = getAuthHeaders()
-       
         const res = await fetch(endpoint, {
             method: 'DELETE',
-            headers: headers,
+            headers: getAuthHeaders(), // ← Cambia 'headers' por 'getAuthHeaders()'
         })
 
         const responseText = await res.text()
@@ -81,7 +79,6 @@ export async function deleteUser(id) {
                 'Error de conexión. Verifica que el servidor esté corriendo.'
             )
         }
-
         throw error
     }
 }
