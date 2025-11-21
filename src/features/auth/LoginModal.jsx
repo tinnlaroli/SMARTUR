@@ -406,44 +406,32 @@ const handleGoogleLogin = () => {
 };
 
 return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-    <style>{`
-        @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeInUp {
-        from { transform: translateY(30px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-slideIn { animation: slideIn 0.3s ease-out; }
-        .animate-fadeInUp { animation: fadeInUp 0.4s ease-out; }
-    `}</style>
+<div className="fixed inset-0 flex items-center justify-center z-50 p-4">
 
-    {loading && <Loader />}
-    {showSuccess && <ToastSuccess message={toastMsg} onClose={() => setShowSuccess(false)} />}
-    {showError && <ToastError message={toastMsg} onClose={() => setShowError(false)} />}
+{loading && <Loader />}
+{showSuccess && <ToastSuccess message={toastMsg} onClose={() => setShowSuccess(false)} />}
+{showError && <ToastError message={toastMsg} onClose={() => setShowError(false)} />}
 
-    {/* Fondo con blur */}
-    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose}></div>
+{/* Fondo con blur (Se mantiene estático) */}
+<div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose}></div>
 
-    {/* Div con patrón que sobresale del formulario */}
-    <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-40 bg-white rounded-2xl shadow-lg animate-fadeInUp"
-        style={{
-            width: 'calc(30vw + 10rem)',
-            height: 'calc(30vh + 16rem)',
-            minWidth: '520px',
-            minHeight: '750px',
-            backgroundImage: `url(${bgPatron})`,
-            backgroundSize: 'auto',
-            backgroundPosition: 'top left',
-            backgroundRepeat: 'repeat'
-        }}
-    ></div>
+{/* Div con patrón que sobresale del formulario */}
+<div 
+    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-40 bg-white rounded-2xl shadow-lg" // <- Animación eliminada aquí
+    style={{
+        width: 'calc(30vw + 10rem)',
+        height: 'calc(30vh + 16rem)',
+        minWidth: '520px',
+        minHeight: '750px',
+        backgroundImage: `url(${bgPatron})`,
+        backgroundSize: 'auto',
+        backgroundPosition: 'top left',
+        backgroundRepeat: 'repeat'
+    }}
+></div>
 
-    {/* Contenedor principal con fondo limitado */}
-    <div className="relative w-full max-w-md animate-fadeInUp z-50">
+    {/* Contenedor principal con fondo limitado (APLICAMOS LA ANIMACIÓN AQUÍ) */}
+    <div className="relative w-full max-w-md animate-fadeInUp z-50"> 
         {/* Fondo con patrón limitado al área del formulario */}
         <div 
         className="absolute inset-0 rounded-2xl overflow-hidden"
@@ -458,6 +446,14 @@ return (
         
         {/* Contenido del formulario */}
         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+        <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar modal de inicio de sesión"
+            className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-600 text-2xl leading-none transition-colors"
+        >
+            &times;
+        </button>
         <div className="bg-gradient-to-br from-purple-50 to-white px-8 pt-8 pb-6 text-center border-b border-gray-100">
             <img 
             src={smarturLogo} 

@@ -7,7 +7,7 @@ import MultiStepFormModal from '../components/common/MultiStepFormModal'
 import { useAuth } from '../features/auth/AuthContext.jsx'
 import Navbar from '../components/layout/Navbar.jsx'
 import HeroSection from '../features/landing/HeroSection'
-import BenefitsSection from '../features/landing/BenefitsSection'
+import CompanyValues from '../features/landing/CompanyValues.jsx'
 import TimelineSection from '../features/landing/TimelineSection'
 import MissionVisionValuesSection from '../features/landing/MissionVisionValuesSection'
 import ValidationSection from '../features/landing/ValidationSection'
@@ -95,7 +95,7 @@ export default function Landing() {
                 scrollToSection={scrollToSection}
             />
 
-            <BenefitsSection />
+            <CompanyValues />
 
             <TimelineSection />
 
