@@ -284,6 +284,7 @@
 //     )
 // }
 import React, { useState, useRef } from 'react';
+import { useAuth } from './AuthContext';
 import smarturLogo from '../../assets/smartur_logo.png';
 import bgPatron from '../../assets/bgPatron.png';
 
@@ -320,6 +321,7 @@ return (
 }
 
 export default function LoginModal({ onClose, onShowRegister }) {
+const { login, verifyCode, openForgotPasswordModal } = useAuth();
 const [email, setEmail] = useState('');
 const [password, setPassword] = useState('');
 const [rememberMe, setRememberMe] = useState(false);
@@ -340,56 +342,83 @@ const inputRefs = [
     useRef(null),
 ];
 
-const handleLogin = (e) => {
+const handleLogin = async (e) => {
     e.preventDefault();
     setTouched({ email: true, password: true });
     if (!email || !password) return;
 
-    setLoading(true);
     setShowSuccess(false);
     setShowError(false);
+    setToastMsg('');
+    setLoading(true);
 
-    setTimeout(() => {
+    const result = await login(email, password);
+
     setLoading(false);
-    setToastMsg('Código enviado al correo');
-    setShowSuccess(true);
-    setStep(2);
-    setTimeout(() => {
-        if (inputRefs[0].current) {
-        inputRefs[0].current.focus();
-        }
-    }, 100);
-    }, 1500);
+    if (result.success) {
+        setToastMsg(result.message || 'Código enviado al correo');
+        setShowSuccess(true);
+        setStep(2);
+        setEmail('');
+        setPassword('');
+        // Enfocar el primer input de código cuando cambiamos al paso 2
+        setTimeout(() => {
+            if (inputRefs[0].current) {
+                inputRefs[0].current.focus();
+            }
+        }, 100);
+    } else {
+        setToastMsg(
+            result.message || 'Credenciales incorrectas o error de red'
+        );
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+    }
 };
 
-const handleVerifyCode = (e) => {
+const handleVerifyCode = async (e) => {
     e.preventDefault();
     const codeString = code.join('');
     if (codeString.length !== 6) {
-    setToastMsg('Por favor, ingresa el código completo');
-    setShowError(true);
-    setTimeout(() => setShowError(false), 3000);
-    return;
+        setToastMsg('Por favor, ingresa el código completo');
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+        return;
     }
 
     setLoading(true);
-    setTimeout(() => {
+    setShowError(false);
+    setShowSuccess(false);
+    setToastMsg('');
+
+    const result = await verifyCode(codeString);
+
     setLoading(false);
-    setToastMsg('Login exitoso');
-    setShowSuccess(true);
-    setTimeout(() => {
-        onClose();
-    }, 2000);
-    }, 1500);
+    if (result.success) {
+        setToastMsg('Login exitoso');
+        setShowSuccess(true);
+        setTimeout(() => {
+            setShowSuccess(false);
+            onClose();
+        }, 2000);
+    } else {
+        setToastMsg(result.message || 'Código inválido');
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+    }
 };
 
 const handleCodeChange = (index, value) => {
+    // Solo permitir números
     if (value && !/^\d+$/.test(value)) return;
+
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
+
+    // Auto-enfocar siguiente input si se ingresó un dígito
     if (value && index < 5) {
-    inputRefs[index + 1].current.focus();
+        inputRefs[index + 1].current.focus();
     }
 };
 
@@ -470,8 +499,9 @@ return (
 
         <div className="px-8 py-6">
             {step === 1 ? (
-            <div className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-5">
                 <button
+                type="button"
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center gap-3 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
                 >
@@ -501,6 +531,7 @@ return (
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                    required
                 />
                 {touched.email && !email && (
                     <span className="text-xs text-red-500 mt-1 block">Campo requerido</span>
@@ -518,6 +549,7 @@ return (
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                    required
                 />
                 {touched.password && !password && (
                     <span className="text-xs text-red-500 mt-1 block">Campo requerido</span>
@@ -535,9 +567,10 @@ return (
                     <span className="text-sm text-gray-600">Recuérdame</span>
                 </label>
                 <button
+                    type="button"
                     onClick={() => {
-                        onClose()
-                        openForgotPasswordModal()
+                        onClose();
+                        openForgotPasswordModal();
                     }}
                     className="text-sm text-purple-600 hover:text-purple-700 font-medium hover:underline"
                 >
@@ -547,14 +580,15 @@ return (
                 </div>
 
                 <button
+                type="submit"
                 onClick={handleLogin}
                 className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                 >
                 Ingresar
                 </button>
-            </div>
+            </form>
             ) : (
-            <div className="space-y-6">
+            <form onSubmit={handleVerifyCode} className="space-y-6">
                 <div className="text-center">
                 <p className="text-sm text-gray-600 mb-6">
                     Ingresa el código de verificación enviado a tu correo
@@ -578,6 +612,7 @@ return (
 
                 <div className="flex gap-3">
                 <button
+                    type="button"
                     onClick={() => {
                     setStep(1);
                     setCode(['', '', '', '', '', '']);
@@ -587,13 +622,13 @@ return (
                     Cancelar
                 </button>
                 <button
-                    onClick={handleVerifyCode}
+                    type="submit"
                     className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
                 >
                     Verificar
                 </button>
                 </div>
-            </div>
+            </form>
             )}
 
             {step === 1 && (
