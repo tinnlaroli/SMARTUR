@@ -536,14 +536,14 @@ return (
                 </label>
                 <button
                     onClick={() => {
-                    setToastMsg('Recuperación próximamente');
-                    setShowSuccess(true);
-                    setTimeout(() => setShowSuccess(false), 2000);
+                        onClose()
+                        openForgotPasswordModal()
                     }}
                     className="text-sm text-purple-600 hover:text-purple-700 font-medium hover:underline"
                 >
                     ¿Olvidaste tu contraseña?
                 </button>
+
                 </div>
 
                 <button
