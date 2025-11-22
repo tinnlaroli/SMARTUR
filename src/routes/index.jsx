@@ -5,10 +5,9 @@ import Landing from '../pages/Landing'
 import NotFound from '../pages/NotFound'
 
 import Stats from '../features/dash/stats'
-import AdminList from '../features/admin/AdminList'
-import AdminCreateModal from '../features/admin/AdminCreate'
 import UsersPage from '../pages/UsersPage'
-
+import AdminPage from '../pages/AdminsPage'
+//            <Route path="*" element={<NotFound />} />
 export default function AppRoutes() {
     return (
         <Routes>
@@ -16,9 +15,9 @@ export default function AppRoutes() {
 
             <Route path="/dashboard" element={<Dashboard />}>
                 <Route index element={<Stats />} />
-                <Route path="admin" element={<AdminList />} />
-                <Route path="admin/new" element={<AdminCreateModal />} />
+                <Route path="admins" element={<AdminPage />} />
                 <Route path="users" element={<UsersPage />} />
+                <Route path="*" element={<NotFound />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

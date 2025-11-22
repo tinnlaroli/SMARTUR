@@ -13,90 +13,47 @@ const TrashIcon = () => (
     </svg>
 )
 
-// ✅ Cambiado a AdminTable (con mayúscula)
-export default function AdminTable({ data, onDelete, deleting = false }) {
+export const AdminTable = ({ admins, onDelete, deleting = false }) => {
     return (
         <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="min-w-full text-sm text-left border-collapse">
                 <thead className="bg-gray-100 text-gray-700">
                     <tr>
-                        <th className="px-4 py-3 border-b">ID Usuario</th>
+                        <th className="px-4 py-3 border-b">ID</th>
                         <th className="px-4 py-3 border-b">Nombre</th>
                         <th className="px-4 py-3 border-b">Email</th>
-                        <th className="px-4 py-3 border-b">
-                            Fecha de Registro
-                        </th>
-                        <th className="px-4 py-3 border-b text-center">
-                            Acciones
-                        </th>
+                        <th className="px-4 py-3 border-b">Rol</th>
+                        <th className="px-4 py-3 border-b">Registro</th>
+                        <th className="px-4 py-3 border-b text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {data && data.length > 0 ? (
-                        data.map((u, i) => {
-                            const userId =
-                                u.user_id || u.id || u.userId || u.UserID
 
-                            return (
-                                <tr
-                                    key={userId || i}
-                                    className="hover:bg-gray-50 border-b"
-                                >
-                                    <td className="px-4 py-3">
-                                        {userId || i + 1}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {u.name || u.nombre || '-'}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {u.email || u.correo || '-'}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {u.registered_at ||
-                                        u.created_at ||
-                                        u.fecha_registro
-                                            ? new Date(
-                                                  u.registered_at ||
-                                                      u.created_at ||
-                                                      u.fecha_registro
-                                              ).toLocaleDateString()
-                                            : '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                e.stopPropagation()
-                                                if (
-                                                    onDelete &&
-                                                    userId &&
-                                                    !deleting
-                                                ) {
-                                                    const userName =
-                                                        u.name ||
-                                                        u.nombre ||
-                                                        u.email ||
-                                                        'el usuario'
-                                                    onDelete(userId, userName)
-                                                }
-                                            }}
-                                            disabled={!userId || deleting}
-                                            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-xs"
-                                        >
-                                            <TrashIcon />
-                                            {deleting ? 'Eliminando...' : 'Eliminar'}
-                                        </button>
-                                    </td>
-                                </tr>
-                            )
-                        })
+                <tbody>
+                    {admins && admins.length > 0 ? (
+                        admins.map((u, i) => (
+                            <tr key={u.id || i} className="hover:bg-gray-50 border-b">
+                                <td className="px-4 py-3">{u.id}</td>
+                                <td className="px-4 py-3">{u.name}</td>
+                                <td className="px-4 py-3">{u.email}</td>
+                                <td className="px-4 py-3">{u.role_id}</td>
+                                <td className="px-4 py-3">
+                                    {new Date(u.registered_at).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                    <button
+                                        onClick={() => onDelete(u.id)}
+                                        disabled={!u.id || deleting}
+                                        className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                                    >
+                                        <TrashIcon />
+                                        {deleting ? 'Eliminando...' : 'Eliminar'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
                     ) : (
                         <tr>
-                            <td
-                                colSpan="5"
-                                className="text-center py-8 text-gray-500 italic"
-                            >
+                            <td colSpan="6" className="text-center py-8 text-gray-500 italic">
                                 No hay administradores registrados
                             </td>
                         </tr>

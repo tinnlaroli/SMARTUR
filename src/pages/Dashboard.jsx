@@ -43,7 +43,7 @@ export default function Dashboard() {
         {
             title: 'Gestion de administradores',
             icon: <FaUserCog className="text-2xl" />,
-            path: '/dashboard/admin',
+            path: '/dashboard/admins',
         },
     ]
 
