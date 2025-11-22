@@ -10,7 +10,14 @@ export default function ToastError({ message, onClose, duration = 3000 }) {
   if (!message) return null;
 
   return (
-    <div className="fixed top-6 right-6 z-[9999] px-4 py-3 border border-red-700 bg-red-500 text-white rounded shadow-lg">
+    <div
+      className="fixed top-6 right-6 z-[9999] px-4 py-3 rounded shadow-lg"
+      style={{
+        backgroundColor: "#e60000",  // rojo sólido
+        color: "#fff",
+        border: "1px solid darkred",
+      }}
+    >
       ❌ {message}
     </div>
   );
