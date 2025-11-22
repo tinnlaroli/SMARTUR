@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
     // Paso 1: login con email y contraseña
     const handleLoginStep1 = async (email, password) => {
         try {
-            const response = await fetch('http://localhost:3002/api/login', {
+            const response = await fetch('http://localhost:3000/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
     const handleVerifyCode = async (verificationCode) => {
         try {
             const response = await fetch(
-                'http://localhost:3002/api/verify-2fa',
+                'http://localhost:3000/api/verify-2fa',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

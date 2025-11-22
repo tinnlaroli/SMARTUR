@@ -38,7 +38,7 @@ export default function ForgotPasswordModal({ onClose }) {
 
         try {
             const res = await fetch(
-                'http://localhost:3002/api/users/forgot-password',
+                'http://localhost:3000/api/users/forgot-password',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -91,7 +91,7 @@ export default function ForgotPasswordModal({ onClose }) {
 
         try {
             const res = await fetch(
-                'http://localhost:3002/api/users/reset-password',
+                'http://localhost:3000/api/users/reset-password',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

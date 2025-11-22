@@ -11,7 +11,7 @@ export function SignUpProvider({ children }) {
     setSuccess('')
     try {
       
-      const response = await fetch('http://localhost:3002/api/users/register', {
+      const response = await fetch('http://localhost:3000/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
