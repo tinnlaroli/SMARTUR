@@ -237,7 +237,10 @@ export function AuthProvider({ children }) {
                 verifyCode: handleVerifyCode,
                 logout,
                 showMultiStepForm: () => {
-                    if (user?.role === 'user') setShowFormModal(true)
+                    // Si hay un usuario logueado, abrir el modal del formulario
+                    if (user) {
+                        setShowFormModal(true)
+                    }
                 },
                 hideMultiStepForm: () => setShowFormModal(false),
 

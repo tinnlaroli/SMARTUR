@@ -1,3 +1,4 @@
+// src/features/form/Step4Condiciones.jsx
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
@@ -15,20 +16,85 @@ import {
   FaClock
 } from 'react-icons/fa'
 
+/**
+ * IMPORTANTE: ajusta las rutas de los imports si tu AuthContext o hooks están en otra ubicación.
+ * Asumo:
+ *  - AuthContext en: src/features/auth/AuthContext.jsx
+ *  - hook useRecommendations en: src/hooks/useRecommendations.js
+ *  - componente RecommendationsResultModal en: src/components/common/RecommendationsResultModal.jsx
+ */
+import { useAuth } from '../auth/AuthContext.jsx'
+import { useRecommendations } from '../../hooks/useRecommendations.js'
+import RecommendationsResultModal from '../../components/common/RecommendationsResultModal.jsx'
+
+// Ruta local del manual (archivo que subiste). El backend expone /manual; también la dejo como referencia local.
+const MANUAL_LOCAL_PATH = "/mnt/data/AISE-29-AISE210101-1.pdf"
+
 const Step4Condiciones = ({ data, onBack, onChange, onClose }) => {
+  const { user } = useAuth() // useAuth proporciona user y otras funciones del contexto
+  const token = localStorage.getItem('token') // Obtener token del localStorage
   const [accesibilidad, setAccesibilidad] = useState(data.accesibilidad || 'no')
   const [detalleAcc, setDetalleAcc] = useState(data.detalleAcc || '')
   const [visitado, setVisitado] = useState(data.visitado || 'no')
   const [enviado, setEnviado] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const [apiError, setApiError] = useState(null)
   const navigate = useNavigate()
 
+  // hook que realiza la petición autenticada
+  const { loading, error, data: recData, getRecommendations } = useRecommendations()
+
   const handleFinish = () => {
+    // guardamos los campos locales en el formData compartido (parent)
     onChange({
       accesibilidad,
       detalleAcc: accesibilidad === 'si' ? detalleAcc : '',
       visitado,
     })
+    // marcamos enviado: mostramos spinner y lanzamos la petición
     setEnviado(true)
+    setApiError(null)
+    triggerRecommendations()
+  }
+
+  const triggerRecommendations = async () => {
+    // Validación seguridad: debe existir usuario logueado
+    if (!user || !user.id) {
+      alert("Debes iniciar sesión para obtener recomendaciones.")
+      setEnviado(false)
+      return
+    }
+
+    try {
+      // Puedes leer alpha/candidates/k_cf del objeto data si los tienes en el form
+      const alpha = data.alpha ?? 0.6
+      const candidates = data.candidates ?? 200
+      const k_cf = data.k_cf ?? 20
+
+      await getRecommendations({
+        userId: user.id,
+        alpha,
+        candidates,
+        k_cf,
+        token // se pasa el token al hook para que agregue Authorization
+      })
+
+      // Al terminar con éxito, mostramos modal de resultados
+      setShowResults(true)
+    } catch (err) {
+      console.error("Error al obtener recomendaciones:", err)
+      setApiError(err?.message || String(err))
+      // manejo específico para auth expirado
+      if (err?.status === 401) {
+        alert("Tu sesión expiró. Por favor inicia sesión de nuevo.")
+        // redirigir al login (ajusta ruta de login si la tienes distinta)
+        navigate("/login")
+      } else {
+        alert(err?.message || "Error al generar recomendaciones. Intenta nuevamente.")
+      }
+    } finally {
+      setEnviado(false)
+    }
   }
 
   const handleFinalizar = () => {
@@ -41,132 +107,54 @@ const Step4Condiciones = ({ data, onBack, onChange, onClose }) => {
     }
   }
 
-  if (enviado) {
-    // Simulación de lugar turístico de Orizaba basado en las preferencias
-    const lugaresOrizaba = {
-      naturaleza: {
-        nombre: 'Parque Nacional Pico de Orizaba',
-        descripcion: 'El volcán más alto de México con senderos naturales y vistas espectaculares',
-        icon: FaMountain,
-        precio: 'Gratis',
-        duracion: '4-6 horas',
-        color: 'green'
-      },
-      cultural: {
-        nombre: 'Palacio de Hierro',
-        descripcion: 'Arquitectura única de Gustave Eiffel, símbolo de la ciudad',
-        icon: FaLandmark,
-        precio: '$50 MXN',
-        duracion: '2-3 horas',
-        color: 'purple'
-      },
-      gastronomico: {
-        nombre: 'Mercado Municipal de Orizaba',
-        descripcion: 'Sabores tradicionales y platillos típicos de la región',
-        icon: FaUtensils,
-        precio: '$100-200 MXN',
-        duracion: '3-4 horas',
-        color: 'orange'
-      },
-      aventura: {
-        nombre: 'Teleférico de Orizaba',
-        descripcion: 'Vistas panorámicas de la ciudad desde las alturas',
-        icon: FaTrain,
-        precio: '$80 MXN',
-        duracion: '1-2 horas',
-        color: 'blue'
-      },
-      rural: {
-        nombre: 'Finca Santa Gertrudis',
-        descripcion: 'Experiencia rural con café y naturaleza',
-        icon: FaHome,
-        precio: '$150 MXN',
-        duracion: '5-6 horas',
-        color: 'brown'
-      },
-    }
+  const openManual = () => {
+    // opción 1: abrir endpoint de backend que devuelve la ruta/archivo (recomendado)
+    // window.open(`${process.env.REACT_APP_API_URL}/manual`, '_blank')
+    // opción 2: abrir la ruta local (solo en entorno dev donde exista)
+    window.open(MANUAL_LOCAL_PATH, "_blank")
+  }
 
-    // Seleccionar lugar basado en preferencias
-    const tiposPreferidos = data.tiposTurismo || []
-    let lugarSeleccionado = lugaresOrizaba.cultural // default
-
-    if (tiposPreferidos.includes('naturaleza')) {
-      lugarSeleccionado = lugaresOrizaba.naturaleza
-    } else if (tiposPreferidos.includes('gastronomico')) {
-      lugarSeleccionado = lugaresOrizaba.gastronomico
-    } else if (tiposPreferidos.includes('aventura')) {
-      lugarSeleccionado = lugaresOrizaba.aventura
-    } else if (tiposPreferidos.includes('rural')) {
-      lugarSeleccionado = lugaresOrizaba.rural
-    }
-
-    const IconComponent = lugarSeleccionado.icon
-
+  // --- MODO RESULTADOS: mostrar recomendaciones proveniente de la API ---
+  if (showResults && recData && recData.recommendations) {
     return (
-      <div className="space-y-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green to-blue rounded-full mb-4">
-            <FaCheckCircle className="text-2xl text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Tu destino perfecto en Orizaba!</h2>
-          <p className="text-gray-600">Basándonos en tus preferencias, te recomendamos este increíble lugar</p>
-        </div>
+      <RecommendationsResultModal
+        recommendations={recData.recommendations}
+        userId={recData.user_id}
+        onClose={() => {
+          setShowResults(false)
+          // opcional: cerrar modal principal si quieres
+          handleFinalizar()
+        }}
+      />
+    )
+  }
 
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl border-2 border-orange/20 p-8 shadow-lg">
-          <div className="text-center space-y-6">
-            <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${lugarSeleccionado.color}-400 to-${lugarSeleccionado.color}-600 rounded-full`}>
-              <IconComponent className="text-3xl text-white" />
-            </div>
-            
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                {lugarSeleccionado.nombre}
-              </h3>
-              <p className="text-gray-600 leading-relaxed max-w-md mx-auto">
-                {lugarSeleccionado.descripcion}
-              </p>
-            </div>
-
-            <div className="flex justify-center space-x-6">
-              <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold flex items-center space-x-2">
-                <FaMoneyBillWave className="w-5 h-5" />
-                <span>{lugarSeleccionado.precio}</span>
-              </div>
-              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold flex items-center space-x-2">
-                <FaClock className="w-5 h-5" />
-                <span>{lugarSeleccionado.duracion}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center space-y-4">
-          <div className="flex justify-center space-x-1">
-            {[...Array(5)].map((_, i) => (
-              <FaStar key={i} className="text-yellow-400 text-xl" />
-            ))}
-          </div>
-          <p className="text-green-600 font-semibold text-lg">
-            ¡Gracias por completar el formulario!
-          </p>
-          <p className="text-gray-500">
-            Tu experiencia personalizada está lista. ¡Disfruta de Veracruz!
-          </p>
-          
-          <button 
-            onClick={handleFinalizar}
-            className="px-8 py-3 bg-gradient-to-r from-purple to-blue text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
+  // --- Estado enviado: mostrar spinner / feedback mientras carga ---
+  if (enviado || loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mb-6" />
+        {/* <h3 className="text-xl font-semibold">Generando tu experiencia personalizada...</h3> */}
+        <h3 className="text-xl font-semibold">Pensando en tu experiencia personalizada...</h3>
+        <p className="text-sm text-gray-500 mt-2">Esto puede tardar unos segundos.</p>
+        <div className="mt-6">
+          <button
+            onClick={() => {
+              // permitir cancelar la petición (si implementas cancel en hook)
+              // cancel() // si expones cancel desde useRecommendations
+              setEnviado(false)
+            }}
+            className="px-4 py-2 rounded bg-gray-200"
           >
-            <span className="flex items-center space-x-2">
-              <span>Finalizar</span>
-              <FaCheckCircle className="w-5 h-5" />
-            </span>
+            Cancelar
           </button>
         </div>
+        {apiError && <div className="mt-4 text-red-500">{apiError}</div>}
       </div>
     )
   }
 
+  // --- FORMULARIO NORMAL (antes de enviar) ---
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
@@ -332,16 +320,29 @@ const Step4Condiciones = ({ data, onBack, onChange, onClose }) => {
           </span>
         </button>
         
-        <button
-          onClick={handleFinish}
-          className="px-8 py-3 bg-gradient-to-r from-purple to-pink text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
-        >
-          <span className="flex items-center space-x-2">
-            <span>Finalizar</span>
-            <FaCheckCircle className="w-5 h-5" />
-          </span>
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={openManual}
+            className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+            title="Ver manual"
+          >
+            Ver manual
+          </button>
+
+          <button
+            onClick={handleFinish}
+            className="px-8 py-3 bg-gradient-to-r from-purple to-pink text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
+          >
+            <span className="flex items-center space-x-2">
+              <span>Finalizar</span>
+              <FaCheckCircle className="w-5 h-5" />
+            </span>
+          </button>
+        </div>
       </div>
+
+      {/* Error si la API devolvió algo */}
+      {apiError && <div className="mt-4 text-red-500 font-medium">{apiError}</div>}
     </div>
   )
 }

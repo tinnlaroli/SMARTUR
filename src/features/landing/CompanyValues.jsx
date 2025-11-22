@@ -111,30 +111,28 @@ const CompanyValuesGrid = () => {
 
                     {/* Contenedor con valores moviéndose de derecha a izquierda */}
                     <div className="relative w-full h-[400px] overflow-hidden">
-                        {values.map((value, index) => {
-                            // Posiciones verticales variadas
-                            const topPositions = [
-                                '8%',
-                                '15%',
-                                '25%',
-                                '35%',
-                                '45%',
-                                '55%',
-                                '65%',
-                                '75%',
-                                '85%',
-                                '20%',
-                                '30%',
-                                '40%',
-                                '50%',
-                                '60%',
-                                '70%',
-                                '80%',
-                            ]
-                            const top =
-                                topPositions[index % topPositions.length]
-                            const delay = index * 0.5
-                            const duration = 15 + (index % 5) * 2 // Duración variada entre 15-25 segundos
+                        {/* Crear múltiples instancias de valores para más densidad */}
+                        {[...values, ...values.slice(0, 8)].map((value, index) => {
+                            // Mejor distribución de posiciones verticales para evitar colisiones
+                            // Usar una fórmula que distribuya mejor en el espacio disponible
+                            const totalItems = values.length + 8
+                            const spacing = 85 / totalItems // Espaciado base
+                            const basePosition = 5 + (index * spacing)
+                            
+                            // Agregar variación aleatoria pero controlada para evitar colisiones
+                            const variation = ((index * 13.7) % 7) - 3 // Variación entre -3 y 3
+                            const randomTop = Math.max(5, Math.min(90, basePosition + variation))
+                            const top = `${randomTop}%`
+                            
+                            // Delay más variado y distribuido
+                            const baseDelay = index * 1.2
+                            const delayVariation = ((index * 11.3) % 5) * 0.6
+                            const delay = baseDelay + delayVariation
+                            
+                            // Duración variada: entre 18-25 segundos
+                            const baseDuration = 18
+                            const durationVariation = ((index * 7.1) % 4) * 1.8
+                            const duration = baseDuration + durationVariation
 
                             return (
                                 <div
@@ -153,84 +151,49 @@ const CompanyValuesGrid = () => {
                                 </div>
                             )
                         })}
-
-                        {/* Valores adicionales para más densidad */}
-                        {values.slice(0, 8).map((value, index) => {
-                            const topPositions = [
-                                '12%',
-                                '22%',
-                                '32%',
-                                '42%',
-                                '52%',
-                                '62%',
-                                '72%',
-                                '82%',
-                            ]
-                            const top =
-                                topPositions[index % topPositions.length]
-                            const delay = (index + values.length) * 0.4
-                            const duration = 18 + (index % 4) * 2
-
-                            return (
-                                <div
-                                    key={`extra-value-${index}`}
-                                    className={`absolute px-4 py-2 rounded-full shadow-md text-sm font-medium ${getColorClass(
-                                        value.color
-                                    )} value-slide`}
-                                    style={{
-                                        top: top,
-                                        left: '110%',
-                                        animationDelay: `${delay}s`,
-                                        animationDuration: `${duration}s`,
-                                    }}
-                                >
-                                    {value.name}
-                                </div>
-                            )
-                        })}
                     </div>
 
                     <style>{`
             @keyframes slideLeft {
-              0% {
+            0% {
                 left: 110%;
                 opacity: 0;
                 transform: translateY(-50%) scale(0.8);
-              }
-              8% {
+            }
+            10% {
                 opacity: 1;
                 transform: translateY(-50%) scale(1);
-              }
-              85% {
+            }
+            85% {
                 opacity: 1;
                 transform: translateY(-50%) scale(1);
-              }
-              92% {
+            }
+            95% {
                 opacity: 0.5;
                 transform: translateY(-50%) scale(0.95);
-              }
-              100% {
+            }
+            100% {
                 left: -10%;
                 opacity: 0;
                 transform: translateY(-50%) scale(0.8);
-              }
+            }
             }
             
             .value-slide {
-              animation: slideLeft linear infinite;
-              transform: translateY(-50%);
-              will-change: left, opacity, transform;
-              white-space: nowrap;
+            animation: slideLeft linear infinite;
+            transform: translateY(-50%);
+            will-change: left, opacity, transform;
+            white-space: nowrap;
             }
             
             .value-slide:hover {
-              animation-play-state: paused;
-              transform: translateY(-50%) scale(1.2) !important;
-              opacity: 1 !important;
-              z-index: 10;
-              box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+            animation-play-state: paused;
+            transform: translateY(-50%) scale(1.2) !important;
+            opacity: 1 !important;
+            z-index: 10;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
             }
-          `}</style>
+        `}</style>
                 </div>
             </div>
         </section>

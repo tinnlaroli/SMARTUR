@@ -21,7 +21,7 @@ export default function Landing() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const { showForgotPasswordModal, closeForgotPasswordModal } = useAuth()
-    const { user, showFormModal, showMultiStepForm, hideMultiStepForm } =
+    const { user, showFormModal, showMultiStepForm, hideMultiStepForm, logout } =
         useAuth()
 
     // Navigation links
@@ -87,6 +87,8 @@ export default function Landing() {
                 mobileMenuOpen={mobileMenuOpen}
                 setMobileMenuOpen={setMobileMenuOpen}
                 scrollToSection={scrollToSection}
+                logout={logout}
+                showLoginModal={showLoginModal}
             />
 
             <HeroSection
@@ -97,9 +99,9 @@ export default function Landing() {
 
             <CompanyValues />
 
-            <TimelineSection />
+            {/* <TimelineSection /> */}
 
-            <MissionVisionValuesSection />
+            {/* <MissionVisionValuesSection /> */}
 
             <Steps />
 

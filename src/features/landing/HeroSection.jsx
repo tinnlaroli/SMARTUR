@@ -42,10 +42,13 @@ export default function HeroSection({ handleStartExperience, scrollToSection }) 
 
             {/* Pregunta destacada */}
             <div className="flex justify-center">
-              <div className="inline-flex items-center gap-3 bg-pink text-white rounded-full px-8 py-4 shadow-lg text-xl font-semibold">
+              <button
+                onClick={handleStartExperience}
+                className="inline-flex items-center gap-3 bg-pink hover:bg-pink-dark text-white rounded-full px-8 py-4 shadow-lg text-xl font-semibold transition-all duration-200 transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink cursor-pointer"
+              >
                 <span>¿A dónde vamos?</span>
                 <FaMapMarkerAlt className="text-2xl" />
-              </div>
+              </button>
             </div>
 
             {/* Características con iconos - Mejor distribución */}

@@ -283,7 +283,7 @@
 //         </div>
 //     )
 // }
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import smarturLogo from '../../assets/smartur_logo.png';
 import bgPatron from '../../assets/bgPatron.png';
@@ -333,6 +333,15 @@ const [toastMsg, setToastMsg] = useState('');
 const [touched, setTouched] = useState({ email: false, password: false });
 const [loading, setLoading] = useState(false);
 
+// Cargar email guardado al montar el componente
+useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+    }
+}, []);
+
 const inputRefs = [
     useRef(null),
     useRef(null),
@@ -356,10 +365,20 @@ const handleLogin = async (e) => {
 
     setLoading(false);
     if (result.success) {
+        // Guardar email si "Recuérdame" está marcado
+        if (rememberMe) {
+            localStorage.setItem('rememberedEmail', email);
+        } else {
+            localStorage.removeItem('rememberedEmail');
+        }
+
         setToastMsg(result.message || 'Código enviado al correo');
         setShowSuccess(true);
         setStep(2);
-        setEmail('');
+        // No limpiar el email si rememberMe está marcado
+        if (!rememberMe) {
+            setEmail('');
+        }
         setPassword('');
         // Enfocar el primer input de código cuando cambiamos al paso 2
         setTimeout(() => {
@@ -561,7 +580,14 @@ return (
                     <input
                     type="checkbox"
                     checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
+                    onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setRememberMe(isChecked);
+                        // Si se desmarca, eliminar el email guardado
+                        if (!isChecked) {
+                            localStorage.removeItem('rememberedEmail');
+                        }
+                    }}
                     className="w-4 h-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500"
                     />
                     <span className="text-sm text-gray-600">Recuérdame</span>

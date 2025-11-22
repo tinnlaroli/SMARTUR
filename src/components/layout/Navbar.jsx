@@ -12,6 +12,7 @@ export default function Navbar({
   mobileMenuOpen,
   setMobileMenuOpen,
   scrollToSection,
+  logout,
 }) {
 
   return (
@@ -53,24 +54,46 @@ export default function Navbar({
 
         {/* Botones de acción desktop */}
         <div className="hidden md:flex items-center space-x-3">
-          <button
-            onClick={showLoginModal}
-            className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink shadow-md"
-          >
-            Visita
-          </button>
-          <button
-            onClick={handleStartExperience}
-            className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
-          >
-            Inicia sesión
-          </button>
+          {user ? (
+            <>
+              <span className="text-gray-700 font-medium text-sm">
+                Bienvenido: <span className="text-pink font-semibold">{user.name || user.email}</span>
+              </span>
+              <button
+                onClick={handleStartExperience}
+                className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink shadow-md"
+              >
+                Visita
+              </button>
+              <button
+                onClick={logout}
+                className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+              >
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleStartExperience}
+                className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink shadow-md"
+              >
+                Visita
+              </button>
+              <button
+                onClick={handleStartExperience}
+                className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-6 rounded-full text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+              >
+                Inicia sesión
+              </button>
+            </>
+          )}
         </div>
 
         {/* Menú móvil - botón hamburguesa */}
         <div className="md:hidden flex items-center space-x-2">
           <button
-            onClick={showLoginModal}
+            onClick={handleStartExperience}
             className="bg-pink hover:bg-pink-dark text-white p-2 rounded-full shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
             aria-label="Visita"
           >
@@ -145,24 +168,52 @@ export default function Navbar({
               </button>
             ))}
             <div className="flex flex-col space-y-2 pt-2">
-              <button
-                onClick={() => {
-                  showLoginModal()
-                  setMobileMenuOpen(false)
-                }}
-                className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-4 rounded-full text-sm shadow transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
-              >
-                Visita
-              </button>
-              <button
-                onClick={() => {
-                  handleStartExperience()
-                  setMobileMenuOpen(false)
-                }}
-                className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-4 rounded-full text-sm transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
-              >
-                Inicia sesión
-              </button>
+              {user ? (
+                <>
+                  <div className="text-gray-700 font-medium text-sm py-2 px-4 text-center border-b border-gray-100">
+                    Bienvenido: <span className="text-pink font-semibold">{user.name || user.email}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleStartExperience()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-4 rounded-full text-sm shadow transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+                  >
+                    Visita
+                  </button>
+                  <button
+                    onClick={() => {
+                      logout()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-4 rounded-full text-sm transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+                  >
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      handleStartExperience()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="bg-pink hover:bg-pink-dark text-white font-medium py-2 px-4 rounded-full text-sm shadow transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+                  >
+                    Visita
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleStartExperience()
+                      setMobileMenuOpen(false)
+                    }}
+                    className="bg-white hover:bg-gray-50 text-pink border-2 border-pink font-medium py-2 px-4 rounded-full text-sm transition w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink"
+                  >
+                    Inicia sesión
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
