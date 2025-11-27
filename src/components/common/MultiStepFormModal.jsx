@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { FaTimes } from 'react-icons/fa'
 
 import Step1PerfilBasico from '../../features/form/Step1PerfilBasico'
 import Step2Preferencias from '../../features/form/Step2Preferencias'
@@ -38,10 +39,10 @@ export default function MultiStepFormModal({ onClose }) {
       <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto relative animate-fadeInUp">
         {/* Botón cerrar */}
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl z-10"
           onClick={handleClose}
+          className="absolute top-4 right-4 bg-white text-gray-600 hover:text-red-500 transition-all duration-300 shadow-md hover:shadow-lg rounded-full w-12 h-12 flex items-center justify-center border-0 hover:bg-red-50 hover:scale-105 z-10"
         >
-          &times;
+          <FaTimes className="text-xl" />
         </button>
 
         <div className="p-6 sm:p-8">

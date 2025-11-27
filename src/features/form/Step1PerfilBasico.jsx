@@ -1,3 +1,4 @@
+// src/features/form/Step1PerfilBasico.jsx
 import React, { useState } from 'react'
 import { 
   FaUser, FaCalendarAlt, FaMoneyBillWave, FaClock, 
@@ -20,16 +21,63 @@ const dias = [
   { label: 'Más de 10', value: '10+', icon: FaMapMarkedAlt },
 ]
 
-const Step1PerfilBasico = ({ data, onNext, onChange }) => {
-  const [edad, setEdad] = useState(data.edad || '')
-  const [presupuesto, setPresupuesto] = useState(data.presupuesto || 200)
-  const [diasEstancia, setDiasEstancia] = useState(data.diasEstancia || '')
+/**
+ * Helper mapping functions
+ */
+const edadRangeToApprox = (range) => {
+  if (!range) return null
+  if (range === '60+') return 65
+  const [a,b] = range.split('-').map(Number)
+  if (Number.isNaN(a) || Number.isNaN(b)) return null
+  return Math.round((a + b) / 2)
+}
+
+const diasRangeToDays = (range) => {
+  if (!range) return null
+  if (range === '10+') return 14
+  const [a,b] = range.split('-').map(Number)
+  if (Number.isNaN(a) || Number.isNaN(b)) return null
+  return Math.round((a + b) / 2)
+}
+
+/**
+ * Map numeric daily budget to bucket (low/med/high).
+ * Ajusta umbrales según tus datos reales.
+ */
+const presupuestoToBucket = (mxnPerDay) => {
+  if (mxnPerDay <= 500) return 'low'
+  if (mxnPerDay <= 1500) return 'med'
+  return 'high'
+}
+
+const Step1PerfilBasico = ({ data = {}, onNext, onChange }) => {
+  // estados locales (UI)
+  const [edadRange, setEdadRange] = useState(data.edad_range || data.edad || '')
+  const [presupuesto, setPresupuesto] = useState(data.presupuesto_daily ?? 200)
+  const [diasEstancia, setDiasEstancia] = useState(data.duracion_dias_range || data.diasEstancia || '')
 
   const handleNext = () => {
-    if (edad && presupuesto && diasEstancia) {
-      onChange({ edad, presupuesto, diasEstancia })
-      onNext()
+    // Validaciones mínimas
+    if (!edadRange || !presupuesto || !diasEstancia) return
+
+    // Mapeo a los campos que realmente usará el modelo
+    const edad_aprox = edadRangeToApprox(edadRange)
+    const duracion_dias = diasRangeToDays(diasEstancia)
+    const presupuesto_bucket = presupuestoToBucket(presupuesto)
+
+    const payload = {
+      // Valores usados por el modelo (context)
+      edad: edad_aprox,                    // int (punto medio del rango)
+      edad_range: edadRange,               // string (por si quieren one-hot)
+      presupuesto_daily: Number(presupuesto),
+      presupuesto_bucket,                  // 'low'|'med'|'high'
+      duracion_dias,                       // int
+      duracion_dias_range: diasEstancia,   // string (original)
     }
+
+    // onChange debe fusionar estos datos en el formData padre
+    onChange(payload)
+    onNext()
   }
 
   const formatCurrency = (amount) => {
@@ -66,9 +114,9 @@ const Step1PerfilBasico = ({ data, onNext, onChange }) => {
               <button
                 key={e.value}
                 type="button"
-                onClick={() => setEdad(e.value)}
+                onClick={() => setEdadRange(e.value)}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
-                  edad === e.value
+                  edadRange === e.value
                     ? 'border-purple bg-purple/5 shadow-lg scale-105'
                     : 'border-gray-200 bg-white hover:border-orange hover:bg-orange/5 hover:shadow-md'
                 }`}
@@ -76,12 +124,12 @@ const Step1PerfilBasico = ({ data, onNext, onChange }) => {
                 <div className="text-center space-y-2">
                   <div className="text-2xl"><IconComponent /></div>
                   <div className={`font-medium ${
-                    edad === e.value ? 'text-purple' : 'text-gray-700'
+                    edadRange === e.value ? 'text-purple' : 'text-gray-700'
                   }`}>
                     {e.label}
                   </div>
                 </div>
-                {edad === e.value && (
+                {edadRange === e.value && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -177,9 +225,9 @@ const Step1PerfilBasico = ({ data, onNext, onChange }) => {
       <div className="flex justify-end pt-6">
         <button
           onClick={handleNext}
-          disabled={!(edad && presupuesto && diasEstancia)}
+          disabled={!(edadRange && presupuesto && diasEstancia)}
           className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
-            edad && presupuesto && diasEstancia
+            edadRange && presupuesto && diasEstancia
               ? 'bg-gradient-to-r from-purple to-blue text-white hover:shadow-lg hover:scale-105'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
@@ -196,4 +244,3 @@ const Step1PerfilBasico = ({ data, onNext, onChange }) => {
   )
 }
 export default Step1PerfilBasico
-

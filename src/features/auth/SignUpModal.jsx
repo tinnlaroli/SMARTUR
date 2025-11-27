@@ -173,6 +173,7 @@
 // }
 
 import React, { useState } from 'react'
+import { FaTimes } from 'react-icons/fa'
 import { useSignUp } from './SignUpContext'
 import ToastSuccess from '../../components/common/ToastSuccess'
 import ToastError from '../../components/common/ToastError'
@@ -296,12 +297,11 @@ return (
     {/* Contenido del formulario */}
     <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
         <button
-            type="button"
             onClick={onClose}
             aria-label="Cerrar modal de registro"
-            className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-600 text-2xl leading-none transition-colors"
+            className="absolute top-4 right-4 bg-white text-gray-600 hover:text-red-500 transition-all duration-300 shadow-md hover:shadow-lg rounded-full w-12 h-12 flex items-center justify-center border-0 hover:bg-red-50 hover:scale-105 z-10"
         >
-            &times;
+            <FaTimes className="text-xl" />
         </button>
         <div className="bg-gradient-to-br from-purple-50 to-white px-8 pt-8 pb-6 text-center border-b border-gray-100">
             <img 

@@ -284,6 +284,7 @@
 //     )
 // }
 import React, { useState, useRef, useEffect } from 'react';
+import { FaTimes } from 'react-icons/fa';
 import { useAuth } from './AuthContext';
 import smarturLogo from '../../assets/smartur_logo.png';
 import bgPatron from '../../assets/bgPatron.png';
@@ -302,7 +303,9 @@ return (
     <div className="flex items-center gap-2">
         <span>✓</span>
         <span>{message}</span>
-        <button onClick={onClose} className="ml-2 font-bold">×</button>
+        <button onClick={onClose} className="ml-2 font-bold hover:text-green-100 transition-colors">
+            <FaTimes />
+        </button>
     </div>
     </div>
 );
@@ -314,7 +317,9 @@ return (
     <div className="flex items-center gap-2">
         <span>⚠</span>
         <span>{message}</span>
-        <button onClick={onClose} className="ml-2 font-bold">×</button>
+        <button onClick={onClose} className="ml-2 font-bold hover:text-red-100 transition-colors">
+            <FaTimes />
+        </button>
     </div>
     </div>
 );
@@ -410,7 +415,8 @@ const handleVerifyCode = async (e) => {
     setShowSuccess(false);
     setToastMsg('');
 
-    const result = await verifyCode(codeString);
+    // Pasar el estado de rememberMe al verificar el código
+    const result = await verifyCode(codeString, rememberMe);
 
     setLoading(false);
     if (result.success) {
@@ -495,12 +501,11 @@ return (
         {/* Contenido del formulario */}
         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
         <button
-            type="button"
             onClick={onClose}
             aria-label="Cerrar modal de inicio de sesión"
-            className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-600 text-2xl leading-none transition-colors"
+            className="absolute top-4 right-4 bg-white text-gray-600 hover:text-red-500 transition-all duration-300 shadow-md hover:shadow-lg rounded-full w-12 h-12 flex items-center justify-center border-0 hover:bg-red-50 hover:scale-105 z-10"
         >
-            &times;
+            <FaTimes className="text-xl" />
         </button>
         <div className="bg-gradient-to-br from-purple-50 to-white px-8 pt-8 pb-6 text-center border-b border-gray-100">
             <img 

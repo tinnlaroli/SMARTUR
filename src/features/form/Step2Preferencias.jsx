@@ -1,3 +1,4 @@
+// src/features/form/Step2Preferencias.jsx
 import React, { useState } from 'react'
 import { 
   FaTree, FaMountain, FaLeaf, FaHome, FaUtensils, FaLandmark, FaChurch, FaUsers, FaBriefcase, FaHeartbeat,
@@ -32,10 +33,36 @@ const preferenciasLugar = [
   { label: 'Indiferente', value: 'indiferente', icon: FaQuestion, color: 'gray' },
 ]
 
-const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
+const getColorClasses = (color) => {
+  const colorMap = {
+    green: 'from-green-400 to-green-600',
+    orange: 'from-orange-400 to-orange-600',
+    brown: 'from-yellow-600 to-orange-800',
+    purple: 'from-purple-400 to-purple-600',
+    blue: 'from-blue-400 to-blue-600',
+    pink: 'from-pink-400 to-pink-600',
+    gray: 'from-gray-400 to-gray-600',
+    red: 'from-red-400 to-red-600',
+    yellow: 'from-yellow-400 to-yellow-600'
+  }
+  return colorMap[color] || 'from-gray-400 to-gray-600'
+}
+
+/**
+ * Step2Preferencias adaptado: normaliza y envía SOLO los campos útiles para el modelo.
+ *
+ * onChange recibirá un objeto con:
+ * {
+ *   tiposTurismo: string[],         // ej ["naturaleza","gastronomico"]
+ *   actividad_level: number,        // 1..5
+ *   preferencia_lugar: string,      // "aire"|"cerrado"|"indiferente"
+ *   pref_outdoor: boolean           // derived from preferencia_lugar
+ * }
+ */
+const Step2Preferencias = ({ data = {}, onNext, onBack, onChange }) => {
   const [tipos, setTipos] = useState(data.tiposTurismo || [])
-  const [actividad, setActividad] = useState(data.actividad || 3)
-  const [preferencia, setPreferencia] = useState(data.preferencia || '')
+  const [actividad, setActividad] = useState(data.actividad_level || data.actividad || 3)
+  const [preferencia, setPreferencia] = useState(data.preferencia_lugar || data.preferencia || '')
 
   const toggleTipo = (value) => {
     setTipos((prev) =>
@@ -44,25 +71,18 @@ const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
   }
 
   const handleNext = () => {
-    if (tipos.length && preferencia) {
-      onChange({ tiposTurismo: tipos, actividad, preferencia })
-      onNext()
-    }
-  }
+    // Validación: queremos al menos un tipo seleccionado; preferencia puede quedar "indiferente"
+    if (!tipos.length) return
 
-  const getColorClasses = (color) => {
-    const colorMap = {
-      green: 'from-green-400 to-green-600',
-      orange: 'from-orange-400 to-orange-600',
-      brown: 'from-yellow-600 to-orange-800',
-      purple: 'from-purple-400 to-purple-600',
-      blue: 'from-blue-400 to-blue-600',
-      pink: 'from-pink-400 to-pink-600',
-      gray: 'from-gray-400 to-gray-600',
-      red: 'from-red-400 to-red-600',
-      yellow: 'from-yellow-400 to-yellow-600'
+    const payload = {
+      tiposTurismo: tipos,                     // array[string]
+      actividad_level: Number(actividad),     // int 1..5
+      preferencia_lugar: preferencia || 'indiferente', // string
+      pref_outdoor: (preferencia === 'aire')  // boolean derivado
     }
-    return colorMap[color] || 'from-gray-400 to-gray-600'
+
+    onChange(payload)
+    onNext()
   }
 
   return (
@@ -126,6 +146,7 @@ const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
             )
           })}
         </div>
+        <p className="text-sm text-gray-500">Selecciona uno o más. Esto ayuda a priorizar candidatos por tipo.</p>
       </div>
 
       {/* Nivel de actividad */}
@@ -141,31 +162,30 @@ const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
           <div className="flex justify-between items-center space-x-2">
             {actividadNiveles.map((a) => {
               const IconComponent = a.icon
+              const isActive = Number(actividad) === a.value
               return (
                 <button
                   key={a.value}
                   type="button"
                   onClick={() => setActividad(a.value)}
                   className={`flex flex-col items-center space-y-2 p-3 rounded-lg transition-all duration-300 ${
-                    actividad === a.value
+                    isActive
                       ? 'bg-white shadow-lg scale-110 border-2 border-orange'
                       : 'hover:bg-white/50 hover:shadow-md'
                   }`}
                 >
                   <div className="text-3xl"><IconComponent /></div>
                   <div className={`text-xs font-medium text-center ${
-                    actividad === a.value ? 'text-orange' : 'text-gray-600'
+                    isActive ? 'text-orange' : 'text-gray-600'
                   }`}>
                     {a.label}
-                  </div>
-                  <div className="text-xs text-gray-500 text-center hidden sm:block">
-                    {a.desc}
                   </div>
                 </button>
               )
             })}
           </div>
         </div>
+        <p className="text-sm text-gray-500">Esto ayuda a ajustar la intensidad de las actividades recomendadas.</p>
       </div>
 
       {/* Preferencia de lugar */}
@@ -221,6 +241,7 @@ const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
             )
           })}
         </div>
+        <p className="text-sm text-gray-500">Esta preferencia se usa para filtrar/ponderar actividades (exterior vs interior).</p>
       </div>
 
       {/* Botones de navegación */}
@@ -237,9 +258,9 @@ const Step2Preferencias = ({ data, onNext, onBack, onChange }) => {
         
         <button
           onClick={handleNext}
-          disabled={!(tipos.length && preferencia)}
+          disabled={!tipos.length}
           className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
-            tipos.length && preferencia
+            tipos.length
               ? 'bg-gradient-to-r from-green to-blue text-white hover:shadow-lg hover:scale-105'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}

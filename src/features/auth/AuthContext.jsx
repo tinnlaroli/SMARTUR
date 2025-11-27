@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const AuthContext = createContext()
@@ -14,6 +14,78 @@ export function AuthProvider({ children }) {
     const [userTemp, setUserTemp] = useState(null)
     const [showForgotPasswordModal, setShowForgotPasswordModal] =
         useState(false)
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
+    // Función para guardar la sesión en localStorage
+    const saveSession = (token, userData, rememberMe = false) => {
+        const sessionData = {
+            token,
+            user: userData,
+            expiresAt: rememberMe 
+                ? Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 días
+                : Date.now() + (24 * 60 * 60 * 1000), // 24 horas por defecto
+            rememberMe
+        }
+        localStorage.setItem('session', JSON.stringify(sessionData))
+        localStorage.setItem('token', token)
+    }
+
+    // Función para obtener la sesión desde localStorage
+    const getSession = () => {
+        try {
+            const sessionStr = localStorage.getItem('session')
+            if (!sessionStr) return null
+
+            const session = JSON.parse(sessionStr)
+            
+            // Verificar si la sesión ha expirado
+            if (session.expiresAt && Date.now() > session.expiresAt) {
+                clearSession()
+                return null
+            }
+
+            return session
+        } catch (error) {
+            console.error('[getSession] Error:', error)
+            return null
+        }
+    }
+
+    // Función para limpiar la sesión
+    const clearSession = () => {
+        localStorage.removeItem('session')
+        localStorage.removeItem('token')
+        // No eliminar rememberedEmail aquí para mantener el email guardado si el usuario lo marcó
+    }
+
+    // Verificar sesión existente al cargar la aplicación
+    useEffect(() => {
+        const restoreSession = async () => {
+            try {
+                const session = getSession()
+                
+                if (session && session.token && session.user) {
+                    // Intentar validar el token con el backend (opcional pero recomendado)
+                    // Si tienes un endpoint para validar el token, úsalo aquí
+                    // Por ahora, simplemente restauramos la sesión
+                    setUser(session.user)
+                    
+                    // Si el usuario es admin, redirigir al dashboard
+                    const roleId = session.user?.roleId ?? session.user?.role_id ?? session.user?.role?.id
+                    
+                    // No redirigir automáticamente, dejar que la navegación actual se mantenga
+                    console.log('[restoreSession] Sesión restaurada para:', session.user.email)
+                }
+            } catch (error) {
+                console.error('[restoreSession] Error:', error)
+                clearSession()
+            } finally {
+                setIsCheckingAuth(false)
+            }
+        }
+
+        restoreSession()
+    }, [])
 
     // Paso 1: login con email y contraseña
     const handleLoginStep1 = async (email, password) => {
@@ -105,7 +177,7 @@ export function AuthProvider({ children }) {
     }
 
     // Paso 2: verificar código
-    const handleVerifyCode = async (verificationCode) => {
+    const handleVerifyCode = async (verificationCode, rememberMe = false) => {
         try {
             const response = await fetch(
                 'http://localhost:3000/api/verify-2fa',
@@ -167,9 +239,6 @@ export function AuthProvider({ children }) {
                     message: 'Respuesta inesperada del servidor',
                 }
 
-            // Guardar token
-            if (payload.token) localStorage.setItem('token', payload.token)
-
             // Establecer usuario
             const userObj = payload.user || null
             if (!userObj)
@@ -177,6 +246,12 @@ export function AuthProvider({ children }) {
                     success: false,
                     message: 'Usuario no presente en la respuesta',
                 }
+            
+            // Guardar sesión con el parámetro rememberMe
+            if (payload.token) {
+                saveSession(payload.token, userObj, rememberMe)
+            }
+            
             setUser(userObj)
 
             const roleId =
@@ -220,7 +295,7 @@ export function AuthProvider({ children }) {
         setLoginEmail('')
         setShowFormModal(false)
         setShowCodeModal(false)
-        localStorage.removeItem('token')
+        clearSession()
         navigate('/')
     }
 
@@ -233,6 +308,7 @@ export function AuthProvider({ children }) {
                 showFormModal,
                 showCodeModal,
                 showForgotPasswordModal, // ✅ nuevo
+                isCheckingAuth, // ✅ nuevo - para mostrar loading mientras se verifica la sesión
                 login: handleLoginStep1,
                 verifyCode: handleVerifyCode,
                 logout,

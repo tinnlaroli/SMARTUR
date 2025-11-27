@@ -1,3 +1,4 @@
+// src/features/form/Step3Contexto.jsx
 import React, { useState } from 'react'
 import { 
   FaUser, 
@@ -28,9 +29,33 @@ const servicios = [
   { label: 'Tours guiados', value: 'tours', icon: FaMapMarkedAlt, color: 'purple', desc: 'Excursiones organizadas' },
 ]
 
-const Step3Contexto = ({ data, onNext, onBack, onChange }) => {
-  const [viajaCon, setViajaCon] = useState(data.viajaCon || '')
-  const [servs, setServs] = useState(data.servicios || [])
+const getColorClasses = (color) => {
+  const colorMap = {
+    blue: 'from-blue-400 to-blue-600',
+    pink: 'from-pink-400 to-pink-600',
+    green: 'from-green-400 to-green-600',
+    orange: 'from-orange-400 to-orange-600',
+    purple: 'from-purple-400 to-purple-600'
+  }
+  return colorMap[color] || 'from-gray-400 to-gray-600'
+}
+
+/**
+ * Step3Contexto adaptado: normaliza y envía SOLO los campos útiles para el modelo.
+ *
+ * onChange recibirá un objeto con:
+ * {
+ *   group_type: string,         // 'solo'|'pareja'|'familia'|'amigos'|'laboral'
+ *   services: string[],         // ['hospedaje','transporte',...]
+ *   needs_hotel: boolean,
+ *   needs_transport: boolean,
+ *   pref_food: boolean,
+ *   wants_tours: boolean
+ * }
+ */
+const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
+  const [viajaCon, setViajaCon] = useState(data.group_type || data.viajaCon || '')
+  const [servs, setServs] = useState(data.services || data.servicios || [])
 
   const toggleServicio = (value) => {
     setServs((prev) =>
@@ -39,21 +64,26 @@ const Step3Contexto = ({ data, onNext, onBack, onChange }) => {
   }
 
   const handleNext = () => {
-    if (viajaCon) {
-      onChange({ viajaCon, servicios: servs })
-      onNext()
-    }
-  }
+    // Validación mínima: require group_type
+    if (!viajaCon) return
 
-  const getColorClasses = (color) => {
-    const colorMap = {
-      blue: 'from-blue-400 to-blue-600',
-      pink: 'from-pink-400 to-pink-600',
-      green: 'from-green-400 to-green-600',
-      orange: 'from-orange-400 to-orange-600',
-      purple: 'from-purple-400 to-purple-600'
+    // Derived flags
+    const needs_hotel = servs.includes('hospedaje')
+    const needs_transport = servs.includes('transporte')
+    const pref_food = servs.includes('alimentos')
+    const wants_tours = servs.includes('tours')
+
+    const payload = {
+      group_type: viajaCon,
+      services: servs,
+      needs_hotel,
+      needs_transport,
+      pref_food,
+      wants_tours,
     }
-    return colorMap[color] || 'from-gray-400 to-gray-600'
+
+    onChange(payload)
+    onNext()
   }
 
   return (

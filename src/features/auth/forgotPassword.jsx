@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import { FaTimes } from 'react-icons/fa'
 import ToastSuccess from '../../components/common/ToastSuccess'
 import ToastError from '../../components/common/ToastError'
 
@@ -153,10 +154,10 @@ export default function ForgotPasswordModal({ onClose }) {
 
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 sm:p-8 relative animate-fadeInUp">
                 <button
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
                     onClick={onClose}
+                    className="absolute top-4 right-4 bg-white text-gray-600 hover:text-red-500 transition-all duration-300 shadow-md hover:shadow-lg rounded-full w-12 h-12 flex items-center justify-center border-0 hover:bg-red-50 hover:scale-105"
                 >
-                    &times;
+                    <FaTimes className="text-xl" />
                 </button>
 
                 <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-purple">

@@ -12,6 +12,7 @@ import {
     FaUsers,
     FaMapMarkedAlt,
     FaChartBar,
+    FaTimes,
 } from 'react-icons/fa'
 import smarturLogo from '../assets/smartur_logo.png'
 import { useAuth } from '../features/auth/AuthContext.jsx'
@@ -27,8 +28,7 @@ export default function Dashboard() {
 
     const handleLogout = () => {
         logout && logout()
-        localStorage.removeItem('token')
-        navigate('/')
+        // Ya no es necesario eliminar el token manualmente, el logout() lo hace
     }
 
     const menu = [
@@ -65,9 +65,9 @@ export default function Dashboard() {
                     </div>
                     <button
                         onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden text-white text-2xl"
+                        className="lg:hidden bg-white/20 text-white hover:text-red-200 transition-all duration-300 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center border-0 hover:scale-105"
                     >
-                        ✕
+                        <FaTimes className="text-lg" />
                     </button>
                 </div>
 
