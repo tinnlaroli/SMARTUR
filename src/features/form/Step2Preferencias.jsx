@@ -33,19 +33,84 @@ const preferenciasLugar = [
   { label: 'Indiferente', value: 'indiferente', icon: FaQuestion, color: 'gray' },
 ]
 
+// Mapeo de colores usando los colores personalizados de la plataforma
 const getColorClasses = (color) => {
   const colorMap = {
-    green: 'from-green-400 to-green-600',
-    orange: 'from-orange-400 to-orange-600',
-    brown: 'from-yellow-600 to-orange-800',
-    purple: 'from-purple-400 to-purple-600',
-    blue: 'from-blue-400 to-blue-600',
-    pink: 'from-pink-400 to-pink-600',
+    green: 'from-green to-green-dark',
+    orange: 'from-orange to-orange-dark',
+    brown: 'from-orange-dark to-orange',
+    purple: 'from-purple to-purple-dark',
+    blue: 'from-blue to-blue-dark',
+    pink: 'from-pink to-pink-dark',
     gray: 'from-gray-400 to-gray-600',
     red: 'from-red-400 to-red-600',
-    yellow: 'from-yellow-400 to-yellow-600'
+    yellow: 'from-yellow-400 to-yellow-500'
   }
   return colorMap[color] || 'from-gray-400 to-gray-600'
+}
+
+// Mapeo completo de clases para bordes y fondos (evita clases dinámicas)
+const getBorderClasses = (color, isSelected) => {
+  if (!isSelected) return 'border-gray-200'
+  const borderMap = {
+    green: 'border-green',
+    orange: 'border-orange',
+    brown: 'border-orange-dark',
+    purple: 'border-purple',
+    blue: 'border-blue',
+    pink: 'border-pink',
+    gray: 'border-gray-500',
+    red: 'border-red-500',
+    yellow: 'border-yellow-400'
+  }
+  return borderMap[color] || 'border-gray-500'
+}
+
+const getBgClasses = (color, isSelected) => {
+  if (!isSelected) return 'bg-white'
+  const bgMap = {
+    green: 'bg-green/10',
+    orange: 'bg-orange/10',
+    brown: 'bg-orange-dark/10',
+    purple: 'bg-purple/10',
+    blue: 'bg-blue/10',
+    pink: 'bg-pink/10',
+    gray: 'bg-gray-50',
+    red: 'bg-red-50',
+    yellow: 'bg-yellow-50'
+  }
+  return bgMap[color] || 'bg-gray-50'
+}
+
+const getTextClasses = (color, isSelected) => {
+  if (!isSelected) return 'text-gray-700'
+  const textMap = {
+    green: 'text-green-dark',
+    orange: 'text-orange-dark',
+    brown: 'text-orange-dark',
+    purple: 'text-purple-dark',
+    blue: 'text-blue-dark',
+    pink: 'text-pink-dark',
+    gray: 'text-gray-700',
+    red: 'text-red-700',
+    yellow: 'text-yellow-700'
+  }
+  return textMap[color] || 'text-gray-700'
+}
+
+const getBadgeClasses = (color) => {
+  const badgeMap = {
+    green: 'bg-green',
+    orange: 'bg-orange',
+    brown: 'bg-orange-dark',
+    purple: 'bg-purple',
+    blue: 'bg-blue',
+    pink: 'bg-pink',
+    gray: 'bg-gray-500',
+    red: 'bg-red-500',
+    yellow: 'bg-yellow-400'
+  }
+  return badgeMap[color] || 'bg-gray-500'
 }
 
 /**
@@ -115,7 +180,7 @@ const Step2Preferencias = ({ data = {}, onNext, onBack, onChange }) => {
                 onClick={() => toggleTipo(t.value)}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
                   isSelected
-                    ? `border-${t.color}-500 bg-${t.color}-50 shadow-lg scale-105`
+                    ? `${getBorderClasses(t.color, true)} ${getBgClasses(t.color, true)} shadow-lg scale-105`
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
               >
@@ -129,14 +194,12 @@ const Step2Preferencias = ({ data = {}, onNext, onBack, onChange }) => {
                       isSelected ? 'text-white' : 'text-gray-600'
                     }`} />
                   </div>
-                  <div className={`font-medium text-sm ${
-                    isSelected ? `text-${t.color}-700` : 'text-gray-700'
-                  }`}>
+                  <div className={`font-medium text-sm ${getTextClasses(t.color, isSelected)}`}>
                     {t.label}
                   </div>
                 </div>
                 {isSelected && (
-                  <div className={`absolute -top-2 -right-2 w-6 h-6 bg-${t.color}-500 rounded-full flex items-center justify-center`}>
+                  <div className={`absolute -top-2 -right-2 w-6 h-6 ${getBadgeClasses(t.color)} rounded-full flex items-center justify-center`}>
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -210,7 +273,7 @@ const Step2Preferencias = ({ data = {}, onNext, onBack, onChange }) => {
                 onClick={() => setPreferencia(p.value)}
                 className={`relative p-6 rounded-xl border-2 transition-all duration-300 group ${
                   isSelected
-                    ? `border-${p.color}-500 bg-${p.color}-50 shadow-lg scale-105`
+                    ? `${getBorderClasses(p.color, true)} ${getBgClasses(p.color, true)} shadow-lg scale-105`
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
               >
@@ -224,14 +287,12 @@ const Step2Preferencias = ({ data = {}, onNext, onBack, onChange }) => {
                       isSelected ? 'text-white' : 'text-gray-600'
                     }`} />
                   </div>
-                  <div className={`font-medium ${
-                    isSelected ? `text-${p.color}-700` : 'text-gray-700'
-                  }`}>
+                  <div className={`font-medium ${getTextClasses(p.color, isSelected)}`}>
                     {p.label}
                   </div>
                 </div>
                 {isSelected && (
-                  <div className={`absolute -top-2 -right-2 w-6 h-6 bg-${p.color}-500 rounded-full flex items-center justify-center`}>
+                  <div className={`absolute -top-2 -right-2 w-6 h-6 ${getBadgeClasses(p.color)} rounded-full flex items-center justify-center`}>
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>

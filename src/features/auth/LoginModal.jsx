@@ -366,35 +366,51 @@ const handleLogin = async (e) => {
     setToastMsg('');
     setLoading(true);
 
-    const result = await login(email, password);
+    try {
+        const result = await login(email, password);
 
-    setLoading(false);
-    if (result.success) {
-        // Guardar email si "Recuérdame" está marcado
-        if (rememberMe) {
-            localStorage.setItem('rememberedEmail', email);
-        } else {
-            localStorage.removeItem('rememberedEmail');
+        setLoading(false);
+        
+        // Verificación de seguridad: asegurar que result existe
+        if (!result) {
+            setToastMsg('Error de conexión. Por favor, intenta de nuevo.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 3000);
+            return;
         }
 
-        setToastMsg(result.message || 'Código enviado al correo');
-        setShowSuccess(true);
-        setStep(2);
-        // No limpiar el email si rememberMe está marcado
-        if (!rememberMe) {
-            setEmail('');
-        }
-        setPassword('');
-        // Enfocar el primer input de código cuando cambiamos al paso 2
-        setTimeout(() => {
-            if (inputRefs[0].current) {
-                inputRefs[0].current.focus();
+        if (result.success) {
+            // Guardar email si "Recuérdame" está marcado
+            if (rememberMe) {
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                localStorage.removeItem('rememberedEmail');
             }
-        }, 100);
-    } else {
-        setToastMsg(
-            result.message || 'Credenciales incorrectas o error de red'
-        );
+
+            setToastMsg(result.message || 'Código enviado al correo');
+            setShowSuccess(true);
+            setStep(2);
+            // No limpiar el email si rememberMe está marcado
+            if (!rememberMe) {
+                setEmail('');
+            }
+            setPassword('');
+            // Enfocar el primer input de código cuando cambiamos al paso 2
+            setTimeout(() => {
+                if (inputRefs[0].current) {
+                    inputRefs[0].current.focus();
+                }
+            }, 100);
+        } else {
+            setToastMsg(
+                result.message || 'Credenciales incorrectas o error de red'
+            );
+            setShowError(true);
+            setTimeout(() => setShowError(false), 3000);
+        }
+    } catch (error) {
+        setLoading(false);
+        setToastMsg('Error inesperado. Por favor, intenta de nuevo.');
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
     }
@@ -415,19 +431,35 @@ const handleVerifyCode = async (e) => {
     setShowSuccess(false);
     setToastMsg('');
 
-    // Pasar el estado de rememberMe al verificar el código
-    const result = await verifyCode(codeString, rememberMe);
+    try {
+        // Pasar el estado de rememberMe al verificar el código
+        const result = await verifyCode(codeString, rememberMe);
 
-    setLoading(false);
-    if (result.success) {
-        setToastMsg('Login exitoso');
-        setShowSuccess(true);
-        setTimeout(() => {
-            setShowSuccess(false);
-            onClose();
-        }, 2000);
-    } else {
-        setToastMsg(result.message || 'Código inválido');
+        setLoading(false);
+        
+        // Verificación de seguridad: asegurar que result existe
+        if (!result) {
+            setToastMsg('Error de conexión. Por favor, intenta de nuevo.');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 3000);
+            return;
+        }
+
+        if (result.success) {
+            setToastMsg('Login exitoso');
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+                onClose();
+            }, 2000);
+        } else {
+            setToastMsg(result.message || 'Código inválido');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 3000);
+        }
+    } catch (error) {
+        setLoading(false);
+        setToastMsg('Error inesperado. Por favor, intenta de nuevo.');
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
     }
@@ -612,7 +644,6 @@ return (
 
                 <button
                 type="submit"
-                onClick={handleLogin}
                 className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                 >
                 Ingresar

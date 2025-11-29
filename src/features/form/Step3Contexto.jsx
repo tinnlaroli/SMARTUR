@@ -29,15 +29,69 @@ const servicios = [
   { label: 'Tours guiados', value: 'tours', icon: FaMapMarkedAlt, color: 'purple', desc: 'Excursiones organizadas' },
 ]
 
+// Mapeo de colores usando los colores personalizados de la plataforma
 const getColorClasses = (color) => {
   const colorMap = {
-    blue: 'from-blue-400 to-blue-600',
-    pink: 'from-pink-400 to-pink-600',
-    green: 'from-green-400 to-green-600',
-    orange: 'from-orange-400 to-orange-600',
-    purple: 'from-purple-400 to-purple-600'
+    green: 'from-green to-green-dark',
+    orange: 'from-orange to-orange-dark',
+    purple: 'from-purple to-purple-dark',
+    blue: 'from-blue to-blue-dark',
+    pink: 'from-pink to-pink-dark',
+    gray: 'from-gray-400 to-gray-600'
   }
   return colorMap[color] || 'from-gray-400 to-gray-600'
+}
+
+// Mapeo completo de clases para bordes y fondos (evita clases dinámicas)
+const getBorderClasses = (color, isSelected) => {
+  if (!isSelected) return 'border-gray-200'
+  const borderMap = {
+    green: 'border-green',
+    orange: 'border-orange',
+    purple: 'border-purple',
+    blue: 'border-blue',
+    pink: 'border-pink',
+    gray: 'border-gray-500'
+  }
+  return borderMap[color] || 'border-gray-500'
+}
+
+const getBgClasses = (color, isSelected) => {
+  if (!isSelected) return 'bg-white'
+  const bgMap = {
+    green: 'bg-green/10',
+    orange: 'bg-orange/10',
+    purple: 'bg-purple/10',
+    blue: 'bg-blue/10',
+    pink: 'bg-pink/10',
+    gray: 'bg-gray-50'
+  }
+  return bgMap[color] || 'bg-gray-50'
+}
+
+const getTextClasses = (color, isSelected) => {
+  if (!isSelected) return 'text-gray-700'
+  const textMap = {
+    green: 'text-green-dark',
+    orange: 'text-orange-dark',
+    purple: 'text-purple-dark',
+    blue: 'text-blue-dark',
+    pink: 'text-pink-dark',
+    gray: 'text-gray-700'
+  }
+  return textMap[color] || 'text-gray-700'
+}
+
+const getBadgeClasses = (color) => {
+  const badgeMap = {
+    green: 'bg-green',
+    orange: 'bg-orange',
+    purple: 'bg-purple',
+    blue: 'bg-blue',
+    pink: 'bg-pink',
+    gray: 'bg-gray-500'
+  }
+  return badgeMap[color] || 'bg-gray-500'
 }
 
 /**
@@ -116,7 +170,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                 onClick={() => setViajaCon(c.value)}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
                   isSelected
-                    ? `border-${c.color}-500 bg-${c.color}-50 shadow-lg scale-105`
+                    ? `${getBorderClasses(c.color, true)} ${getBgClasses(c.color, true)} shadow-lg scale-105`
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
               >
@@ -130,9 +184,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                       isSelected ? 'text-white' : 'text-gray-600'
                     }`} />
                   </div>
-                  <div className={`font-medium text-sm ${
-                    isSelected ? `text-${c.color}-700` : 'text-gray-700'
-                  }`}>
+                  <div className={`font-medium text-sm ${getTextClasses(c.color, isSelected)}`}>
                     {c.label}
                   </div>
                   <div className="text-xs text-gray-500 hidden sm:block">
@@ -140,7 +192,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                   </div>
                 </div>
                 {isSelected && (
-                  <div className={`absolute -top-2 -right-2 w-6 h-6 bg-${c.color}-500 rounded-full flex items-center justify-center`}>
+                  <div className={`absolute -top-2 -right-2 w-6 h-6 ${getBadgeClasses(c.color)} rounded-full flex items-center justify-center`}>
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -173,7 +225,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                   onClick={() => toggleServicio(s.value)}
                   className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
                     isSelected
-                      ? `border-${s.color}-500 bg-${s.color}-50 shadow-lg scale-105`
+                      ? `${getBorderClasses(s.color, true)} ${getBgClasses(s.color, true)} shadow-lg scale-105`
                       : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                   }`}
                 >
@@ -187,9 +239,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                         isSelected ? 'text-white' : 'text-gray-600'
                       }`} />
                     </div>
-                    <div className={`font-medium text-sm ${
-                      isSelected ? `text-${s.color}-700` : 'text-gray-700'
-                    }`}>
+                    <div className={`font-medium text-sm ${getTextClasses(s.color, isSelected)}`}>
                       {s.label}
                     </div>
                     <div className="text-xs text-gray-500 hidden sm:block">
@@ -197,7 +247,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                     </div>
                   </div>
                   {isSelected && (
-                    <div className={`absolute -top-2 -right-2 w-6 h-6 bg-${s.color}-500 rounded-full flex items-center justify-center`}>
+                    <div className={`absolute -top-2 -right-2 w-6 h-6 ${getBadgeClasses(s.color)} rounded-full flex items-center justify-center`}>
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -217,7 +267,7 @@ const Step3Contexto = ({ data = {}, onNext, onBack, onChange }) => {
                   return (
                     <span
                       key={servicio}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green/20 text-green-dark border border-green/30"
                     >
                       {servicioInfo?.label}
                     </span>

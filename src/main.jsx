@@ -28,3 +28,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AuthProvider>
     </BrowserRouter>
 )
+
+// Registro básico del Service Worker para PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker
+            .register('/service-worker.js')
+            .catch((error) => {
+                console.error('Error al registrar el Service Worker:', error)
+            })
+    })
+}

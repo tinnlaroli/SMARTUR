@@ -307,21 +307,19 @@ export function AuthProvider({ children }) {
                 loginEmail,
                 showFormModal,
                 showCodeModal,
-                showForgotPasswordModal, // ✅ nuevo
-                isCheckingAuth, // ✅ nuevo - para mostrar loading mientras se verifica la sesión
+                showForgotPasswordModal,
+                isCheckingAuth,
                 login: handleLoginStep1,
                 verifyCode: handleVerifyCode,
                 logout,
                 showMultiStepForm: () => {
-                    // Si hay un usuario logueado, abrir el modal del formulario
-                    if (user) {
-                        setShowFormModal(true)
-                    }
+                    // Abrir el modal del formulario
+                    setShowFormModal(true)
                 },
                 hideMultiStepForm: () => setShowFormModal(false),
 
-                openForgotPasswordModal, // ✅ nuevo
-                closeForgotPasswordModal, // ✅ nuevo
+                openForgotPasswordModal,
+                closeForgotPasswordModal,
             }}
         >
             {children}

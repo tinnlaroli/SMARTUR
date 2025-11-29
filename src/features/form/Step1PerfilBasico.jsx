@@ -117,8 +117,8 @@ const Step1PerfilBasico = ({ data = {}, onNext, onChange }) => {
                 onClick={() => setEdadRange(e.value)}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
                   edadRange === e.value
-                    ? 'border-purple bg-purple/5 shadow-lg scale-105'
-                    : 'border-gray-200 bg-white hover:border-orange hover:bg-orange/5 hover:shadow-md'
+                    ? 'border-purple bg-purple/10 shadow-lg scale-105'
+                    : 'border-gray-200 bg-white hover:border-orange hover:bg-orange/10 hover:shadow-md'
                 }`}
               >
                 <div className="text-center space-y-2">
@@ -196,8 +196,8 @@ const Step1PerfilBasico = ({ data = {}, onNext, onChange }) => {
                 onClick={() => setDiasEstancia(d.value)}
                 className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
                   diasEstancia === d.value
-                    ? 'border-blue bg-blue/5 shadow-lg scale-105'
-                    : 'border-gray-200 bg-white hover:border-blue hover:bg-blue/5 hover:shadow-md'
+                    ? 'border-blue bg-blue/10 shadow-lg scale-105'
+                    : 'border-gray-200 bg-white hover:border-blue hover:bg-blue/10 hover:shadow-md'
                 }`}
               >
                 <div className="text-center space-y-2">
