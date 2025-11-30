@@ -1,24 +1,20 @@
 // src/features/form/Step1PerfilBasico.jsx
 import React, { useState } from 'react'
-import { 
-  FaUser, FaCalendarAlt, FaMoneyBillWave, FaClock, 
-  FaUserGraduate, FaUserTie, FaUsers, FaUserAlt, FaUserClock,
-  FaSun, FaCloudSun, FaUmbrellaBeach, FaMapMarkedAlt
-} from 'react-icons/fa'
+import { FaUser, FaMoneyBillWave, FaClock } from 'react-icons/fa'
 
-const edades = [
-  { label: '18-25 años', value: '18-25', icon: FaUserGraduate },
-  { label: '26-35 años', value: '26-35', icon: FaUserTie },
-  { label: '36-45 años', value: '36-45', icon: FaUsers },
-  { label: '46-60 años', value: '46-60', icon: FaUserAlt },
-  { label: '60+ años', value: '60+', icon: FaUserClock },
+const edadOptions = [
+  { label: '18-25', value: '18-25' },
+  { label: '26-35', value: '26-35' },
+  { label: '36-45', value: '36-45' },
+  { label: '46-60', value: '46-60' },
+  { label: '60+', value: '60+' }
 ]
 
-const dias = [
-  { label: '1-2 días', value: '1-2', icon: FaSun },
-  { label: '3-5 días', value: '3-5', icon: FaCloudSun },
-  { label: '6-10 días', value: '6-10', icon: FaUmbrellaBeach },
-  { label: 'Más de 10', value: '10+', icon: FaMapMarkedAlt },
+const duracionOptions = [
+  { label: '1-2', value: '1-2' },
+  { label: '3-5', value: '3-5' },
+  { label: '6-10', value: '6-10' },
+  { label: '10+', value: '10+' }
 ]
 
 /**
@@ -27,7 +23,7 @@ const dias = [
 const edadRangeToApprox = (range) => {
   if (!range) return null
   if (range === '60+') return 65
-  const [a,b] = range.split('-').map(Number)
+  const [a, b] = range.split('-').map(Number)
   if (Number.isNaN(a) || Number.isNaN(b)) return null
   return Math.round((a + b) / 2)
 }
@@ -35,48 +31,44 @@ const edadRangeToApprox = (range) => {
 const diasRangeToDays = (range) => {
   if (!range) return null
   if (range === '10+') return 14
-  const [a,b] = range.split('-').map(Number)
+  const [a, b] = range.split('-').map(Number)
   if (Number.isNaN(a) || Number.isNaN(b)) return null
   return Math.round((a + b) / 2)
 }
 
 /**
  * Map numeric daily budget to bucket (low/med/high).
- * Ajusta umbrales según tus datos reales.
  */
 const presupuestoToBucket = (mxnPerDay) => {
-  if (mxnPerDay <= 500) return 'low'
-  if (mxnPerDay <= 1500) return 'med'
+  if (mxnPerDay < 700) return 'low'
+  if (mxnPerDay < 2000) return 'med'
   return 'high'
 }
 
 const Step1PerfilBasico = ({ data = {}, onNext, onChange }) => {
-  // estados locales (UI)
-  const [edadRange, setEdadRange] = useState(data.edad_range || data.edad || '')
-  const [presupuesto, setPresupuesto] = useState(data.presupuesto_daily ?? 200)
-  const [diasEstancia, setDiasEstancia] = useState(data.duracion_dias_range || data.diasEstancia || '')
+  const [edad_range, setEdadRange] = useState(data.edad_range || '')
+  const [presupuesto_daily, setPresupuestoDaily] = useState(data.presupuesto_daily ?? 500)
+  const [duracion_dias_range, setDuracionDiasRange] = useState(data.duracion_dias_range || '')
 
   const handleNext = () => {
     // Validaciones mínimas
-    if (!edadRange || !presupuesto || !diasEstancia) return
+    if (!edad_range || !presupuesto_daily || !duracion_dias_range) return
 
-    // Mapeo a los campos que realmente usará el modelo
-    const edad_aprox = edadRangeToApprox(edadRange)
-    const duracion_dias = diasRangeToDays(diasEstancia)
-    const presupuesto_bucket = presupuestoToBucket(presupuesto)
+    // Calcular valores derivados
+    const edad = edadRangeToApprox(edad_range)
+    const duracion_dias = diasRangeToDays(duracion_dias_range)
+    const presupuesto_bucket = presupuestoToBucket(presupuesto_daily)
 
-    const payload = {
-      // Valores usados por el modelo (context)
-      edad: edad_aprox,                    // int (punto medio del rango)
-      edad_range: edadRange,               // string (por si quieren one-hot)
-      presupuesto_daily: Number(presupuesto),
-      presupuesto_bucket,                  // 'low'|'med'|'high'
-      duracion_dias,                       // int
-      duracion_dias_range: diasEstancia,   // string (original)
-    }
+    // Pasar campos clave
+    onChange({
+      edad,
+      edad_range,
+      presupuesto_daily: Number(presupuesto_daily),
+      presupuesto_bucket,
+      duracion_dias,
+      duracion_dias_range
+    })
 
-    // onChange debe fusionar estos datos en el formData padre
-    onChange(payload)
     onNext()
   }
 
@@ -89,158 +81,112 @@ const Step1PerfilBasico = ({ data = {}, onNext, onChange }) => {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
+    <div className="space-y-6">
+      <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple to-blue rounded-full mb-4">
           <FaUser className="text-2xl text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Perfil Básico</h2>
+        <h3 className="text-2xl font-bold text-gray-800 mb-2">Perfil Básico</h3>
         <p className="text-gray-600">Cuéntanos sobre ti para personalizar tu experiencia</p>
       </div>
 
-      {/* Edad */}
-      <div className="space-y-4">
+      {/* Rango de edad */}
+      <div className="space-y-3">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0 w-8 h-8 bg-orange/10 rounded-full flex items-center justify-center">
             <FaUser className="text-orange text-sm" />
           </div>
-          <label className="text-lg font-semibold text-gray-700">¿Cuál es tu rango de edad?</label>
+          <label className="block text-lg font-semibold text-gray-700">Rango de edad</label>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {edades.map((e) => {
-            const IconComponent = e.icon
-            return (
-              <button
-                key={e.value}
-                type="button"
-                onClick={() => setEdadRange(e.value)}
-                className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
-                  edadRange === e.value
-                    ? 'border-purple bg-purple/10 shadow-lg scale-105'
-                    : 'border-gray-200 bg-white hover:border-orange hover:bg-orange/10 hover:shadow-md'
-                }`}
-              >
-                <div className="text-center space-y-2">
-                  <div className="text-2xl"><IconComponent /></div>
-                  <div className={`font-medium ${
-                    edadRange === e.value ? 'text-purple' : 'text-gray-700'
-                  }`}>
-                    {e.label}
-                  </div>
-                </div>
-                {edadRange === e.value && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </button>
-            )
-          })}
+        <div className="flex flex-wrap gap-2">
+          {edadOptions.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setEdadRange(o.value)}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                edad_range === o.value
+                  ? 'bg-gradient-to-r from-purple to-blue text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Presupuesto */}
-      <div className="space-y-4">
+      {/* Presupuesto diario */}
+      <div className="space-y-3">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0 w-8 h-8 bg-green/10 rounded-full flex items-center justify-center">
             <FaMoneyBillWave className="text-green text-sm" />
           </div>
-          <label className="text-lg font-semibold text-gray-700">¿Cuál es tu presupuesto diario?</label>
+          <label className="block text-lg font-semibold text-gray-700">Presupuesto diario (MXN)</label>
         </div>
-        
-        <div className="bg-gradient-to-r from-green/5 to-blue/5 p-6 rounded-xl border border-gray-100">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Presupuesto mínimo</span>
-              <span className="text-sm text-gray-600">Presupuesto máximo</span>
-            </div>
-            <div className="relative">
-              <input
-                type="range"
-                min={200}
-                max={3000}
-                step={50}
-                value={presupuesto}
-                onChange={(e) => setPresupuesto(Number(e.target.value))}
-                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-              <div className="absolute inset-0 h-3 bg-gradient-to-r from-green to-blue rounded-lg pointer-events-none opacity-20"></div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple">{formatCurrency(presupuesto)}</div>
-              <div className="text-sm text-gray-500">por día</div>
-            </div>
+        <div className="bg-gradient-to-r from-green/5 to-blue/5 p-4 rounded-xl border border-gray-100">
+          <input
+            type="range"
+            min={100}
+            max={5000}
+            step={50}
+            value={presupuesto_daily}
+            onChange={(e) => setPresupuestoDaily(Number(e.target.value))}
+            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          />
+          <div className="text-right mt-2">
+            <div className="text-2xl font-bold text-purple">{formatCurrency(presupuesto_daily)}</div>
+            <div className="text-sm text-gray-500">por día</div>
           </div>
         </div>
       </div>
 
-      {/* Días de estancia */}
-      <div className="space-y-4">
+      {/* Duración */}
+      <div className="space-y-3">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0 w-8 h-8 bg-blue/10 rounded-full flex items-center justify-center">
             <FaClock className="text-blue text-sm" />
           </div>
-          <label className="text-lg font-semibold text-gray-700">¿Cuántos días planeas quedarte?</label>
+          <label className="block text-lg font-semibold text-gray-700">Duración (rango)</label>
         </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {dias.map((d) => {
-            const IconComponent = d.icon
-            return (
-              <button
-                key={d.value}
-                type="button"
-                onClick={() => setDiasEstancia(d.value)}
-                className={`relative p-4 rounded-xl border-2 transition-all duration-300 group ${
-                  diasEstancia === d.value
-                    ? 'border-blue bg-blue/10 shadow-lg scale-105'
-                    : 'border-gray-200 bg-white hover:border-blue hover:bg-blue/10 hover:shadow-md'
-                }`}
-              >
-                <div className="text-center space-y-2">
-                  <div className="text-2xl"><IconComponent /></div>
-                  <div className={`font-medium ${
-                    diasEstancia === d.value ? 'text-blue' : 'text-gray-700'
-                  }`}>
-                    {d.label}
-                  </div>
-                </div>
-                {diasEstancia === d.value && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </button>
-            )
-          })}
+        <div className="flex flex-wrap gap-2">
+          {duracionOptions.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setDuracionDiasRange(o.value)}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                duracion_dias_range === o.value
+                  ? 'bg-gradient-to-r from-blue to-purple text-white shadow-lg scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Botón siguiente */}
-      <div className="flex justify-end pt-6">
+      <div className="flex justify-end pt-4">
         <button
           onClick={handleNext}
-          disabled={!(edadRange && presupuesto && diasEstancia)}
-          className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform ${
-            edadRange && presupuesto && diasEstancia
+          disabled={!(edad_range && presupuesto_daily && duracion_dias_range)}
+          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+            edad_range && presupuesto_daily && duracion_dias_range
               ? 'bg-gradient-to-r from-purple to-blue text-white hover:shadow-lg hover:scale-105'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          <span className="flex items-center space-x-2">
-            <span>Siguiente</span>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </span>
+          Siguiente
         </button>
       </div>
     </div>
   )
 }
 export default Step1PerfilBasico
+
+
+
+
+

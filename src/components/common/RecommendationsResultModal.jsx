@@ -41,7 +41,7 @@ return (
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                 {/* Número del ranking */}
-                <div className="text-3xl font-bold text-purple-600">
+                <div className="text-3xl font-bold text-purple">
                     {index + 1}
                 </div>
 
@@ -61,7 +61,7 @@ return (
                 <div className="text-right">
                 <p className="font-semibold text-gray-700">
                     Score híbrido:
-                    <span className="text-purple-600 ml-1">
+                    <span className="text-purple ml-1">
                     {rec.score.toFixed(3)}
                     </span>
                 </p>
@@ -93,7 +93,7 @@ return (
         <div className="mt-10 text-center">
         <button
             onClick={onClose}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:scale-105 hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
+            className="px-8 py-3 bg-gradient-to-r from-purple to-blue text-white font-semibold rounded-xl shadow-md hover:scale-105 hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
         >
             Continuar <FaArrowRight />
         </button>
