@@ -175,10 +175,36 @@
 import React, { useState } from 'react'
 import { FaTimes } from 'react-icons/fa'
 import { useSignUp } from './SignUpContext'
-import ToastSuccess from '../../components/common/ToastSuccess'
-import ToastError from '../../components/common/ToastError'
 import smarturLogo from '../../assets/smartur_logo.png'
 import bgPatron from '../../assets/bgPatron.png'
+
+function ToastSuccess({ message, onClose }) {
+    return (
+        <div className="fixed top-4 right-4 z-[100000] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slideIn">
+            <div className="flex items-center gap-2">
+                <span>✓</span>
+                <span>{message}</span>
+                <button onClick={onClose} className="ml-2 font-bold hover:text-green-100 transition-colors">
+                    <FaTimes />
+                </button>
+            </div>
+        </div>
+    )
+}
+
+function ToastError({ message, onClose }) {
+    return (
+        <div className="fixed top-4 right-4 z-[100000] bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg animate-slideIn">
+            <div className="flex items-center gap-2">
+                <span>⚠</span>
+                <span>{message}</span>
+                <button onClick={onClose} className="ml-2 font-bold hover:text-red-100 transition-colors">
+                    <FaTimes />
+                </button>
+            </div>
+        </div>
+    )
+}
 
 export default function SignUpModal({ onClose, onShowLogin }) {
 const [name, setName] = useState('')

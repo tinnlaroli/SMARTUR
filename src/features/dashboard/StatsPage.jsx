@@ -1,9 +1,8 @@
-// src/components/Stats.jsx
 import React from 'react'
 import { motion } from 'framer-motion'
 import { FaUserCog, FaMapMarkedAlt, FaChartBar } from 'react-icons/fa'
 
-const Stats = () => {
+export default function StatsPage() {
     const stats = [
         {
             label: 'Usuarios registrados',
@@ -41,7 +40,9 @@ const Stats = () => {
                         <p className="text-2xl font-bold">
                             {stat.value}
                             {i === 0 && (
-                                <span className="text-sm ml-1 opacity-80">usuarios</span>
+                                <span className="text-sm ml-1 opacity-80">
+                                    usuarios
+                                </span>
                             )}
                         </p>
                     </div>
@@ -51,4 +52,3 @@ const Stats = () => {
     )
 }
 
-export default Stats

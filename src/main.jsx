@@ -1,32 +1,18 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './routes'
 import './index.css'
 
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
-import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from './features/auth/AuthContext.jsx'
-import { SignUpProvider } from './features/auth/SignUpContext.jsx'
-
 AOS.init()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <BrowserRouter
-        future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-        }}
-    >
-        <AuthProvider>
-            <SignUpProvider>
-                <React.StrictMode>
-                    <App />
-                </React.StrictMode>
-            </SignUpProvider>
-        </AuthProvider>
-    </BrowserRouter>
+    <React.StrictMode>
+        <RouterProvider router={router} />
+    </React.StrictMode>
 )
 
 // Registro básico del Service Worker para PWA
