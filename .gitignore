@@ -1,0 +1,49 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+**/.venv/
+venv/
+**/venv/
+*.egg-info/
+
+# Build outputs
+dist/
+build/
+.next/
+**/.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude internal
+.claude/
+.agents/
+skills-lock.json
+
+# Logs
+*.log
+logs/
+
+# Docker
+*.override.yml
