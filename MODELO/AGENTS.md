@@ -72,9 +72,15 @@ src/
 ## Docker
 
 ```bash
-docker compose up --build   # image: smartur-api:local, port 8000
-# First start may take several minutes if RF model is missing (healthcheck start_period: 300s)
+# Desde DEVELOPMENT/ — bootstrap automático en primer arranque
+docker compose up -d
+docker logs -f smartur-modelo   # descarga Yelp + preprocess + train
+
+# Primera vez: puede tardar 30-60+ min (descarga ~5 GB + entrenamiento)
+# Healthcheck start_period: 1800s
 ```
+
+Variables: `AUTO_BOOTSTRAP=1` (default), `SKIP_MODEL_BOOT=1` (tests sin ML), `KAGGLE_USERNAME`/`KAGGLE_KEY` (opcional).
 
 ## Tests
 
