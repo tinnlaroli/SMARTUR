@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, ArrowRight, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from '../utils/motion';
+import { api } from '../../../shared/api/axiosClient';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,16 +13,23 @@ export const ContactForm: React.FC = () => {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
     const sectionRef = useRef<HTMLElement>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email.trim()) return;
         setSubmitting(true);
-        await new Promise(res => setTimeout(res, 900));
-        setSubmitted(true);
-        setSubmitting(false);
-        setEmail('');
+        setError('');
+        try {
+            await api.post('/contact', { email: email.trim() });
+            setSubmitted(true);
+            setEmail('');
+        } catch {
+            setError(t('contact.error') || 'No se pudo enviar. Intenta de nuevo.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     useEffect(() => {
@@ -77,6 +85,13 @@ export const ContactForm: React.FC = () => {
                         <p className="text-base sm:text-lg mb-6 sm:mb-8 leading-relaxed max-w-md" style={{ color: 'var(--color-text-alt)' }}>
                             {t('contact.subtitle')}
                         </p>
+
+                        {error && (
+                            <div className="flex items-center gap-2 mb-4 text-sm font-medium" style={{ color: 'var(--color-pink)' }}>
+                                <AlertCircle className="size-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
 
                         {submitted ? (
                             <div className="flex items-center gap-3 py-4 font-semibold" style={{ color: 'var(--color-green)' }}>

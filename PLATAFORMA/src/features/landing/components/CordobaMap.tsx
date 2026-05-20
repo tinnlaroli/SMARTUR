@@ -208,16 +208,16 @@ export const CordobaMap: React.FC = () => {
     }, [mapLoaded, initializeMap]);
 
     return (
-        <div className="min-h-screen bg-[var(--color-bg)] px-4 py-12 text-[var(--color-text)]">
+        <div className="bg-[var(--color-bg)] px-4 py-8 sm:py-12 text-[var(--color-text)]">
             <div className="mx-auto max-w-7xl">
-                <div className="mb-12 text-center">
-                    <h1 className="mb-4 text-4xl font-black md:text-5xl text-[var(--color-text)]">
+                <div className="mb-8 sm:mb-12 text-center">
+                    <h1 className="mb-3 text-3xl font-black sm:text-4xl md:text-5xl text-[var(--color-text)]">
                         Descubre la región de <span className="text-[var(--color-purple)]">Las Montañas</span>
                     </h1>
-                    <p className="mx-auto max-w-2xl text-lg text-[var(--color-text-alt)]">Explora los lugares más fascinantes de Veracruz. Historia, cultura y naturaleza en un solo lugar.</p>
+                    <p className="mx-auto max-w-2xl text-base sm:text-lg text-[var(--color-text-alt)]">Explora los lugares más fascinantes de Veracruz. Historia, cultura y naturaleza en un solo lugar.</p>
                 </div>
 
-                <div className="relative z-10 mb-12 flex flex-wrap items-center justify-center gap-4">
+                <div className="relative z-10 mb-8 sm:mb-12 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                     <div className="relative">
                         <select
                             value={filterCity}
@@ -237,7 +237,7 @@ export const CordobaMap: React.FC = () => {
                     <div className="relative" ref={filterDropdownRef}>
                         <button
                             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                            className="flex items-center gap-2 rounded-2xl bg-[var(--color-purple)] px-6 py-3 font-semibold text-[var(--color-text-on-vivid)] shadow-lg transition-colors hover:opacity-95"
+                            className="flex items-center gap-2 rounded-2xl bg-[var(--color-purple)] px-5 py-3 font-semibold text-[var(--color-text-on-vivid)] shadow-lg transition-colors hover:opacity-95"
                         >
                             <Filter className="size-5" />
                             <span>Filtrar por tipo</span>
@@ -245,7 +245,7 @@ export const CordobaMap: React.FC = () => {
                         </button>
 
                         {showFilterDropdown && (
-                            <div className="absolute top-full left-0 z-[100] mt-3 max-h-[350px] min-w-[220px] overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] py-3 shadow-xl">
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 z-[100] mt-3 max-h-[300px] min-w-[200px] overflow-x-hidden overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-alt)] py-3 shadow-xl">
                                 {categorias.map((cat) => (
                                     <button
                                         key={cat}
@@ -263,9 +263,9 @@ export const CordobaMap: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid gap-10 lg:grid-cols-3">
+                <div className="grid gap-6 sm:gap-8 lg:gap-10 lg:grid-cols-3">
                     <div className="relative lg:col-span-2">
-                        <div className="h-[600px] overflow-hidden rounded-[40px] border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-2 shadow-2xl">
+                        <div className="h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-2 shadow-2xl">
                             <div id="altas-montanas-map" className="z-0 h-full w-full rounded-[32px]" />
                             {!mapLoaded && (
                                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(var(--rgb-bg),0.75)] backdrop-blur-sm">
@@ -278,7 +278,7 @@ export const CordobaMap: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="scrollbar-thin max-h-[600px] [scrollbar-color:rgba(var(--rgb-purple-accent),0.35)_transparent] space-y-6 overflow-y-auto pr-4">
+                    <div className="scrollbar-thin max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] [scrollbar-color:rgba(var(--rgb-purple-accent),0.35)_transparent] space-y-4 sm:space-y-6 overflow-y-auto pr-2 sm:pr-4">
                         {filteredPlaces.map((place) => {
                             const ciudad = ciudades.find((c) => c.nombre === place.ciudad);
                             return (

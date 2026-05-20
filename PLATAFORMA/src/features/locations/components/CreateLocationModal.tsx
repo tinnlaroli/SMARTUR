@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { CreateLocationDTO } from '../types/types';
-import { X, MapPin, Plus, Navigation } from 'lucide-react';
+import { X, MapPin, Plus, Navigation, AlertCircle } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -21,9 +21,19 @@ export default function CreateLocationModal({ onClose, onSubmit }: Props) {
         longitude: '0',
     });
 
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validate = () => {
+        const e: Record<string, string> = {};
+        if (!formData.name.trim()) e.name = 'El nombre es obligatorio.';
+        if (!formData.state.trim()) e.state = 'El estado es obligatorio.';
+        return e;
+    };
+
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        if (errors[name]) setErrors((prev) => { const next = { ...prev }; delete next[name]; return next; });
     };
 
     const handleMapChange = (lat: number, lng: number) => {
@@ -36,6 +46,8 @@ export default function CreateLocationModal({ onClose, onSubmit }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const newErrors = validate();
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
         const success = await onSubmit(formData);
         if (success) onClose();
     };
@@ -71,11 +83,11 @@ export default function CreateLocationModal({ onClose, onSubmit }: Props) {
                                 id="create-location-name"
                                 name="name"
                                 value={formData.name}
-                                required
                                 onChange={handleFieldChange}
-                                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                                className={`w-full rounded-lg border px-4 py-2 focus:ring-2 outline-none transition-all dark:bg-zinc-800/50 dark:text-white ${errors.name ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 dark:border-zinc-700 focus:ring-violet-500'}`}
                                 placeholder={mod.locations.locationNamePh}
                             />
+                            {errors.name && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.name}</p>}
                         </div>
 
                         {/* Estado / Municipio */}
@@ -88,11 +100,11 @@ export default function CreateLocationModal({ onClose, onSubmit }: Props) {
                                     id="create-location-state"
                                     name="state"
                                     value={formData.state}
-                                    required
                                     onChange={handleFieldChange}
-                                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                                    className={`w-full rounded-lg border px-4 py-2 focus:ring-2 outline-none transition-all dark:bg-zinc-800/50 dark:text-white ${errors.state ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 dark:border-zinc-700 focus:ring-violet-500'}`}
                                     placeholder={mod.locations.statePh}
                                 />
+                                {errors.state && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.state}</p>}
                             </div>
                             <div>
                                 <label htmlFor="create-location-municipality" className="block text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1.5">

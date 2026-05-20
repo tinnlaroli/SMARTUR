@@ -5,6 +5,7 @@ import { authApi } from '../authApi';
 import { useToast } from '../../../shared/context/ToastContext';
 import type { AuthStep } from '../context/AuthModalContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { TermsModal } from '../components/TermsModal';
 
 interface SignUpViewProps {
     onSwitchStep: (step: AuthStep) => void;
@@ -23,6 +24,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState<'terms' | 'privacy' | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -73,6 +75,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
     const allValidationsPassed = Object.values(passwordValidations).every(Boolean);
 
     return (
+        <>
         <div className="w-full">
             <div className="mb-6 flex justify-center">
                 <div className="flex size-12 items-center justify-center rounded-full bg-violet-600/10">
@@ -334,14 +337,16 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                         {t('auth.signup.terms.prefix')}{' '}
                         <button
                             type="button"
-                            className="text-[var(--color-purple)] transition-colors hover:opacity-80"
+                            onClick={() => setModalOpen('terms')}
+                            className="text-[var(--color-purple)] transition-colors hover:opacity-80 underline"
                         >
                             {t('auth.signup.terms.link')}
                         </button>{' '}
                         {t('auth.signup.terms.and')}{' '}
                         <button
                             type="button"
-                            className="text-[var(--color-purple)] transition-colors hover:opacity-80"
+                            onClick={() => setModalOpen('privacy')}
+                            className="text-[var(--color-purple)] transition-colors hover:opacity-80 underline"
                         >
                             {t('auth.signup.privacy.link')}
                         </button>
@@ -378,5 +383,8 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                 </p>
             </form>
         </div>
+
+        {modalOpen && <TermsModal type={modalOpen} onClose={() => setModalOpen(null)} />}
+    </>
     );
 };

@@ -100,8 +100,8 @@ const text: Record<Lang, string[]> = {
   </div>
 
   <!-- ActionBridge - Outside overflowing container -->
-  <div class="relative z-50 w-full h-full flex items-center justify-center pointer-events-none">
-    <div class="pointer-events-auto translate-y-48 md:translate-y-50">
+  <div class="relative z-50 w-full h-full flex items-end justify-center pointer-events-none pb-8 sm:pb-12 md:pb-16">
+    <div class="pointer-events-auto w-full max-w-3xl px-4">
         <ActionBridge lang={lang} />
     </div>
   </div>
@@ -212,7 +212,7 @@ const text: Record<Lang, string[]> = {
 
   @media (--mq-phone) {
     .flight-divider-height {
-      height: 50vh;
+      height: 70vh;
     }
     .flight-text span {
       font-size: 1.75rem !important;

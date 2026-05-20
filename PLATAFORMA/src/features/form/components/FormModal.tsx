@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Step1PerfilBasico } from './Step1PerfilBasico';
 import { Step2Preferencias } from './Step2Preferencias';
 import { Step3Contexto } from './Step3Contexto';
@@ -21,6 +21,7 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
     const [showRecommendations, setShowRecommendations] = useState(false);
     const [recommendationsData, setRecommendationsData] = useState<RecommendationsResponse | null>(null);
     const { theme } = useTheme();
+    const scrollRef = useRef<HTMLDivElement>(null);
     const isDark = theme === 'dark';
 
     // Lock body scroll when modal is open
@@ -34,6 +35,11 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
             document.body.style.overflow = 'unset';
         };
     }, [isOpen]);
+
+    // Scroll modal back to top whenever the step changes
+    useEffect(() => {
+        scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+    }, [currentStep]);
 
     if (!isOpen) return null;
 
@@ -86,7 +92,7 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
                     <X className="size-6" />
                 </button>
 
-                <div className="p-6 md:p-8 overflow-y-auto">
+                <div ref={scrollRef} className="p-6 md:p-8 overflow-y-auto">
                     <ProgressIndicator currentStep={currentStep + 1} totalSteps={totalSteps} isStep4Loading={isStep4Loading} />
 
                     <div className="mt-8">

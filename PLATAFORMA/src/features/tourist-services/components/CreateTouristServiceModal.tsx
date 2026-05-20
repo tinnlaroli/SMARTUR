@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { CreateTouristServiceDTO } from '../types/types';
-import { X, Wrench, Plus, Loader2, ImagePlus } from 'lucide-react';
+import { X, Wrench, Plus, Loader2, ImagePlus, AlertCircle } from 'lucide-react';
 import { companyServices } from '../../companies/api/companyApi';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Company } from '../../companies/types/types';
@@ -32,6 +32,13 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
     });
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validate = () => {
+        const e: Record<string, string> = {};
+        if (!formData.name.trim()) e.name = 'El nombre es obligatorio.';
+        return e;
+    };
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [locations, setLocations] = useState<Location[]>([]);
@@ -70,6 +77,7 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
                       ? value === 'true'
                       : value,
         }));
+        if (errors[name]) setErrors((prev) => { const next = { ...prev }; delete next[name]; return next; });
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +93,8 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const newErrors = validate();
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
         const success = await onSubmit(formData);
         if (success) onClose();
     };
@@ -115,11 +125,11 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
                             id="create-service-name"
                             name="name"
                             value={formData.name}
-                            required
                             onChange={handleFieldChange}
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                            className={`w-full rounded-lg border px-4 py-2 focus:ring-2 outline-none transition-all dark:bg-zinc-800/50 dark:text-white ${errors.name ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 dark:border-zinc-700 focus:ring-violet-500'}`}
                             placeholder={mod.touristServices.serviceNamePh}
                         />
+                        {errors.name && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.name}</p>}
                     </div>
 
                     {/* Description */}

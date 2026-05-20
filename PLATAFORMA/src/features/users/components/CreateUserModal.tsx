@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { CreateUserDTO } from '../types/types';
-import { Camera, User as UserIcon } from 'lucide-react';
+import { Camera, User as UserIcon, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -19,6 +19,18 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
         role_id: 2,
     });
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio.';
+        else if (/\d/.test(formData.name)) newErrors.name = 'El nombre no debe contener números.';
+        if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Ingresa un correo válido.';
+        if (!formData.password) newErrors.password = 'La contraseña es obligatoria.';
+        else if (formData.password.length < 8) newErrors.password = 'Mínimo 8 caracteres.';
+        return newErrors;
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -34,15 +46,17 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
 
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-
         setFormData((prev) => ({
             ...prev,
             [name]: name === 'role_id' ? Number(value) : value,
         }));
+        if (errors[name]) setErrors((prev) => { const next = { ...prev }; delete next[name]; return next; });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const newErrors = validate();
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
         const success = await onSubmit(formData);
         if (success) onClose();
     };
@@ -121,10 +135,10 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 id="create-user-name"
                                 name="name"
                                 value={formData.name}
-                                required
                                 onChange={handleFieldChange}
-                                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-500"
+                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.name ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
                                 placeholder={mod.users.namePlaceholder} />
+                            {errors.name && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.name}</p>}
                         </div>
 
                         <div className="gap-y-1 flex flex-col">
@@ -138,11 +152,11 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 id="create-user-email"
                                 name="email"
                                 type="email"
-                                required
                                 value={formData.email}
                                 onChange={handleFieldChange}
-                                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-500"
+                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.email ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
                                 placeholder={mod.users.emailPlaceholder} />
+                            {errors.email && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.email}</p>}
                         </div>
 
                         <div className="gap-y-1 flex flex-col">
@@ -156,11 +170,11 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 id="create-user-password"
                                 name="password"
                                 type="password"
-                                required
                                 value={formData.password}
                                 onChange={handleFieldChange}
-                                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-500"
+                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.password ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
                                 placeholder={mod.users.passwordPlaceholder} />
+                            {errors.password && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.password}</p>}
                         </div>
                         <div className="gap-y-1 flex flex-col">
                             <label

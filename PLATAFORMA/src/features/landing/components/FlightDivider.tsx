@@ -95,7 +95,7 @@ export const FlightDivider: React.FC<FlightDividerProps> = ({ handleStartExperie
         <section
             ref={sectionRef}
             id="flight-divider"
-            className="flight-divider-section relative h-[50vh] md:h-[65vh] lg:h-[80vh] w-full"
+            className="flight-divider-section relative h-[70vh] md:h-[75vh] lg:h-[80vh] w-full"
             style={{ background: 'var(--color-bg)' }}
         >
             <div className="absolute inset-0 h-full w-full overflow-hidden pointer-events-none">
@@ -171,8 +171,8 @@ export const FlightDivider: React.FC<FlightDividerProps> = ({ handleStartExperie
             </div>
 
             {/* ActionBridge — outside pointer-events-none overlay, pinned to section bottom */}
-            <div className="absolute inset-x-0 bottom-24 z-50 flex justify-center px-4 md:bottom-28">
-                <div className="flex w-full max-w-3xl flex-col items-stretch gap-4 md:flex-row md:items-center md:gap-6">
+            <div className="absolute inset-x-0 bottom-8 z-50 flex justify-center px-4 sm:bottom-12 md:bottom-16">
+                <div className="flex w-full max-w-3xl flex-col items-stretch gap-3 sm:gap-4 md:flex-row md:items-center md:gap-6">
 
                     {/* Soy turista — primary (pink) */}
                     <button

@@ -117,14 +117,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     const addToast = useCallback(
         (type: NotificationType, title: string, description?: string) => {
-            const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            setToasts((prev) => [...prev, { id, type, title, description }]);
-            setNotifications((prev) => [
-                { id, type, title, description, createdAt: Date.now(), read: false },
-                ...prev,
-            ].slice(0, 25));
-            const tid = window.setTimeout(() => removeToast(id), 5000);
-            timeoutRefs.current.set(id, tid);
+            setToasts((prev) => {
+                // Skip if an identical toast is already showing
+                if (prev.some((t) => t.type === type && t.title === title)) return prev;
+                const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                const tid = window.setTimeout(() => removeToast(id), 5000);
+                timeoutRefs.current.set(id, tid);
+                setNotifications((notifs) =>
+                    [{ id, type, title, description, createdAt: Date.now(), read: false }, ...notifs].slice(0, 25),
+                );
+                return [...prev, { id, type, title, description }];
+            });
         },
         [removeToast],
     );

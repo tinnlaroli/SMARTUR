@@ -130,6 +130,7 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'contact.name.placeholder': '¿Cómo te llamas, viajero?',
         'contact.intro': 'Déjanos tu correo y te guiamos al formulario de recomendaciones inteligentes.',
         'contact.success': '¡Perfecto! Revisa tu correo para empezar.',
+        'contact.error': 'No se pudo enviar. Intenta de nuevo.',
 
         // FAQs
         'faqs.label': 'Preguntas frecuentes',
@@ -457,6 +458,7 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'contact.name.placeholder': 'What is your name, traveler?',
         'contact.intro': 'Leave your email and we\'ll guide you to the smart recommendations form.',
         'contact.success': 'Perfect! Check your email to get started.',
+        'contact.error': 'Could not send. Please try again.',
 
         // FAQs
         'faqs.label': 'FAQ',
@@ -784,6 +786,7 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'contact.name.placeholder': 'Quel est votre nom, voyageur?',
         'contact.intro': 'Laissez votre email et nous vous guiderons vers le formulaire de recommandations intelligentes.',
         'contact.success': 'Parfait! Vérifiez votre email pour commencer.',
+        'contact.error': 'Envoi impossible. Veuillez réessayer.',
 
         // FAQs
         'faqs.label': 'FAQ',
