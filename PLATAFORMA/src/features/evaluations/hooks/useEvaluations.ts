@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useReducer, useCallback } from 'react';
 import { evaluationsApi } from '../api/evaluationsApi';
 import type { EvaluationRubric, FullEvaluationRegisterDTO } from '../types/types';
 
@@ -39,7 +39,7 @@ export const useEvaluations = () => {
         rubric: null,
     });
 
-    const getRubric = async (templateId: number) => {
+    const getRubric = useCallback(async (templateId: number) => {
         dispatch({ type: 'REQUEST_START' });
         try {
             const response = await evaluationsApi.getRubric(templateId);
@@ -52,9 +52,9 @@ export const useEvaluations = () => {
             });
             return null;
         }
-    };
+    }, []);
 
-    const registerEvaluation = async (data: FullEvaluationRegisterDTO) => {
+    const registerEvaluation = useCallback(async (data: FullEvaluationRegisterDTO) => {
         dispatch({ type: 'REQUEST_START' });
         try {
             const response = await evaluationsApi.registerFull(data);
@@ -67,20 +67,19 @@ export const useEvaluations = () => {
             });
             return null;
         }
-    };
+    }, []);
 
-    const getEvaluationByServiceId = async (serviceId: number) => {
+    const getEvaluationByServiceId = useCallback(async (serviceId: number) => {
         dispatch({ type: 'REQUEST_START' });
         try {
             const response = await evaluationsApi.findByServiceId(serviceId);
             dispatch({ type: 'REQUEST_SUCCESS' });
             return response;
         } catch {
-            // It's possible it doesn't exist, so we don't necessarily set error
             dispatch({ type: 'REQUEST_SUCCESS' });
             return null;
         }
-    };
+    }, []);
 
     return {
         isLoading: state.isLoading,

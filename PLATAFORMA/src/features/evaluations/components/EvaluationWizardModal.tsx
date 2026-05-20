@@ -162,7 +162,8 @@ const EvaluationWizardModal: React.FC<Props> = ({
         }).catch(() => {
             setTemplateError(ev.wizard.templatesFetchFailed);
         }).finally(() => setLoadingTemplates(false));
-    }, [isOpen, serviceType, mod, getRubric]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, serviceType]);
 
     if (!isOpen) return null;
 
