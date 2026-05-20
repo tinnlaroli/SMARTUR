@@ -86,17 +86,39 @@ const t = ui[lang];
   });
 
   // Form handling
+  const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:4000/api/v2";
   const forms = document.querySelectorAll(".cta-minimal form");
   forms.forEach((form) => {
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      console.log("CTA Form submitted");
-      const successMessage =
-        form.getAttribute("data-success-message") ||
-        "Gracias. Nos pondremos en contacto pronto.";
-      alert(successMessage);
-      (form as HTMLFormElement).reset();
+      const input = (form as HTMLFormElement).querySelector('input[type="email"]') as HTMLInputElement;
+      const email = input?.value?.trim();
+      if (!email) return;
+
+      const btn = (form as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
+
+      try {
+        const res = await fetch(`${API_URL}/contact`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, source: "landing_b2b" }),
+        });
+        if (res.ok) {
+          (form as HTMLFormElement).reset();
+          const successMessage = form.getAttribute("data-success-message") || "¡Gracias! Te contactaremos pronto.";
+          if (btn) { btn.textContent = "✓ Enviado"; btn.style.background = "#10b981"; }
+          setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = btn.getAttribute("data-original") || "Enviar"; btn.style.background = ""; } }, 3000);
+        } else {
+          if (btn) { btn.disabled = false; btn.textContent = "Reintentar"; }
+        }
+      } catch {
+        if (btn) { btn.disabled = false; btn.textContent = "Error, reintentar"; }
+      }
     });
+    // Store original button text
+    const btn = (form as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (btn) btn.setAttribute("data-original", btn.textContent || "Enviar");
   });
 </script>
 

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
-    Activity, Award, Star, BarChart3, FileText,
+    Activity, Award, Star, BarChart3, FileText, MessageSquare, Mail,
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,11 +24,19 @@ const MENU_GROUPS = [
     },
     {
         label: 'Gestión',
-        items: ['users', 'companies', 'services', 'locations', 'profiles', 'activities', 'certifications', 'poi'],
+        items: ['users', 'companies', 'services', 'poi', 'locations'],
+    },
+    {
+        label: 'Mobile & Engagement',
+        items: ['community', 'contacts', 'profiles', 'activities'],
+    },
+    {
+        label: 'Certificaciones',
+        items: ['certifications', 'instruments'],
     },
     {
         label: 'Reportes',
-        items: ['stats', 'instruments'],
+        items: ['stats'],
     },
     {
         label: 'Sistema',
@@ -57,6 +65,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'activities',     label: t('sidebar.activities'),     icon: Activity,   path: '/dashboard/actividades',                roles: [1] },
         { id: 'certifications', label: t('sidebar.certifications'), icon: Award,      path: '/dashboard/certificaciones',            roles: [1] },
         { id: 'poi',            label: t('sidebar.poi'),            icon: Star,       path: '/dashboard/poi',                        roles: [1] },
+        { id: 'community',      label: t('sidebar.community'),      icon: MessageSquare, path: '/dashboard/comunidad',               roles: [1] },
+        { id: 'contacts',       label: t('sidebar.contacts'),       icon: Mail,       path: '/dashboard/contactos',                  roles: [1] },
         { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,  path: '/dashboard/estadisticas',               roles: [1] },
         { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,   path: '/dashboard/instrumentos',               roles: [1] },
         { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,   path: '/dashboard/configuracion',              roles: [1] },
@@ -184,6 +194,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                             to={item.path}
                                             onClick={onClose}
                                             end={item.end}
+                                            id={`sidebar-item-${item.id}`}
                                             title={isCollapsed ? item.label : ''}
                                             className={({ isActive }) =>
                                                 `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${

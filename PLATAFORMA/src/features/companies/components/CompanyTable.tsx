@@ -94,7 +94,6 @@ export default function CompanyTable({
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-16">Logo</DataTableHeadCell>
                             <DataTableHeadCell>Nombre</DataTableHeadCell>
                             <DataTableHeadCell className="min-w-[220px]">Dirección</DataTableHeadCell>
                             <DataTableHeadCell className="w-36">Teléfono</DataTableHeadCell>
@@ -127,14 +126,6 @@ export default function CompanyTable({
                                         onChange={() => onToggle(company.id)}
                                         className={TABLE_CHECKBOX_CLASS}
                                     />
-                                </DataTableCell>
-                                <DataTableCell className="w-16">
-                                    <div
-                                        className="flex size-10 items-center justify-center rounded-full text-xs font-bold text-white"
-                                        style={{ background: getCompanyColor(company.id) }}
-                                    >
-                                        {getInitials(company.name)}
-                                    </div>
                                 </DataTableCell>
                                 <DataTableCell>
                                     <DataTableLinkButton onClick={() => onViewDetail(company.id)} title={company.name}>

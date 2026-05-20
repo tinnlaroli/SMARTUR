@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2 } from 'lucide-react';
+import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
@@ -9,6 +9,7 @@ import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { getDashboardText } from '../shared/i18n/dashboardLocale';
 import { useToast, type NotificationType, type ToastNotification } from '../shared/context/ToastContext';
+import { useDashboardTour } from '../shared/hooks/useDashboardTour';
 
 const NOTIFICATION_ICON_MAP: Record<NotificationType, typeof CheckCircle> = {
     success: CheckCircle,
@@ -176,6 +177,7 @@ export default function AppLayout() {
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
     const copy = getDashboardText(lang);
+    const { startTour } = useDashboardTour();
 
     const userRole = user?.role_id || 2;
 
@@ -214,6 +216,15 @@ export default function AppLayout() {
 
                     {/* Right: actions */}
                     <div className="flex items-center gap-2">
+
+                        {/* Tour button */}
+                        <button
+                            onClick={startTour}
+                            title="Ver tour del dashboard"
+                            className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <HelpCircle className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
+                        </button>
 
                         {/* Theme toggle */}
                         <button

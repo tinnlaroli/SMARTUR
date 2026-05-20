@@ -20,6 +20,8 @@ import { Navigate } from 'react-router-dom';
 import { InstrumentBuilderPage } from '../features/instrument-builder/pages/InstrumentBuilderPage';
 import { InstrumentEditorPage } from '../features/instrument-builder/pages/InstrumentEditorPage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
+import { CommunityPage } from '../features/community/pages/CommunityPage';
+import { ContactsPage } from '../features/contacts/pages/ContactsPage';
 
 export const router = createBrowserRouter([
     {
@@ -89,6 +91,14 @@ export const router = createBrowserRouter([
                                     {
                                         path: 'instrumentos/:id',
                                         element: <InstrumentEditorPage />,
+                                    },
+                                    {
+                                        path: 'comunidad',
+                                        element: <CommunityPage />,
+                                    },
+                                    {
+                                        path: 'contactos',
+                                        element: <ContactsPage />,
                                     },
                                     {
                                         path: 'configuracion',
