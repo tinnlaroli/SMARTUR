@@ -8,10 +8,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from math import sqrt, log2
 from engine import SmarturEngine
 from rf_model import SmarturContextModel
-from gbm_model import SmarturGbmModel
 from cf import predict_cf_pearson
 from fusion import recommend_hybrid
-from model_metrics import compare_algorithms, save_metrics
 from context_encoder import MAPEO_CATEGORIAS
 
 
@@ -107,13 +105,13 @@ def hit_rate_at_k(recommended_ids, relevant_ids, k):
 # Evaluación de predicción punto a punto (RMSE / MAE)
 # ---------------------------------------------------------------------------
 
-def evaluar_predicciones(engine, context_model, gbm_model=None, sample_size=1000):
+def evaluar_predicciones(engine, context_model, sample_size=1000):
     """Evalúa RMSE y MAE para cada componente del sistema."""
     n_test = len(engine.test_data)
     n_eval = min(sample_size, n_test)
     test_sample = engine.test_data.sample(n_eval, random_state=42)
 
-    actuals, preds_cf, preds_rf, preds_gbm, preds_hybrid = [], [], [], [], []
+    actuals, preds_cf, preds_rf, preds_hybrid = [], [], [], []
     errores = 0
 
     print(f"Evaluando {n_eval} de {n_test} interacciones del test set...")
@@ -132,18 +130,14 @@ def evaluar_predicciones(engine, context_model, gbm_model=None, sample_size=1000
             p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine)
             user_ctx = user_contexts.get(row['user_id'])
             p_rf = float(context_model.predict_with_context([row['business_id']], user_context=user_ctx)[0])
-            p_gbm = p_rf
-            if gbm_model is not None and gbm_model.is_fitted:
-                p_gbm = float(gbm_model.predict_with_context([row['business_id']], user_context=user_ctx)[0])
-            if np.isnan(p_cf) or np.isnan(p_rf) or np.isnan(p_gbm):
+            if np.isnan(p_cf) or np.isnan(p_rf):
                 errores += 1
                 continue
-            p_hybrid = (0.15 * p_cf) + (0.50 * p_rf) + (0.35 * p_gbm)
+            p_hybrid = (0.1 * p_cf) + (0.9 * p_rf)
 
             actuals.append(row['stars'])
             preds_cf.append(p_cf)
             preds_rf.append(p_rf)
-            preds_gbm.append(p_gbm)
             preds_hybrid.append(p_hybrid)
         except Exception as e:
             errores += 1
@@ -155,7 +149,6 @@ def evaluar_predicciones(engine, context_model, gbm_model=None, sample_size=1000
     actuals = np.array(actuals)
     preds_cf = np.array(preds_cf)
     preds_rf = np.array(preds_rf)
-    preds_gbm = np.array(preds_gbm)
     preds_hybrid = np.array(preds_hybrid)
 
     media_global = engine.train_data['stars'].mean()
@@ -172,8 +165,7 @@ def evaluar_predicciones(engine, context_model, gbm_model=None, sample_size=1000
         ("Baseline (media global)", preds_baseline),
         ("CF (Pearson + KNN)", preds_cf),
         ("RF contextual (con contexto)", preds_rf),
-        ("GBM contextual", preds_gbm),
-        ("Hibrido triple (CF+RF+GBM)", preds_hybrid),
+        ("Hibrido v3 (a=0.1)", preds_hybrid),
     ]:
         rmse = sqrt(mean_squared_error(actuals, preds))
         mae = mean_absolute_error(actuals, preds)
@@ -303,14 +295,8 @@ def evaluar_modelo(sample_size=1000):
     context_model = SmarturContextModel()
     context_model.train(engine.train_data)
 
-    gbm_model = SmarturGbmModel()
-    gbm_model.train(engine.train_data)
-
-    comparison = compare_algorithms(engine, context_model, gbm_model, sample_size=min(sample_size, 800))
-    save_metrics(comparison)
-    print(f"\n  Mejor algoritmo (RMSE): {comparison.get('best_algorithm')}")
-
-    pred_results = evaluar_predicciones(engine, context_model, gbm_model, sample_size)
+    # Métricas de predicción (RMSE/MAE)
+    pred_results = evaluar_predicciones(engine, context_model, sample_size)
 
     # Métricas de ranking (NDCG, Precision, Hit Rate)
     rank_results = evaluar_ranking(engine, context_model, n_users=100, k=5)

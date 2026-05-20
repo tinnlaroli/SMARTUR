@@ -65,11 +65,7 @@ const t = ui[lang];
 </div>
 
 <script>
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (reduceMotion) {
-    document.querySelectorAll(".reveal-fade-up").forEach((el) => el.classList.add("is-visible"));
-  } else {
+  // Simple intersection observer from original component, preserved for consistency
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -88,7 +84,6 @@ const t = ui[lang];
   document.querySelectorAll(".reveal-fade-up").forEach((el) => {
     observer.observe(el);
   });
-  }
 
   // Form handling
   const forms = document.querySelectorAll(".cta-minimal form");
@@ -110,8 +105,8 @@ const t = ui[lang];
     opacity: 0;
     transform: translateY(30px);
     transition:
-      opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .reveal-fade-up.is-visible {

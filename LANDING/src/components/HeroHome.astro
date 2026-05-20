@@ -15,16 +15,6 @@ const { title, subtitle, cta } = Astro.props;
   <!-- Background shimmer for post-load animation -->
   <div class="hero-shimmer"></div>
 
-  <!-- Ambient gradient orbs — subtle depth without distracting from content -->
-  <div class="hero-orbs" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
-  <!-- Dot grid texture — only visible at center, fades to transparent at edges -->
-  <div class="hero-dot-grid" aria-hidden="true"></div>
-
   <div class="u-container container">
     <div class="inner">
       <div class="content">
@@ -247,11 +237,13 @@ const { title, subtitle, cta } = Astro.props;
       max-width: 750px;
     }
 
-    /* Hide 3D phone on tablet + phone — WebGL performance + layout clarity */
     @media (--mq-tablet) {
-      display: none !important;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
     }
 
+    /* Hide video completely on phone to clear space */
     @media (--mq-phone) {
       display: none !important;
     }
@@ -263,115 +255,6 @@ const { title, subtitle, cta } = Astro.props;
     object-fit: cover;
     display: block;
     border-radius: 0;
-  }
-
-  /* ─── Ambient depth elements ─── */
-
-  .hero-orbs {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    will-change: transform;
-  }
-
-  .orb-1 {
-    width: min(52vw, 620px);
-    height: min(52vw, 620px);
-    background: rgba(var(--rgb-purple-accent), 0.1);
-    top: -18%;
-    right: -4%;
-    animation: orb-drift-1 30s ease-in-out infinite;
-  }
-
-  .orb-2 {
-    width: min(42vw, 500px);
-    height: min(42vw, 500px);
-    background: rgba(var(--rgb-pink-primary), 0.09);
-    bottom: -12%;
-    left: -6%;
-    animation: orb-drift-2 24s ease-in-out infinite;
-  }
-
-  .orb-3 {
-    width: min(32vw, 380px);
-    height: min(32vw, 380px);
-    background: rgba(var(--rgb-cyan-accent), 0.06);
-    top: 35%;
-    left: 28%;
-    animation: orb-drift-3 38s ease-in-out infinite;
-  }
-
-  @keyframes orb-drift-1 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    35% { transform: translate(-35px, 28px) scale(1.07); }
-    70% { transform: translate(22px, -18px) scale(0.93); }
-  }
-
-  @keyframes orb-drift-2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(48px, -28px) scale(1.09); }
-  }
-
-  @keyframes orb-drift-3 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    40% { transform: translate(-22px, 34px) scale(0.91); }
-    80% { transform: translate(18px, -12px) scale(1.05); }
-  }
-
-  /* Dark mode: slightly more visible orbs since bg is darker */
-  :global([data-theme="dark"]) .orb-1 {
-    background: rgba(var(--rgb-purple-accent), 0.18);
-  }
-  :global([data-theme="dark"]) .orb-2 {
-    background: rgba(var(--rgb-pink-primary), 0.15);
-  }
-  :global([data-theme="dark"]) .orb-3 {
-    background: rgba(var(--rgb-cyan-accent), 0.1);
-  }
-
-  .hero-dot-grid {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image: radial-gradient(
-      circle,
-      rgba(var(--rgb-text), 0.04) 1px,
-      transparent 1px
-    );
-    background-size: 28px 28px;
-    mask-image: radial-gradient(
-      ellipse 80% 65% at 40% 50%,
-      black 20%,
-      transparent 78%
-    );
-    -webkit-mask-image: radial-gradient(
-      ellipse 80% 65% at 40% 50%,
-      black 20%,
-      transparent 78%
-    );
-  }
-
-  :global([data-theme="dark"]) .hero-dot-grid {
-    background-image: radial-gradient(
-      circle,
-      rgba(var(--rgb-text), 0.07) 1px,
-      transparent 1px
-    );
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .orb {
-      animation: none;
-    }
   }
 </style>
 
@@ -400,8 +283,8 @@ const { title, subtitle, cta } = Astro.props;
     const shimmerEl = hero.querySelector(".hero-shimmer") as HTMLElement;
     const ctaShimmer = hero.querySelector(".cta-shimmer") as HTMLElement;
 
-    // Desktop-only check: matches the CSS breakpoint where phone is visible
-    const isMobile = !window.matchMedia("(min-width: 1024px)").matches;
+    // Explicitly set initial states to ensure they are hidden before animation starts
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
     const elementsToHide = [titleEl, subtitleEl, ctaEl].filter(
       (el) => el !== null,
     );
@@ -595,9 +478,9 @@ const { title, subtitle, cta } = Astro.props;
     setTimeout(animateHero, 100);
   }
 
-  // ——— 3D Phone: desktop only (≥1024px) — hidden on tablet + phone via CSS ———
+  // ——— 3D Phone: only on desktop (≥768px) to avoid heavy WebGL on mobile/tablet ———
   (function preload3D() {
-    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
     const phoneContainer = document.querySelector(
       ".hero-video-wrap",
     ) as HTMLElement;

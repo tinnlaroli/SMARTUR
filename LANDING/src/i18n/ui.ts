@@ -27,48 +27,48 @@ export const ui = {
     // Buttons
     "button.get-started": "Comenzar",
     "button.learn-more": "Saber Más",
-    "button.login": "Soy Turista",
-    "button.discover": "Ver Demo",
-    "button.know-more": "Conocer Planes",
-    "button.view-plans": "Ver Planes Business",
-    "button.contact": "Hablar con un Asesor",
+    "button.login": "Soy turista",
+    "button.discover": "Descubrir SMARTUR",
+    "button.know-more": "Conoce Más",
+    "button.view-plans": "Ver Planes",
+    "button.contact": "Contactar",
 
     // Hero
     "hero.title":
-      'Potencia tu negocio en las <span style="color: var(--color-purple)">Altas Montañas</span>',
+      'IA que <span style="color: var(--color-purple)">guía,</span><br><span style="color: var(--color-cyan)">turismo</span> que une.',
     "hero.subtitle":
-      "La plataforma de IA que conecta tu oferta con turistas interesados. Visibilidad garantizada, crecimiento real para tu negocio.",
-    "hero.cta": "Registrar Mi Negocio",
+      "SMARTUR conecta turistas con experiencias auténticas mediante IA, impulsando a las MiPyMEs de Veracruz en su transformación digital.",
+    "hero.cta": "Sé Parte De SMARTUR",
 
     // About
     "about.title":
-      'Tu socio de <span style="color: var(--color-pink)">negocio</span>',
+      'Quiénes <span style="color: var(--color-pink)">Somos</span>',
     "about.subtitle":
-      '<span style="color: var(--color-purple)">Tecnología</span> которая помогает a las MiPyMEs a <span style="color: var(--color-cyan)">crecer</span>',
+      'Innovación <span style="color: var(--color-purple)">tecnológica</span> al servicio del <span style="color: var(--color-cyan)">turismo</span> regional',
     "about.sectionLabel": "Nuestra Historia",
     "about.award":
       'Galardón <span style="color: var(--color-green)">Turístico</span> Mi Veracruz',
     "about.awardBadge": "Galardonado",
     "about.mission.title": "Misión",
     "about.mission.text":
-      "Empoderar a las MiPyMEs turísticas de las Altas Montañas con tecnología de inteligencia artificial que genera resultados medibles: más clientes, más reservas, más crecimiento.",
+      "Impulsar una plataforma inteligente que conecte a viajeros con experiencias locales auténticas y personalizadas mediante el uso de inteligencia artificial. Promovemos el consumo responsable y el fortalecimiento de la economía regional, ofreciendo información clara, accesible y alineada a los intereses del usuario.",
     "about.vision.title": "Visión",
     "about.vision.text":
-      "Ser la plataforma número uno que los empresarios turísticos eligen para hacer crecer su negocio en Veracruz. Cada recomendación genera valor real para tu empresa.",
+      "Consolidarnos como la plataforma digital líder en recomendaciones turísticas dentro de la región de Las Altas Montañas. Buscamos ser referentes en innovación tecnológica y sostenibilidad, generando un impacto social positivo a través de un modelo de turismo inclusivo, moderno y ético.",
     "about.values.title": "Valores",
     "about.values.text":
-      "<strong>Resultados:</strong> Medimos nuestro éxito por el crecimiento de tus ventas.<br/><strong>Transparencia:</strong> Datos claros, reportes reales, sin promesas vacías.<br/><strong>Compromiso:</strong> Tu éxito es nuestro éxito.<br/><strong>Innovación:</strong> Siempre un paso adelante en tecnología turística.",
+      "<strong>Ética y Honestidad:</strong> Actuamos con transparencia y fiabilidad.<br/><strong>Empatía e Inclusión:</strong> Diseñamos para todos con respeto y equidad.<br/><strong>Responsabilidad:</strong> Comprometidos con el desarrollo local sostenible.<br/><strong>Seguridad e Imparcialidad:</strong> Garantizamos confianza en cada recomendación.",
     "about.description":
-      "Galardonados con el 'Galardón Turístico Mi Veracruz 2024'. SMARTUR ya ha ayudado a cientos de negocios a triplicar su visibilidad online y aumentar sus reservas.",
+      "Galardonados con el 'Galardón Turístico Mi Veracruz 2024', SMARTUR utiliza algoritmos avanzados de Machine Learning para ofrecer recomendaciones personalizadas que benefician tanto a viajeros como a negocios locales.",
     "about.stat1.number": "100",
     "about.stat1.suffix": "+",
-    "about.stat1.label": "Negocios Activos",
+    "about.stat1.label": "MiPyMEs Registradas",
     "about.stat2.number": "50",
     "about.stat2.suffix": " mil+",
-    "about.stat2.label": "Conexiones Mensuales",
+    "about.stat2.label": "Recomendaciones IA",
     "about.stat3.number": "15",
     "about.stat3.suffix": "+",
-    "about.stat3.label": "Municipios",
+    "about.stat3.label": "Municipios Cubiertos",
 
     // Introducing
     "introducing.title":
@@ -84,30 +84,30 @@ export const ui = {
 
     // Technology
     "tech.title":
-      '<span style="color: var(--color-purple)">Inteligencia</span> que impulsa tu <span style="color: var(--color-cyan)">crecimiento</span>',
+      '<span style="color: var(--color-purple)">Tecnología</span> que impulsa el <span style="color: var(--color-cyan)">turismo</span>',
     "tech.text":
-      "Nuestros algoritmos de Machine Learning analizan el comportamiento de miles de turistas para conectar directamente con quienes buscan exactamente lo que tu negocio ofrece.",
-    "tech.feature1.title": "Clientes Filtrados",
+      "SMARTUR utiliza algoritmos de Machine Learning para analizar preferencias, comportamientos y contextos, generando recomendaciones turísticas personalizadas que benefician tanto a viajeros como a negocios locales.",
+    "tech.feature1.title": "Recomendaciones Personalizadas",
     "tech.feature1.desc":
-      "Recibe solo turistas interesados en tu oferta específica. Sin desperdiciar recursos en marketing masivo.",
-    "tech.feature2.title": "Reportes de Demanda",
+      "Algoritmos de IA que aprenden de las preferencias de cada usuario para sugerir experiencias únicas y relevantes.",
+    "tech.feature2.title": "Apoyo a MiPyMEs",
     "tech.feature2.desc":
-      "Sabes exactamente qué buscan los turistas en tu zona para optimizar tu oferta y precios.",
-    "tech.feature3.title": "Visibilidad 24/7",
+      "Visibilidad y promoción para pequeños y medianos negocios turísticos de la región.",
+    "tech.feature3.title": "Datos Seguros",
     "tech.feature3.desc":
-      "Tu escaparate digital siempre activo, vendiendo incluso cuando duermes.",
-    "tech.card1.title": "Tu Negocio en Primera Fila",
+      "Protección de información con estándares de seguridad y privacidad de clase mundial.",
+    "tech.card1.title": "Tu ADN Viajero",
     "tech.card1.desc":
-      "Apareces exactamente cuando un turista busca lo que ofreces. Posicionamiento local sin competir con grandes cadenas.",
-    "tech.card2.title": "Datos que Generan Ventas",
+      "No eres un turista más. Nuestra IA analiza tus gustos específicos para diseñar una ruta que se siente hecha a mano.",
+    "tech.card2.title": "Tesoros Ocultos",
     "tech.card2.desc":
-      "Reportes semanales sobre qué experiencias son más demandadas. Toma decisiones informadas.",
-    "tech.card3.title": "Escala sin Límites",
+      "Conectamos con el corazón de las Altas Montañas. Descubre MiPyMEs locales y rincones secretos que los buscadores genéricos ignoran.",
+    "tech.card3.title": "Brújula Inteligente",
     "tech.card3.desc":
-      "Un solo perfil te conecta con miles de turistas. Tu negocio crece sin aumentar costos operativos.",
-    "tech.card4.title": "Garantizado por Premio",
+      "Machine Learning que predice tu próxima parada favorita, desde un café en la neblina hasta senderos inexplorados.",
+    "tech.card4.title": "Legado Galardonado",
     "tech.card4.desc":
-      "Reconocido por el Galardón Turístico Mi Veracruz 2024. Tecnología validada que funciona.",
+      "Tecnología premiada con el Galardón Turístico Mi Veracruz, uniendo la innovación con la esencia de nuestra tierra.",
 
     // Technology - Partner Benefits (New)
     "tech.partner.title":
@@ -145,15 +145,15 @@ export const ui = {
       "Iniciativa desarrollada en la Universidad Tecnológica del Centro de Veracruz, integrando talento estudiantil y tecnología para el desarrollo regional.",
 
     // Statements
-    "statement1.title": "Crecimiento Medible",
+    "statement1.title": "Innovación",
     "statement1.text":
-      "Más turistas interesados, más reservas, más ingresos. nuestra IA está diseñada para generar resultados tangibles en tu negocio.",
-    "statement2.title": "Liderazgo Regional",
+      "Utilizamos inteligencia artificial y tecnología de vanguardia para revolucionar la forma en que se descubre y experimenta el turismo en Las Altas Montañas.",
+    "statement2.title": "Identidad Regional",
     "statement2.text":
-      "Sé el primer negocio que ven los turistas cuando buscan experiencias en las Altas Montañas. Posición privilegiada garantizada.",
-    "statement3.title": "Datos que Deciden",
+      "Celebramos y promovemos la riqueza cultural, natural y gastronómica única de Veracruz, conectando a viajeros con experiencias auténticas.",
+    "statement3.title": "Sostenibilidad Tecnológica",
     "statement3.text":
-      "No más guesswork. Sabrás exactamente qué ofrecer y cuándo ofrecerlo basándote en demanda real, no intuición.",
+      "Empoderamos a las MiPyMEs locales con herramientas digitales accesibles que fortalecen su competitividad y crecimiento sostenible.",
 
     // Pricing
     "pricing.title":

@@ -175,13 +175,13 @@ const {
     flex-shrink: 0;
 
     img {
-      height: 2.5rem;
+      height: 2.25rem;
       width: auto;
     }
 
     @media (--mq-phone) {
       img {
-        height: 2.125rem;
+        height: 2rem;
       }
     }
   }
@@ -286,7 +286,6 @@ const {
         text-decoration: none;
         position: relative;
         color: var(--color-text) !important; /* Ensure links are visible */
-        transition: color 0.3s var(--ease-out-cubic);
 
         @media (--mq-tablet) {
           color: var(--color-text) !important;
@@ -309,7 +308,7 @@ const {
 
         &:hover,
         &:focus {
-          color: var(--color-purple) !important;
+          color: var(--color-pink) !important;
 
           &::before {
             transform: scaleX(1);
@@ -319,7 +318,7 @@ const {
 
         &.is-active,
         &:global(.is-active) {
-          color: var(--color-purple) !important;
+          color: var(--color-pink) !important;
         }
       }
     }
@@ -367,12 +366,8 @@ const {
       margin-left: 0;
     }
 
-    /* Controls remain visible on phone — icon-only buttons fit neatly */
     @media (--mq-phone) {
-      border-left: none;
-      padding-left: 0;
-      margin-left: 0;
-      gap: 0.25rem;
+      display: none; /* Hide action buttons on mobile to stop horizontal bleed */
     }
   }
 
@@ -486,7 +481,7 @@ const {
     background: rgba(var(--rgb-text), 0.12);
   }
 
-  /* Active state for navigation links — purple, matches scroll indicator */
+  /* Active state for navigation links */
   .menu :global(a.is-active) {
     color: var(--color-purple) !important;
   }
@@ -494,7 +489,6 @@ const {
   .menu :global(a.is-active::before) {
     transform: scaleX(1);
     transform-origin: left;
-    background: var(--color-purple);
   }
 
   /* Force visibility of links and fix staggered animation explicitly when the mobile nav is opened */

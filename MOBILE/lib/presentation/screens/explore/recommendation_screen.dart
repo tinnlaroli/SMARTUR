@@ -354,39 +354,15 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   final item = recommendations[i];
                   final name = item['title'] ?? item['name'] ?? 'Destino ${i + 1}';
                   final score = item['score'] ?? 0.0;
-                  final imageUrl = item['image_url']?.toString() ?? '';
                   return Card(
                     elevation: 0,
                     color: scheme.surfaceContainerHighest.withValues(alpha: 0.3),
                     margin: const EdgeInsets.only(bottom: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     child: ListTile(
-                      leading: Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: SmarturStyle.purple,
-                            backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-                            child: imageUrl.isEmpty
-                                ? Text(
-                                    score.toStringAsFixed(1),
-                                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                                  )
-                                : null,
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              score.toStringAsFixed(1),
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ],
+                      leading: CircleAvatar(
+                        backgroundColor: SmarturStyle.purple,
+                        child: Text(score.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                       title: Text(name, style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
                       trailing: const Icon(Icons.chevron_right),
@@ -411,14 +387,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         // Nota: El backend espera un ID real de lugar. Si item_id es un string de Yelp,
                         // el UserContentService podría fallar. Usaremos el primer lugar como ancla.
                         // Intentamos parsear un id numérico si existe, si no avisamos.
-                        final firstRec = recommendations.first;
-                        final rawId = firstRec['item_id']?.toString() ?? '';
-                        final placeKind = firstRec['kind']?.toString() ?? 'poi';
-                        // Local POI ids are plain numbers ("3"), services are "svc_3"
-                        final placeId = int.tryParse(rawId.replaceAll(RegExp(r'^svc_'), '')) ?? 1;
                         await UserContentService().createCommunityPost(
-                          placeKind: placeKind,
-                          placeId: placeId,
+                          placeKind: 'poi', // Genérico para recomendaciones externas
+                          placeId: 1, // Placeholder ya que las recomendaciones de IA son externas a la DB local por ahora
                           caption: caption,
                         );
                         if (context.mounted) {

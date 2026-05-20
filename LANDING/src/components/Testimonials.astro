@@ -23,13 +23,12 @@ const { title, testimonials } = Astro.props;
       set:html={title}
     />
 
-    <div class="testimonials-grid" id="testimonials-track">
+    <div class="testimonials-grid">
       {
         testimonials.map((testimonial, index) => (
           <div
             class="testimonial-card"
             data-sy-reveal="fade"
-            data-index={index}
             style={`transition-delay: ${index * 0.15}s`}
           >
             <div class="quote-icon">
@@ -66,13 +65,6 @@ const { title, testimonials } = Astro.props;
         ))
       }
     </div>
-
-    <!-- Mobile scroll indicator — dots, only rendered on phone via CSS -->
-    <div class="scroll-dots" aria-hidden="true" id="testimonial-dots">
-      {testimonials.map((_, i) => (
-        <button class:list={["scroll-dot", i === 0 && "active"]} data-dot={i} />
-      ))}
-    </div>
   </div>
 </section>
 
@@ -80,7 +72,7 @@ const { title, testimonials } = Astro.props;
   .testimonials-section {
     position: relative;
     padding: 6rem 0;
-    background: var(--color-bg);
+    background: var(--color-bg-alt);
 
     @media (--mq-tablet) {
       padding: 4rem 0;
@@ -247,86 +239,5 @@ const { title, testimonials } = Astro.props;
     --fs: var(--font-size-xs);
     color: var(--color-purple);
     font-weight: 600;
-  }
-</style>
-
-<script>
-  function initTestimonialDots() {
-    const track = document.getElementById('testimonials-track');
-    const dotsContainer = document.getElementById('testimonial-dots');
-    if (!track || !dotsContainer) return;
-
-    const dots = Array.from(dotsContainer.querySelectorAll<HTMLButtonElement>('.scroll-dot'));
-    const cards = Array.from(track.querySelectorAll<HTMLElement>('.testimonial-card'));
-
-    if (!dots.length || !cards.length) return;
-
-    function setActiveDot(index: number) {
-      dots.forEach((d, i) => d.classList.toggle('active', i === index));
-    }
-
-    // Scroll track to card when dot is clicked
-    dots.forEach((dot, i) => {
-      dot.addEventListener('click', () => {
-        const card = cards[i];
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-      });
-    });
-
-    // Update active dot as user scrolls the track
-    let rafId = 0;
-    track.addEventListener('scroll', () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        const center = track.scrollLeft + track.clientWidth / 2;
-        let closest = 0;
-        let minDist = Infinity;
-        cards.forEach((card, i) => {
-          const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-          const dist = Math.abs(center - cardCenter);
-          if (dist < minDist) { minDist = dist; closest = i; }
-        });
-        setActiveDot(closest);
-      });
-    }, { passive: true });
-  }
-
-  initTestimonialDots();
-  document.addEventListener('astro:page-load', initTestimonialDots);
-</script>
-
-<style>
-  /* ─── Mobile scroll indicator dots ─── */
-  .scroll-dots {
-    display: none;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.25rem;
-
-    @media (--mq-phone) {
-      display: flex;
-    }
-  }
-
-  .scroll-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(var(--rgb-text), 0.2);
-    padding: 0;
-    cursor: pointer;
-    transition:
-      width 0.25s var(--ease-out-cubic),
-      background 0.25s var(--ease-out-cubic);
-
-    &.active {
-      width: 20px;
-      border-radius: 3px;
-      background: var(--color-purple);
-    }
   }
 </style>

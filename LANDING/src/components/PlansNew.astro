@@ -79,13 +79,6 @@ const {
 
           return (
             <div class="plan" class:list={[i === 1 && "featured"]}>
-              {i === 1 && (
-                <div class="popular-badge">
-                  <span>
-                    {Astro.props.discountLabel ? "★ Popular" : "★ Recomendado"}
-                  </span>
-                </div>
-              )}
               <h3
                 class="u-text plan-title"
                 data-sy-reveal="words"
@@ -451,37 +444,18 @@ const {
     border-color: var(--color-green);
     background: linear-gradient(
       180deg,
-      rgba(var(--rgb-green-accent), 0.04) 0%,
-      rgba(var(--rgb-green-accent), 0) 100%
+      rgba(var(--rgb-green), 0.03) 0%,
+      rgba(var(--rgb-green), 0) 100%
     );
-    box-shadow: 0 10px 30px rgba(var(--rgb-green-accent), 0.12);
+    box-shadow: 0 10px 30px rgba(var(--rgb-green), 0.1);
 
     .plan-title {
       color: var(--color-green);
     }
 
     &:hover {
-      box-shadow: 0 25px 50px rgba(var(--rgb-green-accent), 0.18);
+      box-shadow: 0 25px 50px rgba(var(--rgb-green), 0.15);
       transform: translateY(-8px) scale(1.01);
-    }
-  }
-
-  /* Popular badge */
-  .popular-badge {
-    margin-bottom: 1.25rem;
-
-    span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
-      background: var(--color-green);
-      color: white;
     }
   }
 </style>

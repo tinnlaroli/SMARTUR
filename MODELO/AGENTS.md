@@ -1,7 +1,7 @@
 # AGENTS.md — SMARTUR v4
 
 ## Project summary
-Hybrid recommendation system with **3 ML algorithms** (CF Pearson+KNN, Random Forest, Gradient Boosting), model comparison metrics, and PostgreSQL persistence for recommendations. Exposes FastAPI on port 8000.
+Hybrid recommendation system (Collaborative Filtering via Pearson + KNN, and contextual Random Forest) using the Yelp dataset. Exposes a FastAPI on port 8000.
 
 ## Key commands
 
@@ -40,8 +40,6 @@ src/
   engine.py          — CF engine: loads CSVs, builds sparse user-item matrix, KNN model
   cf.py              — Pearson prediction from KNN neighbors
   rf_model.py        — Random Forest contextual model with synthetic user simulation
-  gbm_model.py       — Gradient Boosting contextual (3rd algorithm)
-  model_metrics.py   — Compare 3 algorithms; select best by RMSE; save config
   context_encoder.py — Transforms React form JSON → numeric features (budget, age, tourism types, group type, match features)
   fusion.py          — Two-stage pipeline: retrieval (KNN pool) → hard/soft filters → RF ranking → α-blended final score
   pre_procesamiento.py — NLP + extraction: Yelp JSON → data_negocios_limpio.csv, data_reviews_limpio.csv
@@ -54,9 +52,7 @@ src/
 1. `descargar_yelp.py` → raw JSON in `data/`
 2. `pre_procesamiento.py` → cleaned CSVs in `data/` (gitignored)
 3. `api.py` startup → loads CSVs via `engine.py`, trains/loads RF from `models/rf_context_yelp.joblib`
-4. `POST /recommend/{user_id}` → `fusion.py` hybrid pipeline → JSON + persist in `ml_recommendation_*`
-5. `GET /recommendations/{user_id}` → read persisted results only (no recompute)
-6. `GET /metrics/models` → algorithm comparison metrics (RMSE/MAE)
+4. `POST /recommend/{user_id}` → `fusion.py` hybrid pipeline → JSON response
 
 ## Important gotchas
 
@@ -72,15 +68,9 @@ src/
 ## Docker
 
 ```bash
-# Desde DEVELOPMENT/ — bootstrap automático en primer arranque
-docker compose up -d
-docker logs -f smartur-modelo   # descarga Yelp + preprocess + train
-
-# Primera vez: puede tardar 30-60+ min (descarga ~5 GB + entrenamiento)
-# Healthcheck start_period: 1800s
+docker compose up --build   # image: smartur-api:local, port 8000
+# First start may take several minutes if RF model is missing (healthcheck start_period: 300s)
 ```
-
-Variables: `AUTO_BOOTSTRAP=1` (default), `SKIP_MODEL_BOOT=1` (tests sin ML), `KAGGLE_USERNAME`/`KAGGLE_KEY` (opcional).
 
 ## Tests
 

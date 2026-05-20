@@ -7,32 +7,23 @@ gsap.registerPlugin(ScrollTrigger);
 // doesn't match any element (safe no-op in our case).
 gsap.config({ nullTargetWarn: false });
 
-function prefersReducedMotion(): boolean {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 /**
- * Marks [data-sy-reveal] elements as visible when they enter the viewport.
- * Uses CSS transitions from reveals.css (fade / lines / words).
+ * Global Reveal System
+ * Handles elements with [data-sy-reveal] attribute by adding .is-in class
+ * when they enter the viewport.
  */
 const initReveals = () => {
+    // Only run in client
     if (typeof window === "undefined") return;
 
-    if (prefersReducedMotion()) {
-        document.querySelectorAll("[data-sy-reveal]").forEach((el) => {
-            if (el.getAttribute("data-sy-reveal") === "manual") return;
-            el.classList.add("is-in");
-        });
-        return;
-    }
-
-    const reveals = document.querySelectorAll("[data-sy-reveal]");
+    const reveals = document.querySelectorAll('[data-sy-reveal]');
     reveals.forEach((el) => {
+        // Skip manually controlled reveals
         if (el.getAttribute("data-sy-reveal") === "manual") return;
 
         ScrollTrigger.create({
             trigger: el,
-            start: "top 86%",
+            start: "top 85%",
             onEnter: () => el.classList.add("is-in"),
             once: true,
         });
@@ -40,37 +31,32 @@ const initReveals = () => {
 };
 
 /**
- * Manual Reveal
+ * Manual Reveal 
  * Used by components like RectReveal to trigger specific animations
  */
 export const manualRevealIn = (el: HTMLElement) => {
-    if (typeof window !== "undefined" && prefersReducedMotion()) {
-        gsap.set(el, { opacity: 1, y: 0 });
-        return;
-    }
+    // Default manual reveal animation (fade up)
     gsap.fromTo(
         el,
-        { opacity: 0, y: 28 },
+        { opacity: 0, y: 30 },
         {
             opacity: 1,
             y: 0,
-            duration: 0.85,
-            ease: "power3.out",
-            overwrite: "auto",
-        },
+            duration: 1.2,
+            ease: "power2.out",
+            overwrite: "auto"
+        }
     );
 };
 
-const runInit = () => {
-    initReveals();
-    ScrollTrigger.refresh();
-};
-
-// Initialize on client
+// Initialize on client side
 if (typeof window !== "undefined") {
-    window.addEventListener("load", runInit);
-    // First paint (DOM ready)
-    runInit();
-
-    document.addEventListener("astro:page-load", runInit);
+    // Run on load to ensure DOM is ready
+    window.addEventListener("load", () => {
+        initReveals();
+        ScrollTrigger.refresh();
+    });
+    
+    // Also try to run immediately in case we are already loaded or in SPA navigation
+    initReveals();
 }

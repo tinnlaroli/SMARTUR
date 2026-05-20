@@ -197,7 +197,7 @@ const text: Record<Lang, string[]> = {
 <style>
   .flight-divider-section {
     width: 100%;
-    background-color: var(--color-bg);
+    background-color: #ffffff;
   }
 
   .flight-divider-height {
@@ -217,5 +217,9 @@ const text: Record<Lang, string[]> = {
     .flight-text span {
       font-size: 1.75rem !important;
     }
+  }
+
+  :global([data-theme="dark"]) .flight-divider-section {
+    background-color: var(--color-bg);
   }
 </style>
