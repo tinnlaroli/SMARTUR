@@ -11,13 +11,16 @@ class ExploreController {
     static async getHome(req, res) {
         try {
             const locResult = await Location.findAll(1, 100, '', '');
-            const svcResult = await TouristServices.findAll(1, 500, '', null, null, true, null);
+            // active=null: mostrar todos los servicios activos e inactivos para que el admin vea
+            // lo que agregó. La UI móvil filtra por categoría, no por estado.
+            const svcResult = await TouristServices.findAll(1, 500, '', null, null, null, null);
             const poiResult = await PointOfInterest.findAll(1, 500, '', null, null, null);
 
+            // ── Agrupar por ubicación ──────────────────────────────────────
+            const ORPHAN_ID = '__orphan__';
             const servicesByLocation = new Map();
             for (const s of svcResult.services) {
-                const lid = s.id_location;
-                if (lid == null) continue;
+                const lid = s.id_location ?? ORPHAN_ID;
                 if (!servicesByLocation.has(lid)) servicesByLocation.set(lid, []);
                 servicesByLocation.get(lid).push({
                     id: s.id_service,
@@ -37,8 +40,7 @@ class ExploreController {
 
             const pointsByLocation = new Map();
             for (const p of poiResult.points) {
-                const lid = p.id_location;
-                if (lid == null) continue;
+                const lid = p.id_location ?? ORPHAN_ID;
                 if (!pointsByLocation.has(lid)) pointsByLocation.set(lid, []);
                 pointsByLocation.get(lid).push({
                     id: p.id_point,
@@ -55,6 +57,7 @@ class ExploreController {
                 });
             }
 
+            // ── Construir ciudades ─────────────────────────────────────────
             const cities = locResult.locations.map((l) => {
                 const id = l.id_location;
                 return {
@@ -62,12 +65,36 @@ class ExploreController {
                     name: l.name,
                     state: l.state,
                     municipality: l.municipality,
-                    latitude: l.latitude,
-                    longitude: l.longitude,
+                    latitude: l.latitude != null ? parseFloat(l.latitude) : null,
+                    longitude: l.longitude != null ? parseFloat(l.longitude) : null,
                     services: servicesByLocation.get(id) ?? [],
                     points: pointsByLocation.get(id) ?? [],
                 };
             });
+
+            // ── Agrupar huérfanos en la primera ciudad disponible ──────────
+            // Servicios/POIs sin id_location se asignan a la primera ciudad para
+            // que siempre sean visibles. Si no hay ciudades, se agregan al final.
+            const orphanServices = servicesByLocation.get(ORPHAN_ID) ?? [];
+            const orphanPoints = pointsByLocation.get(ORPHAN_ID) ?? [];
+
+            if (orphanServices.length > 0 || orphanPoints.length > 0) {
+                if (cities.length > 0) {
+                    cities[0].services.push(...orphanServices);
+                    cities[0].points.push(...orphanPoints);
+                } else {
+                    cities.push({
+                        id_location: null,
+                        name: 'Altas Montañas',
+                        state: 'Veracruz',
+                        municipality: null,
+                        latitude: 19.0,
+                        longitude: -97.0,
+                        services: orphanServices,
+                        points: orphanPoints,
+                    });
+                }
+            }
 
             res.json({
                 message: 'Datos de exploración (home)',

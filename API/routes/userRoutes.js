@@ -7,6 +7,9 @@ import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
+// Ping ligero para validar token desde la app móvil (no requiere ID)
+router.get("/me/ping", verifyToken, (_req, res) => res.json({ ok: true }));
+
 // RBAC: Solo admin puede listar todos los usuarios
 router.get("/users", verifyToken, requireRole([1]), UserController.getAll);
 
