@@ -7,6 +7,7 @@ import 'package:http_parser/http_parser.dart';
 
 import '../../core/constants/api_constants.dart';
 import '../../core/utils/profile_photo_validation.dart';
+import 'api_client.dart';
 import 'auth_service.dart';
 
 class UserContentException implements Exception {
@@ -128,8 +129,10 @@ class UserContentService {
 
   Future<List<Map<String, dynamic>>> fetchFavorites() async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meFavorites}');
-    final response =
-        await http.get(uri, headers: await _headers()).timeout(const Duration(seconds: 20));
+    final response = await ApiClient.get(uri);
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 200) {
       throw UserContentException('No se pudieron cargar favoritos');
     }
@@ -156,24 +159,30 @@ class UserContentService {
 
   Future<void> addFavorite(String placeKind, int placeId) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meFavorites}');
-    final response = await http
-        .post(
-          uri,
-          headers: await _headers(),
-          body: jsonEncode({'place_kind': placeKind, 'place_id': placeId}),
-        )
-        .timeout(const Duration(seconds: 15));
+    final response = await ApiClient.post(
+      uri,
+      body: jsonEncode({'place_kind': placeKind, 'place_id': placeId}),
+      timeout: const Duration(seconds: 15),
+    );
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 201 && response.statusCode != 200) {
-      final msg = jsonDecode(response.body)['message'] ?? 'Error al guardar favorito';
-      throw UserContentException(msg.toString());
+      final msg = ApiClient.extractApiMessage(response, fallback: 'Error al guardar favorito');
+      throw UserContentException(msg);
     }
   }
 
   Future<void> removeFavorite(String placeKind, int placeId) async {
     final uri = Uri.parse(
         '${ApiConstants.baseUrl}${ApiConstants.meFavorites}/$placeKind/$placeId');
-    final response =
-        await http.delete(uri, headers: await _headers()).timeout(const Duration(seconds: 15));
+    final response = await ApiClient.delete(
+      uri,
+      timeout: const Duration(seconds: 15),
+    );
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 200) {
       throw UserContentException('No se pudo quitar el favorito');
     }
@@ -182,8 +191,10 @@ class UserContentService {
   Future<List<Map<String, dynamic>>> fetchVisits({int limit = 50}) async {
     final uri = Uri.parse(
         '${ApiConstants.baseUrl}${ApiConstants.meVisits}?limit=$limit');
-    final response =
-        await http.get(uri, headers: await _headers()).timeout(const Duration(seconds: 20));
+    final response = await ApiClient.get(uri);
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 200) {
       throw UserContentException('No se pudo cargar el historial');
     }
@@ -211,13 +222,11 @@ class UserContentService {
   Future<void> recordVisit(String placeKind, int placeId) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meVisits}');
     try {
-      await http
-          .post(
-            uri,
-            headers: await _headers(),
-            body: jsonEncode({'place_kind': placeKind, 'place_id': placeId}),
-          )
-          .timeout(const Duration(seconds: 10));
+      await ApiClient.post(
+        uri,
+        body: jsonEncode({'place_kind': placeKind, 'place_id': placeId}),
+        timeout: const Duration(seconds: 10),
+      );
     } catch (_) {
       // No bloquear UX si falla el registro de visita
     }
@@ -242,11 +251,14 @@ class UserContentService {
   Future<Map<String, dynamic>> fetchCommunityPosts({int page = 1, int limit = 20}) async {
     final uri = Uri.parse(
         '${ApiConstants.baseUrl}${ApiConstants.communityPosts}?page=$page&limit=$limit');
-    final response = await http.get(uri).timeout(const Duration(seconds: 20));
+    final response = await ApiClient.get(uri, timeout: const Duration(seconds: 20));
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 200) {
       throw UserContentException('No se pudieron cargar las publicaciones');
     }
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
   }
 
   Future<void> deleteCommunityPost(int postId) async {

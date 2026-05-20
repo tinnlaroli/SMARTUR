@@ -75,7 +75,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             const ctaShimmerEl = hero.querySelector('.cta-shimmer') as HTMLElement | null;
             const scrollIndicatorEl = hero.querySelector('.scroll-indicator') as HTMLElement;
 
-            const isMobile = !window.matchMedia('(min-width: 1024px)').matches;
+            const isMobile = !window.matchMedia('(min-width: 768px)').matches;
 
             // Initial states
             gsap.set([titleEl, subtitleEl, ctaEl], { opacity: 0 });
@@ -154,7 +154,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
 
         // Initialize 3D on desktop only — matches lg:flex breakpoint (1024px+)
         let cleanup3D: (() => void) | undefined;
-        if (window.matchMedia('(min-width: 1024px)').matches && phoneContainerRef.current) {
+        if (window.matchMedia('(min-width: 768px)').matches && phoneContainerRef.current) {
             try {
                 cleanup3D = initPhoneScene(phoneContainerRef.current);
             } catch (e) {
@@ -172,8 +172,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
         <section
             ref={heroRef}
             id="hero"
-            className={`sy-hero-home relative flex min-h-[100dvh] flex-col justify-center overflow-hidden ${isRevealed ? 'hero-revealed' : ''}`}
-            style={{ background: 'var(--color-bg)' }}
+            className={`sy-hero-home ${isRevealed ? 'hero-revealed' : ''}`}
         >
             {/* Background shimmer */}
             <div
@@ -184,73 +183,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                 }}
             />
 
-            {/* Ambient depth orbs — match LANDING identity */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                <div
-                    className="hero-orb-1 absolute rounded-full"
-                    style={{
-                        width: 'min(52vw, 620px)',
-                        height: 'min(52vw, 620px)',
-                        background: 'rgba(var(--rgb-purple-accent), 0.1)',
-                        filter: 'blur(100px)',
-                        top: '-18%',
-                        right: '-4%',
-                    }}
-                />
-                <div
-                    className="hero-orb-2 absolute rounded-full"
-                    style={{
-                        width: 'min(42vw, 500px)',
-                        height: 'min(42vw, 500px)',
-                        background: 'rgba(var(--rgb-pink-primary), 0.09)',
-                        filter: 'blur(100px)',
-                        bottom: '-12%',
-                        left: '-6%',
-                    }}
-                />
-                <div
-                    className="hero-orb-3 absolute rounded-full"
-                    style={{
-                        width: 'min(32vw, 380px)',
-                        height: 'min(32vw, 380px)',
-                        background: 'rgba(var(--rgb-cyan-accent), 0.06)',
-                        filter: 'blur(80px)',
-                        top: '35%',
-                        left: '28%',
-                    }}
-                />
-                {/* Dot grid texture */}
-                <div
-                    className="absolute inset-0"
-                    style={{
-                        backgroundImage: 'radial-gradient(circle, rgba(var(--rgb-text), 0.04) 1px, transparent 1px)',
-                        backgroundSize: '28px 28px',
-                        maskImage: 'radial-gradient(ellipse 80% 65% at 40% 50%, black 20%, transparent 78%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 80% 65% at 40% 50%, black 20%, transparent 78%)',
-                    }}
-                />
-            </div>
 
-            <div className="relative z-10 mx-auto w-full max-w-[1280px] px-6 md:px-10 lg:px-16 pt-0">
-                <div className="inner flex flex-row items-start justify-between gap-[4rem] pt-[2rem] pb-[3.5rem] lg:flex-row lg:items-start lg:gap-[3rem] lg:pt-[1.5rem] lg:pb-[3rem] max-[1023px]:flex-col max-[1023px]:items-start max-[1023px]:gap-[2.5rem] max-[1023px]:pt-[2.5rem] max-[1023px]:pb-[2rem] max-[767px]:pt-[3.5rem] max-[767px]:pb-[1rem]">
-                    <div className="content z-20 flex-1 max-w-none md:max-w-full">
-                        <h1
-                            className="u-heading title hero-title mb-0 font-['Cal_Sans'] text-[5.5rem] leading-[0.92] font-black lg:text-[4.8rem] md:text-[3.8rem] max-[767px]:text-[2.8rem]"
-                            style={{ color: 'var(--color-text)', fontFamily: 'var(--font-heading)' }}
-                        >
+            <div className="hero-container">
+                <div className="inner">
+                    <div className="content">
+                        <h1 className="title hero-title">
                             {renderTitle(title)}
                         </h1>
 
                         {subtitle ? (
-                            <p
-                                className="u-text subtitle hero-subtitle mt-[2rem] mb-0 max-w-[36em] text-[1.1rem] leading-[1.7] max-[767px]:text-[1rem]"
-                                style={{ color: 'var(--color-text-alt)' }}
-                            >
+                            <p className="subtitle hero-subtitle">
                                 {subtitle}
                             </p>
                         ) : null}
 
-                        <div className="cta-wrapper hero-cta relative mt-[2rem] inline-block overflow-hidden rounded-full">
+                        <div className="cta-wrapper hero-cta rounded-full">
                             {/* Shimmer overlay — one-time GSAP animation on mount */}
                             <div
                                 className="cta-shimmer pointer-events-none absolute top-0 left-[-100%] z-[10] h-full w-[60%] -skew-x-[20deg]"
@@ -278,12 +225,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
 
                     <div
                         ref={phoneContainerRef}
-                        className="video-wrapper hero-video-wrap relative z-0 hidden aspect-square w-1/2 max-w-[700px] flex-shrink-0 lg:flex"
+                        className="video-wrapper hero-video-wrap"
                         style={{
                             maskImage:
-                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0) 100%)',
+                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.3) 88%, transparent 100%)',
                             WebkitMaskImage:
-                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0) 100%)',
+                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.3) 88%, transparent 100%)',
                         }}
                     />
                 </div>

@@ -137,6 +137,204 @@
   animation-play-state: paused;
 }
 
+/* ─── Hero (typography + layout — LANDING HeroHome.astro) ─── */
+.sy-hero-home {
+  --container-max-width: 88rem;
+  --container-offset: 1.875rem;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 1280px) {
+  .sy-hero-home {
+    --container-offset: 1.5rem;
+  }
+}
+
+@media (max-width: 987px) {
+  .sy-hero-home {
+    --container-offset: 1.25rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home {
+    --container-offset: 1rem;
+  }
+}
+
+.sy-hero-home .hero-container {
+  position: relative;
+  z-index: 1;
+  margin-inline: auto;
+  width: calc(100% - var(--container-offset) * 2);
+  max-width: calc(var(--container-max-width) - var(--container-offset) * 2);
+  box-sizing: border-box;
+}
+
+.sy-hero-home .inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5rem;
+  padding: 4rem 0;
+  position: relative;
+  width: 100%;
+}
+
+@media (max-width: 1680px) {
+  .sy-hero-home .inner {
+    gap: 4rem;
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 987px) {
+  .sy-hero-home .inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4rem;
+    padding: 3rem 0 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home .inner {
+    padding: 6rem 0 1rem;
+    gap: 3rem;
+  }
+}
+
+.sy-hero-home .content {
+  flex: 1 1 720px;
+  min-width: 0;
+  max-width: 720px;
+  z-index: 2;
+  padding-inline: 0;
+}
+
+@media (max-width: 987px) {
+  .sy-hero-home .content {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
+}
+
+.sy-hero-home .title {
+  font-family: var(--font-family-heading);
+  font-size: 5.25rem;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+@media (max-width: 1680px) {
+  .sy-hero-home .title {
+    font-size: 4.65rem;
+  }
+}
+
+@media (max-width: 987px) {
+  .sy-hero-home .title {
+    font-size: 4rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home .title {
+    font-size: 3.15rem;
+  }
+}
+
+.sy-hero-home .subtitle {
+  font: 400 1.15rem / 1.65 var(--font-family-body);
+  max-width: 32em;
+  margin: 1.75rem 0 0;
+  color: var(--color-text-alt);
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home .subtitle {
+    font-size: var(--font-size-md);
+  }
+}
+
+.sy-hero-home .cta-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  margin-top: 2.75rem;
+}
+
+.sy-hero-home .hero-title {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.sy-hero-home .hero-subtitle {
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(8px);
+}
+
+.sy-hero-home .hero-cta {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.sy-hero-home .hero-video-wrap {
+  opacity: 0;
+  transform: translateX(80px) scale(0.92);
+}
+
+.sy-hero-home.hero-revealed .hero-title,
+.sy-hero-home.hero-revealed .hero-subtitle,
+.sy-hero-home.hero-revealed .hero-cta,
+.sy-hero-home.hero-revealed .hero-video-wrap {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.sy-hero-home .video-wrapper {
+  flex: 0 0 auto;
+  width: 50%;
+  max-width: 850px;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  z-index: 0;
+  margin-inline-start: auto;
+}
+
+@media (max-width: 1680px) {
+  .sy-hero-home .video-wrapper {
+    width: 80%;
+    max-width: 750px;
+  }
+}
+
+@media (max-width: 987px) {
+  .sy-hero-home .video-wrapper {
+    width: 100%;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home .video-wrapper {
+    display: none !important;
+  }
+}
+
 /* ─── Hero ambient orb animations ───────────────────── */
 @keyframes hero-orb-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -317,21 +515,26 @@
     box-shadow 0.35s var(--ease-out-cubic);
 }
 
+/* Base elevation like LANDING shadow-xl (business / secondary card) */
+.bridge-action--tourist {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  /* Primary (tourist/pink) hover */
+  /* Primary (tourist/pink) hover — subtle lift, no glow */
   .bridge-action:not(.bridge-action--tourist):hover {
     transform: translateY(-4px);
-    box-shadow:
-      0 24px 48px rgba(0, 0, 0, 0.14),
-      0 0 40px -12px rgba(var(--rgb-pink-primary), 0.28);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.10);
   }
 
-  /* Secondary (business/neutral) hover */
+  /* Secondary (business) hover — elevation + purple glow */
   .bridge-action--tourist:hover {
     transform: translateY(-4px);
     box-shadow:
-      0 24px 48px rgba(0, 0, 0, 0.14),
-      0 0 0 1px rgba(var(--rgb-text), 0.12);
+      0 25px 50px -12px rgba(0, 0, 0, 0.15),
+      0 0 18px -4px rgba(var(--rgb-purple-accent), 0.38);
   }
 }
 
@@ -346,14 +549,15 @@
   transform: scale(1.1);
 }
 
-/* ── Secondary icon — neutral (Tengo un negocio in PLATAFORMA) ── */
+/* ── Secondary icon — same surface as .action-arrow (Soy turista) ── */
 .icon-box-tourist {
   background: var(--color-bg-alt);
   color: var(--color-text-alt);
   transition: background 0.3s ease, color 0.3s ease, transform 0.3s var(--ease-out-back);
 }
 .bridge-action--tourist:hover .icon-box-tourist {
-  background: rgba(var(--rgb-text), 0.08);
+  background: var(--color-bg-alt);
+  color: var(--color-text-alt);
   transform: scale(1.1);
 }
 
@@ -386,16 +590,21 @@
   transform: scale(1.1);
 }
 
-/* ── Secondary arrow — ExternalLink, stays neutral ── */
+/* ── Secondary arrow — same base surface as .action-arrow; invert on hover ── */
 .action-arrow-tourist {
   background: var(--color-bg-alt);
   color: var(--color-text-alt);
   transition: background 0.3s ease, color 0.3s ease, transform 0.3s var(--ease-out-back);
 }
 .bridge-action--tourist:hover .action-arrow-tourist {
-  background: rgba(var(--rgb-text), 0.12);
-  color: var(--color-text);
+  background-color: #ffffff;
+  color: #1e293b;
   transform: scale(1.1);
+}
+
+[data-theme="dark"] .bridge-action--tourist:hover .action-arrow-tourist {
+  background-color: #ffffff;
+  color: #1e293b;
 }
 
 /* Fase 3 — micro-interacciones (respeta prefers-reduced-motion) */

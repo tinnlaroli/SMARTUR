@@ -9,10 +9,29 @@ import 'auth_service.dart';
 class ProfileService {
   static const _prefsKey = 'preferences_saved';
 
-  /// Retorna true si el usuario ya guardó sus preferencias previamente (caché local).
+  /// Retorna true si el usuario ya tiene preferencias — primero revisa caché local,
+  /// luego consulta el servidor para soportar multi-sesión (web → móvil).
   static Future<bool> hasPreferencesSaved() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_prefsKey) ?? false;
+    // Cache hit: evita un round-trip si ya se sabe que están guardadas
+    if (prefs.getBool(_prefsKey) == true) return true;
+
+    // Consultar servidor (sincroniza entre web y móvil para el mismo usuario)
+    try {
+      final data = await fetchMyProfileForPreferences();
+      final interests = data['interests'];
+      final hasTravelerProfile = data.isNotEmpty &&
+          (interests is List && interests.isNotEmpty ||
+              data['travel_type'] != null ||
+              data['age'] != null);
+      if (hasTravelerProfile) {
+        await prefs.setBool(_prefsKey, true);
+        return true;
+      }
+    } catch (_) {
+      // Sin conexión: asumir que no hay preferencias para mostrar la pantalla
+    }
+    return false;
   }
 
   /// Guarda la bandera local indicando que las preferencias ya fueron enviadas.

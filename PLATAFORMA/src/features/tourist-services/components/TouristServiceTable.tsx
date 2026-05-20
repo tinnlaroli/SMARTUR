@@ -1,7 +1,19 @@
-import { useRef } from 'react';
 import { ClipboardCheck, Eye } from 'lucide-react';
 import type { TouristService } from '../types/types';
-import { motion } from 'framer-motion';
+import {
+    DataTable,
+    DataTableBody,
+    DataTableCell,
+    DataTableHead,
+    DataTableHeadCell,
+    DataTableLinkButton,
+    DataTableRow,
+    DataTableScroll,
+    DataTableShell,
+    TABLE_BADGE_COLORS,
+    TABLE_CHECKBOX_CLASS,
+    TableBadge,
+} from '../../../components/ui/DataTable';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
     restaurant: 'Restaurante',
@@ -26,109 +38,98 @@ export default function TouristServiceTable({
     onViewDetail,
     onEvaluate,
 }: Props) {
-    const tableRef = useRef<HTMLDivElement>(null);
+    const allSelected = selectedServices.length === services.length && services.length > 0;
+
+    const toggleAll = () => {
+        if (allSelected) {
+            services.forEach((s) => onToggle(s.id));
+        } else {
+            services.forEach((s) => {
+                if (!selectedServices.includes(s.id)) onToggle(s.id);
+            });
+        }
+    };
 
     return (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] h-full flex flex-col overflow-hidden">
-            <div className="bg-zinc-50 dark:bg-[#18181b] border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center px-4 py-3.5 gap-4">
-                    <div className="w-8 flex-shrink-0">
-                        <input
-                            type="checkbox"
-                            checked={
-                                selectedServices.length === services.length && services.length > 0
-                            }
-                            onChange={() => {
-                                if (selectedServices.length === services.length) {
-                                    services.forEach((s) => onToggle(s.id));
-                                } else {
-                                    services.forEach((s) => {
-                                        if (!selectedServices.includes(s.id)) onToggle(s.id);
-                                    });
-                                }
-                            }}
-                            className="size-4 rounded border-zinc-700 bg-zinc-900 text-violet-500 cursor-pointer"
-                        />
-                    </div>
-                    <div className="flex-1 min-w-[200px] text-xs font-medium uppercase tracking-wider text-zinc-400">
-                        Nombre
-                    </div>
-                    <div className="flex-[1.5] min-w-[250px] text-xs font-medium uppercase tracking-wider text-zinc-400">
-                        Descripción
-                    </div>
-                    <div className="w-32 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Tipo
-                    </div>
-                    <div className="w-24 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Estado
-                    </div>
-                    <div className="w-24 flex-shrink-0 text-xs font-medium uppercase text-zinc-400 text-right">
-                        Acciones
-                    </div>
-                </div>
-            </div>
-
-            <div ref={tableRef} className="flex-1 overflow-y-auto min-h-0">
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    {services.map((service, index) => (
-                        <motion.div
-                            key={service.id}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            className="flex items-center p-4 gap-4 hover:bg-zinc-800/50 group transition-colors"
-                        >
-                            <div className="w-8 flex-shrink-0">
+        <DataTableShell>
+            <DataTableScroll>
+                <DataTable>
+                    <DataTableHead>
+                        <tr>
+                            <DataTableHeadCell className="w-14">
                                 <input
                                     type="checkbox"
-                                    checked={selectedServices.includes(service.id)}
-                                    onChange={() => onToggle(service.id)}
-                                    className="size-4 rounded border-zinc-700 bg-zinc-900 text-violet-500 cursor-pointer"
+                                    checked={allSelected}
+                                    onChange={toggleAll}
+                                    className={TABLE_CHECKBOX_CLASS}
                                 />
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => onViewDetail(service.id)}
-                                className="flex-1 min-w-[200px] text-left text-sm text-zinc-300 truncate cursor-pointer hover:text-violet-400"
-                            >
-                                {service.name}
-                            </button>
-                            <div className="flex-[1.5] min-w-[250px] text-sm text-zinc-300 truncate">
-                                {service.description}
-                            </div>
-                            <div className="w-32 flex-shrink-0 text-sm text-zinc-400">
-                                {SERVICE_TYPE_LABELS[service.service_type] ?? service.service_type}
-                            </div>
-                            <div className="w-24 flex-shrink-0 text-sm">
-                                <span
-                                    className={`inline-flex items-center text-xs font-medium ${service.active ? 'text-emerald-400' : 'text-rose-400'}`}
-                                >
-                                    <span
-                                        className={`mr-1.5 h-1.5 w-1.5 rounded-full ${service.active ? 'bg-emerald-400' : 'bg-rose-400'}`}
+                            </DataTableHeadCell>
+                            <DataTableHeadCell>Nombre</DataTableHeadCell>
+                            <DataTableHeadCell className="min-w-[220px]">Descripción</DataTableHeadCell>
+                            <DataTableHeadCell className="w-36">Tipo</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
+                            <DataTableHeadCell className="w-28 text-right">Acciones</DataTableHeadCell>
+                        </tr>
+                    </DataTableHead>
+                    <DataTableBody>
+                        {services.map((service, index) => (
+                            <DataTableRow key={service.id} index={index}>
+                                <DataTableCell className="w-14">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedServices.includes(service.id)}
+                                        onChange={() => onToggle(service.id)}
+                                        className={TABLE_CHECKBOX_CLASS}
                                     />
-                                    {service.active ? 'Activo' : 'Inactivo'}
-                                </span>
-                            </div>
-                            <div className="w-24 flex-shrink-0 flex justify-end gap-2">
-                                <button
-                                    onClick={() => onViewDetail(service.id)}
-                                    className="p-1.5 text-zinc-400 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-colors"
-                                    title="Ver detalle"
-                                >
-                                    <Eye className="size-4" />
-                                </button>
-                                <button
-                                    onClick={() => onEvaluate(service)}
-                                    className="p-1.5 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                    title="Evaluar Servicio"
-                                >
-                                    <ClipboardCheck className="size-4" />
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-        </div>
+                                </DataTableCell>
+                                <DataTableCell>
+                                    <DataTableLinkButton onClick={() => onViewDetail(service.id)} title={service.name}>
+                                        {service.name}
+                                    </DataTableLinkButton>
+                                </DataTableCell>
+                                <DataTableCell className="min-w-[220px] max-w-md">
+                                    <p className="truncate" title={service.description}>
+                                        {service.description}
+                                    </p>
+                                </DataTableCell>
+                                <DataTableCell className="w-36">
+                                    <TableBadge
+                                        text={SERVICE_TYPE_LABELS[service.service_type] ?? service.service_type}
+                                        color={TABLE_BADGE_COLORS.sky}
+                                    />
+                                </DataTableCell>
+                                <DataTableCell className="w-32">
+                                    <TableBadge
+                                        text={service.active ? 'Activo' : 'Inactivo'}
+                                        color={service.active ? TABLE_BADGE_COLORS.emerald : TABLE_BADGE_COLORS.rose}
+                                    />
+                                </DataTableCell>
+                                <DataTableCell className="w-28">
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => onViewDetail(service.id)}
+                                            className="rounded-lg p-1.5 transition-colors hover:bg-violet-500/10"
+                                            style={{ color: 'var(--color-text-alt)' }}
+                                            title="Ver detalle"
+                                        >
+                                            <Eye className="size-4" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => onEvaluate(service)}
+                                            className="rounded-lg p-1.5 text-emerald-600 transition-colors hover:bg-emerald-500/10 dark:text-emerald-400"
+                                            title="Evaluar Servicio"
+                                        >
+                                            <ClipboardCheck className="size-4" />
+                                        </button>
+                                    </div>
+                                </DataTableCell>
+                            </DataTableRow>
+                        ))}
+                    </DataTableBody>
+                </DataTable>
+            </DataTableScroll>
+        </DataTableShell>
     );
 }

@@ -7,6 +7,7 @@ import UserDetailModal from '../components/UserDetailModal';
 import UserTable from '../components/UserTable';
 import SearchInput from '../components/SearchInput';
 import { Trash2, UserPlus, Users, AlertCircle, RefreshCw } from 'lucide-react';
+import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -94,16 +95,19 @@ export const UserPage = () => {
                 </div>
             </div>
 
-            {/* Table card */}
-            <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (
-                    <TableSkeleton
-                        rows={9}
-                        colWidths={['w-5', 'w-8', 'flex-1', 'w-44', 'w-24', 'w-16']}
-                    />
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex-1`}>
+                        <div className="flex-1 overflow-y-auto min-h-0">
+                            <TableSkeleton
+                                rows={9}
+                                colWidths={['w-8', 'w-12', 'flex-1', 'flex-1', 'w-28', 'w-24', 'w-28']}
+                            />
+                        </div>
+                    </div>
                 )}
                 {error && (
-                    <div className="flex h-64 flex-col items-center justify-center gap-3">
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex flex-1 flex-col items-center justify-center gap-3`}>
                         <AlertCircle className="size-8 text-rose-400" />
                         <p className="text-sm font-medium text-rose-500">{error}</p>
                         <button onClick={() => setUrlSearch(urlSearch)} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition nav-item-idle">
@@ -112,16 +116,14 @@ export const UserPage = () => {
                     </div>
                 )}
                 {!isLoading && !error && (
-                    <div className="h-[calc(100vh-260px)] min-h-[400px]">
-                        <UserTable
-                            users={users}
-                            selectedUsers={selectedUsers}
-                            onToggle={toggleUser}
-                            onViewDetail={(id) => { setSelectedId(id); setIsDetailModalOpen(true); }}
-                            role={role}
-                            setRole={setRole}
-                        />
-                    </div>
+                    <UserTable
+                        users={users}
+                        selectedUsers={selectedUsers}
+                        onToggle={toggleUser}
+                        onViewDetail={(id) => { setSelectedId(id); setIsDetailModalOpen(true); }}
+                        role={role}
+                        setRole={setRole}
+                    />
                 )}
             </div>
 

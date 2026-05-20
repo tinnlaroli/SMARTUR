@@ -3,27 +3,22 @@ import { useProfiles } from '../hooks/useProfiles';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import { UserCircle, Luggage, Heart, Leaf, Accessibility } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
+import {
+    DataTable,
+    DataTableBody,
+    DataTableCell,
+    DataTableHead,
+    DataTableHeadCell,
+    DataTableRow,
+    DataTableScroll,
+    DataTableShell,
+    TableBadge,
+    TableOrderBadge,
+} from '../../../components/ui/DataTable';
 import type { Profile } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
-
-const Badge = ({ text, color }: { text: string; color: string }) => (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}>{text}</span>
-);
-
-const TH = ({ children }: { children: React.ReactNode }) => (
-    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
-        {children}
-    </th>
-);
-
-const TD = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-    <td className={`px-5 py-3.5 text-sm ${className}`} style={{ color: 'var(--color-text-alt)' }}>
-        {children}
-    </td>
-);
 
 const humanize = (value?: string | null) => {
     if (!value) return null;
@@ -71,7 +66,7 @@ export const ProfilesPage = () => {
                 </div>
             </div>
 
-            <div className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-[#121214]">
+            <DataTableShell className="h-full">
                 {profiles.length === 0 && !isLoading ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-3">
                         <UserCircle className="size-12" style={{ color: 'var(--color-border)' }} />
@@ -80,39 +75,39 @@ export const ProfilesPage = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto min-h-0">
-                        <table className="min-w-full">
-                            <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-[#18181b]">
+                    <DataTableScroll>
+                        <DataTable>
+                            <DataTableHead>
                                 <tr>
-                                    <TH>{m.profiles.colOrder}</TH>
-                                    <TH>{m.profiles.colUser}</TH>
-                                    <TH>
+                                    <DataTableHeadCell>{m.profiles.colOrder}</DataTableHeadCell>
+                                    <DataTableHeadCell>{m.profiles.colUser}</DataTableHeadCell>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Luggage className="h-3.5 w-3.5" />
                                             {m.profiles.colTravelType}
                                         </span>
-                                    </TH>
-                                    <TH>
+                                    </DataTableHeadCell>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Heart className="h-3.5 w-3.5" />
                                             {m.profiles.colInterests}
                                         </span>
-                                    </TH>
-                                    <TH>
+                                    </DataTableHeadCell>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Leaf className="h-3.5 w-3.5" />
                                             {m.profiles.colPreferences}
                                         </span>
-                                    </TH>
-                                    <TH>
+                                    </DataTableHeadCell>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Accessibility className="h-3.5 w-3.5" />
                                             {m.profiles.colAccessibility}
                                         </span>
-                                    </TH>
+                                    </DataTableHeadCell>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            </DataTableHead>
+                            <DataTableBody>
                                 {isLoading ? (
                                     <TableBodyRows rows={9} colWidths={['w-7', 'w-52', 'w-40', 'flex-1', 'w-44', 'w-56']} />
                                 ) : (
@@ -138,25 +133,11 @@ export const ProfilesPage = () => {
                                                 : humanize(pp);
 
                                         return (
-                                            <motion.tr
-                                                key={profile.id}
-                                                initial={{ opacity: 0, y: 6 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.03 }}
-                                                className="transition-colors"
-                                                style={{ borderBottom: '1px solid var(--color-border)' }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(var(--rgb-text),0.03)')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.background = '')}
-                                            >
-                                                <TD>
-                                                    <span
-                                                        className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white"
-                                                        style={{ background: 'var(--color-purple)' }}
-                                                    >
-                                                        {rowNumber}
-                                                    </span>
-                                                </TD>
-                                                <TD>
+                                            <DataTableRow key={profile.id} index={i}>
+                                                <DataTableCell>
+                                                    <TableOrderBadge>{rowNumber}</TableOrderBadge>
+                                                </DataTableCell>
+                                                <DataTableCell>
                                                     <div className="flex min-w-[240px] items-start gap-3">
                                                         {profile.user?.photo_url ? (
                                                             <img
@@ -185,11 +166,11 @@ export const ProfilesPage = () => {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                </TD>
-                                                <TD className="align-top">
+                                                </DataTableCell>
+                                                <DataTableCell className="align-top">
                                                     <div className="flex min-w-[180px] flex-wrap gap-2">
                                                         {travelTypeLabel ? (
-                                                            <Badge
+                                                            <TableBadge
                                                                 text={travelTypeLabel}
                                                                 color="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
                                                             />
@@ -197,9 +178,9 @@ export const ProfilesPage = () => {
                                                             <span className="text-xs text-zinc-400">{m.profiles.notAvailable}</span>
                                                         )}
                                                         {preferredPlaceLabel && (
-                                                            <Badge text={preferredPlaceLabel} color="bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300" />
+                                                            <TableBadge text={preferredPlaceLabel} color="bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300" />
                                                         )}
-                                                        <Badge
+                                                        <TableBadge
                                                             text={profile.has_visited_before ? m.profiles.visitedBefore : m.profiles.firstVisit}
                                                             color={
                                                                 profile.has_visited_before
@@ -208,12 +189,12 @@ export const ProfilesPage = () => {
                                                             }
                                                         />
                                                     </div>
-                                                </TD>
-                                                <TD className="align-top">
+                                                </DataTableCell>
+                                                <DataTableCell className="align-top">
                                                     {interestLabels.length > 0 ? (
                                                         <div className="flex min-w-[240px] flex-wrap gap-2">
                                                             {interestLabels.map((interest) => (
-                                                                <Badge
+                                                                <TableBadge
                                                                     key={`${profile.id}-${interest}`}
                                                                     text={interest}
                                                                     color="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
@@ -223,10 +204,10 @@ export const ProfilesPage = () => {
                                                     ) : (
                                                         <span className="text-xs text-zinc-400">{m.profiles.notAvailable}</span>
                                                     )}
-                                                </TD>
-                                                <TD className="align-top">
+                                                </DataTableCell>
+                                                <DataTableCell className="align-top">
                                                     <div className="flex min-w-[190px] flex-wrap gap-2">
-                                                        <Badge
+                                                        <TableBadge
                                                             text={
                                                                 profile.sustainable_preferences
                                                                     ? m.profiles.prioritizesSustainability
@@ -239,16 +220,16 @@ export const ProfilesPage = () => {
                                                             }
                                                         />
                                                         {profile.activity_level ? (
-                                                            <Badge
+                                                            <TableBadge
                                                                 text={m.profiles.activityLevel(profile.activity_level)}
                                                                 color="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
                                                             />
                                                         ) : null}
                                                     </div>
-                                                </TD>
-                                                <TD className="align-top">
+                                                </DataTableCell>
+                                                <DataTableCell className="align-top">
                                                     <div className="min-w-[220px] space-y-2">
-                                                        <Badge
+                                                        <TableBadge
                                                             text={
                                                                 profile.has_accessibility
                                                                     ? m.profiles.requiresAccessibility
@@ -271,16 +252,16 @@ export const ProfilesPage = () => {
                                                             </p>
                                                         )}
                                                     </div>
-                                                </TD>
-                                            </motion.tr>
+                                                </DataTableCell>
+                                            </DataTableRow>
                                         );
                                     })
                                 )}
-                            </tbody>
-                        </table>
-                    </div>
+                            </DataTableBody>
+                        </DataTable>
+                    </DataTableScroll>
                 )}
-            </div>
+            </DataTableShell>
 
             {profiles.length > 0 && (
                 <Pagination page={page} limit={limit} totalPages={totalPages} setSearchParams={setSearchParams} />

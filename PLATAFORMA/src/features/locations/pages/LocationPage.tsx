@@ -7,6 +7,7 @@ import LocationDetailModal from '../components/LocationDetailModal';
 import LocationTable from '../components/LocationTable';
 import SearchInput from '../components/SearchInput';
 import { Trash2, MapPin, Plus, AlertCircle } from 'lucide-react';
+import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -108,29 +109,30 @@ export const LocationPage = () => {
                 </div>
             </div>
 
-            {/* Table card */}
-            <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (
-                        <TableSkeleton
-                            rows={9}
-                            colWidths={['w-5', 'flex-1', 'w-24', 'w-24', 'w-20', 'w-20']}
-                        />
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex-1`}>
+                        <div className="flex-1 overflow-y-auto min-h-0">
+                            <TableSkeleton
+                                rows={9}
+                                colWidths={['w-8', 'flex-1', 'w-28', 'w-32', 'w-24', 'w-24']}
+                            />
+                        </div>
+                    </div>
                 )}
                 {error && (
-                    <div className="flex h-64 flex-col items-center justify-center gap-3">
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex flex-1 flex-col items-center justify-center gap-3`}>
                         <AlertCircle className="size-8 text-rose-400" />
                         <p className="text-sm font-medium text-rose-500">{error}</p>
                     </div>
                 )}
                 {!isLoading && !error && (
-                    <div className="h-[calc(100vh-260px)] min-h-[400px]">
-                        <LocationTable
-                            locations={locations}
-                            selectedLocations={selectedLocations}
-                            onToggle={toggleLocation}
-                            onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
-                        />
-                    </div>
+                    <LocationTable
+                        locations={locations}
+                        selectedLocations={selectedLocations}
+                        onToggle={toggleLocation}
+                        onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
+                    />
                 )}
             </div>
 

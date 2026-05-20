@@ -1,21 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../../core/constants/api_constants.dart';
 import '../models/place_model.dart';
+import 'api_client.dart';
 import 'auth_service.dart';
 
 class ExploreService {
-  final AuthService _auth;
-
-  ExploreService({AuthService? authService})
-      : _auth = authService ?? AuthService();
-
-  Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
   /// tourism_type en BD: 1=Naturaleza, 2=Cultura, 3=Gastronomía
   static PlaceCategory _categoryFromPoiType(int? idType) {
     switch (idType) {
@@ -30,51 +20,80 @@ class ExploreService {
     }
   }
 
-  static PlaceCategory? _categoryFromServiceType(String? type) {
-    if (type == null) return null;
+  /// Mapea service_type a categoría. Nunca devuelve null — usa museums como fallback
+  /// para que ningún servicio se descarte silenciosamente de la UI.
+  static PlaceCategory _categoryFromServiceType(String? type) {
+    if (type == null) return PlaceCategory.museums;
     final lower = type.toLowerCase();
     if (lower.contains('hotel') ||
         lower.contains('hospedaje') ||
-        lower.contains('alojamiento')) {
+        lower.contains('alojamiento') ||
+        lower.contains('posada') ||
+        lower.contains('cabaña') ||
+        lower.contains('hostal')) {
       return PlaceCategory.hotels;
     }
     if (lower.contains('restaurante') ||
+        lower.contains('restaurant') ||
         lower.contains('comida') ||
-        lower.contains('gastro')) {
+        lower.contains('gastro') ||
+        lower.contains('alimento') ||
+        lower.contains('bebida') ||
+        lower.contains('café') ||
+        lower.contains('cafeteria') ||
+        lower.contains('bar') ||
+        lower.contains('fonda') ||
+        lower.contains('cocina')) {
       return PlaceCategory.restaurants;
-    }
-    if (lower.contains('museo') ||
-        lower.contains('cultural') ||
-        lower.contains('galería')) {
-      return PlaceCategory.museums;
     }
     if (lower.contains('tour') ||
         lower.contains('aventura') ||
         lower.contains('deporte') ||
         lower.contains('ecoturismo') ||
         lower.contains('senderismo') ||
-        lower.contains('excurs')) {
+        lower.contains('excurs') ||
+        lower.contains('naturaleza') ||
+        lower.contains('parque') ||
+        lower.contains('actividad') ||
+        lower.contains('tirolesa') ||
+        lower.contains('rafting') ||
+        lower.contains('escalada')) {
       return PlaceCategory.adventures;
     }
-    return null;
+    if (lower.contains('museo') ||
+        lower.contains('cultural') ||
+        lower.contains('galería') ||
+        lower.contains('galeria') ||
+        lower.contains('artesania') ||
+        lower.contains('artesanía') ||
+        lower.contains('patrimonio') ||
+        lower.contains('histor') ||
+        lower.contains('arte') ||
+        lower.contains('iglesia') ||
+        lower.contains('templo')) {
+      return PlaceCategory.museums;
+    }
+    // Fallback — nunca descarta un servicio del catálogo
+    return PlaceCategory.museums;
   }
 
   /// Un solo GET: ubicaciones + servicios turísticos + POIs (API `/explore/home`).
   Future<List<CityData>> fetchCities() async {
-    final token = await _auth.getToken();
-    if (token == null) throw AuthException('No auth token available');
-
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}${ApiConstants.exploreHome}',
     );
-    final response = await http
-        .get(uri, headers: _headers(token))
-        .timeout(const Duration(seconds: 20));
 
+    final response = await ApiClient.get(uri);
+
+    if (response.statusCode == 401) {
+      throw AuthException('Sesión expirada. Inicia sesión de nuevo.');
+    }
     if (response.statusCode != 200) {
-      throw ExploreException(
-        'Failed to load explore home (${response.statusCode})',
+      final msg = ApiClient.extractApiMessage(
+        response,
+        fallback: 'Error al cargar lugares (${response.statusCode})',
       );
+      throw ExploreException(msg);
     }
 
     final data =
@@ -91,27 +110,28 @@ class ExploreService {
       final places = <Place>[];
 
       for (final s in (c['services'] as List<dynamic>? ?? [])) {
-        final place = _placeFromService(s as Map<String, dynamic>, name);
-        if (place != null) places.add(place);
+        places.add(_placeFromService(s as Map<String, dynamic>, name));
       }
       for (final p in (c['points'] as List<dynamic>? ?? [])) {
         places.add(_placeFromPoi(p as Map<String, dynamic>, name));
       }
 
-      cities.add(CityData(
-        name: name,
-        chipIcon: _iconForCity(name),
-        lat: lat,
-        lon: lon,
-        places: places,
-      ));
+      // Solo incluir ciudades que tengan al menos un lugar
+      if (places.isNotEmpty) {
+        cities.add(CityData(
+          name: name,
+          chipIcon: _iconForCity(name),
+          lat: lat,
+          lon: lon,
+          places: places,
+        ));
+      }
     }
     return cities;
   }
 
-  static Place? _placeFromService(Map<String, dynamic> s, String cityName) {
+  static Place _placeFromService(Map<String, dynamic> s, String cityName) {
     final cat = _categoryFromServiceType(s['service_type'] as String?);
-    if (cat == null) return null;
     final rating = _toDouble(s['total_score'], fallback: 4.0);
     return Place(
       id: 'svc_${s['id_service']}',

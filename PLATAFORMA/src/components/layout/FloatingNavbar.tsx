@@ -27,20 +27,20 @@ interface FloatingNavbarProps {
     logout: () => void;
 }
 
-const PremiumButton: React.FC<{ 
-    onClick: (e: React.MouseEvent) => void; 
+const PremiumButton: React.FC<{
+    onClick: (e: React.MouseEvent) => void;
     children: React.ReactNode;
     color?: string;
     className?: string;
 }> = ({ onClick, children, color = 'var(--color-pink)', className = "" }) => (
-    <button 
-        onClick={onClick} 
+    <button
+        onClick={onClick}
         className={`btn-premium group ${className}`}
         style={{ '--bg-color': color, '--hover-text': color } as React.CSSProperties}
     >
         <span>
-            <span className="btn-base">{children}</span>
-            <span className="btn-hover" aria-hidden="true">{children}</span>
+            <span className="btn-base whitespace-nowrap">{children}</span>
+            <span className="btn-hover whitespace-nowrap" aria-hidden="true">{children}</span>
         </span>
     </button>
 );
@@ -105,10 +105,11 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
     useEffect(() => {
         if (bgRef.current) {
             gsap.to(bgRef.current, {
-                scaleY: isNavSmall ? 1 : 0,
-                duration: 0.4,
-                ease: 'power4.out',
-                transformOrigin: 'top'
+                boxShadow: isNavSmall
+                    ? '0 2px 12px rgba(0,0,0,0.10)'
+                    : '0 2px 20px rgba(0,0,0,0.08)',
+                duration: 0.3,
+                ease: 'power3.out',
             });
         }
     }, [isNavSmall]);
@@ -184,11 +185,22 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
 
     return (
         <>
-            <div ref={navRef} className={`fixed top-0 left-0 right-0 z-[100]
-                    ${isNavSmall ? 'is-nav-small pt-2' : 'pt-6'}`}>
+            <div ref={navRef} className="fixed top-0 left-0 right-0 z-[100] pt-3">
 
-                    <div className="container mx-auto px-4 max-w-[1360px]">
-                        <div ref={bgRef} className="nav-small-bg relative flex items-center justify-between px-6 py-4 rounded-[50px]">
+                    <div className="mx-auto px-4 max-w-[1400px]">
+                        <div
+                            ref={bgRef}
+                            className="relative flex items-center justify-between gap-9 px-7 py-2 rounded-[50px]"
+                            style={{
+                                background: 'rgba(var(--rgb-bg), 0.88)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
+                                boxShadow: '0 2px 20px rgba(0,0,0,0.08)',
+                                border: '1px solid var(--color-border)',
+                                maxWidth: '1360px',
+                                margin: '0 auto',
+                            }}
+                        >
 
                             {/* Logo */}
                             <a
@@ -197,37 +209,37 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                     e.preventDefault();
                                     scrollToSection('inicio');
                                 }}
-                                className="flex-shrink-0 mr-6"
+                                className="flex-shrink-0"
                                 >
-                                    <img src={logoSrc} alt="SMARTUR" className="h-11 w-auto transition-all duration-300" />
+                                    <img src={logoSrc} alt="SMARTUR" className="h-9 w-auto transition-all duration-300" />
                                 </a>
 
                             {/* Desktop Menu */}
-                            <nav className="hidden items-center gap-8 md:flex">
+                            <nav className="hidden items-center gap-[1.75em] lg:flex">
                                 {navLinks.map((item) => {
                                                 const isActive = activeSection === item.target;
                                                 return (
                                                     <button
                                                         key={item.target}
                                                         onClick={() => scrollToSection(item.target)}
-                                                        className={`relative text-[15px] font-bold tracking-wide transition-colors duration-300 group`}
-                                                        style={{ color: isActive ? 'var(--color-purple)' : 'var(--color-text)' }}
+                                                        className={`relative text-[15px] font-bold transition-colors duration-300 group whitespace-nowrap`}
+                                                        style={{ color: isActive ? 'var(--color-pink)' : 'var(--color-text)' }}
                                                     >
                                                         {item.label}
-                                                        <span className={`absolute -bottom-1 left-0 h-[2px] w-full transition-transform duration-300 origin-right ${isActive ? 'scale-x-100 origin-left' : 'scale-x-0 group-hover:scale-x-100 group-hover:origin-left'}`} style={{ background: 'var(--color-purple)' }} />
+                                                        <span className={`absolute -bottom-1 left-0 h-[2px] w-full transition-transform duration-300 origin-right ${isActive ? 'scale-x-100 origin-left' : 'scale-x-0 group-hover:scale-x-100 group-hover:origin-left'}`} style={{ background: 'var(--color-pink)' }} />
                                                     </button>
                                                 );
                                             })}
                                         </nav>
 
                                         {/* Actions */}
-                                        <div className="flex items-center gap-4 z-[110]">
-                                            {/* "Tengo un negocio" — external link, btn-cyan style */}
+                                        <div className="flex items-center gap-5 ml-auto z-[110]">
+                                            {/* "Negocios" — external link, btn-cyan style */}
                                             <a
                                                 href={import.meta.env.VITE_BUSINESS_URL ?? 'http://2.24.112.25:4321/'}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="nav-business-btn hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-px ml-4 sm:flex"
+                                                className="nav-business-btn hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-px lg:flex whitespace-nowrap"
                                                 style={{ color: 'var(--color-cyan)' }}
                                                 onMouseEnter={e => {
                                                     (e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-cyan)';
@@ -247,14 +259,14 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                                     <LogOut size={18} />
                                                 </button>
                                             ) : (
-                                                <PremiumButton onClick={handleStartExperience} className="hidden sm:block">
+                                                <PremiumButton onClick={handleStartExperience} className="hidden lg:block">
                                                     {t('nav.start')}
                                                 </PremiumButton>
                                             )}
 
                                             {/* Controls — separator + theme + language, same layout as LANDING */}
                                             <div
-                                                className="hidden items-center gap-2 pl-4 sm:flex"
+                                                className="hidden items-center gap-2 pl-4 ml-4 lg:flex"
                                                 style={{ borderLeft: '1px solid rgba(var(--rgb-text), 0.1)' }}
                                             >
                                                 <button onClick={toggleTheme} className="control-btn p-2">
@@ -277,7 +289,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                                     {langDropdownOpen && (
                                                         <div
                                                             ref={langDropdownRef}
-                                                            className="absolute top-[calc(100%+0.5rem)] right-[-10px] rounded-lg overflow-hidden min-w-[150px] z-50"
+                                                            className="absolute top-[calc(100%+0.5rem)] right-0 rounded-lg overflow-hidden min-w-[140px] z-[200]"
                                                             style={{ background: 'var(--color-bg)', border: '1px solid rgba(var(--rgb-text), 0.1)', boxShadow: '0 4px 20px rgba(var(--rgb-text), 0.15)' }}
                                                         >
                                                             {Object.entries(languages).map(([code, name]) => (
@@ -315,7 +327,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                             {/* Mobile Toggle */}
                                             <button
                                                 onClick={toggleMobileMenu}
-                                                className="md:hidden p-2"
+                                                className="lg:hidden p-2"
                                                 style={{ color: 'var(--color-text)' }}
                                                 aria-label={t('accessibility.toggleMenu')}
                                             >
@@ -336,7 +348,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                 className="text-4xl font-black tracking-tighter transition-colors"
                                 style={{
                                     transitionDelay: `${idx * 0.1}s`,
-                                    color: activeSection === item.target ? 'var(--color-purple)' : 'var(--color-text)'
+                                    color: activeSection === item.target ? 'var(--color-pink)' : 'var(--color-text)'
                                 }}
                             >
                                 {item.label}

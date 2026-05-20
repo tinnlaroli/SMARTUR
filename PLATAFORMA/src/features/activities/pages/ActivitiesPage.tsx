@@ -4,7 +4,17 @@ import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import { Activity, DollarSign } from 'lucide-react';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
-import { motion } from 'framer-motion';
+import {
+    DataTable,
+    DataTableBody,
+    DataTableCell,
+    DataTableHead,
+    DataTableHeadCell,
+    DataTableRow,
+    DataTableScroll,
+    DataTableShell,
+    TableOrderBadge,
+} from '../../../components/ui/DataTable';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -32,12 +42,6 @@ const ImpactBadge = ({
     );
 };
 
-const TH = ({ children }: { children: React.ReactNode }) => (
-    <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
-        {children}
-    </th>
-);
-
 export const ActivitiesPage = () => {
     const { lang } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
@@ -62,7 +66,7 @@ export const ActivitiesPage = () => {
                 </div>
             </div>
 
-            <div className="flex h-full flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-[#121214]">
+            <DataTableShell className="h-full">
                 {activities.length === 0 && !isLoading ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-3">
                         <Activity className="size-12" style={{ color: 'var(--color-border)' }} />
@@ -71,23 +75,23 @@ export const ActivitiesPage = () => {
                         </p>
                     </div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto min-h-0">
-                        <table className="min-w-full">
-                            <thead className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-[#18181b]">
+                    <DataTableScroll>
+                        <DataTable>
+                            <DataTableHead>
                                 <tr>
-                                    <TH>{m.activities.colOrder}</TH>
-                                    <TH>{m.activities.colCompany}</TH>
-                                    <TH>
+                                    <DataTableHeadCell>{m.activities.colOrder}</DataTableHeadCell>
+                                    <DataTableHeadCell>{m.activities.colCompany}</DataTableHeadCell>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <DollarSign className="h-3.5 w-3.5" />
                                             {m.activities.colProduction}
                                         </span>
-                                    </TH>
-                                    <TH>{m.activities.colEnvImpact}</TH>
-                                    <TH>{m.activities.colSocialImpact}</TH>
+                                    </DataTableHeadCell>
+                                    <DataTableHeadCell>{m.activities.colEnvImpact}</DataTableHeadCell>
+                                    <DataTableHeadCell>{m.activities.colSocialImpact}</DataTableHeadCell>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            </DataTableHead>
+                            <DataTableBody>
                                 {isLoading ? (
                                     <TableBodyRows rows={9} colWidths={['w-7', 'flex-1', 'w-28', 'w-28', 'w-28']} />
                                 ) : (
@@ -95,54 +99,43 @@ export const ActivitiesPage = () => {
                                         const rowNumber = (page - 1) * limit + i + 1;
 
                                         return (
-                                            <motion.tr
-                                                key={activity.id}
-                                                initial={{ opacity: 0, y: 6 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.03 }}
-                                                style={{ borderBottom: '1px solid var(--color-border)' }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(var(--rgb-text),0.03)')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.background = '')}
-                                            >
-                                                <td className="px-5 py-3.5">
-                                                    <span
-                                                        className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white"
-                                                        style={{ background: 'var(--color-green)' }}
-                                                    >
-                                                        {rowNumber}
+                                            <DataTableRow key={activity.id} index={i}>
+                                                <DataTableCell>
+                                                    <TableOrderBadge accent="var(--color-green)">{rowNumber}</TableOrderBadge>
+                                                </DataTableCell>
+                                                <DataTableCell>
+                                                    <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                                                        {activity.company}
                                                     </span>
-                                                </td>
-                                                <td className="px-5 py-3.5 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                                    {activity.company}
-                                                </td>
-                                                <td className="px-5 py-3.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                                </DataTableCell>
+                                                <DataTableCell className="font-medium text-emerald-600 dark:text-emerald-400">
                                                     ${Number(activity.production_value).toLocaleString(lang === 'es' ? 'es-MX' : lang === 'fr' ? 'fr-FR' : 'en-US')}
-                                                </td>
-                                                <td className="px-5 py-3.5">
+                                                </DataTableCell>
+                                                <DataTableCell>
                                                     <ImpactBadge
                                                         value={activity.environmental_impact}
                                                         type="env"
                                                         lowEnv={m.activities.impactLowEnv}
                                                         lowSocial={m.activities.impactLowSocial}
                                                     />
-                                                </td>
-                                                <td className="px-5 py-3.5">
+                                                </DataTableCell>
+                                                <DataTableCell>
                                                     <ImpactBadge
                                                         value={activity.social_impact}
                                                         type="social"
                                                         lowEnv={m.activities.impactLowEnv}
                                                         lowSocial={m.activities.impactLowSocial}
                                                     />
-                                                </td>
-                                            </motion.tr>
+                                                </DataTableCell>
+                                            </DataTableRow>
                                         );
                                     })
                                 )}
-                            </tbody>
-                        </table>
-                    </div>
+                            </DataTableBody>
+                        </DataTable>
+                    </DataTableScroll>
                 )}
-            </div>
+            </DataTableShell>
 
             {activities.length > 0 && (
                 <Pagination page={page} limit={limit} totalPages={totalPages} setSearchParams={setSearchParams} />

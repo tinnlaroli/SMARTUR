@@ -60,6 +60,32 @@ class AuthService {
     return true;
   }
 
+  /// Verifica el token contra el servidor con un ping ligero.
+  /// Retorna [true] si el token es válido o si el servidor no es alcanzable
+  /// (modo offline — no forzar logout en red inestable).
+  /// Retorna [false] solo si el servidor responde explícitamente con 401.
+  Future<bool> validateTokenWithServer() async {
+    final token = await _storage.read(key: _tokenKey);
+    if (token == null || token.isEmpty) return false;
+    try {
+      final uri = Uri.parse('${ApiConstants.baseUrl}/me/ping');
+      final response = await http
+          .get(uri, headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          })
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode == 401) {
+        await fullLogout();
+        return false;
+      }
+      return true;
+    } catch (_) {
+      // Servidor inaccesible o timeout — no cerrar sesión en modo offline
+      return true;
+    }
+  }
+
   /// Cierra la sesión en el dispositivo. Si la biometría está activa,
   /// mantenemos el token para permitir el re-ingreso rápido (huella).
   /// Si no hay biometría, borramos el token por seguridad.

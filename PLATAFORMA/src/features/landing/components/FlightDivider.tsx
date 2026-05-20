@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import { Map, Building2, ArrowRight, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import paperPlaneUrl from '../assets/paper-plane.json?url';
 
@@ -166,6 +167,73 @@ export const FlightDivider: React.FC<FlightDividerProps> = ({ handleStartExperie
                         autoplay
                         style={{ width: '100%', height: '100%' }}
                     />
+                </div>
+            </div>
+
+            {/* ActionBridge — outside pointer-events-none overlay, pinned to section bottom */}
+            <div className="absolute inset-x-0 bottom-24 z-50 flex justify-center px-4 md:bottom-28">
+                <div className="flex w-full max-w-3xl flex-col items-stretch gap-4 md:flex-row md:items-center md:gap-6">
+
+                    {/* Soy turista — primary (pink) */}
+                    <button
+                        type="button"
+                        onClick={handleStartExperience}
+                        className="bridge-action group relative w-full rounded-[2rem] p-4 transition-all duration-300 md:w-auto md:min-w-[280px]"
+                    >
+                        <div className="flex items-center gap-5">
+                            <div className="icon-box flex size-16 shrink-0 items-center justify-center rounded-full">
+                                <Map size={32} />
+                            </div>
+                            <div className="min-w-0 flex-grow text-left">
+                                <span className="bridge-label block text-xl font-bold leading-snug">
+                                    {t('actionBridge.tourist.label')}
+                                </span>
+                                <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr]">
+                                    <span className="block overflow-hidden pt-1 text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                        {t('actionBridge.tourist.description')}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="action-arrow flex size-10 shrink-0 items-center justify-center rounded-full">
+                                <ArrowRight size={20} className="transition-transform duration-300 group-hover:translate-x-0.5" />
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Divider — simple vertical line, no text */}
+                    <div
+                        className="hidden h-12 w-px md:block"
+                        style={{ background: 'var(--color-border)' }}
+                        aria-hidden="true"
+                    />
+
+                    {/* Tengo un negocio — secondary */}
+                    <a
+                        href={import.meta.env.VITE_BUSINESS_URL ?? 'http://2.24.112.25:4321/'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bridge-action bridge-action--tourist group relative w-full rounded-[2rem] p-4 transition-all duration-300 md:w-auto md:min-w-[280px]"
+                    >
+                        <div className="flex items-center gap-5">
+                            <div className="icon-box-tourist flex size-16 shrink-0 items-center justify-center rounded-full">
+                                <Building2 size={32} />
+                            </div>
+                            <div className="min-w-0 flex-grow text-left">
+                                <span className="bridge-label-tourist block text-xl font-bold leading-snug">
+                                    {t('actionBridge.business.label')}
+                                </span>
+                                <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr]">
+                                    <span className="block overflow-hidden pt-1 text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                        {t('actionBridge.business.description')}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="action-arrow-tourist flex size-10 shrink-0 items-center justify-center rounded-full">
+                                <ExternalLink size={20} />
+                            </div>
+                        </div>
+                    </a>
+
                 </div>
             </div>
 

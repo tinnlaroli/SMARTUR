@@ -1,3 +1,5 @@
+import { DATA_TABLE_CLASS, DATA_TABLE_HEAD_CELL_CLASS, DATA_TABLE_HEAD_CLASS } from './DataTable';
+
 const cell = (w: string) => (
     <div className={`h-4 rounded-md ${w}`} style={{ background: 'var(--color-bg-alt)' }} />
 );
@@ -14,11 +16,11 @@ interface TableSkeletonProps {
 /** Full standalone skeleton table (header + body). Drop in where a table component normally renders. */
 export const TableSkeleton = ({ rows = 8, colWidths }: TableSkeletonProps) => (
     <div className="overflow-x-auto">
-        <table className="min-w-full">
-            <thead style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-alt)' }}>
+        <table className={DATA_TABLE_CLASS}>
+            <thead className={DATA_TABLE_HEAD_CLASS}>
                 <tr>
                     {colWidths.map((w, i) => (
-                        <th key={i} className="px-5 py-3.5">
+                        <th key={i} className={DATA_TABLE_HEAD_CELL_CLASS}>
                             {headerCell(w === 'flex-1' ? 'w-20' : w)}
                         </th>
                     ))}

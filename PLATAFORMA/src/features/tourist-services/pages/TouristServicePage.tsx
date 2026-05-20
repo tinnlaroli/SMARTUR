@@ -7,6 +7,7 @@ import TouristServiceDetailModal from '../components/TouristServiceDetailModal';
 import TouristServiceTable from '../components/TouristServiceTable';
 import SearchInput from '../components/SearchInput';
 import { Trash2, ClipboardCheck, Wrench, Plus, AlertCircle } from 'lucide-react';
+import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import EvaluationWizardModal from '../../evaluations/components/EvaluationWizardModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -135,33 +136,34 @@ export const TouristServicePage = () => {
                 </div>
             </div>
 
-            {/* Table card */}
-            <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (
-                    <TableSkeleton
-                        rows={9}
-                        colWidths={['w-5', 'flex-1', 'w-28', 'w-24', 'w-20', 'w-16']}
-                    />
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex-1`}>
+                        <div className="flex-1 overflow-y-auto min-h-0">
+                            <TableSkeleton
+                                rows={9}
+                                colWidths={['w-8', 'flex-1', 'w-40', 'w-28', 'w-24', 'w-20']}
+                            />
+                        </div>
+                    </div>
                 )}
                 {error && (
-                    <div className="flex h-64 flex-col items-center justify-center gap-3">
+                    <div className={`${DATA_TABLE_SHELL_CLASS} flex flex-1 flex-col items-center justify-center gap-3`}>
                         <AlertCircle className="size-8 text-rose-400" />
                         <p className="text-sm font-medium text-rose-500">{error}</p>
                     </div>
                 )}
                 {!isLoading && !error && (
-                    <div className="h-[calc(100vh-260px)] min-h-[400px]">
-                        <TouristServiceTable
-                            services={services}
-                            selectedServices={selectedServices}
-                            onToggle={toggleService}
-                            onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
-                            onEvaluate={(service) => {
-                                setSelectedServices([service.id]);
-                                dispatchModal({ type: 'OPEN_EVALUATION' });
-                            }}
-                        />
-                    </div>
+                    <TouristServiceTable
+                        services={services}
+                        selectedServices={selectedServices}
+                        onToggle={toggleService}
+                        onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
+                        onEvaluate={(service) => {
+                            setSelectedServices([service.id]);
+                            dispatchModal({ type: 'OPEN_EVALUATION' });
+                        }}
+                    />
                 )}
             </div>
 

@@ -1,6 +1,16 @@
 import type { Location } from '../types/types';
-import { useRef } from 'react';
-import { motion } from 'framer-motion';
+import {
+    DataTable,
+    DataTableBody,
+    DataTableCell,
+    DataTableHead,
+    DataTableHeadCell,
+    DataTableLinkButton,
+    DataTableRow,
+    DataTableScroll,
+    DataTableShell,
+    TABLE_CHECKBOX_CLASS,
+} from '../../../components/ui/DataTable';
 
 interface Props {
     locations: Location[];
@@ -9,96 +19,65 @@ interface Props {
     onViewDetail: (id: number) => void;
 }
 
-export default function LocationTable({
-    locations,
-    selectedLocations,
-    onToggle,
-    onViewDetail,
-}: Props) {
-    const tableRef = useRef<HTMLDivElement>(null);
+export default function LocationTable({ locations, selectedLocations, onToggle, onViewDetail }: Props) {
+    const allSelected = selectedLocations.length === locations.length && locations.length > 0;
+
+    const toggleAll = () => {
+        if (allSelected) {
+            locations.forEach((l) => onToggle(l.id));
+        } else {
+            locations.forEach((l) => {
+                if (!selectedLocations.includes(l.id)) onToggle(l.id);
+            });
+        }
+    };
 
     return (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] h-full flex flex-col overflow-hidden">
-            <div className="bg-zinc-50 dark:bg-[#18181b] border-b border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center px-4 py-3.5 gap-4">
-                    <div className="w-8 flex-shrink-0">
-                        <input
-                            type="checkbox"
-                            checked={
-                                selectedLocations.length === locations.length &&
-                                locations.length > 0
-                            }
-                            onChange={() => {
-                                if (selectedLocations.length === locations.length) {
-                                    locations.forEach((l) => onToggle(l.id));
-                                } else {
-                                    locations.forEach((l) => {
-                                        if (!selectedLocations.includes(l.id)) onToggle(l.id);
-                                    });
-                                }
-                            }}
-                            className="size-4 rounded border-zinc-700 bg-zinc-900 text-violet-500 cursor-pointer"
-                        />
-                    </div>
-                    <div className="flex-1 min-w-[200px] text-xs font-medium uppercase text-zinc-400">
-                        Nombre
-                    </div>
-                    <div className="w-32 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Estado
-                    </div>
-                    <div className="w-32 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Municipio
-                    </div>
-                    <div className="w-24 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Latitud
-                    </div>
-                    <div className="w-24 flex-shrink-0 text-xs font-medium uppercase text-zinc-400">
-                        Longitud
-                    </div>
-                </div>
-            </div>
-
-            <div ref={tableRef} className="flex-1 overflow-y-auto min-h-0">
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    {locations.map((loc, index) => (
-                        <motion.div
-                            key={loc.id}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            className="flex items-center p-4 gap-4 hover:bg-zinc-800/50 transition-colors"
-                        >
-                            <div className="w-8 flex-shrink-0">
+        <DataTableShell>
+            <DataTableScroll>
+                <DataTable>
+                    <DataTableHead>
+                        <tr>
+                            <DataTableHeadCell className="w-14">
                                 <input
                                     type="checkbox"
-                                    checked={selectedLocations.includes(loc.id)}
-                                    onChange={() => onToggle(loc.id)}
-                                    className="size-4 rounded border-zinc-700 bg-zinc-900 text-violet-500 cursor-pointer"
+                                    checked={allSelected}
+                                    onChange={toggleAll}
+                                    className={TABLE_CHECKBOX_CLASS}
                                 />
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => onViewDetail(loc.id)}
-                                className="flex-1 min-w-[200px] text-left text-sm text-zinc-300 truncate cursor-pointer hover:text-violet-400"
-                            >
-                                {loc.name}
-                            </button>
-                            <div className="w-32 flex-shrink-0 text-sm text-zinc-400">
-                                {loc.state}
-                            </div>
-                            <div className="w-32 flex-shrink-0 text-sm text-zinc-400">
-                                {loc.municipality}
-                            </div>
-                            <div className="w-24 flex-shrink-0 text-sm text-zinc-500">
-                                {loc.latitude}
-                            </div>
-                            <div className="w-24 flex-shrink-0 text-sm text-zinc-500">
-                                {loc.longitude}
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-        </div>
+                            </DataTableHeadCell>
+                            <DataTableHeadCell>Nombre</DataTableHeadCell>
+                            <DataTableHeadCell className="w-36">Estado</DataTableHeadCell>
+                            <DataTableHeadCell className="w-40">Municipio</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">Latitud</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">Longitud</DataTableHeadCell>
+                        </tr>
+                    </DataTableHead>
+                    <DataTableBody>
+                        {locations.map((loc, index) => (
+                            <DataTableRow key={loc.id} index={index}>
+                                <DataTableCell className="w-14">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedLocations.includes(loc.id)}
+                                        onChange={() => onToggle(loc.id)}
+                                        className={TABLE_CHECKBOX_CLASS}
+                                    />
+                                </DataTableCell>
+                                <DataTableCell>
+                                    <DataTableLinkButton onClick={() => onViewDetail(loc.id)} title={loc.name}>
+                                        {loc.name}
+                                    </DataTableLinkButton>
+                                </DataTableCell>
+                                <DataTableCell className="w-36">{loc.state}</DataTableCell>
+                                <DataTableCell className="w-40">{loc.municipality}</DataTableCell>
+                                <DataTableCell className="w-32">{loc.latitude}</DataTableCell>
+                                <DataTableCell className="w-32">{loc.longitude}</DataTableCell>
+                            </DataTableRow>
+                        ))}
+                    </DataTableBody>
+                </DataTable>
+            </DataTableScroll>
+        </DataTableShell>
     );
 }

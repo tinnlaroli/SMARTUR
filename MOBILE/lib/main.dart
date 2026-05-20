@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
@@ -5,6 +7,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 import 'core/theme/style_guide.dart';
 import 'core/settings/app_settings.dart';
 import 'core/settings/app_settings_scope.dart';
+import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
 import 'presentation/screens/auth/onboarding_screen.dart';
 import 'presentation/screens/auth/welcome_screen.dart';
@@ -178,24 +181,66 @@ class _SplashGateState extends State<_SplashGate> {
   bool _showLoader = true;
   bool? _hasSession;
   String? _userName;
+  StreamSubscription<void>? _sessionExpiredSub;
 
   @override
   void initState() {
     super.initState();
-    // Si es la primera vez (onboarding), no mostramos el loader encima.
     if (!widget.seenOnboarding) {
       _showLoader = false;
     }
     _checkSession();
+
+    // Escuchar 401s globales desde cualquier servicio → redirigir a login
+    _sessionExpiredSub = ApiClient.onSessionExpired.listen((_) {
+      _handleGlobalSessionExpired();
+    });
+  }
+
+  @override
+  void dispose() {
+    _sessionExpiredSub?.cancel();
+    super.dispose();
+  }
+
+  void _handleGlobalSessionExpired() async {
+    final auth = AuthService();
+    await auth.fullLogout();
+    if (!mounted) return;
+    // Resetear estado local
+    setState(() {
+      _hasSession = false;
+      _userName = null;
+      _showLoader = false;
+    });
+    // Navegar a WelcomeScreen limpiando el stack
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      (_) => false,
+    );
   }
 
   Future<void> _checkSession() async {
     final auth = AuthService();
-    final has = await auth.hasSession();
-    final name = has ? await auth.getUserName() : null;
+
+    // 1. Verificación local rápida (expiry, token presente)
+    final hasLocal = await auth.hasSession();
+    if (!hasLocal) {
+      if (mounted) setState(() { _hasSession = false; _userName = null; });
+      return;
+    }
+
+    // 2. Validación contra el servidor (detecta tokens revocados / secreto rotado)
+    final isValid = await auth.validateTokenWithServer();
+    if (!isValid) {
+      if (mounted) setState(() { _hasSession = false; _userName = null; });
+      return;
+    }
+
+    final name = await auth.getUserName();
     if (mounted) {
       setState(() {
-        _hasSession = has;
+        _hasSession = true;
         _userName = name;
       });
     }
