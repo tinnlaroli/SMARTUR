@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { LoginView } from '../views/LoginView';
 import { SignUpView } from '../views/SignUpView';
@@ -38,6 +38,17 @@ export const AuthModal: React.FC = () => {
     const { isOpen, step, email, closeModal, setStep } = useAuthModal();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
 
     return (
         

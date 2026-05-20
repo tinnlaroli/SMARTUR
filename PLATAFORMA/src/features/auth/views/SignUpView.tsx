@@ -91,7 +91,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                 {/* Photo Upload */}
                 <div className="flex flex-col items-center justify-center gap-y-4 pb-2">
                     <div className="relative group">
-                        <div className="size-24 overflow-hidden rounded-full border-2 border-zinc-800 bg-zinc-950 transition-colors group-hover:border-violet-500">
+                        <div className="size-24 overflow-hidden rounded-full border-2 border-[var(--color-border)] bg-[var(--color-bg-alt)] transition-colors group-hover:border-[var(--color-purple)]">
                             {previewUrl ? (
                                 <img
                                     src={previewUrl}
@@ -99,7 +99,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
-                                <div className="flex h-full w-full items-center justify-center text-zinc-600">
+                                <div className="flex h-full w-full items-center justify-center text-[var(--color-text-alt)]">
                                     <User className="size-10" />
                                 </div>
                             )}
@@ -137,9 +137,9 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                             value={formData.name}
                             onChange={handleFieldChange}
                             placeholder={t('auth.signup.name.placeholder')}
-                            className="w-full rounded-lg border border-zinc-800 bg-zinc-950 py-2.5 pr-4 pl-9 text-sm text-white transition-colors placeholder:text-zinc-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:outline-none"
+                            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-2.5 pr-4 pl-9 text-sm text-[var(--color-text)] transition-colors placeholder:text-[var(--color-text-alt)] focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none"
                         />
-                        <User className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500" />
+                        <User className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--color-text-alt)]" />
                     </div>
                 </div>
 
@@ -160,9 +160,9 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                             value={formData.email}
                             onChange={handleFieldChange}
                             placeholder={t('auth.signup.email.placeholder')}
-                            className="w-full rounded-lg border border-zinc-800 bg-zinc-950 py-2.5 pr-4 pl-9 text-sm text-white transition-colors placeholder:text-zinc-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:outline-none"
+                            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-2.5 pr-4 pl-9 text-sm text-[var(--color-text)] transition-colors placeholder:text-[var(--color-text-alt)] focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none"
                         />
-                        <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500" />
+                        <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--color-text-alt)]" />
                     </div>
                 </div>
 
@@ -182,13 +182,13 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                             value={formData.password}
                             onChange={handleFieldChange}
                             placeholder="………………"
-                            className="w-full rounded-lg border border-zinc-800 bg-zinc-950 py-2.5 pr-12 pl-9 text-sm text-white transition-colors placeholder:text-zinc-500 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 focus:outline-none"
+                            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-2.5 pr-12 pl-9 text-sm text-[var(--color-text)] transition-colors placeholder:text-[var(--color-text-alt)] focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none"
                         />
-                        <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-500" />
+                        <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--color-text-alt)]" />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 transition-colors hover:text-violet-400"
+                            className="absolute top-1/2 right-3 -translate-y-1/2 text-[var(--color-text-alt)] transition-colors hover:text-[var(--color-purple)]"
                         >
                             {showPassword ? (
                                 <EyeOff className="size-4" />
@@ -199,7 +199,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                     </div>
 
                     {formData.password && (
-                        <div className="mt-2 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
+                        <div className="mt-2 space-y-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-alt)] p-3">
                             <p className="mb-2 text-xs font-medium text-[var(--color-text-alt)]">
                                 {t('auth.password.requirements')}
                             </p>
@@ -213,8 +213,8 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                 <span
                                     className={
                                         passwordValidations.minLength
-                                            ? 'text-zinc-300'
-                                            : 'text-zinc-500'
+                                            ? 'text-[var(--color-text)]'
+                                            : 'text-[var(--color-text-alt)]'
                                     }
                                 >
                                     {t('auth.password.min')}
@@ -225,13 +225,13 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                 {passwordValidations.hasUpperCase ? (
                                     <CheckCircle className="size-3.5 text-emerald-400" />
                                 ) : (
-                                    <XCircle className="size-3.5 text-zinc-600" />
+                                    <XCircle className="size-3.5 text-[var(--color-text-alt)]" />
                                 )}
                                 <span
                                     className={
                                         passwordValidations.hasUpperCase
-                                            ? 'text-zinc-300'
-                                            : 'text-zinc-500'
+                                            ? 'text-[var(--color-text)]'
+                                            : 'text-[var(--color-text-alt)]'
                                     }
                                 >
                                     {t('auth.password.uppercase')}
@@ -242,13 +242,13 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                 {passwordValidations.hasNumber ? (
                                     <CheckCircle className="size-3.5 text-emerald-400" />
                                 ) : (
-                                    <XCircle className="size-3.5 text-zinc-600" />
+                                    <XCircle className="size-3.5 text-[var(--color-text-alt)]" />
                                 )}
                                 <span
                                     className={
                                         passwordValidations.hasNumber
-                                            ? 'text-zinc-300'
-                                            : 'text-zinc-500'
+                                            ? 'text-[var(--color-text)]'
+                                            : 'text-[var(--color-text-alt)]'
                                     }
                                 >
                                     {t('auth.password.number')}
@@ -259,13 +259,13 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                 {passwordValidations.hasSpecialChar ? (
                                     <CheckCircle className="size-3.5 text-emerald-400" />
                                 ) : (
-                                    <XCircle className="size-3.5 text-zinc-600" />
+                                    <XCircle className="size-3.5 text-[var(--color-text-alt)]" />
                                 )}
                                 <span
                                     className={
                                         passwordValidations.hasSpecialChar
-                                            ? 'text-zinc-300'
-                                            : 'text-zinc-500'
+                                            ? 'text-[var(--color-text)]'
+                                            : 'text-[var(--color-text-alt)]'
                                     }
                                 >
                                     {t('auth.password.special')}
@@ -300,7 +300,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                                               : t('auth.password.strong')}
                                     </span>
                                 </div>
-                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
                                     <div
                                         className={`h-full transition-all duration-300 ${
                                             Object.values(passwordValidations).filter(
@@ -328,7 +328,7 @@ export const SignUpView = ({ onSwitchStep }: SignUpViewProps) => {
                         type="checkbox"
                         id="terms"
                         required
-                        className="mt-1 size-3.5 rounded border-zinc-700 bg-zinc-950 text-violet-500 focus:ring-violet-500 focus:ring-offset-0"
+                        className="mt-1 size-3.5 rounded border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-purple)] focus:ring-[var(--color-purple)] focus:ring-offset-0"
                     />
                     <label htmlFor="terms" className="text-xs text-[var(--color-text-alt)]">
                         {t('auth.signup.terms.prefix')}{' '}

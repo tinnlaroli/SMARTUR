@@ -413,6 +413,13 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
     }, [toast]);
 
     useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
+
+    useEffect(() => {
         if (!mapRef.current) return;
         resetMapView();
     }, [resetMapView]);
@@ -606,19 +613,19 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
     };
 
     return (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md duration-300">
-            <div className="animate-in zoom-in-95 relative flex h-[92vh] max-h-[860px] w-full max-w-[1380px] flex-col overflow-hidden rounded-[2rem] border border-zinc-200 bg-white shadow-2xl duration-300 dark:border-zinc-800 dark:bg-zinc-950">
-                <div className="flex items-start justify-between gap-4 border-b border-zinc-200 bg-white/85 p-6 backdrop-blur-xl md:p-8 dark:border-zinc-800 dark:bg-zinc-950/80">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 sm:p-4 backdrop-blur-md duration-300">
+            <div className="animate-in zoom-in-95 relative flex h-full sm:h-[92vh] sm:max-h-[860px] w-full sm:max-w-[1380px] flex-col overflow-hidden sm:rounded-[2rem] border-0 sm:border border-zinc-200 bg-white shadow-2xl duration-300 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="flex items-start justify-between gap-3 border-b border-zinc-200 bg-white/85 p-4 sm:p-6 backdrop-blur-xl md:p-8 dark:border-zinc-800 dark:bg-zinc-950/80">
                     <div className="flex items-start gap-4">
-                        <div className="flex size-12 items-center justify-center rounded-2xl bg-violet-600 shadow-lg shadow-violet-500/20">
+                        <div className="hidden sm:flex size-12 items-center justify-center rounded-2xl bg-violet-600 shadow-lg shadow-violet-500/20">
                             <MapPin className="size-6 text-white" />
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <div>
-                                <h2 className="text-2xl font-semibold text-zinc-950 dark:text-white">Tus recomendaciones</h2>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400">Explora el mapa y selecciona cada lugar desde la lista lateral.</p>
+                                <h2 className="text-lg sm:text-2xl font-semibold text-zinc-950 dark:text-white">Tus recomendaciones</h2>
+                                <p className="hidden sm:block text-sm text-zinc-500 dark:text-zinc-400">Explora el mapa y selecciona cada lugar desde la lista lateral.</p>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="hidden sm:flex flex-wrap items-center gap-2">
                                 <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
                                     {topFive.length} lugares recomendados
                                 </span>
@@ -641,10 +648,10 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                     </button>
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-hidden p-6 md:p-8">
-                    <div className="grid h-full min-h-0 grid-rows-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-1 xl:grid-cols-[minmax(0,1.35fr)_380px]">
-                        <div className="flex min-h-0 flex-col gap-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1 overflow-y-auto lg:overflow-hidden lg:min-h-0 p-3 sm:p-4 md:p-6 lg:p-8">
+                    <div className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_340px] lg:grid-rows-1 xl:grid-cols-[minmax(0,1.35fr)_380px]">
+                        <div className="flex flex-col gap-3 lg:min-h-0">
+                            <div className="hidden lg:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
                                     Selecciona un card para centrarlo en el mapa. Al pasar el cursor, el punto correspondiente se ilumina.
                                 </p>
@@ -660,8 +667,8 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                 </div>
                             </div>
 
-                            <div className="relative min-h-0 flex-1 overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-50 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-                                <div className="relative h-full min-h-[360px]">
+                            <div className="relative overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-50 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 lg:flex-1 lg:min-h-0">
+                                <div className="relative h-[220px] sm:h-[300px] lg:h-full lg:min-h-[360px]">
                                     <InteractiveMap
                                         initialViewport={REGION_CENTER}
                                         className="h-full w-full !rounded-[26px] !border-none mapcn-surface"
@@ -749,7 +756,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                         })}
                                     </InteractiveMap>
 
-                                    <div className="absolute left-6 top-6 z-10 min-w-[220px] rounded-2xl p-5 mapcn-panel">
+                                    <div className="hidden lg:block absolute left-6 top-6 z-10 min-w-[220px] rounded-2xl p-5 mapcn-panel">
                                         <p className={`mb-1 text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-zinc-500' : 'text-slate-600'}`}>
                                             Visualizacion
                                         </p>
@@ -778,7 +785,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                         </p>
                                     </div>
 
-                                    <div className="absolute bottom-6 right-6 z-10 max-w-[280px] rounded-xl px-4 py-3 text-left mapcn-panel">
+                                    <div className="hidden lg:block absolute bottom-6 right-6 z-10 max-w-[280px] rounded-xl px-4 py-3 text-left mapcn-panel">
                                         <p className={`mb-1 text-[10px] font-black uppercase tracking-[0.18em] ${isDark ? 'text-zinc-500' : 'text-slate-600'}`}>
                                             Estado del mapa
                                         </p>
@@ -794,13 +801,13 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                             </div>
                         </div>
 
-                        <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-50 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+                        <div className="flex flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-50 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 lg:h-full lg:min-h-0">
                             <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
                                 <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">Lugares recomendados</h3>
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Esta seccion tiene su propio scroll para que el mapa permanezca siempre visible.</p>
                             </div>
 
-                            <div className="flex-1 min-h-0 space-y-4 overflow-y-auto overscroll-contain p-4 md:p-5">
+                            <div className="space-y-4 overflow-y-auto overscroll-contain p-4 md:p-5 lg:flex-1 lg:min-h-0">
                                 {resolvedRecommendations.map((recommendation, index) => {
                                     const isSelected = selectedIndex === index;
                                     const isActive = activeIndex === index;
@@ -909,26 +916,26 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-200 bg-zinc-50 p-6 md:p-8 sm:flex-row dark:border-zinc-800 dark:bg-zinc-900/60">
-                    <div className="flex gap-4">
+                <div className="flex flex-col items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50 p-4 sm:p-6 md:p-8 sm:flex-row dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <div className="flex gap-3 w-full sm:w-auto">
                         <button
                             onClick={handleDownload}
-                            className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-6 py-3 font-semibold text-zinc-900 transition-all hover:bg-zinc-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
+                            className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-zinc-900 transition-all hover:bg-zinc-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                         >
-                            <Download className="size-5" />
+                            <Download className="size-4 sm:size-5" />
                             <span>Descargar</span>
                         </button>
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-6 py-3 font-semibold text-violet-700 transition-all hover:bg-violet-100 active:scale-95 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/15"
+                            className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-violet-700 transition-all hover:bg-violet-100 active:scale-95 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/15"
                         >
-                            <Share2 className="size-5" />
+                            <Share2 className="size-4 sm:size-5" />
                             <span>Compartir</span>
                         </button>
                     </div>
                     <button
                         onClick={onClose}
-                        className="flex items-center gap-2 rounded-xl bg-violet-600 px-10 py-3 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95"
+                        className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 sm:px-10 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95"
                     >
                         <span>Finalizar</span>
                         <ArrowRight className="size-5" />

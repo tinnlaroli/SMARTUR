@@ -328,7 +328,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
 
                 {/* Mobile Menu Overlay */}
                 <div ref={mobileMenuRef} className={`mobile-menu-overlay fixed inset-0 z-[90] flex flex-col items-center justify-center`}>
-                    <nav className="flex flex-col items-center gap-8">
+                    <nav className="flex flex-col items-center gap-7">
                         {navLinks.map((item, idx) => (
                             <button
                                 key={item.target}
@@ -345,39 +345,46 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                         {!user && (
                             <button
                                 onClick={() => { handleStartExperience(); setIsMobileMenuOpen(false); document.body.style.overflow = ''; }}
-                                className="mt-4 text-2xl font-bold"
+                                className="mt-2 text-2xl font-bold"
                                 style={{ color: 'var(--color-pink)' }}
                             >
                                 {t('nav.start')}
                             </button>
                         )}
-                    </nav>
 
-                    {/* Theme + Language controls at the bottom of mobile menu */}
-                    <div className="absolute bottom-12 flex items-center gap-4">
-                        <button
-                            onClick={toggleTheme}
-                            className="control-btn p-3 rounded-xl"
-                            aria-label="Toggle theme"
+                        {/* Theme + Language controls — inline with nav, below links */}
+                        <div
+                            className="mt-4 flex items-center gap-3 rounded-2xl px-5 py-3"
+                            style={{ background: 'rgba(var(--rgb-text), 0.05)', border: '1px solid rgba(var(--rgb-text), 0.08)' }}
                         >
-                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                        </button>
-                        <div className="flex items-center gap-2">
-                            {Object.entries(languages).map(([code, name]) => (
-                                <button
-                                    key={code}
-                                    onClick={() => changeLanguage(code)}
-                                    className="px-3 py-2 rounded-xl text-sm font-bold transition-colors"
-                                    style={{
-                                        background: lang === code ? 'rgba(var(--rgb-purple-accent), 0.15)' : 'rgba(var(--rgb-text), 0.06)',
-                                        color: lang === code ? 'var(--color-purple)' : 'var(--color-text-alt)',
-                                    }}
-                                >
-                                    {code.toUpperCase()}
-                                </button>
-                            ))}
+                            <button
+                                onClick={toggleTheme}
+                                className="control-btn p-2.5 rounded-xl"
+                                aria-label="Toggle theme"
+                            >
+                                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                            </button>
+                            <div
+                                className="h-5 w-px"
+                                style={{ background: 'rgba(var(--rgb-text), 0.15)' }}
+                            />
+                            <div className="flex items-center gap-1.5">
+                                {Object.entries(languages).map(([code]) => (
+                                    <button
+                                        key={code}
+                                        onClick={() => changeLanguage(code)}
+                                        className="px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-colors"
+                                        style={{
+                                            background: lang === code ? 'rgba(var(--rgb-purple-accent), 0.18)' : 'transparent',
+                                            color: lang === code ? 'var(--color-purple)' : 'var(--color-text-alt)',
+                                        }}
+                                    >
+                                        {code.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </nav>
                 </div>
         </>
     );

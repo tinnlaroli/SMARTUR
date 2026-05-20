@@ -46,7 +46,7 @@ export const ForgotPasswordView = ({ onSwitchStep }: ForgotPasswordViewProps) =>
         <div className="w-full">
             <button
                 onClick={() => onSwitchStep('login')}
-                className="group mb-6 flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-zinc-300"
+                className="group mb-6 flex items-center gap-1 text-xs text-[var(--color-text-alt)] transition-colors hover:text-[var(--color-text)]"
             >
                 <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
                 <span>{t('auth.forgot.back')}</span>
