@@ -65,7 +65,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-tu_contraseña_secreta}
       EMAIL_USER: ${EMAIL_USER:-smarturutcv@gmail.com}
       EMAIL_PASS: ${EMAIL_PASS:-lihichglnpzlhddg}
-      FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173
+      FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173,http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4321
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-77253773974-b412uvcqhrqmchhtdq5rq6tl81hpados.apps.googleusercontent.com}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dke5fhmpk}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-759781756841837}
@@ -105,7 +105,7 @@ services:
       AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
       KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
       KAGGLE_KEY: ${KAGGLE_KEY:-}
-      CORS_ORIGINS: "http://localhost:5173,http://localhost:3000"
+      CORS_ORIGINS: "http://localhost:5173,http://localhost:3000,http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4000"
     ports:
       - '${MODELO_HOST_PORT:-8000}:8000'
     volumes:
@@ -130,12 +130,16 @@ services:
     build:
       context: ./PLATAFORMA
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://${VPS_IP:-localhost}:4000/api/v2
+        VITE_MODELO_URL: http://${VPS_IP:-localhost}:8000
+        VITE_BUSINESS_URL: http://${VPS_IP:-localhost}:4321/
     container_name: smartur-plataforma
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:4000/api/v2
-      VITE_BUSINESS_URL: http://landing:4321/
-      VITE_MODELO_URL: http://localhost:8000
+      VITE_API_URL: http://${VPS_IP:-localhost}:4000/api/v2
+      VITE_BUSINESS_URL: http://${VPS_IP:-localhost}:4321/
+      VITE_MODELO_URL: http://${VPS_IP:-localhost}:8000
     ports:
       - '${PLATAFORMA_HOST_PORT:-5173}:5173'
     depends_on:
@@ -150,10 +154,12 @@ services:
     build:
       context: ./LANDING
       dockerfile: Dockerfile
+      args:
+        PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}:5173/
     container_name: smartur-landing
     restart: unless-stopped
     environment:
-      PUBLIC_TOURIST_APP_URL: http://plataforma:5173/
+      PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}:5173/
     ports:
       - '${LANDING_HOST_PORT:-4321}:4321'
     depends_on:

@@ -14,6 +14,13 @@ RUN npm install
 
 COPY . .
 
+ARG VITE_API_URL
+ARG VITE_MODELO_URL
+ARG VITE_BUSINESS_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_MODELO_URL=$VITE_MODELO_URL
+ENV VITE_BUSINESS_URL=$VITE_BUSINESS_URL
+
 RUN npx vite build
 
 # ── Etapa 2: Servir con Nginx ──────────────────────────────

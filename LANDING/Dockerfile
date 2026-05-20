@@ -14,6 +14,9 @@ RUN npm install
 
 COPY . .
 
+ARG PUBLIC_TOURIST_APP_URL
+ENV PUBLIC_TOURIST_APP_URL=$PUBLIC_TOURIST_APP_URL
+
 RUN npm run build
 
 # ── Etapa 2: Servir con Nginx ──────────────────────────────
