@@ -71,6 +71,8 @@
   "communityNeedTextOrImage": "Write a message or attach an image",
   "communityLoadPlacesError": "Could not load places",
   "communityPostPublished": "Post published",
+  "communityImageRejected": "This image does not meet community guidelines. Choose a photo suitable for all audiences.",
+  "communityImageModerationUnavailable": "We could not verify the image. Please try again later.",
   "diaryTitle": "My Diary",
   "favoritesTab": "Favorites",
   "historyTab": "History",

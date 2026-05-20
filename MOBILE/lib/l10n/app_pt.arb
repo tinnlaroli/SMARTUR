@@ -71,6 +71,8 @@
   "communityNeedTextOrImage": "Escreva uma mensagem ou anexe uma imagem",
   "communityLoadPlacesError": "Não foi possível carregar os locais",
   "communityPostPublished": "Publicação criada",
+  "communityImageRejected": "A imagem não cumpre as normas da comunidade. Escolha outra foto adequada para todos os públicos.",
+  "communityImageModerationUnavailable": "Não foi possível verificar a imagem. Tente novamente mais tarde.",
   "diaryTitle": "Meu Diário",
   "favoritesTab": "Favoritos",
   "historyTab": "Histórico",

@@ -71,6 +71,8 @@
   "communityNeedTextOrImage": "Écrivez un message ou joignez une image",
   "communityLoadPlacesError": "Impossible de charger les lieux",
   "communityPostPublished": "Publication créée",
+  "communityImageRejected": "Cette image ne respecte pas les règles de la communauté. Choisissez une photo adaptée à tous les publics.",
+  "communityImageModerationUnavailable": "Impossible de vérifier l'image pour le moment. Réessayez plus tard.",
   "diaryTitle": "Mon journal",
   "favoritesTab": "Favoris",
   "historyTab": "Historique",

@@ -534,6 +534,18 @@ abstract class AppLocalizations {
   /// **'Publicación creada'**
   String get communityPostPublished;
 
+  /// No description provided for @communityImageRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'La imagen no cumple las normas de la comunidad. Elige otra foto apta para todos los públicos.'**
+  String get communityImageRejected;
+
+  /// No description provided for @communityImageModerationUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo verificar la imagen. Inténtalo más tarde.'**
+  String get communityImageModerationUnavailable;
+
   /// No description provided for @diaryTitle.
   ///
   /// In es, this message translates to:

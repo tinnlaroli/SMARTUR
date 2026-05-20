@@ -232,6 +232,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityPostPublished => 'Post published';
 
   @override
+  String get communityImageRejected =>
+      'This image does not meet community guidelines. Choose a photo suitable for all audiences.';
+
+  @override
+  String get communityImageModerationUnavailable =>
+      'We could not verify the image. Please try again later.';
+
+  @override
   String get diaryTitle => 'My Diary';
 
   @override

@@ -362,6 +362,9 @@ class UserContentService {
         fallback = 'Lugar no encontrado en el servidor.';
       } else if (sc == 413) {
         fallback = 'La imagen o la petición es demasiado grande.';
+      } else if (sc == 422) {
+        fallback =
+            'La imagen no cumple las normas de la comunidad. Elige otra foto apta para todos los públicos.';
       } else if (sc == 500 || sc == 502 || sc == 503) {
         fallback = 'El servidor no pudo crear la publicación. Inténtalo más tarde.';
       }
