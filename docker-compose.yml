@@ -14,6 +14,7 @@ services:
       - '${DB_HOST_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./API/bd.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-smartur}']
       interval: 10s
@@ -29,13 +30,15 @@ services:
     image: redis:7-alpine
     container_name: smartur-redis
     restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redispass}
     command: redis-server --requirepass ${REDIS_PASSWORD:-redispass}
     ports:
       - '${REDIS_HOST_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ['CMD-SHELL', 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -99,9 +102,15 @@ services:
       POI_DB_USER: ${DB_USER:-postgres}
       POI_DB_PASSWORD: ${DB_PASSWORD:-12345678}
       SKIP_MODEL_BOOT: ${SKIP_MODEL_BOOT:-0}
+      AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
+      KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
+      KAGGLE_KEY: ${KAGGLE_KEY:-}
       CORS_ORIGINS: "http://localhost:5173,http://localhost:3000"
     ports:
       - '${MODELO_HOST_PORT:-8000}:8000'
+    volumes:
+      - modelo_data:/app/data
+      - modelo_models:/app/models
     depends_on:
       postgres:
         condition: service_healthy
@@ -109,8 +118,8 @@ services:
       test: ['CMD', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8000/docs", timeout=5)']
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 300s
+      retries: 10
+      start_period: 1800s
     networks:
       - smartur-net
 
@@ -179,3 +188,5 @@ volumes:
   postgres_data:
   redis_data:
   grafana_data:
+  modelo_data:
+  modelo_models:

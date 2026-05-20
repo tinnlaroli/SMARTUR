@@ -15,7 +15,10 @@ Multi-service Docker Compose project with 7 services:
 
 ```bash
 # Start all services (from project root)
+# Primera vez: descarga Yelp, preprocesa, entrena modelos y crea la BD automáticamente.
+# Puede tardar 30-60+ min según red y hardware. Seguir progreso:
 docker compose up -d
+docker logs -f smartur-modelo
 
 # Build and start specific service
 docker compose build <service> && docker compose up -d <service>
@@ -23,9 +26,6 @@ docker compose build <service> && docker compose up -d <service>
 # View logs
 docker logs smartur-api
 docker logs smartur-plataforma
-
-# Initialize database (after first start)
-Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d smartur
 
 # Restart a service
 docker restart smartur-api
@@ -46,7 +46,8 @@ docker restart smartur-api
 ## Architecture notes
 
 - **Frontend proxy**: PLATAFORMA nginx proxies `/api/*` to backend (`proxy_pass http://api:3000/api/`)
-- **Database init**: Schema in `API/bd.sql` must be imported manually after first container start
+- **Database init**: `API/bd.sql` se importa automáticamente al crear el volumen `postgres_data` (primera vez)
+- **MODELO bootstrap**: En el primer arranque, el contenedor `modelo` descarga Yelp, preprocesa CSVs y entrena RF/GBM. Datos y modelos persisten en volúmenes `modelo_data` / `modelo_models`
 - **Express 5**: API uses Express 5 which does NOT support wildcard routes like `app.options('*', ...)`. Use `app.options(app.router, cors(corsOptions))` instead.
 - **PLATAFORMA build**: Uses `npx vite build` instead of `npm run build` to skip TypeScript strict checking in Docker
 - **LANDING**: Uses npm (not pnpm) in Docker to avoid pnpm script restrictions
@@ -68,9 +69,10 @@ See `MODELO/AGENTS.md` for detailed instructions on:
 ## Common issues
 
 1. **API crashes on start**: If you see `PathError: Missing parameter name at index 1: *`, check `API/index.js` line 83 for `app.options('*', ...)` — remove it for Express 5 compatibility
-2. **Database tables missing**: Run `bd.sql` import command above
-3. **405 on API calls**: Ensure nginx in PLATAFORMA has `/api/` proxy configured
-4. **Container name conflicts**: Run `docker compose down` before `up` to clean up
+2. **Database tables missing**: Borrar volumen y recrear (`docker compose down -v` luego `up`) o importar manualmente: `Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d smartur`
+3. **MODELO tarda mucho en primer boot**: Normal. Ver `docker logs -f smartur-modelo`. Si falla Kaggle, aceptar términos del dataset y configurar `KAGGLE_USERNAME` / `KAGGLE_KEY` en `.env`
+4. **405 on API calls**: Ensure nginx in PLATAFORMA has `/api/` proxy configured
+5. **Container name conflicts**: Run `docker compose down` before `up` to clean up
 
 ## Project structure
 
