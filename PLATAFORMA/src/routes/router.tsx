@@ -22,6 +22,7 @@ import { InstrumentEditorPage } from '../features/instrument-builder/pages/Instr
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
 import { CommunityPage } from '../features/community/pages/CommunityPage';
 import { ContactsPage } from '../features/contacts/pages/ContactsPage';
+import { MLObservabilityPage } from '../features/ml-observability/pages/MLObservabilityPage';
 
 export const router = createBrowserRouter([
     {
@@ -99,6 +100,10 @@ export const router = createBrowserRouter([
                                     {
                                         path: 'contactos',
                                         element: <ContactsPage />,
+                                    },
+                                    {
+                                        path: 'ml',
+                                        element: <MLObservabilityPage />,
                                     },
                                     {
                                         path: 'configuracion',

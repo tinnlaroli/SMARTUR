@@ -76,6 +76,15 @@ const STEPS = [
         },
     },
     {
+        element: '#sidebar-item-ml',
+        popover: {
+            title: '🤖 ML / Observabilidad IA',
+            description: 'Monitorea la salud del motor de recomendaciones: RMSE, latencia de inferencia y tasa de clicks sobre sugerencias.',
+            side: 'right' as const,
+            align: 'start' as const,
+        },
+    },
+    {
         element: '#sidebar-item-instruments',
         popover: {
             title: '📋 Instrumentos de Evaluación',

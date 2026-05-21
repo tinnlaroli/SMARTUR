@@ -23,6 +23,10 @@ class ApiConstants {
   static const String meVisits = '/me/visits';
   static const String communityPosts = '/community/posts';
 
+  // ML interaction telemetry
+  static const String meInteractions = '/me/interactions';
+  static const String meRating = '/me/rating';
+
   // Explore
   static const String exploreHome = '/explore/home';
   static const String locations = '/locations';

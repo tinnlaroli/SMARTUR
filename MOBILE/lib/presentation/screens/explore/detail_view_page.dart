@@ -51,10 +51,36 @@ class _DetailViewPageState extends State<DetailViewPage> {
   String? _kind;
   int? _pid;
 
+  // Dwell time tracking
+  final Stopwatch _dwell = Stopwatch();
+
+  // Star rating
+  int? _userRating;
+  bool _ratingBusy = false;
+
   @override
   void initState() {
     super.initState();
+    _dwell.start();
     WidgetsBinding.instance.addPostFrameCallback((_) => _setupPlace());
+  }
+
+  @override
+  void dispose() {
+    _dwell.stop();
+    final ms = _dwell.elapsedMilliseconds;
+    if (_kind != null && _pid != null && ms > 3000) {
+      // Fire-and-forget: flush dwell event
+      UserContentService().batchInteractions([
+        {
+          'place_kind': _kind,
+          'place_id': _pid,
+          'event_type': 'dwell',
+          'dwell_ms': ms,
+        }
+      ]);
+    }
+    super.dispose();
   }
 
   Future<void> _setupPlace() async {
@@ -67,10 +93,36 @@ class _DetailViewPageState extends State<DetailViewPage> {
     }
     final svc = UserContentService();
     await svc.recordVisit(_kind!, _pid!);
+    // Also fire a detail_open interaction event
+    svc.batchInteractions([
+      {'place_kind': _kind, 'place_id': _pid, 'event_type': 'detail_open'}
+    ]);
     try {
-      final fav = await svc.isFavorite(_kind!, _pid!);
-      if (mounted) setState(() => _isFavorite = fav);
+      final results = await Future.wait([
+        svc.isFavorite(_kind!, _pid!),
+        svc.fetchRating(_kind!, _pid!),
+      ]);
+      if (mounted) {
+        setState(() {
+          _isFavorite = results[0] as bool;
+          _userRating = results[1] as int?;
+        });
+      }
     } catch (_) {}
+  }
+
+  Future<void> _ratePlace(int stars) async {
+    if (_kind == null || _pid == null || _ratingBusy) return;
+    setState(() {
+      _ratingBusy = true;
+      _userRating = stars;
+    });
+    await UserContentService().ratePlace(
+      placeKind: _kind!,
+      placeId: _pid!,
+      rating: stars,
+    );
+    if (mounted) setState(() => _ratingBusy = false);
   }
 
   Future<void> _toggleFavorite() async {
@@ -184,6 +236,19 @@ class _DetailViewPageState extends State<DetailViewPage> {
                       child: _RightMosaic(galleryUrls: widget.galleryUrls),
                     ),
 
+                  // Star rating row (non-intrusive, shown when place ref is available)
+                  if (_kind != null && _pid != null)
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 108,
+                      child: _StarRatingRow(
+                        userRating: _userRating,
+                        busy: _ratingBusy,
+                        onRate: _ratePlace,
+                      ),
+                    ),
+
                   // Main content — bottom sheet style
                   Positioned(
                     left: 0,
@@ -200,6 +265,79 @@ class _DetailViewPageState extends State<DetailViewPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+
+class _StarRatingRow extends StatelessWidget {
+  final int? userRating;
+  final bool busy;
+  final void Function(int stars) onRate;
+
+  const _StarRatingRow({
+    required this.userRating,
+    required this.busy,
+    required this.onRate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(40),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Tu calificación',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 10),
+              ...List.generate(5, (i) {
+                final star = i + 1;
+                final filled = userRating != null && star <= userRating!;
+                return GestureDetector(
+                  onTap: busy ? null : () => onRate(star),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Icon(
+                      filled ? Icons.star_rounded : Icons.star_border_rounded,
+                      size: 22,
+                      color: filled ? const Color(0xFFFBBF24) : Colors.white54,
+                    ),
+                  ),
+                );
+              }),
+              if (busy)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

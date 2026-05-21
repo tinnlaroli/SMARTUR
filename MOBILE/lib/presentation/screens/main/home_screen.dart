@@ -13,6 +13,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/services/profile_service.dart';
+import '../../../data/services/user_content_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_background.dart';
@@ -1055,6 +1056,12 @@ class HomeScreenState extends State<HomeScreen> {
                                 _selectedCategory = null;
                               });
                               _loadWeatherForSelectedCity();
+                              UserContentService().batchInteractions([{
+                                'place_kind': null,
+                                'place_id': null,
+                                'event_type': 'filter_click',
+                                'meta': {'filter': 'city', 'value': city.name},
+                              }]);
                             },
                           ),
                         );
@@ -1115,10 +1122,16 @@ class HomeScreenState extends State<HomeScreen> {
 
     return PopupMenuButton<int>(
       onSelected: (id) {
+        final cat = id == 0 ? null : categories[id - 1];
         setState(() {
-          _selectedCategory =
-              id == 0 ? null : categories[id - 1]; // 0 means "all"
+          _selectedCategory = cat;
         });
+        UserContentService().batchInteractions([{
+          'place_kind': null,
+          'place_id': null,
+          'event_type': 'filter_click',
+          'meta': {'filter': 'category', 'value': cat?.name ?? 'all'},
+        }]);
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: scheme.surface,

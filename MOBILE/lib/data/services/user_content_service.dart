@@ -62,6 +62,73 @@ String _networkFailureMessage(Object e) {
 class UserContentService {
   final AuthService _auth = AuthService();
 
+  // ── Interaction telemetry buffer ──────────────────────────────────
+  // Events are buffered locally and flushed in a batch to minimize requests.
+  // Call flushInteractions() when the app goes to background.
+  static final List<Map<String, dynamic>> _interactionBuffer = [];
+  static const int _bufferFlushSize = 20;
+
+  /// Adds events to the local buffer and auto-flushes when the buffer is full.
+  /// Safe to call fire-and-forget; errors are silently swallowed to avoid blocking UX.
+  Future<void> batchInteractions(List<Map<String, dynamic>> events) async {
+    _interactionBuffer.addAll(events);
+    if (_interactionBuffer.length >= _bufferFlushSize) {
+      await flushInteractions();
+    }
+  }
+
+  /// Flushes all buffered interaction events to the API.
+  /// Call from AppLifecycleState.paused or on dispose of long-lived screens.
+  Future<void> flushInteractions() async {
+    if (_interactionBuffer.isEmpty) return;
+    final batch = List<Map<String, dynamic>>.from(_interactionBuffer);
+    _interactionBuffer.clear();
+    try {
+      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meInteractions}');
+      await ApiClient.post(
+        uri,
+        body: jsonEncode({'events': batch}),
+        timeout: const Duration(seconds: 10),
+      );
+    } catch (_) {
+      // Re-queue on failure (best-effort — don't block the user)
+      _interactionBuffer.insertAll(0, batch);
+    }
+  }
+
+  /// Upserts an explicit 1–5 star rating for a place.
+  Future<void> ratePlace({
+    required String placeKind,
+    required int placeId,
+    required int rating,
+  }) async {
+    assert(rating >= 1 && rating <= 5, 'rating must be between 1 and 5');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meRating}');
+    try {
+      await ApiClient.post(
+        uri,
+        body: jsonEncode({'place_kind': placeKind, 'place_id': placeId, 'rating': rating}),
+        timeout: const Duration(seconds: 10),
+      );
+    } catch (_) {
+      // Silent: rating loss is acceptable vs. blocking the user
+    }
+  }
+
+  /// Returns the user's current rating for a place, or null if not rated.
+  Future<int?> fetchRating(String placeKind, int placeId) async {
+    final uri = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.meRating}/$placeKind/$placeId');
+    try {
+      final response = await ApiClient.get(uri, timeout: const Duration(seconds: 8));
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body);
+      return data['rating'] as int?;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Une `place` anidado y alias típicos del backend para la UI del diario.
   static Map<String, dynamic> normalizeDiaryPlaceRow(Map<String, dynamic> raw) {
     final out = Map<String, dynamic>.from(raw);

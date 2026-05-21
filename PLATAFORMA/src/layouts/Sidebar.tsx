@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
-    Activity, Award, Star, BarChart3, FileText, MessageSquare, Mail,
+    Activity, Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit,
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,7 +40,7 @@ const MENU_GROUPS = [
     },
     {
         label: 'Sistema',
-        items: ['settings'],
+        items: ['ml', 'settings'],
     },
 ];
 
@@ -69,6 +69,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'contacts',       label: t('sidebar.contacts'),       icon: Mail,       path: '/dashboard/contactos',                  roles: [1] },
         { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,  path: '/dashboard/estadisticas',               roles: [1] },
         { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,   path: '/dashboard/instrumentos',               roles: [1] },
+        { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit, path: '/dashboard/ml',                       roles: [1] },
         { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,   path: '/dashboard/configuracion',              roles: [1] },
     ];
 
