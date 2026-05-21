@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { contactsApi } from '../api/contactsApi';
-import type { ContactSubscription } from '../types/types';
+import type { ContactSubscription, ContactStatus } from '../types/types';
 
 export const useContacts = () => {
     const [subscriptions, setSubscriptions] = useState<ContactSubscription[]>([]);
@@ -20,11 +20,16 @@ export const useContacts = () => {
         }
     }, []);
 
+    const updateStatus = useCallback(async (id: number, status: ContactStatus) => {
+        await contactsApi.updateStatus(id, status);
+        setSubscriptions((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
+    }, []);
+
     const deleteSubscription = useCallback(async (id: number) => {
         await contactsApi.deleteSubscription(id);
         setSubscriptions((prev) => prev.filter((s) => s.id !== id));
         setTotalRecords((n) => n - 1);
     }, []);
 
-    return { subscriptions, isLoading, totalPages, totalRecords, fetchSubscriptions, deleteSubscription };
+    return { subscriptions, isLoading, totalPages, totalRecords, fetchSubscriptions, updateStatus, deleteSubscription };
 };

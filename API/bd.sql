@@ -351,6 +351,7 @@ CREATE TABLE contact_subscription (
   source VARCHAR(64) NOT NULL DEFAULT 'landing_b2b',
   reason VARCHAR(100) NULL,
   message TEXT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_contact_subscription_email ON contact_subscription(email);

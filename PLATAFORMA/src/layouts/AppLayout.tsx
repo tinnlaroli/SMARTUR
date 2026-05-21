@@ -198,7 +198,7 @@ export default function AppLayout() {
 
     return (
         
-        <div className="flex min-h-screen" style={{ background: 'var(--color-bg)' }}>
+        <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             <div className="flex min-w-0 flex-1 flex-col">
@@ -360,7 +360,7 @@ export default function AppLayout() {
 
                 {/* ── Main content ── */}
                 <main
-                    className="flex min-h-0 flex-1 p-4 sm:p-6 lg:p-8"
+                    className="flex min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"
                     style={{ background: 'var(--color-bg-alt)' }}
                 >
                     <div className="mx-auto h-full w-full max-w-400">

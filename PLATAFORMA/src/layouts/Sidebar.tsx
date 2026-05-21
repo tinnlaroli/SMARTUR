@@ -17,31 +17,13 @@ interface MenuItem {
     path: string; end?: boolean; roles: number[];
 }
 
-const MENU_GROUPS = [
-    {
-        label: 'Principal',
-        items: ['home'],
-    },
-    {
-        label: 'Gestión',
-        items: ['users', 'companies', 'services', 'poi', 'locations'],
-    },
-    {
-        label: 'Mobile & Engagement',
-        items: ['community', 'contacts', 'profiles', 'activities'],
-    },
-    {
-        label: 'Certificaciones',
-        items: ['certifications', 'instruments'],
-    },
-    {
-        label: 'Reportes',
-        items: ['stats'],
-    },
-    {
-        label: 'Sistema',
-        items: ['ml', 'settings'],
-    },
+const MENU_GROUP_KEYS = [
+    { labelKey: 'sidebar.group.principal',      items: ['home'] },
+    { labelKey: 'sidebar.group.gestion',        items: ['users', 'companies', 'services', 'poi', 'locations'] },
+    { labelKey: 'sidebar.group.mobile',         items: ['community', 'contacts', 'profiles', 'activities'] },
+    { labelKey: 'sidebar.group.certifications', items: ['certifications', 'instruments'] },
+    { labelKey: 'sidebar.group.reports',        items: ['stats'] },
+    { labelKey: 'sidebar.group.system',         items: ['ml', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -74,8 +56,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     ];
 
     const itemMap = Object.fromEntries(allItems.map((i) => [i.id, i]));
-    const filteredGroups = MENU_GROUPS.map((g) => ({
-        ...g,
+    const filteredGroups = MENU_GROUP_KEYS.map((g) => ({
+        label: t(g.labelKey),
         items: g.items.map((id) => itemMap[id]).filter((i) => i && i.roles.includes(userRole)),
     })).filter((g) => g.items.length > 0);
 
@@ -249,72 +231,59 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* ── Footer ── */}
                 <div
-                    className="shrink-0 space-y-1 border-t p-2"
+                    className="shrink-0 border-t p-2"
                     style={{ borderColor: 'var(--color-border)' }}
                 >
-                    {/* Logout */}
-                    <button
-                        onClick={handleLogout}
-                        title={isCollapsed ? t('sidebar.logout') : ''}
-                        className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all active:scale-[0.97] ${
-                            isCollapsed ? 'justify-center' : ''
-                        }`}
-                        style={{ color: 'var(--color-pink)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(var(--rgb-pink-primary),0.10)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = '')}
-                    >
-                        <LogOut className="size-[18px] shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
-                        <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-                            {t('sidebar.logout')}
-                        </span>
-                    </button>
-
-                    {/* User card */}
-                    <div className="pt-1">
-                        {isCollapsed ? (
-                            <div className="flex justify-center">
+                    {isCollapsed ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <div
+                                className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white"
+                                style={{ background: 'var(--color-purple)' }}
+                                title={user?.name ?? ''}
+                            >
+                                {user ? getInitials(user.name) : 'U'}
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                title={t('sidebar.logout')}
+                                className="rounded-lg p-1.5 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                style={{ color: 'var(--color-pink)' }}
+                            >
+                                <LogOut className="size-3.5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div
+                            className="flex items-center gap-2 rounded-xl border px-2 py-1.5"
+                            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                        >
+                            <div className="relative shrink-0">
                                 <div
-                                    className="flex size-10 cursor-default items-center justify-center rounded-xl text-sm font-bold text-white shadow-md transition-transform hover:scale-105"
+                                    className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white"
                                     style={{ background: 'var(--color-purple)' }}
-                                    title={user?.name ?? ''}
                                 >
                                     {user ? getInitials(user.name) : 'U'}
                                 </div>
+                                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white bg-emerald-400 dark:border-zinc-900" />
                             </div>
-                        ) : (
-                            <div
-                                className="rounded-xl border p-3"
-                                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    {user?.name || t('sidebar.user')}
+                                </p>
+                                <p className="truncate text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                    {userRole === 1 ? t('sidebar.admin') : t('sidebar.user')}
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                title={t('sidebar.logout')}
+                                className="shrink-0 rounded-lg p-1.5 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                style={{ color: 'var(--color-pink)' }}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="relative shrink-0">
-                                        <div
-                                            className="flex size-9 items-center justify-center rounded-lg text-sm font-bold text-white shadow"
-                                            style={{ background: 'var(--color-purple)' }}
-                                        >
-                                            {user ? getInitials(user.name) : 'U'}
-                                        </div>
-                                        {/* online dot */}
-                                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 dark:border-zinc-900" />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                            {user?.name || t('sidebar.user')}
-                                        </p>
-                                        <p className="truncate text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                            {user?.email || ''}
-                                        </p>
-                                    </div>
-                                    <span
-                                        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                                        style={{ background: 'var(--color-purple)' }}
-                                    >
-                                        {userRole === 1 ? t('sidebar.admin') : t('sidebar.user')}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                                <LogOut className="size-3.5" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>
