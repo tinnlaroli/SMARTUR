@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useCommunity } from '../hooks/useCommunity';
-import { MessageSquare, ImageIcon, MapPin, Trash2, User, Store, Star } from 'lucide-react';
+import { MessageSquare, ImageIcon, Trash2, Store, Star } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 
 const LIMIT = 20;
 
@@ -27,6 +29,7 @@ export const CommunityPage = () => {
     const { posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost } = useCommunity();
     const [searchParams, setSearchParams] = useSearchParams();
     const toast = useToast();
+    const { confirm, modal: confirmModal } = useConfirm();
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const page = Number(searchParams.get('page')) || 1;
@@ -34,7 +37,13 @@ export const CommunityPage = () => {
     useEffect(() => { fetchPosts(page, LIMIT); }, [page, fetchPosts]);
 
     const handleDelete = async (id: number, caption: string) => {
-        if (!window.confirm(`¿Eliminar la publicación "${caption.slice(0, 50) || '(sin texto)'}"?`)) return;
+        const ok = await confirm({
+            title: 'Eliminar publicación',
+            message: `¿Eliminar "${caption.slice(0, 50) || '(sin texto)'}"? Esta acción es permanente.`,
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
         setDeletingId(id);
         try {
             await deletePost(id);
@@ -48,20 +57,16 @@ export const CommunityPage = () => {
 
     return (
         <div className="flex flex-col gap-6" id="comunidad-module">
+            {confirmModal}
             {/* Header */}
             <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-violet-600">
-                        <MessageSquare className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            Comunidad Mobile
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            Publicaciones creadas por usuarios desde la app móvil
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        Comunidad Mobile
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Publicaciones creadas por usuarios desde la app móvil
+                    </p>
                 </div>
                 <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
                     {totalRecords} publicaciones
@@ -70,7 +75,7 @@ export const CommunityPage = () => {
 
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.community }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>¿Qué son las publicaciones de comunidad?</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>

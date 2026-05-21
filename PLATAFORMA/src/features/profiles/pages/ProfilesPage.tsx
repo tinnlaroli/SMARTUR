@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useProfiles } from '../hooks/useProfiles';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
@@ -13,14 +13,10 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
-    SortableHeadCell,
     TableBadge,
-    TableOrderBadge,
-    nextSort,
-    sortRows,
 } from '../../../components/ui/DataTable';
-import type { SortState } from '../../../components/ui/DataTable';
 import type { Profile } from '../types/types';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -53,16 +49,10 @@ export const ProfilesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
-    const [sort, setSort] = useState<SortState | null>(null);
-    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
-    const displayData = useMemo(() => sortRows(profiles, sort), [profiles, sort]);
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             <div className="flex items-center gap-3 shrink-0">
-                <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: 'var(--color-purple)' }}>
-                    <UserCircle className="size-5 text-white" />
-                </div>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
                         {m.profiles.title}
@@ -75,7 +65,7 @@ export const ProfilesPage = () => {
 
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <UserCircle className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <UserCircle className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.profiles }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Perfiles de viajero</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los perfiles agrupan preferencias de viaje recopiladas mediante el formulario inteligente. Se usan para personalizar las recomendaciones del motor de IA.</p>
@@ -95,26 +85,25 @@ export const ProfilesPage = () => {
                         <DataTable>
                             <DataTableHead>
                                 <tr>
-                                    <DataTableHeadCell>{m.profiles.colOrder}</DataTableHeadCell>
                                     <DataTableHeadCell>{m.profiles.colUser}</DataTableHeadCell>
-                                    <SortableHeadCell sortKey="travel_type" sort={sort} onSort={handleSort}>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Luggage className="h-3.5 w-3.5" />
                                             {m.profiles.colTravelType}
                                         </span>
-                                    </SortableHeadCell>
+                                    </DataTableHeadCell>
                                     <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Heart className="h-3.5 w-3.5" />
                                             {m.profiles.colInterests}
                                         </span>
                                     </DataTableHeadCell>
-                                    <SortableHeadCell sortKey="activity_level" sort={sort} onSort={handleSort}>
+                                    <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Leaf className="h-3.5 w-3.5" />
                                             {m.profiles.colPreferences}
                                         </span>
-                                    </SortableHeadCell>
+                                    </DataTableHeadCell>
                                     <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Accessibility className="h-3.5 w-3.5" />
@@ -125,10 +114,9 @@ export const ProfilesPage = () => {
                             </DataTableHead>
                             <DataTableBody>
                                 {isLoading ? (
-                                    <TableBodyRows rows={9} colWidths={['w-7', 'w-52', 'w-40', 'flex-1', 'w-44', 'w-56']} />
+                                    <TableBodyRows rows={9} colWidths={['w-52', 'w-40', 'flex-1', 'w-44', 'w-56']} />
                                 ) : (
-                                    displayData.map((profile, i) => {
-                                        const rowNumber = (page - 1) * limit + i + 1;
+                                    profiles.map((profile, i) => {
                                         const demographicBits = [
                                             humanize(profile.gender),
                                             profile.age ? m.profiles.years(profile.age) : null,
@@ -150,9 +138,6 @@ export const ProfilesPage = () => {
 
                                         return (
                                             <DataTableRow key={profile.id} index={i}>
-                                                <DataTableCell>
-                                                    <TableOrderBadge>{rowNumber}</TableOrderBadge>
-                                                </DataTableCell>
                                                 <DataTableCell>
                                                     <div className="flex min-w-[240px] items-start gap-3">
                                                         {profile.user?.photo_url ? (

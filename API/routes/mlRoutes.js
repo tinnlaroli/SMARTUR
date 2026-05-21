@@ -53,6 +53,25 @@ router.get('/ml/health', verifyToken, async (req, res) => {
 });
 
 /**
+ * POST /api/v2/ml/train
+ * Triggers model retraining on MODELO (fire-and-forget from the dashboard).
+ */
+router.post('/ml/train', verifyToken, async (req, res) => {
+    try {
+        const modeloRes = await fetch(`${MODELO_URL}/train`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10_000),
+        });
+        const data = await modeloRes.json().catch(() => ({}));
+        res.json({ ok: true, message: data.message ?? 'Entrenamiento iniciado en background' });
+    } catch (err) {
+        console.error('[ml/train] error:', err.message);
+        res.status(502).json({ message: 'No se pudo iniciar el entrenamiento.', detail: err.message });
+    }
+});
+
+/**
  * POST /api/v2/ml/recommend/:userId
  * Proxies a recommendation request to the MODELO service,
  * persists the session to ml_recommendation_session, and returns the result.

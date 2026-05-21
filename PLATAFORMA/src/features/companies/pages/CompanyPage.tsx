@@ -6,12 +6,14 @@ import CreateCompanyModal from '../components/CreateCompanyModal';
 import CompanyDetailModal from '../components/CompanyDetailModal';
 import CompanyTable from '../components/CompanyTable';
 import SearchInput from '../components/SearchInput';
-import { Trash2, Building2, Plus, AlertCircle } from 'lucide-react';
+import { Building2, Plus, AlertCircle } from 'lucide-react';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 
 type ModalState = { isCreateOpen: boolean; isDetailOpen: boolean; selectedId: number | null };
 type ModalAction =
@@ -46,6 +48,7 @@ export const CompanyPage = () => {
     const [modalState, dispatchModal] = useReducer(modalReducer, {
         isCreateOpen: false, isDetailOpen: false, selectedId: null,
     });
+    const { confirm, modal: confirmModal } = useConfirm();
 
     useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
     useEffect(() => {
@@ -57,52 +60,38 @@ export const CompanyPage = () => {
         setSelectedCompanies((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
 
     const handleDeleteSelected = async () => {
-        if (!window.confirm(m.common.confirmDeleteCompanies(selectedCompanies.length))) return;
+        const ok = await confirm({
+            title: `Eliminar ${selectedCompanies.length} compañía(s)`,
+            message: 'Esta acción es permanente y no se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
         await Promise.all(selectedCompanies.map((id) => deleteCompany(id)));
         setSelectedCompanies([]);
     };
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            {confirmModal}
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl"
-                        style={{ background: 'var(--color-cyan)' }}>
-                        <Building2 className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            {m.companies.title}
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            {m.companies.subtitle}
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {m.companies.title}
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {m.companies.subtitle}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.companies.searchPlaceholder} />
 
-                    <AnimatePresence>
-                        {selectedCompanies.length > 0 && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.9, x: 8 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, x: 8 }}
-                                onClick={handleDeleteSelected}
-                                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 active:scale-95"
-                            >
-                                <Trash2 className="size-4" />
-                                {m.common.deleteCount(selectedCompanies.length)}
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-
                     <button
                         onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: 'var(--color-cyan)' }}
+                        style={{ background: MODULE_COLORS.companies }}
                     >
                         <Plus className="size-4" />
                         {m.companies.add}
@@ -110,9 +99,15 @@ export const CompanyPage = () => {
                 </div>
             </div>
 
+            <SelectionBar
+                count={selectedCompanies.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedCompanies([])}
+            />
+
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Building2 className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <Building2 className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.companies }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de compañías</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registra y administra las empresas turísticas de la región. Cada compañía puede tener múltiples servicios asociados visibles en la app móvil.</p>

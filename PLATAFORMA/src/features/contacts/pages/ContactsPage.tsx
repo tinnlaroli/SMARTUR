@@ -1,8 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useContacts } from '../hooks/useContacts';
-import { Mail, Trash2, Globe, MessageSquare } from 'lucide-react';
+import { Mail, Globe } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import ContactDetailModal from '../components/ContactDetailModal';
 import {
     DataTable,
     DataTableBody,
@@ -13,13 +17,14 @@ import {
     DataTableScroll,
     DataTableShell,
     SortableHeadCell,
+    TABLE_CHECKBOX_CLASS,
     nextSort,
     sortRows,
 } from '../../../components/ui/DataTable';
 import type { SortState } from '../../../components/ui/DataTable';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import Pagination from '../../users/components/Pagination';
-import type { ContactStatus } from '../types/types';
+import type { ContactStatus, ContactSubscription } from '../types/types';
 
 const LIMIT = 20;
 
@@ -54,13 +59,6 @@ const REASON_TEXT: Record<string, string> = {
     other: '#6b7280',
 };
 
-const STATUS_LABEL: Record<ContactStatus, string> = {
-    pending: 'Pendiente',
-    in_progress: 'En atención',
-    done: 'Resuelto',
-    dismissed: 'Descartado',
-};
-
 const STATUS_STYLE: Record<ContactStatus, { bg: string; color: string }> = {
     pending:     { bg: 'rgba(245,158,11,0.12)',  color: '#d97706' },
     in_progress: { bg: 'rgba(6,182,212,0.12)',   color: '#0891b2' },
@@ -68,12 +66,20 @@ const STATUS_STYLE: Record<ContactStatus, { bg: string; color: string }> = {
     dismissed:   { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' },
 };
 
+const STATUS_LABEL: Record<ContactStatus, string> = {
+    pending: 'Pendiente',
+    in_progress: 'En atención',
+    done: 'Resuelto',
+    dismissed: 'Descartado',
+};
+
 export const ContactsPage = () => {
     const { subscriptions, isLoading, totalPages, totalRecords, fetchSubscriptions, updateStatus, deleteSubscription } = useContacts();
     const [searchParams, setSearchParams] = useSearchParams();
     const toast = useToast();
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const { confirm, modal: confirmModal } = useConfirm();
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [detailContact, setDetailContact] = useState<ContactSubscription | null>(null);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
     const [sort, setSort] = useState<SortState | null>(null);
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
@@ -83,10 +89,22 @@ export const ContactsPage = () => {
 
     useEffect(() => { fetchSubscriptions(page, LIMIT); }, [page, fetchSubscriptions]);
 
+    const toggleId = (id: number) =>
+        setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+    const allSelected = selectedIds.length === subscriptions.length && subscriptions.length > 0;
+    const toggleAll = () => {
+        if (allSelected) setSelectedIds([]);
+        else setSelectedIds(subscriptions.map((s) => s.id));
+    };
+
     const handleStatusChange = async (id: number, status: ContactStatus) => {
         setUpdatingId(id);
         try {
             await updateStatus(id, status);
+            if (detailContact?.id === id) {
+                setDetailContact((prev) => prev ? { ...prev, status } : prev);
+            }
         } catch {
             toast.error('Error', 'No se pudo actualizar el estado.');
         } finally {
@@ -94,80 +112,54 @@ export const ContactsPage = () => {
         }
     };
 
-    const handleDelete = async (id: number, email: string) => {
-        if (!window.confirm(`¿Eliminar el contacto de "${email}"?`)) return;
-        setDeletingId(id);
-        try {
-            await deleteSubscription(id);
-            if (expandedId === id) setExpandedId(null);
-            toast.success('Contacto eliminado', `${email} fue eliminado.`);
-        } catch {
-            toast.error('Error', 'No se pudo eliminar el contacto.');
-        } finally {
-            setDeletingId(null);
-        }
+    const handleDeleteSelected = async () => {
+        const ok = await confirm({
+            title: `Eliminar ${selectedIds.length} contacto(s)`,
+            message: 'Esta acción es permanente y no se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
+        await Promise.all(selectedIds.map((id) => deleteSubscription(id)));
+        setSelectedIds([]);
+        toast.success('Contactos eliminados', `${selectedIds.length} contacto(s) eliminados.`);
     };
-
-    const expandedSub = subscriptions.find((s) => s.id === expandedId);
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            {confirmModal}
             {/* Header */}
             <div className="flex shrink-0 items-start justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-600">
-                        <Mail className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            Contactos & Suscripciones
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            Mensajes capturados desde los formularios de contacto
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        Contactos & Suscripciones
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Mensajes capturados desde los formularios de contacto
+                    </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
-                        {totalRecords} registros
-                    </span>
-                </div>
+                <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+                    {totalRecords} registros
+                </span>
             </div>
+
+            <SelectionBar
+                count={selectedIds.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedIds([])}
+            />
 
             {/* Info banner */}
             <div className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Mail className="size-5 mt-0.5 shrink-0 text-emerald-500" />
+                <Mail className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.contacts }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>¿Qué son los contactos?</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
                         Mensajes enviados por visitantes y empresas a través de los formularios de contacto de la plataforma y la landing page.
-                        Desde aquí puedes revisar cada mensaje, cambiar su estado de atención y eliminar registros.
+                        Haz clic en el correo o el mensaje para ver los detalles y cambiar el estado de atención.
                     </p>
                 </div>
             </div>
-
-            {/* Message detail panel */}
-            {expandedSub?.message && (
-                <div className="shrink-0 rounded-2xl border p-4" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <MessageSquare className="size-4 text-emerald-500" />
-                            <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{expandedSub.email}</span>
-                            {expandedSub.reason && (
-                                <span className="rounded-full px-2 py-0.5 text-xs" style={{ background: REASON_COLOR[expandedSub.reason] ?? 'rgba(107,114,128,0.1)', color: REASON_TEXT[expandedSub.reason] ?? '#6b7280' }}>
-                                    {expandedSub.reason}
-                                </span>
-                            )}
-                        </div>
-                        <button type="button" onClick={() => setExpandedId(null)} className="text-xs opacity-60 hover:opacity-100" style={{ color: 'var(--color-text-alt)' }}>
-                            Cerrar
-                        </button>
-                    </div>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--color-text)' }}>
-                        {expandedSub.message}
-                    </p>
-                </div>
-            )}
 
             {/* Table */}
             <DataTableShell className="h-full">
@@ -181,7 +173,9 @@ export const ContactsPage = () => {
                         <DataTable>
                             <DataTableHead>
                                 <tr>
-                                    <DataTableHeadCell>#</DataTableHeadCell>
+                                    <DataTableHeadCell className="w-14">
+                                        <input type="checkbox" checked={allSelected} onChange={toggleAll} className={TABLE_CHECKBOX_CLASS} />
+                                    </DataTableHeadCell>
                                     <SortableHeadCell sortKey="email" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5"><Mail className="size-3.5" />Correo</span>
                                     </SortableHeadCell>
@@ -192,24 +186,30 @@ export const ContactsPage = () => {
                                     </SortableHeadCell>
                                     <SortableHeadCell sortKey="status" sort={sort} onSort={handleSort}>Estado</SortableHeadCell>
                                     <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort}>Fecha</SortableHeadCell>
-                                    <DataTableHeadCell></DataTableHeadCell>
                                 </tr>
                             </DataTableHead>
                             <DataTableBody>
                                 {isLoading ? (
-                                    <TableBodyRows rows={10} colWidths={['w-8', 'w-40', 'w-24', 'flex-1', 'w-24', 'w-28', 'w-28', 'w-10']} />
+                                    <TableBodyRows rows={10} colWidths={['w-14', 'w-40', 'w-24', 'flex-1', 'w-24', 'w-28', 'w-28']} />
                                 ) : (
                                     displayData.map((sub, i) => {
                                         const reasonKey = sub.reason ?? '';
-                                        const isExpanded = expandedId === sub.id;
                                         const statusStyle = STATUS_STYLE[sub.status] ?? STATUS_STYLE.pending;
 
                                         return (
-                                            <DataTableRow key={sub.id} index={i}>
-                                                <DataTableCell>
-                                                    <span className="font-mono text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                                        {(page - 1) * LIMIT + i + 1}
-                                                    </span>
+                                            <DataTableRow
+                                                key={sub.id}
+                                                index={i}
+                                                className="cursor-pointer"
+                                                onClick={() => setDetailContact(sub)}
+                                            >
+                                                <DataTableCell onClick={(e) => e.stopPropagation()}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedIds.includes(sub.id)}
+                                                        onChange={() => toggleId(sub.id)}
+                                                        className={TABLE_CHECKBOX_CLASS}
+                                                    />
                                                 </DataTableCell>
                                                 <DataTableCell>
                                                     <span className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>{sub.email}</span>
@@ -231,17 +231,9 @@ export const ContactsPage = () => {
                                                 </DataTableCell>
                                                 <DataTableCell className="max-w-[220px]">
                                                     {sub.message ? (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setExpandedId(isExpanded ? null : sub.id)}
-                                                            className="text-left text-xs leading-relaxed transition-opacity hover:opacity-80"
-                                                            style={{ color: 'var(--color-text-alt)' }}
-                                                            title={isExpanded ? 'Colapsar' : 'Ver mensaje completo'}
-                                                        >
-                                                            {sub.message.length > 70
-                                                                ? sub.message.slice(0, 70) + '…'
-                                                                : sub.message}
-                                                        </button>
+                                                        <span className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                                                            {sub.message.length > 70 ? sub.message.slice(0, 70) + '…' : sub.message}
+                                                        </span>
                                                     ) : (
                                                         <span className="text-xs opacity-40" style={{ color: 'var(--color-text-alt)' }}>—</span>
                                                     )}
@@ -251,16 +243,13 @@ export const ContactsPage = () => {
                                                         {SOURCE_LABEL[sub.source] ?? sub.source}
                                                     </span>
                                                 </DataTableCell>
-                                                <DataTableCell>
+                                                <DataTableCell onClick={(e) => e.stopPropagation()}>
                                                     <select
                                                         value={sub.status}
                                                         disabled={updatingId === sub.id}
                                                         onChange={(e) => handleStatusChange(sub.id, e.target.value as ContactStatus)}
                                                         className="rounded-full border-0 py-0.5 pl-2.5 pr-6 text-xs font-medium outline-none transition-opacity disabled:opacity-50 cursor-pointer appearance-none"
-                                                        style={{
-                                                            background: statusStyle.bg,
-                                                            color: statusStyle.color,
-                                                        }}
+                                                        style={{ background: statusStyle.bg, color: statusStyle.color }}
                                                     >
                                                         {(Object.entries(STATUS_LABEL) as [ContactStatus, string][]).map(([val, label]) => (
                                                             <option key={val} value={val}>{label}</option>
@@ -271,17 +260,6 @@ export const ContactsPage = () => {
                                                     <span className="text-xs whitespace-nowrap" style={{ color: 'var(--color-text-alt)' }}>
                                                         {formatDate(sub.created_at)}
                                                     </span>
-                                                </DataTableCell>
-                                                <DataTableCell>
-                                                    <button
-                                                        onClick={() => handleDelete(sub.id, sub.email)}
-                                                        disabled={deletingId === sub.id}
-                                                        className="rounded-lg p-1.5 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 disabled:opacity-40"
-                                                        style={{ color: 'var(--color-text-alt)' }}
-                                                        title="Eliminar"
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </button>
                                                 </DataTableCell>
                                             </DataTableRow>
                                         );
@@ -294,11 +272,14 @@ export const ContactsPage = () => {
             </DataTableShell>
 
             {totalPages > 1 && (
-                <Pagination
-                    page={page}
-                    totalPages={totalPages}
-                    limit={LIMIT}
-                    setSearchParams={setSearchParams}
+                <Pagination page={page} totalPages={totalPages} limit={LIMIT} setSearchParams={setSearchParams} />
+            )}
+
+            {detailContact && (
+                <ContactDetailModal
+                    contact={detailContact}
+                    onClose={() => setDetailContact(null)}
+                    onStatusChange={handleStatusChange}
                 />
             )}
         </div>

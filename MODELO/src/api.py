@@ -3,7 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -191,6 +191,41 @@ def get_metrics():
     except Exception as e:
         logger.error(f"Error leyendo métricas: {e}")
         raise HTTPException(status_code=500, detail="Error al leer métricas.")
+
+
+def _run_full_training():
+    """Background worker: refreshes Pearson matrix + retrains RF + writes metrics."""
+    global engine, context_model
+    try:
+        logger.info("[train] Actualizando matriz de Pearson...")
+        engine.prepare_pearson_matrix()
+
+        logger.info("[train] Reentrenando Random Forest...")
+        context_model.train(engine.train_data)
+
+        # Optionally persist a simple metrics snapshot
+        metrics_path = Path("models/algorithm_metrics.json")
+        metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        if not metrics_path.exists():
+            import json as _json
+            _json.dump({"status": "trained", "note": "run evaluate.py for full metrics"}, metrics_path.open("w"))
+
+        logger.info("[train] Entrenamiento completado.")
+    except Exception as e:
+        logger.error(f"[train] Error en background training: {e}")
+
+
+@app.post("/train")
+def train_full(background_tasks: BackgroundTasks):
+    """
+    Inicia el reentrenamiento completo en background (fire-and-forget).
+    Actualiza la matriz de Pearson y el modelo Random Forest.
+    Returns immediately with { ok: true }.
+    """
+    if engine is None or context_model is None:
+        raise HTTPException(status_code=503, detail="Modelos no cargados.")
+    background_tasks.add_task(_run_full_training)
+    return {"ok": True, "message": "Entrenamiento iniciado en background"}
 
 
 @app.post("/train-rf")

@@ -29,4 +29,9 @@ export const mlApi = {
         const { data } = await api.get<MLHealth>('/ml/health');
         return data;
     },
+
+    trainModel: async (): Promise<{ ok: boolean; message: string }> => {
+        const { data } = await api.post('/ml/train');
+        return data;
+    },
 };

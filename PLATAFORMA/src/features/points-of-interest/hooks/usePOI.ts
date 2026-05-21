@@ -45,5 +45,27 @@ export function usePOI() {
         }
     };
 
-    return { points, isLoading, totalPages, createPoint, fetchPoints };
+    const updatePoint = async (id: number, data: import('../types/types').UpdatePOIDTO) => {
+        try {
+            await poiApi.update(id, data);
+            toast.success('Punto de interés actualizado');
+            await fetchPoints();
+            return true;
+        } catch {
+            toast.error('Error al actualizar punto de interés');
+        }
+    };
+
+    const deletePoint = async (id: number) => {
+        try {
+            await poiApi.delete(id);
+            toast.success('Punto de interés eliminado');
+            await fetchPoints();
+            return true;
+        } catch {
+            toast.error('Error al eliminar punto de interés');
+        }
+    };
+
+    return { points, isLoading, totalPages, createPoint, updatePoint, deletePoint, fetchPoints };
 }

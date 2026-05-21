@@ -6,13 +6,15 @@ import CreateTouristServiceModal from '../components/CreateTouristServiceModal';
 import TouristServiceDetailModal from '../components/TouristServiceDetailModal';
 import TouristServiceTable from '../components/TouristServiceTable';
 import SearchInput from '../components/SearchInput';
-import { Trash2, ClipboardCheck, Wrench, Plus, AlertCircle } from 'lucide-react';
+import { ClipboardCheck, Wrench, Plus, AlertCircle } from 'lucide-react';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import EvaluationWizardModal from '../../evaluations/components/EvaluationWizardModal';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 
 type ModalState = {
     isCreateOpen: boolean; isDetailOpen: boolean;
@@ -52,6 +54,7 @@ export const TouristServicePage = () => {
     const [modalState, dispatchModal] = useReducer(modalReducer, {
         isCreateOpen: false, isDetailOpen: false, isEvaluationOpen: false, selectedId: null,
     });
+    const { confirm, modal: confirmModal } = useConfirm();
 
     useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
     useEffect(() => {
@@ -63,12 +66,16 @@ export const TouristServicePage = () => {
         setSelectedServices((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
 
     const handleDeleteSelected = async () => {
-        if (!window.confirm(m.common.confirmDeleteServices(selectedServices.length))) return;
+        const ok = await confirm({
+            title: `Eliminar ${selectedServices.length} servicio(s)`,
+            message: 'Esta acción es permanente y no se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
         for (const id of selectedServices) await deleteService(id);
         setSelectedServices([]);
     };
-
-    const isOneServiceSelected = () => selectedServices.length === 1;
 
     const selectedService = services.find((s) => s.id === selectedServices[0]);
     const selectedServiceName = selectedService?.name || '';
@@ -76,59 +83,35 @@ export const TouristServicePage = () => {
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            {confirmModal}
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl"
-                        style={{ background: 'var(--color-green)' }}>
-                        <Wrench className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            {m.touristServices.title}
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            {m.touristServices.subtitle}
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {m.touristServices.title}
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {m.touristServices.subtitle}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
 
-                    <AnimatePresence>
-                        {selectedServices.length > 0 && (
-                            <motion.button
-                                key="delete"
-                                initial={{ opacity: 0, scale: 0.9, x: 8 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, x: 8 }}
-                                onClick={handleDeleteSelected}
-                                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 active:scale-95"
-                            >
-                                <Trash2 className="size-4" />
-                                {m.common.deleteCount(selectedServices.length)}
-                            </motion.button>
-                        )}
-                        {isOneServiceSelected() && (
-                            <motion.button
-                                key="evaluate"
-                                initial={{ opacity: 0, scale: 0.9, x: 8 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, x: 8 }}
-                                onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
-                                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
-                            >
-                                <ClipboardCheck className="size-4" />
-                                {m.touristServices.evaluate}
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
+                    {selectedServices.length === 1 && (
+                        <button
+                            onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
+                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                        >
+                            <ClipboardCheck className="size-4" />
+                            {m.touristServices.evaluate}
+                        </button>
+                    )}
 
                     <button
                         onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: 'var(--color-green)' }}
+                        style={{ background: MODULE_COLORS.services }}
                     >
                         <Plus className="size-4" />
                         {m.touristServices.add}
@@ -136,9 +119,15 @@ export const TouristServicePage = () => {
                 </div>
             </div>
 
+            <SelectionBar
+                count={selectedServices.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedServices([])}
+            />
+
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Wrench className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <Wrench className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.services }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Servicios turísticos</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los servicios son las ofertas concretas de cada compañía: hoteles, restaurantes, tours y más. Son los elementos que el turista puede explorar y evaluar en la app.</p>

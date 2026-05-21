@@ -18,4 +18,8 @@ export const poiApi = {
         const response = await api.patch(`/points-of-interest/update/${id}`, data);
         return response.data;
     },
+
+    delete: async (id: number): Promise<void> => {
+        await api.delete(`/points-of-interest/delete/${id}`);
+    },
 };

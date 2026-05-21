@@ -6,10 +6,12 @@ import CreateUserModal from '../components/CreateUserModal';
 import UserDetailModal from '../components/UserDetailModal';
 import UserTable from '../components/UserTable';
 import SearchInput from '../components/SearchInput';
-import { Trash2, UserPlus, Users, AlertCircle, RefreshCw } from 'lucide-react';
+import { UserPlus, Users, AlertCircle, RefreshCw } from 'lucide-react';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -31,6 +33,7 @@ export const UserPage = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    const { confirm, modal: confirmModal } = useConfirm();
 
     useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
     useEffect(() => {
@@ -42,48 +45,33 @@ export const UserPage = () => {
         setSelectedUsers((prev) => prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id]);
 
     const handleDeleteSelected = async () => {
-        if (!window.confirm(m.common.confirmDeleteUsers(selectedUsers.length))) return;
+        const ok = await confirm({
+            title: m.common.confirmDeleteUsers(selectedUsers.length),
+            message: m.common.confirmDeleteUsersMsg?.(selectedUsers.length) ?? `Se eliminarán ${selectedUsers.length} usuario(s) de forma permanente.`,
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
         await Promise.all(selectedUsers.map((id) => deleteUser(id)));
         setSelectedUsers([]);
     };
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            {confirmModal}
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl"
-                        style={{ background: 'var(--color-purple)' }}>
-                        <Users className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            {m.users.title}
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            {m.users.subtitle}
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {m.users.title}
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {m.users.subtitle}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.users.searchPlaceholder} />
-
-                    <AnimatePresence>
-                        {selectedUsers.length > 0 && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.9, x: 8 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, x: 8 }}
-                                onClick={handleDeleteSelected}
-                                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 active:scale-95"
-                            >
-                                <Trash2 className="size-4" />
-                                {m.common.deleteCount(selectedUsers.length)}
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
@@ -95,9 +83,15 @@ export const UserPage = () => {
                 </div>
             </div>
 
+            <SelectionBar
+                count={selectedUsers.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedUsers([])}
+            />
+
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Users className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <Users className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.users }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de usuarios</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Administra las cuentas registradas en la plataforma. Puedes crear, editar, activar o desactivar usuarios y asignar roles de acceso.</p>

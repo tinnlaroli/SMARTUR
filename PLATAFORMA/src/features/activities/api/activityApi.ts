@@ -18,4 +18,8 @@ export const activityApi = {
         const response = await api.patch(`/tourist_activities/update/${id}`, data);
         return response.data;
     },
+
+    delete: async (id: number): Promise<void> => {
+        await api.delete(`/tourist_activities/delete/${id}`);
+    },
 };

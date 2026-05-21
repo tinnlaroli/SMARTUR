@@ -59,5 +59,16 @@ export function useActivities() {
         }
     };
 
-    return { activities, isLoading, totalPages, createActivity, updateActivity, fetchActivities };
+    const deleteActivity = async (id: number) => {
+        try {
+            await activityApi.delete(id);
+            toast.success('Actividad eliminada');
+            await fetchActivities();
+            return true;
+        } catch {
+            toast.error('Error al eliminar actividad');
+        }
+    };
+
+    return { activities, isLoading, totalPages, createActivity, updateActivity, deleteActivity, fetchActivities };
 }

@@ -6,10 +6,12 @@ import CreateLocationModal from '../components/CreateLocationModal';
 import LocationDetailModal from '../components/LocationDetailModal';
 import LocationTable from '../components/LocationTable';
 import SearchInput from '../components/SearchInput';
-import { Trash2, MapPin, Plus, AlertCircle } from 'lucide-react';
+import { MapPin, Plus, AlertCircle } from 'lucide-react';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -45,6 +47,7 @@ export const LocationPage = () => {
     const [modalState, dispatchModal] = useReducer(modalReducer, {
         isCreateOpen: false, isDetailOpen: false, selectedId: null,
     });
+    const { confirm, modal: confirmModal } = useConfirm();
 
     useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
     useEffect(() => {
@@ -56,48 +59,33 @@ export const LocationPage = () => {
         setSelectedLocations((prev) => prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]);
 
     const handleDeleteSelected = async () => {
-        if (!window.confirm(m.common.confirmDeleteLocations(selectedLocations.length))) return;
+        const ok = await confirm({
+            title: m.common.confirmDeleteLocations(selectedLocations.length),
+            message: `Se eliminarán ${selectedLocations.length} ubicación(es) de forma permanente.`,
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
         for (const id of selectedLocations) await deleteLocation(id);
         setSelectedLocations([]);
     };
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            {confirmModal}
             {/* Header */}
             <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-xl"
-                        style={{ background: 'var(--color-orange)' }}>
-                        <MapPin className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                            {m.locations.title}
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            {m.locations.subtitle}
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {m.locations.title}
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {m.locations.subtitle}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.locations.searchPlaceholder} />
-
-                    <AnimatePresence>
-                        {selectedLocations.length > 0 && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.9, x: 8 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, x: 8 }}
-                                onClick={handleDeleteSelected}
-                                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 active:scale-95"
-                            >
-                                <Trash2 className="size-4" />
-                                {m.common.deleteCount(selectedLocations.length)}
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-
                     <button
                         onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
@@ -109,9 +97,15 @@ export const LocationPage = () => {
                 </div>
             </div>
 
+            <SelectionBar
+                count={selectedLocations.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedLocations([])}
+            />
+
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <MapPin className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <MapPin className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.locations }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Ubicaciones</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Define los municipios y zonas geográficas de la región. Las ubicaciones agrupan los servicios y POIs para que el motor de recomendaciones los contextualice correctamente.</p>

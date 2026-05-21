@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
+import { mlApi } from '../api/mlApi';
+import { useToast } from '../../../shared/context/ToastContext';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
-    BarChart2, AlertCircle, RefreshCw, Activity,
+    BarChart2, AlertCircle, RefreshCw, Activity, Play,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
@@ -65,6 +67,8 @@ function SkeletonCard() {
 
 export const MLObservabilityPage = () => {
     const { data, isLoading, error, fetchHealth } = useMLHealth();
+    const toast = useToast();
+    const [training, setTraining] = useState(false);
 
     useEffect(() => { fetchHealth(); }, [fetchHealth]);
 
@@ -97,6 +101,18 @@ export const MLObservabilityPage = () => {
         latency: Math.round(parseFloat(d.avg_latency_ms)),
     }));
 
+    const handleTrain = async () => {
+        setTraining(true);
+        try {
+            await mlApi.trainModel();
+            toast.success('Entrenamiento iniciado', 'El modelo está re-entrenando en background. Usa "Actualizar" para ver los resultados cuando termine.');
+        } catch {
+            toast.error('Error', 'No se pudo iniciar el entrenamiento.');
+        } finally {
+            setTraining(false);
+        }
+    };
+
     if (error) {
         return (
             <div
@@ -119,279 +135,55 @@ export const MLObservabilityPage = () => {
     }
 
     return (
-        <div className="flex flex-col gap-6" id="ml-module">
+        <div className="flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden" id="ml-module">
 
             {/* Header */}
-            <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex size-10 items-center justify-center rounded-xl"
-                        style={{ background: 'var(--color-purple)' }}
-                    >
-                        <BrainCircuit className="size-5 text-white" />
-                    </div>
-                    <div>
-                        <h1
-                            className="text-2xl font-bold tracking-tight"
-                            style={{ color: 'var(--color-text)' }}
-                        >
-                            ML / Observabilidad IA
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            Estado del motor de recomendaciones híbrido (CF + RF)
-                        </p>
-                    </div>
+            <div className="flex shrink-0 items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        ML / Observabilidad IA
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Estado del motor de recomendaciones híbrido (CF + RF)
+                    </p>
                 </div>
-                <button
-                    onClick={fetchHealth}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50"
-                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
-                >
-                    <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    Actualizar
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleTrain}
+                        disabled={training || isLoading}
+                        className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50"
+                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                    >
+                        <Play className={`size-4 ${training ? 'animate-pulse' : ''}`} style={{ color: 'var(--color-green)' }} />
+                        {training ? 'Iniciando…' : 'Entrenar modelo'}
+                    </button>
+                    <button
+                        onClick={fetchHealth}
+                        disabled={isLoading}
+                        className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50"
+                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                    >
+                        <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        Actualizar
+                    </button>
+                </div>
             </div>
 
-            {/* KPI Strip */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {isLoading ? (
-                    Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-                ) : (
-                    <>
-                        <KpiCard
-                            label="Mejor RMSE almacenado"
-                            value={bestRmse != null ? bestRmse.toFixed(3) : '—'}
-                            sub="Menor = mejor predicción"
-                            icon={BarChart2}
-                            accent="var(--color-purple)"
-                        />
-                        <KpiCard
-                            label="Latencia promedio (30d)"
-                            value={avgLatency ? `${avgLatency} ms` : '—'}
-                            sub="Por solicitud de recomendación"
-                            icon={Zap}
-                            accent="#f59e0b"
-                        />
-                        <KpiCard
-                            label="Sesiones totales (30d)"
-                            value={String(totalSessions)}
-                            sub="Solicitudes de recomendación"
-                            icon={Clock}
-                            accent="#10b981"
-                        />
-                        <KpiCard
-                            label="Click-through rate (30d)"
-                            value={ctrPct ? `${ctrPct}%` : '—'}
-                            sub={
-                                ctr
-                                    ? `${ctr.clicked} clicks / ${ctr.total} recomendaciones`
-                                    : 'Sin datos aún'
-                            }
-                            icon={MousePointerClick}
-                            accent="#6366f1"
-                        />
-                    </>
-                )}
-            </div>
-
-            {/* Sessions chart */}
-            {!isLoading && chartData.length > 0 && (
-                <div
-                    className="rounded-2xl border p-5"
-                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                >
-                    <div className="flex items-center gap-2 mb-4">
-                        <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            Sesiones de recomendación — últimos 30 días
-                        </p>
-                    </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <AreaChart data={chartData}>
-                            <defs>
-                                <linearGradient id="mlGradSessions" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-purple)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="var(--color-purple)" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                            <XAxis
-                                dataKey="day"
-                                tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <YAxis
-                                allowDecimals={false}
-                                tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    background: 'var(--color-bg)',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    color: 'var(--color-text)',
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="sessions"
-                                stroke="var(--color-purple)"
-                                fill="url(#mlGradSessions)"
-                                strokeWidth={2}
-                                name="Sesiones"
-                                dot={false}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
-            )}
-
-            {/* Algorithm comparison table */}
-            {!isLoading && metrics && (
-                <div
-                    className="rounded-2xl border overflow-hidden"
-                    style={{ borderColor: 'var(--color-border)' }}
-                >
-                    <div
-                        className="px-5 py-3 border-b"
-                        style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-                    >
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            Comparación de algoritmos
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                            En producción:{' '}
-                            <strong>
-                                {ALGO_LABELS[metrics.best_algorithm] ?? metrics.best_algorithm}
-                            </strong>{' '}
-                            · α = {metrics.best_alpha}
-                            {metrics.sample_size && ` · n = ${metrics.sample_size.toLocaleString()}`}
-                        </p>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr
-                                    style={{
-                                        background: 'var(--color-bg-alt)',
-                                        borderBottom: '1px solid var(--color-border)',
-                                    }}
-                                >
-                                    {['Algoritmo', 'RMSE ↓', 'MAE ↓', 'Estado'].map((h, i) => (
-                                        <th
-                                            key={h}
-                                            className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
-                                            style={{ color: 'var(--color-text-alt)' }}
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Object.entries(metrics.algorithms).map(([key, alg]) => {
-                                    const isBest = key === metrics.best_algorithm;
-                                    return (
-                                        <tr
-                                            key={key}
-                                            className="border-b transition-colors"
-                                            style={{ borderColor: 'var(--color-border)' }}
-                                            onMouseEnter={(e) =>
-                                                (e.currentTarget.style.background = 'var(--color-bg-alt)')
-                                            }
-                                            onMouseLeave={(e) =>
-                                                (e.currentTarget.style.background = '')
-                                            }
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span
-                                                        className="font-medium"
-                                                        style={{ color: 'var(--color-text)' }}
-                                                    >
-                                                        {ALGO_LABELS[key] ?? key}
-                                                    </span>
-                                                    {isBest && (
-                                                        <span
-                                                            className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                                                            style={{
-                                                                background: 'rgba(139,92,246,0.15)',
-                                                                color: 'var(--color-purple)',
-                                                            }}
-                                                        >
-                                                            ACTIVO
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td
-                                                className="px-4 py-3 text-right font-mono text-sm"
-                                                style={{
-                                                    color: isBest
-                                                        ? 'var(--color-purple)'
-                                                        : 'var(--color-text)',
-                                                    fontWeight: isBest ? 700 : 400,
-                                                }}
-                                            >
-                                                {alg.rmse.toFixed(3)}
-                                            </td>
-                                            <td
-                                                className="px-4 py-3 text-right font-mono text-sm"
-                                                style={{ color: 'var(--color-text)' }}
-                                            >
-                                                {alg.mae.toFixed(3)}
-                                            </td>
-                                            <td className="px-4 py-3 text-center">
-                                                <span
-                                                    className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
-                                                    style={{
-                                                        background: isBest
-                                                            ? 'rgba(16,185,129,0.12)'
-                                                            : 'rgba(var(--rgb-text),0.06)',
-                                                        color: isBest
-                                                            ? '#10b981'
-                                                            : 'var(--color-text-alt)',
-                                                    }}
-                                                >
-                                                    {isBest ? 'En producción' : 'Referencia'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {/* Data collection info banner */}
+            {/* Info banner — at top */}
             <div
-                className="rounded-xl border px-5 py-4 flex items-start gap-3"
+                className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
             >
-                <BrainCircuit
-                    className="size-5 mt-0.5 shrink-0"
-                    style={{ color: 'var(--color-purple)' }}
-                />
+                <BrainCircuit className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
                 <div>
-                    <p
-                        className="text-sm font-semibold mb-0.5"
-                        style={{ color: 'var(--color-text)' }}
-                    >
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
                         Recolección de datos activa
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
                         La app móvil envía señales implícitas (tiempo en pantalla, favoritos, filtros
-                        seleccionados) y calificaciones explícitas (1–5 estrellas). Estos datos
-                        alimentan el motor de Collaborative Filtering para mejorar las recomendaciones
-                        personalizadas con el tiempo. El modelo se retroalimenta automáticamente
-                        al re-entrenarse con la tabla{' '}
+                        seleccionados) y calificaciones explícitas (1–5 estrellas). Estos datos alimentan el
+                        motor de Collaborative Filtering. El modelo se retroalimenta automáticamente al
+                        re-entrenarse con las tablas{' '}
                         <code className="rounded px-1 py-0.5 text-xs font-mono" style={{ background: 'rgba(var(--rgb-text),0.08)' }}>
                             user_interaction
                         </code>{' '}
@@ -403,23 +195,191 @@ export const MLObservabilityPage = () => {
                 </div>
             </div>
 
-            {/* Empty state when no metrics yet */}
-            {!isLoading && !metrics && !error && (
-                <div
-                    className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border"
-                    style={{ borderColor: 'var(--color-border)' }}
-                >
-                    <BrainCircuit className="size-12" style={{ color: 'var(--color-border)' }} />
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                        Sin métricas almacenadas
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Las métricas aparecerán la primera vez que el MODELO entrene y persista
-                        su estado en{' '}
-                        <code className="font-mono">models/algorithm_metrics.json</code>
-                    </p>
+            {/* Scrollable content */}
+            <div className="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
+
+                {/* KPI Strip */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {isLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+                    ) : (
+                        <>
+                            <KpiCard
+                                label="Mejor RMSE almacenado"
+                                value={bestRmse != null ? bestRmse.toFixed(3) : '—'}
+                                sub="Menor = mejor predicción"
+                                icon={BarChart2}
+                                accent="var(--color-purple)"
+                            />
+                            <KpiCard
+                                label="Latencia promedio (30d)"
+                                value={avgLatency ? `${avgLatency} ms` : '—'}
+                                sub="Por solicitud de recomendación"
+                                icon={Zap}
+                                accent="#f59e0b"
+                            />
+                            <KpiCard
+                                label="Sesiones totales (30d)"
+                                value={String(totalSessions)}
+                                sub="Solicitudes de recomendación"
+                                icon={Clock}
+                                accent="#10b981"
+                            />
+                            <KpiCard
+                                label="Click-through rate (30d)"
+                                value={ctrPct ? `${ctrPct}%` : '—'}
+                                sub={
+                                    ctr
+                                        ? `${ctr.clicked} clicks / ${ctr.total} recomendaciones`
+                                        : 'Sin datos aún'
+                                }
+                                icon={MousePointerClick}
+                                accent="#6366f1"
+                            />
+                        </>
+                    )}
                 </div>
-            )}
+
+                {/* Sessions chart */}
+                {!isLoading && chartData.length > 0 && (
+                    <div
+                        className="rounded-2xl border p-5"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    >
+                        <div className="flex items-center gap-2 mb-4">
+                            <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                Sesiones de recomendación — últimos 30 días
+                            </p>
+                        </div>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="mlGradSessions" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--color-purple)" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="var(--color-purple)" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{
+                                        background: 'var(--color-bg)',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        color: 'var(--color-text)',
+                                    }}
+                                />
+                                <Area type="monotone" dataKey="sessions" stroke="var(--color-purple)" fill="url(#mlGradSessions)" strokeWidth={2} name="Sesiones" dot={false} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+
+                {/* Algorithm comparison table */}
+                {!isLoading && metrics && (
+                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                Comparación de algoritmos
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                En producción:{' '}
+                                <strong>{ALGO_LABELS[metrics.best_algorithm] ?? metrics.best_algorithm}</strong>{' '}
+                                · α = {metrics.best_alpha}
+                                {metrics.sample_size && ` · n = ${metrics.sample_size.toLocaleString()}`}
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
+                                        {['Algoritmo', 'RMSE ↓', 'MAE ↓', 'Estado'].map((h, i) => (
+                                            <th
+                                                key={h}
+                                                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
+                                                style={{ color: 'var(--color-text-alt)' }}
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(metrics.algorithms).map(([key, alg]) => {
+                                        const isBest = key === metrics.best_algorithm;
+                                        return (
+                                            <tr
+                                                key={key}
+                                                className="border-b transition-colors"
+                                                style={{ borderColor: 'var(--color-border)' }}
+                                                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-alt)')}
+                                                onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                                            >
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+                                                            {ALGO_LABELS[key] ?? key}
+                                                        </span>
+                                                        {isBest && (
+                                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: 'rgba(139,92,246,0.15)', color: 'var(--color-purple)' }}>
+                                                                ACTIVO
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: isBest ? 'var(--color-purple)' : 'var(--color-text)', fontWeight: isBest ? 700 : 400 }}>
+                                                    {alg.rmse.toFixed(3)}
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                    {alg.mae.toFixed(3)}
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span
+                                                        className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                                                        style={{
+                                                            background: isBest ? 'rgba(16,185,129,0.12)' : 'rgba(var(--rgb-text),0.06)',
+                                                            color: isBest ? '#10b981' : 'var(--color-text-alt)',
+                                                        }}
+                                                    >
+                                                        {isBest ? 'En producción' : 'Referencia'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Empty state when no metrics yet */}
+                {!isLoading && !metrics && !error && (
+                    <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
+                        <BrainCircuit className="size-12" style={{ color: 'var(--color-border)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
+                            Sin métricas almacenadas
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            Las métricas aparecerán la primera vez que el MODELO entrene y persista
+                            su estado en{' '}
+                            <code className="font-mono">models/algorithm_metrics.json</code>
+                        </p>
+                        <button
+                            onClick={handleTrain}
+                            disabled={training}
+                            className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            style={{ background: 'var(--color-green)' }}
+                        >
+                            <Play className="size-4" />
+                            Iniciar primer entrenamiento
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

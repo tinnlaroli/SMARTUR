@@ -1,9 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
-import { Activity, DollarSign } from 'lucide-react';
+import { Activity, DollarSign, Plus } from 'lucide-react';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import {
     DataTable,
     DataTableBody,
@@ -14,13 +17,18 @@ import {
     DataTableScroll,
     DataTableShell,
     SortableHeadCell,
-    TableOrderBadge,
+    TABLE_CHECKBOX_CLASS,
     nextSort,
     sortRows,
 } from '../../../components/ui/DataTable';
 import type { SortState } from '../../../components/ui/DataTable';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import CreateActivityModal from '../components/CreateActivityModal';
+import EditActivityModal from '../components/EditActivityModal';
+import type { Activity as ActivityType } from '../types/types';
+import { companyServices } from '../../companies/api/companyApi';
+import type { Company } from '../../companies/types/types';
 
 const ImpactBadge = ({
     value,
@@ -49,7 +57,7 @@ const ImpactBadge = ({
 export const ActivitiesPage = () => {
     const { lang } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
-    const { activities, isLoading, totalPages } = useActivities();
+    const { activities, isLoading, totalPages, createActivity, updateActivity, deleteActivity } = useActivities();
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
@@ -57,12 +65,49 @@ export const ActivitiesPage = () => {
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
     const displayData = useMemo(() => sortRows(activities, sort), [activities, sort]);
 
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editActivity, setEditActivity] = useState<ActivityType | null>(null);
+    const { confirm, modal: confirmModal } = useConfirm();
+
+    const [companies, setCompanies] = useState<Company[]>([]);
+    useEffect(() => {
+        companyServices.findAll(1, 200).then((res) => setCompanies(res.companies)).catch(() => {});
+    }, []);
+
+    const getCompanyName = (id: number) => companies.find((c) => c.id === id)?.name ?? `#${id}`;
+
+    const toggleId = (id: number) =>
+        setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+    const allSelected = selectedIds.length === activities.length && activities.length > 0;
+    const toggleAll = () => {
+        if (allSelected) setSelectedIds([]);
+        else setSelectedIds(activities.map((a) => a.id));
+    };
+
+    const handleDeleteSelected = async () => {
+        const ok = await confirm({
+            title: `Eliminar ${selectedIds.length} actividad(es)`,
+            message: 'Esta acción es permanente y no se puede deshacer.',
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
+        await Promise.all(selectedIds.map((id) => deleteActivity(id)));
+        setSelectedIds([]);
+    };
+
+    const handleEditSelected = () => {
+        const act = activities.find((a) => a.id === selectedIds[0]);
+        if (act) setEditActivity(act);
+    };
+
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
-            <div className="flex items-center gap-3 shrink-0">
-                <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: 'var(--color-green)' }}>
-                    <Activity className="size-5 text-white" />
-                </div>
+            {confirmModal}
+            {/* Header */}
+            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
                         {m.activities.title}
@@ -71,11 +116,26 @@ export const ActivitiesPage = () => {
                         {m.activities.subtitle}
                     </p>
                 </div>
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: MODULE_COLORS.activities }}
+                >
+                    <Plus className="size-4" />
+                    Nueva actividad
+                </button>
             </div>
+
+            <SelectionBar
+                count={selectedIds.length}
+                onDelete={handleDeleteSelected}
+                onEdit={handleEditSelected}
+                onClear={() => setSelectedIds([])}
+            />
 
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Activity className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <Activity className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.activities }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Actividades</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registro de actividades y experiencias disponibles en la región. Se asocian a servicios y POIs para enriquecer las rutas personalizadas generadas por la IA.</p>
@@ -95,7 +155,9 @@ export const ActivitiesPage = () => {
                         <DataTable>
                             <DataTableHead>
                                 <tr>
-                                    <DataTableHeadCell>{m.activities.colOrder}</DataTableHeadCell>
+                                    <DataTableHeadCell className="w-14">
+                                        <input type="checkbox" checked={allSelected} onChange={toggleAll} className={TABLE_CHECKBOX_CLASS} />
+                                    </DataTableHeadCell>
                                     <DataTableHeadCell>{m.activities.colCompany}</DataTableHeadCell>
                                     <SortableHeadCell sortKey="production_value" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5">
@@ -109,43 +171,39 @@ export const ActivitiesPage = () => {
                             </DataTableHead>
                             <DataTableBody>
                                 {isLoading ? (
-                                    <TableBodyRows rows={9} colWidths={['w-7', 'flex-1', 'w-28', 'w-28', 'w-28']} />
+                                    <TableBodyRows rows={9} colWidths={['w-14', 'flex-1', 'w-28', 'w-28', 'w-28']} />
                                 ) : (
-                                    displayData.map((activity, i) => {
-                                        const rowNumber = (page - 1) * limit + i + 1;
-
-                                        return (
-                                            <DataTableRow key={activity.id} index={i}>
-                                                <DataTableCell>
-                                                    <TableOrderBadge accent="var(--color-green)">{rowNumber}</TableOrderBadge>
-                                                </DataTableCell>
-                                                <DataTableCell>
-                                                    <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                                                        {activity.company}
-                                                    </span>
-                                                </DataTableCell>
-                                                <DataTableCell className="font-medium text-emerald-600 dark:text-emerald-400">
-                                                    ${Number(activity.production_value).toLocaleString(lang === 'es' ? 'es-MX' : lang === 'fr' ? 'fr-FR' : 'en-US')}
-                                                </DataTableCell>
-                                                <DataTableCell>
-                                                    <ImpactBadge
-                                                        value={activity.environmental_impact}
-                                                        type="env"
-                                                        lowEnv={m.activities.impactLowEnv}
-                                                        lowSocial={m.activities.impactLowSocial}
-                                                    />
-                                                </DataTableCell>
-                                                <DataTableCell>
-                                                    <ImpactBadge
-                                                        value={activity.social_impact}
-                                                        type="social"
-                                                        lowEnv={m.activities.impactLowEnv}
-                                                        lowSocial={m.activities.impactLowSocial}
-                                                    />
-                                                </DataTableCell>
-                                            </DataTableRow>
-                                        );
-                                    })
+                                    displayData.map((activity, i) => (
+                                        <DataTableRow
+                                            key={activity.id}
+                                            index={i}
+                                            className="cursor-pointer"
+                                            onClick={() => setEditActivity(activity)}
+                                        >
+                                            <DataTableCell onClick={(e) => e.stopPropagation()}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIds.includes(activity.id)}
+                                                    onChange={() => toggleId(activity.id)}
+                                                    className={TABLE_CHECKBOX_CLASS}
+                                                />
+                                            </DataTableCell>
+                                            <DataTableCell>
+                                                <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                                                    {getCompanyName(activity.company)}
+                                                </span>
+                                            </DataTableCell>
+                                            <DataTableCell className="font-medium text-emerald-600 dark:text-emerald-400">
+                                                ${Number(activity.production_value).toLocaleString(lang === 'es' ? 'es-MX' : lang === 'fr' ? 'fr-FR' : 'en-US')}
+                                            </DataTableCell>
+                                            <DataTableCell>
+                                                <ImpactBadge value={activity.environmental_impact ?? ''} type="env" lowEnv={m.activities.impactLowEnv} lowSocial={m.activities.impactLowSocial} />
+                                            </DataTableCell>
+                                            <DataTableCell>
+                                                <ImpactBadge value={activity.social_impact ?? ''} type="social" lowEnv={m.activities.impactLowEnv} lowSocial={m.activities.impactLowSocial} />
+                                            </DataTableCell>
+                                        </DataTableRow>
+                                    ))
                                 )}
                             </DataTableBody>
                         </DataTable>
@@ -155,6 +213,17 @@ export const ActivitiesPage = () => {
 
             {activities.length > 0 && (
                 <Pagination page={page} limit={limit} totalPages={totalPages} setSearchParams={setSearchParams} />
+            )}
+
+            {isCreateOpen && (
+                <CreateActivityModal onClose={() => setIsCreateOpen(false)} onSubmit={createActivity} />
+            )}
+            {editActivity && (
+                <EditActivityModal
+                    activity={editActivity}
+                    onClose={() => setEditActivity(null)}
+                    onSubmit={updateActivity}
+                />
             )}
         </div>
     );

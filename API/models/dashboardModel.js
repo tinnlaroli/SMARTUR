@@ -11,6 +11,7 @@ class Dashboard {
             avgScore: pool.query(`SELECT COALESCE(AVG(total_score), 0) FROM service_evaluation WHERE is_active = TRUE`),
             totalCompanies: pool.query(`SELECT COUNT(*) FROM company WHERE is_active = TRUE`),
             totalPOI: pool.query(`SELECT COUNT(*) FROM point_of_interest WHERE is_active = TRUE`),
+            pendingContacts: pool.query(`SELECT COUNT(*) FROM contact_subscription WHERE status = 'pending'`),
             evaluationsByMonth: pool.query(`
                 SELECT 
                     TO_CHAR(created_at, 'YYYY-MM') as month,
@@ -75,6 +76,7 @@ class Dashboard {
             average_score: parseFloat(data.avgScore[0]?.coalesce || 0).toFixed(2),
             total_companies: parseInt(data.totalCompanies[0]?.count || 0),
             total_poi: parseInt(data.totalPOI[0]?.count || 0),
+            pending_contacts: parseInt(data.pendingContacts[0]?.count || 0),
             evaluations_by_month: data.evaluationsByMonth,
             top_services: data.topServices,
             recent_evaluations: data.recentEvaluations,

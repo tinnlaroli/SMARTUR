@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { MapPin } from 'lucide-react';
 import type { Location } from '../types/types';
 import {
     DataTable,
@@ -19,17 +18,6 @@ import {
     sortRows,
 } from '../../../components/ui/DataTable';
 import type { SortState } from '../../../components/ui/DataTable';
-
-const LOCATION_COLORS = [
-    'var(--color-pink)',
-    'var(--color-purple)',
-    'var(--color-cyan)',
-    'var(--color-green)',
-];
-
-function getLocationColor(id: number) {
-    return LOCATION_COLORS[id % LOCATION_COLORS.length];
-}
 
 interface Props {
     locations: Location[];
@@ -68,7 +56,6 @@ export default function LocationTable({ locations, selectedLocations, onToggle, 
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-16">Icono</DataTableHeadCell>
                             <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
                             <SortableHeadCell sortKey="state" sort={sort} onSort={handleSort} className="w-40">Estado</SortableHeadCell>
                             <SortableHeadCell sortKey="municipality" sort={sort} onSort={handleSort} className="w-44">Municipio</SortableHeadCell>
@@ -86,14 +73,6 @@ export default function LocationTable({ locations, selectedLocations, onToggle, 
                                         onChange={() => onToggle(loc.id)}
                                         className={TABLE_CHECKBOX_CLASS}
                                     />
-                                </DataTableCell>
-                                <DataTableCell className="w-16">
-                                    <div
-                                        className="flex size-10 items-center justify-center rounded-full text-white"
-                                        style={{ background: getLocationColor(loc.id) }}
-                                    >
-                                        <MapPin className="size-4" />
-                                    </div>
                                 </DataTableCell>
                                 <DataTableCell>
                                     <DataTableLinkButton onClick={() => onViewDetail(loc.id)} title={loc.name}>

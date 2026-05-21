@@ -177,7 +177,7 @@ export default function AppLayout() {
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
     const copy = getDashboardText(lang);
-    const { startTour } = useDashboardTour();
+    const { startTour } = useDashboardTour(lang);
 
     const userRole = user?.role_id || 2;
 
@@ -244,7 +244,7 @@ export default function AppLayout() {
                                 className="relative rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
                                 title={copy.layout.notificationTitle}
                             >
-                                <Bell className="size-[18px]" />
+                                <Bell className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
                                 {unreadCount > 0 && (
                                     <motion.span
                                         animate={{ scale: [1, 1.3, 1] }}
@@ -287,7 +287,7 @@ export default function AppLayout() {
                             title={t('header.logout')}
                             className="rounded-xl p-2 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20"
                         >
-                            <LogOut className="size-4" />
+                            <LogOut className="size-4" style={{ color: 'var(--color-pink)' }} />
                         </button>
                     </div>
                 </header>

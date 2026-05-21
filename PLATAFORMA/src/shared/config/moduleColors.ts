@@ -1,0 +1,15 @@
+export const MODULE_COLORS: Record<string, string> = {
+    users:          'var(--color-purple)',
+    companies:      '#0ea5e9',
+    services:       '#f59e0b',
+    locations:      'var(--color-orange)',
+    poi:            'var(--color-pink)',
+    activities:     'var(--color-green)',
+    profiles:       '#6366f1',
+    community:      '#a855f7',
+    contacts:       '#10b981',
+    ml:             'var(--color-purple)',
+    certifications: '#0ea5e9',
+    statistics:     '#8b5cf6',
+    instruments:    '#f97316',
+};
