@@ -222,6 +222,9 @@ Definidos en `lib/core/constants/api_constants.dart`:
 | | `/locations` | Ubicaciones/ciudades |
 | | `/tourist-services` | Servicios turísticos |
 | | `/points-of-interest` | Puntos de interés |
+| **ML / Interacciones** | `/me/interactions` | Lote de eventos implícitos (dwell, detail_open, skip, filter_click). Body: `{ events: [{ place_kind, place_id, event_type, dwell_ms?, meta? }] }` |
+| | `/me/rating` | Calificación explícita 1–5 estrellas (upsert). Body: `{ place_kind, place_id, rating }` |
+| | `/recommendations/:userId` | Proxy al motor ML con logging de sesión. Responde con recomendaciones + `session_id`. |
 
 ---
 

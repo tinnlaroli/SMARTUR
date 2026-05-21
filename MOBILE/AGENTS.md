@@ -50,6 +50,32 @@ MOBILE/
 └── .env                      # Environment config (not in git)
 ```
 
+## ML data collection
+
+The app collects implicit and explicit signals to improve recommendations:
+
+### Implicit events — `POST /me/interactions`
+
+Sent as a batch from `user_content_service.dart`. Buffer events locally; flush when buffer reaches 20 or app goes to background (`AppLifecycleState.paused`).
+
+```dart
+// event_type values:
+// 'dwell'        — time spent on detail screen (dwell_ms required)
+// 'detail_open'  — detail page opened
+// 'skip'         — item skipped/dismissed
+// 'filter_click' — category filter tapped (meta: { filter: 'category_name' })
+```
+
+Body: `{ "events": [{ "place_kind": "poi"|"svc", "place_id": 123, "event_type": "dwell", "dwell_ms": 5000 }] }`
+
+### Explicit rating — `POST /me/rating`
+
+Star rating (1–5) upsert from detail view. Body: `{ "place_kind": "poi"|"svc", "place_id": 123, "rating": 4 }`
+
+### Dwell time
+
+In `detail_view_page.dart`: start a `Stopwatch` in `initState`, stop in `dispose`. If `elapsedMilliseconds > 3000`, send as dwell event. Ignores bounces.
+
 ## Important gotchas
 
 - **.env**: Contains sensitive API keys — never commit to git (already in .gitignore).
