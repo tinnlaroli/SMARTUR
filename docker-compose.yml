@@ -129,12 +129,12 @@ services:
       context: ./LANDING
       dockerfile: Dockerfile
       args:
-        PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}:5173/
+        PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}/
         PUBLIC_API_URL: http://${VPS_IP:-localhost}:4000/api/v2
     container_name: smartur-landing
     restart: unless-stopped
     environment:
-      PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}:5173/
+      PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}/
     depends_on:
       - plataforma
     networks:
