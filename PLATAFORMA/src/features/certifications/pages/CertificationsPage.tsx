@@ -32,6 +32,15 @@ export const CertificationsPage = () => {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Award className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Certificaciones</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Gestiona los certificados de calidad asignados a servicios turísticos. Las certificaciones aumentan la visibilidad y confianza de los negocios en la app móvil.</p>
+                </div>
+            </div>
+
             {isLoading ? (
                 <CardSkeleton count={6} />
             ) : certifications.length === 0 ? (

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useProfiles } from '../hooks/useProfiles';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
@@ -13,9 +13,13 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
     TableBadge,
     TableOrderBadge,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 import type { Profile } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -49,6 +53,9 @@ export const ProfilesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const [sort, setSort] = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(profiles, sort), [profiles, sort]);
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -63,6 +70,15 @@ export const ProfilesPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
                         {m.profiles.subtitle}
                     </p>
+                </div>
+            </div>
+
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <UserCircle className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Perfiles de viajero</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los perfiles agrupan preferencias de viaje recopiladas mediante el formulario inteligente. Se usan para personalizar las recomendaciones del motor de IA.</p>
                 </div>
             </div>
 
@@ -81,24 +97,24 @@ export const ProfilesPage = () => {
                                 <tr>
                                     <DataTableHeadCell>{m.profiles.colOrder}</DataTableHeadCell>
                                     <DataTableHeadCell>{m.profiles.colUser}</DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="travel_type" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5">
                                             <Luggage className="h-3.5 w-3.5" />
                                             {m.profiles.colTravelType}
                                         </span>
-                                    </DataTableHeadCell>
+                                    </SortableHeadCell>
                                     <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Heart className="h-3.5 w-3.5" />
                                             {m.profiles.colInterests}
                                         </span>
                                     </DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="activity_level" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5">
                                             <Leaf className="h-3.5 w-3.5" />
                                             {m.profiles.colPreferences}
                                         </span>
-                                    </DataTableHeadCell>
+                                    </SortableHeadCell>
                                     <DataTableHeadCell>
                                         <span className="flex items-center gap-1.5">
                                             <Accessibility className="h-3.5 w-3.5" />
@@ -111,7 +127,7 @@ export const ProfilesPage = () => {
                                 {isLoading ? (
                                     <TableBodyRows rows={9} colWidths={['w-7', 'w-52', 'w-40', 'flex-1', 'w-44', 'w-56']} />
                                 ) : (
-                                    profiles.map((profile, i) => {
+                                    displayData.map((profile, i) => {
                                         const rowNumber = (page - 1) * limit + i + 1;
                                         const demographicBits = [
                                             humanize(profile.gender),

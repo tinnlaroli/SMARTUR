@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import type { User } from '../types/types';
 import {
     DataTable,
@@ -10,10 +11,14 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
     TABLE_BADGE_COLORS,
     TABLE_CHECKBOX_CLASS,
     TableBadge,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 
 interface Props {
     users: User[];
@@ -33,6 +38,9 @@ const getInitials = (name?: string | null) =>
         .join('');
 
 export default function UserTable({ users, selectedUsers, onToggle, onViewDetail, role, setRole }: Props) {
+    const [sort, setSort] = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(users, sort), [users, sort]);
     const allSelected = selectedUsers.length === users.length && users.length > 0;
 
     const toggleAll = () => {
@@ -60,8 +68,8 @@ export default function UserTable({ users, selectedUsers, onToggle, onViewDetail
                                 />
                             </DataTableHeadCell>
                             <DataTableHeadCell className="w-24">Foto</DataTableHeadCell>
-                            <DataTableHeadCell>Nombre</DataTableHeadCell>
-                            <DataTableHeadCell>Email</DataTableHeadCell>
+                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
+                            <SortableHeadCell sortKey="email" sort={sort} onSort={handleSort}>Email</SortableHeadCell>
                             <DataTableHeadCell className="w-40">
                                 <div className="flex items-center gap-2">
                                     <span>Rol</span>
@@ -76,11 +84,11 @@ export default function UserTable({ users, selectedUsers, onToggle, onViewDetail
                                 </div>
                             </DataTableHeadCell>
                             <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
-                            <DataTableHeadCell className="w-36">Registrado</DataTableHeadCell>
+                            <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort} className="w-36">Registrado</SortableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
-                        {users.map((user, index) => (
+                        {displayData.map((user, index) => (
                             <DataTableRow key={user.id} index={index}>
                                 <DataTableCell className="w-14">
                                     <input

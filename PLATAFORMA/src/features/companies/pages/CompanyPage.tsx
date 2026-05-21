@@ -110,6 +110,15 @@ export const CompanyPage = () => {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Building2 className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de compañías</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registra y administra las empresas turísticas de la región. Cada compañía puede tener múltiples servicios asociados visibles en la app móvil.</p>
+                </div>
+            </div>
+
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (
                     <div className={`${DATA_TABLE_SHELL_CLASS} flex-1`}>

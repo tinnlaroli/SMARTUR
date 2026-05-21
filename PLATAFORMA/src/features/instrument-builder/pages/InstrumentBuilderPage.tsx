@@ -96,6 +96,15 @@ export const InstrumentBuilderPage = () => {
                 </button>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 mb-2" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <FileText className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Instrumentos de evaluación</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Crea y edita las rúbricas que se usan para evaluar la calidad de los servicios turísticos. Define criterios, pesos y niveles de calificación para cada tipo de servicio.</p>
+                </div>
+            </div>
+
             {error && (
                 <div className="mb-6 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400">
                     <AlertCircle className="size-5 flex-shrink-0" />

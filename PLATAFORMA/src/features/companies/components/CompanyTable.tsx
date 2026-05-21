@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import type { Company } from '../types/types';
 import {
     DataTable,
@@ -10,10 +11,14 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
     TABLE_BADGE_COLORS,
     TABLE_CHECKBOX_CLASS,
     TableBadge,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 
 const SECTOR_LABELS: Record<number, string> = {
     1: 'Alojamiento',
@@ -68,6 +73,9 @@ export default function CompanyTable({
     sector,
     setSector,
 }: Props) {
+    const [sort, setSort] = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(companies, sort), [companies, sort]);
     const allSelected = selectedCompanies.length === companies.length && companies.length > 0;
 
     const toggleAll = () => {
@@ -94,7 +102,7 @@ export default function CompanyTable({
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <DataTableHeadCell>Nombre</DataTableHeadCell>
+                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
                             <DataTableHeadCell className="min-w-[220px]">Dirección</DataTableHeadCell>
                             <DataTableHeadCell className="w-36">Teléfono</DataTableHeadCell>
                             <DataTableHeadCell className="w-44">
@@ -113,11 +121,11 @@ export default function CompanyTable({
                                     </DataTableHeaderSelect>
                                 </div>
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-36">Registro</DataTableHeadCell>
+                            <SortableHeadCell sortKey="registration_date" sort={sort} onSort={handleSort} className="w-36">Registro</SortableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
-                        {companies.map((company, index) => (
+                        {displayData.map((company, index) => (
                             <DataTableRow key={company.id} index={index}>
                                 <DataTableCell className="w-14">
                                     <input

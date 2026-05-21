@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { ReactNode, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 
 export const DATA_TABLE_SHELL_CLASS =
@@ -144,6 +145,69 @@ export function DataTableLinkButton({
         >
             {children}
         </button>
+    );
+}
+
+export type SortDir = 'asc' | 'desc';
+export interface SortState { key: string; dir: SortDir }
+
+export function nextSort(current: SortState | null, key: string): SortState | null {
+    if (!current || current.key !== key) return { key, dir: 'asc' };
+    if (current.dir === 'asc') return { key, dir: 'desc' };
+    return null;
+}
+
+export function sortRows<T>(rows: T[], sort: SortState | null): T[] {
+    if (!sort) return rows;
+    return [...rows].sort((a, b) => {
+        const av = (a as Record<string, unknown>)[sort.key];
+        const bv = (b as Record<string, unknown>)[sort.key];
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        let cmp = 0;
+        if (typeof av === 'string' && typeof bv === 'string') {
+            cmp = av.localeCompare(bv, 'es', { sensitivity: 'base' });
+        } else if (typeof av === 'number' && typeof bv === 'number') {
+            cmp = av - bv;
+        } else {
+            cmp = String(av).localeCompare(String(bv), 'es', { sensitivity: 'base' });
+        }
+        return sort.dir === 'asc' ? cmp : -cmp;
+    });
+}
+
+export function SortableHeadCell({
+    children,
+    sortKey,
+    sort,
+    onSort,
+    className = '',
+    ...props
+}: {
+    children: ReactNode;
+    sortKey: string;
+    sort: SortState | null;
+    onSort: (key: string) => void;
+    className?: string;
+} & ThHTMLAttributes<HTMLTableCellElement>) {
+    const isActive = sort?.key === sortKey;
+    const dir = isActive ? sort!.dir : null;
+    return (
+        <th
+            className={`${DATA_TABLE_HEAD_CELL_CLASS} cursor-pointer select-none transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50 ${className}`}
+            style={{ color: isActive ? 'var(--color-purple)' : 'var(--color-text-alt)' }}
+            onClick={() => onSort(sortKey)}
+            {...props}
+        >
+            <span className="flex items-center gap-1">
+                {children}
+                <span className="flex flex-col" style={{ lineHeight: 0 }}>
+                    <ChevronUp className={`size-3 transition-opacity ${dir === 'asc' ? 'opacity-100' : 'opacity-25'}`} style={dir === 'asc' ? { color: 'var(--color-purple)' } : {}} />
+                    <ChevronDown className={`size-3 transition-opacity ${dir === 'desc' ? 'opacity-100' : 'opacity-25'}`} style={dir === 'desc' ? { color: 'var(--color-purple)' } : {}} />
+                </span>
+            </span>
+        </th>
     );
 }
 

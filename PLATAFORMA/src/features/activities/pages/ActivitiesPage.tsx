@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
@@ -13,8 +13,12 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
     TableOrderBadge,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -49,6 +53,9 @@ export const ActivitiesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const [sort, setSort] = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(activities, sort), [activities, sort]);
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -63,6 +70,15 @@ export const ActivitiesPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
                         {m.activities.subtitle}
                     </p>
+                </div>
+            </div>
+
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Activity className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Actividades</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registro de actividades y experiencias disponibles en la región. Se asocian a servicios y POIs para enriquecer las rutas personalizadas generadas por la IA.</p>
                 </div>
             </div>
 
@@ -81,21 +97,21 @@ export const ActivitiesPage = () => {
                                 <tr>
                                     <DataTableHeadCell>{m.activities.colOrder}</DataTableHeadCell>
                                     <DataTableHeadCell>{m.activities.colCompany}</DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="production_value" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5">
                                             <DollarSign className="h-3.5 w-3.5" />
                                             {m.activities.colProduction}
                                         </span>
-                                    </DataTableHeadCell>
-                                    <DataTableHeadCell>{m.activities.colEnvImpact}</DataTableHeadCell>
-                                    <DataTableHeadCell>{m.activities.colSocialImpact}</DataTableHeadCell>
+                                    </SortableHeadCell>
+                                    <SortableHeadCell sortKey="environmental_impact" sort={sort} onSort={handleSort}>{m.activities.colEnvImpact}</SortableHeadCell>
+                                    <SortableHeadCell sortKey="social_impact" sort={sort} onSort={handleSort}>{m.activities.colSocialImpact}</SortableHeadCell>
                                 </tr>
                             </DataTableHead>
                             <DataTableBody>
                                 {isLoading ? (
                                     <TableBodyRows rows={9} colWidths={['w-7', 'flex-1', 'w-28', 'w-28', 'w-28']} />
                                 ) : (
-                                    activities.map((activity, i) => {
+                                    displayData.map((activity, i) => {
                                         const rowNumber = (page - 1) * limit + i + 1;
 
                                         return (

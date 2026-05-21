@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { ClipboardCheck, Eye } from 'lucide-react';
 import type { TouristService } from '../types/types';
 import {
@@ -6,14 +7,19 @@ import {
     DataTableCell,
     DataTableHead,
     DataTableHeadCell,
+    DataTableHeaderSelect,
     DataTableLinkButton,
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
     TABLE_BADGE_COLORS,
     TABLE_CHECKBOX_CLASS,
     TableBadge,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
     restaurant: 'Restaurante',
@@ -38,6 +44,10 @@ export default function TouristServiceTable({
     onViewDetail,
     onEvaluate,
 }: Props) {
+    const [sort, setSort] = useState<SortState | null>(null);
+    const [typeFilter, setTypeFilter] = useState('');
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(services.filter(s => !typeFilter || s.service_type === typeFilter), sort), [services, sort, typeFilter]);
     const allSelected = selectedServices.length === services.length && services.length > 0;
 
     const toggleAll = () => {
@@ -64,15 +74,25 @@ export default function TouristServiceTable({
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <DataTableHeadCell>Nombre</DataTableHeadCell>
+                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
                             <DataTableHeadCell className="min-w-[220px]">Descripción</DataTableHeadCell>
-                            <DataTableHeadCell className="w-36">Tipo</DataTableHeadCell>
+                            <DataTableHeadCell className="w-36">
+                                <div className="flex items-center gap-2">
+                                    <span>Tipo</span>
+                                    <DataTableHeaderSelect value={typeFilter} onChange={setTypeFilter}>
+                                        <option value="">Todos</option>
+                                        {Object.entries(SERVICE_TYPE_LABELS).map(([id, label]) => (
+                                            <option key={id} value={id}>{label}</option>
+                                        ))}
+                                    </DataTableHeaderSelect>
+                                </div>
+                            </DataTableHeadCell>
                             <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
                             <DataTableHeadCell className="w-28 text-right">Acciones</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
-                        {services.map((service, index) => (
+                        {displayData.map((service, index) => (
                             <DataTableRow key={service.id} index={index}>
                                 <DataTableCell className="w-14">
                                     <input

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useContacts } from '../hooks/useContacts';
 import { Mail, Trash2, Globe, MessageSquare } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -12,7 +12,11 @@ import {
     DataTableRow,
     DataTableScroll,
     DataTableShell,
+    SortableHeadCell,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
+import type { SortState } from '../../../components/ui/DataTable';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import Pagination from '../../users/components/Pagination';
 import type { ContactStatus } from '../types/types';
@@ -71,6 +75,9 @@ export const ContactsPage = () => {
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [expandedId, setExpandedId] = useState<number | null>(null);
     const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [sort, setSort] = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
+    const displayData = useMemo(() => sortRows(subscriptions, sort), [subscriptions, sort]);
 
     const page = Number(searchParams.get('page')) || 1;
 
@@ -127,6 +134,18 @@ export const ContactsPage = () => {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Mail className="size-5 mt-0.5 shrink-0 text-emerald-500" />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>¿Qué son los contactos?</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Mensajes enviados por visitantes y empresas a través de los formularios de contacto de la plataforma y la landing page.
+                        Desde aquí puedes revisar cada mensaje, cambiar su estado de atención y eliminar registros.
+                    </p>
+                </div>
+            </div>
+
             {/* Message detail panel */}
             {expandedSub?.message && (
                 <div className="shrink-0 rounded-2xl border p-4" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
@@ -163,16 +182,16 @@ export const ContactsPage = () => {
                             <DataTableHead>
                                 <tr>
                                     <DataTableHeadCell>#</DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="email" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5"><Mail className="size-3.5" />Correo</span>
-                                    </DataTableHeadCell>
-                                    <DataTableHeadCell>Motivo</DataTableHeadCell>
+                                    </SortableHeadCell>
+                                    <SortableHeadCell sortKey="reason" sort={sort} onSort={handleSort}>Motivo</SortableHeadCell>
                                     <DataTableHeadCell>Mensaje</DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="source" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5"><Globe className="size-3.5" />Fuente</span>
-                                    </DataTableHeadCell>
-                                    <DataTableHeadCell>Estado</DataTableHeadCell>
-                                    <DataTableHeadCell>Fecha</DataTableHeadCell>
+                                    </SortableHeadCell>
+                                    <SortableHeadCell sortKey="status" sort={sort} onSort={handleSort}>Estado</SortableHeadCell>
+                                    <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort}>Fecha</SortableHeadCell>
                                     <DataTableHeadCell></DataTableHeadCell>
                                 </tr>
                             </DataTableHead>
@@ -180,7 +199,7 @@ export const ContactsPage = () => {
                                 {isLoading ? (
                                     <TableBodyRows rows={10} colWidths={['w-8', 'w-40', 'w-24', 'flex-1', 'w-24', 'w-28', 'w-28', 'w-10']} />
                                 ) : (
-                                    subscriptions.map((sub, i) => {
+                                    displayData.map((sub, i) => {
                                         const reasonKey = sub.reason ?? '';
                                         const isExpanded = expandedId === sub.id;
                                         const statusStyle = STATUS_STYLE[sub.status] ?? STATUS_STYLE.pending;
