@@ -2,6 +2,8 @@ export interface ContactSubscription {
     id: number;
     email: string;
     source: string;
+    reason: string | null;
+    message: string | null;
     created_at: string;
 }
 

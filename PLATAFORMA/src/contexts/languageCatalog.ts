@@ -11,6 +11,13 @@ export const defaultLang: LanguageCode = 'es';
 
 export const ui: Record<LanguageCode, Record<string, string>> = {
     es: {
+        // Sidebar group labels
+        'sidebar.group.principal': 'Principal',
+        'sidebar.group.gestion': 'Gestión',
+        'sidebar.group.mobile': 'Móvil y Engagement',
+        'sidebar.group.certifications': 'Certificaciones',
+        'sidebar.group.reports': 'Reportes',
+        'sidebar.group.system': 'Sistema',
         // Sidebar / Layout
         'sidebar.home': 'Inicio',
         'sidebar.users': 'Usuarios',
@@ -124,16 +131,33 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'testimonials.item3.role': 'Turista internacional, Francia',
         'testimonials.item3.content': 'Le pedí a SMARTUR cultura de café auténtica y me llevó a una finca pequeña en Huatusco. Los dueños me recibieron como en casa. Por momentos así vale la pena viajar.',
 
-        // Contact / Form Invitation
-        'contact.label': 'Empieza aquí',
-        'contact.title': '¿Qué aroma buscas hoy?',
-        'contact.subtitle': 'Tu ruta personalizada empieza con una pregunta. Cuéntanos sobre ti y dejemos que la IA haga su magia.',
-        'contact.cta.button': 'Comenzar',
+        // Contact
+        'contact.label': 'Contáctanos',
+        'contact.title': 'Solicita una evaluación',
+        'contact.subtitle':
+            'Descubre cómo nuestra tecnología puede transformar tu destino o negocio. Déjanos tu correo, cuéntanos tu duda y te responderemos lo antes posible.',
+        'contact.cta.button': 'Enviar mensaje',
         'contact.email.placeholder': 'tu@correo.com',
-        'contact.name.placeholder': '¿Cómo te llamas, viajero?',
-        'contact.intro': 'Déjanos tu correo y te guiamos al formulario de recomendaciones inteligentes.',
-        'contact.success': '¡Perfecto! Revisa tu correo para empezar.',
-        'contact.error': 'No se pudo enviar. Intenta de nuevo.',
+        'contact.email.continue': 'Continuar',
+        'contact.message.placeholder': 'Cuéntanos más sobre tu duda, proyecto o lo que necesitas de SMARTUR…',
+        'contact.invalidEmail': 'Introduce un correo electrónico válido.',
+        'contact.messageRequired': 'Escribe al menos unas líneas sobre tu consulta (mínimo 10 caracteres).',
+        'contact.reasonRequired': 'Selecciona el motivo de tu consulta.',
+        'contact.sending': 'Enviando…',
+        'contact.success': 'Mensaje enviado. Nos pondremos en contacto contigo pronto.',
+        'contact.sendAnother': 'Enviar otra consulta',
+        'contact.error': 'No se pudo enviar. Intenta de nuevo o escríbenos a smarturutcv@gmail.com.',
+        'contact.modal.title': 'Cuéntanos más',
+        'contact.modal.subtitle': 'Tu mensaje llegará directamente al equipo de SMARTUR.',
+        'contact.modal.close': 'Cancelar',
+        'contact.reason.placeholder': 'Selecciona el motivo…',
+        'contact.reason.download': 'Tengo problemas al descargar el app',
+        'contact.reason.join': 'Quiero unirme como servicio turístico',
+        'contact.reason.tourist': 'Soy un turista interesado en la región',
+        'contact.reason.pricing': 'Información sobre precios y planes',
+        'contact.reason.evaluation': 'Solicitar evaluación de mi servicio',
+        'contact.reason.suggestion': 'Sugerencia o comentario',
+        'contact.reason.other': 'Otro motivo',
 
         // FAQs
         'faqs.label': 'Preguntas frecuentes',
@@ -342,6 +366,13 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'auth.resetPassword.error.body': 'Algo salió mal al restablecer tu contraseña',
     },
     en: {
+        // Sidebar group labels
+        'sidebar.group.principal': 'Main',
+        'sidebar.group.gestion': 'Management',
+        'sidebar.group.mobile': 'Mobile & Engagement',
+        'sidebar.group.certifications': 'Certifications',
+        'sidebar.group.reports': 'Reports',
+        'sidebar.group.system': 'System',
         // Sidebar / Layout
         'sidebar.home': 'Home',
         'sidebar.users': 'Users',
@@ -456,15 +487,32 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'testimonials.item3.content': 'I told SMARTUR I wanted to find authentic coffee culture. It sent me to a small farm in Huatusco. The owners became like family. This is why travel exists.',
 
         // Contact
-        'contact.label': 'Start here',
-        'contact.title': 'What scent are you looking for today?',
-        'contact.subtitle': 'Your personalized route starts with a question. Tell us about yourself and let the AI work its magic.',
-        'contact.cta.button': 'Start',
+        'contact.label': 'Contact us',
+        'contact.title': 'Request an evaluation',
+        'contact.subtitle':
+            'Discover how our technology can transform your destination or business. Share your email, tell us about your question, and we will get back to you soon.',
+        'contact.cta.button': 'Send message',
         'contact.email.placeholder': 'your@email.com',
-        'contact.name.placeholder': 'What is your name, traveler?',
-        'contact.intro': 'Leave your email and we\'ll guide you to the smart recommendations form.',
-        'contact.success': 'Perfect! Check your email to get started.',
-        'contact.error': 'Could not send. Please try again.',
+        'contact.email.continue': 'Continue',
+        'contact.message.placeholder': 'Tell us more about your question, project, or what you need from SMARTUR…',
+        'contact.invalidEmail': 'Please enter a valid email address.',
+        'contact.messageRequired': 'Please write a few lines about your inquiry (at least 10 characters).',
+        'contact.reasonRequired': 'Please select a contact reason.',
+        'contact.sending': 'Sending…',
+        'contact.success': 'Message sent. We will be in touch with you soon.',
+        'contact.sendAnother': 'Send another inquiry',
+        'contact.error': 'Could not send. Try again or email us at smarturutcv@gmail.com.',
+        'contact.modal.title': 'Tell us more',
+        'contact.modal.subtitle': 'Your message will go directly to the SMARTUR team.',
+        'contact.modal.close': 'Cancel',
+        'contact.reason.placeholder': 'Select a reason…',
+        'contact.reason.download': 'I have trouble downloading the app',
+        'contact.reason.join': 'I want to join as a tourism service',
+        'contact.reason.tourist': "I'm a tourist interested in the region",
+        'contact.reason.pricing': 'Information about pricing and plans',
+        'contact.reason.evaluation': 'Request an evaluation of my service',
+        'contact.reason.suggestion': 'Suggestion or comment',
+        'contact.reason.other': 'Other reason',
 
         // FAQs
         'faqs.label': 'FAQ',
@@ -673,6 +721,13 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'auth.resetPassword.error.body': 'Something went wrong resetting your password',
     },
     fr: {
+        // Sidebar group labels
+        'sidebar.group.principal': 'Principal',
+        'sidebar.group.gestion': 'Gestion',
+        'sidebar.group.mobile': 'Mobile & Engagement',
+        'sidebar.group.certifications': 'Certifications',
+        'sidebar.group.reports': 'Rapports',
+        'sidebar.group.system': 'Système',
         // Sidebar / Layout
         'sidebar.home': 'Accueil',
         'sidebar.users': 'Utilisateurs',
@@ -787,15 +842,32 @@ export const ui: Record<LanguageCode, Record<string, string>> = {
         'testimonials.item3.content': 'J\'ai dit à SMARTUR que je voulais trouver une culture authentique du café. Il m\'a envoyée dans une petite ferme à Huatusco. Les propriétaires sont devenus comme une famille.',
 
         // Contact
-        'contact.label': 'Commencez ici',
-        'contact.title': 'Quel arôme cherchez-vous aujourd\'hui?',
-        'contact.subtitle': 'Votre itinéraire personnalisé commence par une question. Parlez-nous de vous.',
-        'contact.cta.button': 'Commencer',
+        'contact.label': 'Contactez-nous',
+        'contact.title': 'Demander une évaluation',
+        'contact.subtitle':
+            'Découvrez comment notre technologie peut transformer votre destination ou entreprise. Laissez votre email, décrivez votre demande et nous vous répondrons rapidement.',
+        'contact.cta.button': 'Envoyer le message',
         'contact.email.placeholder': 'votre@email.com',
-        'contact.name.placeholder': 'Quel est votre nom, voyageur?',
-        'contact.intro': 'Laissez votre email et nous vous guiderons vers le formulaire de recommandations intelligentes.',
-        'contact.success': 'Parfait! Vérifiez votre email pour commencer.',
-        'contact.error': 'Envoi impossible. Veuillez réessayer.',
+        'contact.email.continue': 'Continuer',
+        'contact.message.placeholder': 'Dites-nous en plus sur votre question, projet ou besoin avec SMARTUR…',
+        'contact.invalidEmail': 'Veuillez saisir une adresse email valide.',
+        'contact.messageRequired': 'Écrivez quelques lignes sur votre demande (10 caractères minimum).',
+        'contact.reasonRequired': 'Veuillez sélectionner un motif de contact.',
+        'contact.sending': 'Envoi en cours…',
+        'contact.success': 'Message envoyé. Nous vous contacterons bientôt.',
+        'contact.sendAnother': 'Envoyer une autre demande',
+        'contact.error': 'Envoi impossible. Réessayez ou écrivez à smarturutcv@gmail.com.',
+        'contact.modal.title': 'Dites-nous en plus',
+        'contact.modal.subtitle': 'Votre message ira directement à l\'équipe SMARTUR.',
+        'contact.modal.close': 'Annuler',
+        'contact.reason.placeholder': 'Sélectionnez un motif…',
+        'contact.reason.download': "J'ai du mal à télécharger l'application",
+        'contact.reason.join': 'Je veux rejoindre en tant que service touristique',
+        'contact.reason.tourist': 'Je suis touriste intéressé par la région',
+        'contact.reason.pricing': 'Informations sur les tarifs et plans',
+        'contact.reason.evaluation': 'Demander une évaluation de mon service',
+        'contact.reason.suggestion': 'Suggestion ou commentaire',
+        'contact.reason.other': 'Autre motif',
 
         // FAQs
         'faqs.label': 'FAQ',

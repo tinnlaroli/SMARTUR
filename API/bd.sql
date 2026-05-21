@@ -349,6 +349,8 @@ CREATE TABLE contact_subscription (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL,
   source VARCHAR(64) NOT NULL DEFAULT 'landing_b2b',
+  reason VARCHAR(100) NULL,
+  message TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_contact_subscription_email ON contact_subscription(email);

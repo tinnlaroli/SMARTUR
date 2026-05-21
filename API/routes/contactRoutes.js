@@ -1,23 +1,31 @@
 import express from 'express';
-import { sendWelcomeEmail } from '../utils/mailer.js';
+import { sendContactNotification } from '../utils/mailer.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import db from '../config/db.js';
 
 const router = express.Router();
 
 router.post('/contact', async (req, res) => {
-    const { email, source = 'landing_b2b' } = req.body;
+    const { email, reason, message, source = 'landing_b2b' } = req.body;
     if (!email || typeof email !== 'string' || !email.includes('@')) {
         return res.status(400).json({ message: 'Email inválido.' });
     }
 
     const clean = email.trim().toLowerCase();
+    const cleanReason = reason?.trim() || null;
+    const cleanMessage = message?.trim() || null;
+
     try {
         await db.query(
-            'INSERT INTO contact_subscription (email, source) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-            [clean, source],
+            'INSERT INTO contact_subscription (email, source, reason, message) VALUES ($1, $2, $3, $4)',
+            [clean, source, cleanReason, cleanMessage],
         );
-        await sendWelcomeEmail(clean);
+        sendContactNotification(process.env.EMAIL_USER, {
+            email: clean,
+            reason: cleanReason,
+            message: cleanMessage,
+            source,
+        }).catch((err) => console.error('[contact] Notification email failed:', err.message));
         res.json({ ok: true });
     } catch (err) {
         console.error('[contact] Error:', err.message);
@@ -34,7 +42,7 @@ router.get('/contact-subscriptions', verifyToken, async (req, res) => {
         const { rows: countRows } = await db.query('SELECT COUNT(*)::int AS total FROM contact_subscription');
         const total = countRows[0].total;
         const { rows } = await db.query(
-            'SELECT id, email, source, created_at FROM contact_subscription ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+            'SELECT id, email, source, reason, message, created_at FROM contact_subscription ORDER BY created_at DESC LIMIT $1 OFFSET $2',
             [limit, offset],
         );
         res.json({
