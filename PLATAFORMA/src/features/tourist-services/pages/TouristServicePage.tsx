@@ -103,36 +103,37 @@ export const TouristServicePage = () => {
                 </div>
             </div>
 
-            {/* Controls row */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
+            {/* Action row */}
+            <div className="flex items-center gap-3 shrink-0">
+                <SelectionBar
+                    count={selectedServices.length}
+                    onDelete={handleDeleteSelected}
+                    onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedServices[0] })}
+                    onClear={() => setSelectedServices([])}
+                />
+                <div className="ml-auto flex items-center gap-2">
+                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
 
-                {selectedServices.length === 1 && (
+                    {selectedServices.length === 1 && (
+                        <button
+                            onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
+                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                        >
+                            <ClipboardCheck className="size-4" />
+                            {m.touristServices.evaluate}
+                        </button>
+                    )}
+
                     <button
-                        onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
-                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                        onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                        style={{ background: MODULE_COLORS.services }}
                     >
-                        <ClipboardCheck className="size-4" />
-                        {m.touristServices.evaluate}
+                        <Plus className="size-4" />
+                        {m.touristServices.add}
                     </button>
-                )}
-
-                <button
-                    onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                    style={{ background: MODULE_COLORS.services }}
-                >
-                    <Plus className="size-4" />
-                    {m.touristServices.add}
-                </button>
+                </div>
             </div>
-
-            <SelectionBar
-                count={selectedServices.length}
-                onDelete={handleDeleteSelected}
-                onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedServices[0] })}
-                onClear={() => setSelectedServices([])}
-            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

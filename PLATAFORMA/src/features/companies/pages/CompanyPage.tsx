@@ -93,25 +93,26 @@ export const CompanyPage = () => {
                 </div>
             </div>
 
-            {/* Controls row */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.companies.searchPlaceholder} />
-                <button
-                    onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                    style={{ background: MODULE_COLORS.companies }}
-                >
-                    <Plus className="size-4" />
-                    {m.companies.add}
-                </button>
+            {/* Action row */}
+            <div className="flex items-center gap-3 shrink-0">
+                <SelectionBar
+                    count={selectedCompanies.length}
+                    onDelete={handleDeleteSelected}
+                    onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedCompanies[0] })}
+                    onClear={() => setSelectedCompanies([])}
+                />
+                <div className="ml-auto flex items-center gap-2">
+                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.companies.searchPlaceholder} />
+                    <button
+                        onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                        style={{ background: MODULE_COLORS.companies }}
+                    >
+                        <Plus className="size-4" />
+                        {m.companies.add}
+                    </button>
+                </div>
             </div>
-
-            <SelectionBar
-                count={selectedCompanies.length}
-                onDelete={handleDeleteSelected}
-                onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedCompanies[0] })}
-                onClear={() => setSelectedCompanies([])}
-            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

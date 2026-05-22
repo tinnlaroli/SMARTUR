@@ -125,24 +125,25 @@ export const ActivitiesPage = () => {
                 </div>
             </div>
 
-            {/* Controls row */}
-            <div className="flex items-center justify-end shrink-0">
-                <button
-                    onClick={() => setIsCreateOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                    style={{ background: MODULE_COLORS.activities }}
-                >
-                    <Plus className="size-4" />
-                    Nueva actividad
-                </button>
+            {/* Action row */}
+            <div className="flex items-center gap-3 shrink-0">
+                <SelectionBar
+                    count={selectedIds.length}
+                    onDelete={handleDeleteSelected}
+                    onEdit={handleEditSelected}
+                    onClear={() => setSelectedIds([])}
+                />
+                <div className="ml-auto">
+                    <button
+                        onClick={() => setIsCreateOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                        style={{ background: MODULE_COLORS.activities }}
+                    >
+                        <Plus className="size-4" />
+                        Nueva actividad
+                    </button>
+                </div>
             </div>
-
-            <SelectionBar
-                count={selectedIds.length}
-                onDelete={handleDeleteSelected}
-                onEdit={handleEditSelected}
-                onClear={() => setSelectedIds([])}
-            />
 
             <DataTableShell className="h-full">
                 {activities.length === 0 && !isLoading ? (

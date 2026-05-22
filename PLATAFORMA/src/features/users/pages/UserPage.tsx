@@ -78,25 +78,26 @@ export const UserPage = () => {
                 </div>
             </div>
 
-            {/* Controls row */}
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.users.searchPlaceholder} />
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                    style={{ background: 'var(--color-purple)' }}
-                >
-                    <UserPlus className="size-4" />
-                    {m.users.add}
-                </button>
+            {/* Action row */}
+            <div className="flex items-center gap-3 shrink-0">
+                <SelectionBar
+                    count={selectedUsers.length}
+                    onDelete={handleDeleteSelected}
+                    onEdit={() => { setSelectedId(selectedUsers[0]); setIsDetailModalOpen(true); }}
+                    onClear={() => setSelectedUsers([])}
+                />
+                <div className="ml-auto flex items-center gap-2">
+                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.users.searchPlaceholder} />
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                        style={{ background: 'var(--color-purple)' }}
+                    >
+                        <UserPlus className="size-4" />
+                        {m.users.add}
+                    </button>
+                </div>
             </div>
-
-            <SelectionBar
-                count={selectedUsers.length}
-                onDelete={handleDeleteSelected}
-                onEdit={() => { setSelectedId(selectedUsers[0]); setIsDetailModalOpen(true); }}
-                onClear={() => setSelectedUsers([])}
-            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

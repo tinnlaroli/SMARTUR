@@ -155,11 +155,16 @@ export const ContactsPage = () => {
                 </div>
             </div>
 
-            <SelectionBar
-                count={selectedIds.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedIds([])}
-            />
+            {/* Action row */}
+            <div className="flex items-center shrink-0">
+                <div className="ml-auto">
+                    <SelectionBar
+                        count={selectedIds.length}
+                        onDelete={handleDeleteSelected}
+                        onClear={() => setSelectedIds([])}
+                    />
+                </div>
+            </div>
 
             {/* Table */}
             <DataTableShell className="h-full">
