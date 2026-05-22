@@ -4,6 +4,12 @@
 /* Dark mode via `data-theme="dark"` attribute on <html> */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Tell the browser to render native controls (checkboxes, selects, scrollbars)
+   in dark mode when our custom dark theme is active */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 /* Base styles */
 html {
   transition:

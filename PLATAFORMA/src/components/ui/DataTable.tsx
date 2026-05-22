@@ -19,7 +19,7 @@ export const DATA_TABLE_HEAD_CELL_CLASS =
 export const DATA_TABLE_CELL_CLASS = 'px-5 py-3.5 text-sm';
 
 export const TABLE_CHECKBOX_CLASS =
-    'size-4 cursor-pointer rounded border-zinc-300 bg-white text-violet-600 focus:ring-violet-500 focus:ring-offset-0 dark:border-zinc-600 dark:bg-zinc-900 dark:text-violet-500';
+    'size-4 cursor-pointer rounded accent-violet-600 dark:accent-violet-400 focus:ring-violet-500 focus:ring-offset-0';
 
 export const TABLE_BADGE_COLORS = {
     violet: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
