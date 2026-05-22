@@ -118,15 +118,10 @@ const METRIC_META: Record<DashboardMetric['id'], { icon: ElementType; eyebrowKey
 };
 
 const WIDGET_OPTIONS: Array<{ key: WidgetPreferenceKey }> = [
-    {
-        key: 'showTopServices',
-    },
-    {
-        key: 'showUserDistribution',
-    },
-    {
-        key: 'showRecentActivity',
-    },
+    { key: 'showTopServices' },
+    { key: 'showUserDistribution' },
+    { key: 'showRecentActivity' },
+    { key: 'showOperationalMix' },
 ];
 
 const cardPadding = (density: DensityMode) => density === 'compact' ? 'p-4' : 'p-5';
@@ -265,7 +260,7 @@ const PanelCard = ({
     footer?: ReactNode;
 }) => (
     <section
-        className={`${formatCardClassName(density)} flex min-h-0 flex-col sy-fade-up`}
+        className={`${formatCardClassName(density)} flex h-full min-h-0 flex-col sy-fade-up`}
         style={cardSurface}
     >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -694,8 +689,8 @@ export const OperationalMixCard = ({
             subtitle={summary}
             icon={BarChart3}
         >
-            <div className="flex h-full min-h-[19rem] flex-col gap-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="grid shrink-0 grid-cols-2 gap-2">
                 {data.map((item) => (
                     <div
                         key={item.name}
@@ -713,7 +708,7 @@ export const OperationalMixCard = ({
             </div>
 
             <div
-                className="relative h-[13rem] md:h-[14rem] overflow-hidden rounded-[24px] border p-2"
+                className="relative min-h-0 max-h-[18rem] flex-1 overflow-hidden rounded-[24px] border p-2"
                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
             >
                 <ResponsiveContainer width="100%" height="100%">
@@ -816,8 +811,8 @@ export const TrendChartCard = ({
             {data.length === 0 ? (
                 <EmptyState message={copy.mainChartEmpty} />
             ) : (
-                <div className="flex h-full min-h-[24rem] flex-col gap-4">
-                    <div className="grid gap-2 lg:grid-cols-2">
+                <div className="flex h-full min-h-0 flex-col gap-4">
+                    <div className="grid shrink-0 gap-2 lg:grid-cols-2">
                         {insights.map((insight) => (
                             <div
                                 key={insight.label}
@@ -834,11 +829,10 @@ export const TrendChartCard = ({
                         ))}
                     </div>
 
-                    <div className="h-[18rem] md:h-[20rem]">
-                        <div
-                            className="h-full overflow-hidden rounded-[24px] border p-2"
-                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
-                        >
+                    <div
+                        className="min-h-0 flex-1 overflow-hidden rounded-[24px] border p-2"
+                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                    >
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                                     <CartesianGrid vertical={false} stroke="rgba(148, 163, 184, 0.16)" />
@@ -898,7 +892,6 @@ export const TrendChartCard = ({
                                 </ComposedChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
                 </div>
             )}
         </PanelCard>

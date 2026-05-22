@@ -24,6 +24,7 @@ export interface DashboardPreferences {
     showTopServices: boolean;
     showUserDistribution: boolean;
     showRecentActivity: boolean;
+    showOperationalMix: boolean;
 }
 
 export const DEFAULT_DASHBOARD_PREFERENCES: DashboardPreferences = {
@@ -32,9 +33,10 @@ export const DEFAULT_DASHBOARD_PREFERENCES: DashboardPreferences = {
     showTopServices: true,
     showUserDistribution: true,
     showRecentActivity: true,
+    showOperationalMix: true,
 };
 
-export type WidgetPreferenceKey = 'showTopServices' | 'showUserDistribution' | 'showRecentActivity';
+export type WidgetPreferenceKey = 'showTopServices' | 'showUserDistribution' | 'showRecentActivity' | 'showOperationalMix';
 
 export interface DashboardMetric {
     id: 'averageScore' | 'evaluations' | 'activeUsers' | 'services';

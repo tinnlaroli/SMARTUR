@@ -10,6 +10,7 @@ import {
     RecentActivityCard,
     TopServicesCard,
     TrendChartCard,
+    UserDistributionCard,
 } from './components/DashboardWidgets';
 import { useDashboardPreferences } from './hooks/useDashboardPreferences';
 import { DASHBOARD_COLORS, deriveDashboardViewModel } from './utils/dashboard';
@@ -74,10 +75,8 @@ export const Home = () => {
         stats ? deriveDashboardViewModel(stats, lang) : null
     ), [lang, stats]);
 
-    const supportWidgets = useMemo(() => {
+    const bottomWidgets = useMemo(() => {
         if (!viewModel || !stats) return [];
-
-        const activityItems = viewModel.recentActivity.slice(0, preferences.density === 'compact' ? 4 : 5);
 
         return [
             preferences.showTopServices
@@ -90,20 +89,34 @@ export const Home = () => {
                     />
                 )
                 : null,
+            preferences.showUserDistribution
+                ? (
+                    <UserDistributionCard
+                        key="user-distribution"
+                        data={viewModel.distributionData}
+                        totalUsers={stats.total_users}
+                        summary={viewModel.distributionSummary}
+                        density={preferences.density}
+                    />
+                )
+                : null,
             preferences.showRecentActivity
                 ? (
                     <RecentActivityCard
                         key="recent-activity"
-                        activity={activityItems}
+                        activity={viewModel.recentActivity}
                         summary={viewModel.activitySummary}
                         density={preferences.density}
                     />
                 )
                 : null,
         ].filter((widget): widget is ReactElement => widget !== null);
-    }, [preferences.density, preferences.showRecentActivity, preferences.showTopServices, stats, viewModel]);
+    }, [preferences, stats, viewModel]);
 
-    const showOperationalChart = preferences.showUserDistribution;
+    const bottomColClass =
+        bottomWidgets.length === 1 ? 'grid-cols-1' :
+        bottomWidgets.length === 2 ? 'grid-cols-2' :
+        'grid-cols-3';
 
     if (loading) {
         return (
@@ -180,9 +193,12 @@ export const Home = () => {
 
             <KpiStrip metrics={viewModel.metrics} density={preferences.density} />
 
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-rows-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                <div className={`grid min-h-0 gap-4 ${showOperationalChart ? 'xl:grid-cols-12' : 'grid-cols-1'}`}>
-                    <div className={showOperationalChart ? 'min-h-[24rem] xl:col-span-8' : 'min-h-[24rem]'}>
+            {/* Main content: trend chart column + optional operational sidebar */}
+            <div className="flex min-h-0 flex-1 gap-4">
+
+                {/* Left column: trend chart (flex-1) + bottom widgets */}
+                <div className="flex min-h-0 flex-1 flex-col gap-4">
+                    <div className={`min-h-0 ${bottomWidgets.length > 0 ? 'flex-[3]' : 'flex-1'}`}>
                         <TrendChartCard
                             chartMode={preferences.chartMode}
                             data={viewModel.trendData}
@@ -192,34 +208,23 @@ export const Home = () => {
                         />
                     </div>
 
-                    {showOperationalChart && (
-                        <div className="min-h-[22rem] xl:col-span-4">
-                            <OperationalMixCard
-                                data={viewModel.operationalData}
-                                summary={viewModel.operationalSummary}
-                                density={preferences.density}
-                            />
+                    {bottomWidgets.length > 0 && (
+                        <div className={`grid min-h-0 flex-[2] gap-4 ${bottomColClass}`}>
+                            {bottomWidgets}
                         </div>
                     )}
                 </div>
 
-                {supportWidgets.length > 0 ? (
-                    <div className={`grid min-h-0 gap-4 ${supportWidgets.length > 1 ? 'xl:grid-cols-2' : 'grid-cols-1'}`}>
-                        {supportWidgets}
+                {/* Right sidebar: operational mix */}
+                {preferences.showOperationalMix && (
+                    <div className="hidden min-h-0 w-[17rem] shrink-0 xl:block">
+                        <OperationalMixCard
+                            data={viewModel.operationalData}
+                            summary={viewModel.operationalSummary}
+                            density={preferences.density}
+                        />
                     </div>
-                ) : !showOperationalChart ? (
-                    <div
-                        className="rounded-[28px] border p-5 shadow-[0_10px_35px_rgba(15,23,42,0.06)] sy-fade-up"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                    >
-                        <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                            {copy.home.hiddenWidgetsTitle}
-                        </p>
-                        <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.home.hiddenWidgetsDescription}
-                        </p>
-                    </div>
-                ) : null}
+                )}
             </div>
 
             <div

@@ -64,7 +64,7 @@ type DashboardLocale = {
     };
     widgets: {
         metricEyebrows: Record<'averageScore' | 'evaluations' | 'activeUsers' | 'services', string>;
-        widgetOptions: Record<'showTopServices' | 'showUserDistribution' | 'showRecentActivity', { label: string; description: string }>;
+        widgetOptions: Record<'showTopServices' | 'showUserDistribution' | 'showRecentActivity' | 'showOperationalMix', { label: string; description: string }>;
         headerTitle: string;
         headerSubtitle: string;
         personalize: string;
@@ -231,12 +231,16 @@ const es: DashboardLocale = {
                 description: 'Mantiene visible el ranking de desempeno.',
             },
             showUserDistribution: {
-                label: 'Cobertura operativa',
-                description: 'Compara lugares, servicios, empresas y POI.',
+                label: 'Distribucion de usuarios',
+                description: 'Muestra el desglose por rol activo en la plataforma.',
             },
             showRecentActivity: {
                 label: 'Actividad reciente',
                 description: 'Resume las evaluaciones mas nuevas sin scroll.',
+            },
+            showOperationalMix: {
+                label: 'Cobertura operativa',
+                description: 'Compara lugares, servicios, empresas y POI.',
             },
         },
         headerTitle: 'Dashboard de Inicio',
@@ -410,12 +414,16 @@ const en: DashboardLocale = {
                 description: 'Keeps the performance ranking visible.',
             },
             showUserDistribution: {
-                label: 'Operational coverage',
-                description: 'Compares locations, services, companies, and POI.',
+                label: 'User distribution',
+                description: 'Shows the active user breakdown by role.',
             },
             showRecentActivity: {
                 label: 'Recent activity',
                 description: 'Summarizes the newest evaluations without extra scroll.',
+            },
+            showOperationalMix: {
+                label: 'Operational coverage',
+                description: 'Compares locations, services, companies, and POI.',
             },
         },
         headerTitle: 'Home Dashboard',
@@ -589,12 +597,16 @@ const fr: DashboardLocale = {
                 description: 'Maintient visible le classement de performance.',
             },
             showUserDistribution: {
-                label: 'Couverture operationnelle',
-                description: 'Compare lieux, services, entreprises et POI.',
+                label: 'Repartition utilisateurs',
+                description: 'Affiche la repartition des utilisateurs actifs par role.',
             },
             showRecentActivity: {
                 label: 'Activite recente',
                 description: 'Resume les evaluations les plus recentes sans scroll supplementaire.',
+            },
+            showOperationalMix: {
+                label: 'Couverture operationnelle',
+                description: 'Compare lieux, services, entreprises et POI.',
             },
         },
         headerTitle: 'Dashboard d accueil',
