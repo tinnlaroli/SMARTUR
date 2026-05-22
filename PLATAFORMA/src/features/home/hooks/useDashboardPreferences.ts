@@ -3,6 +3,7 @@ import {
     DASHBOARD_STORAGE_KEY,
     DEFAULT_DASHBOARD_PREFERENCES,
     type DashboardPreferences,
+    type TimeRangeMode,
     type WidgetPreferenceKey,
 } from '../utils/dashboard';
 
@@ -36,6 +37,10 @@ export const useDashboardPreferences = () => {
         setPreferences((current) => ({ ...current, density }));
     };
 
+    const setTimeRange = (timeRange: TimeRangeMode) => {
+        setPreferences((current) => ({ ...current, timeRange }));
+    };
+
     const toggleWidget = (widget: WidgetPreferenceKey) => {
         setPreferences((current) => ({ ...current, [widget]: !current[widget] }));
     };
@@ -48,6 +53,7 @@ export const useDashboardPreferences = () => {
         preferences,
         setChartMode,
         setDensity,
+        setTimeRange,
         toggleWidget,
         resetPreferences,
     };

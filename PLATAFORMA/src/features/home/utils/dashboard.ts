@@ -17,26 +17,39 @@ export const DASHBOARD_STORAGE_KEY = 'smartur-dashboard-preferences';
 
 export type ChartMode = 'mixed' | 'volume' | 'score';
 export type DensityMode = 'comfortable' | 'compact';
+export type TimeRangeMode = '3m' | '6m' | '12m' | 'all';
 
 export interface DashboardPreferences {
     chartMode: ChartMode;
     density: DensityMode;
+    timeRange: TimeRangeMode;
     showTopServices: boolean;
     showUserDistribution: boolean;
     showRecentActivity: boolean;
     showOperationalMix: boolean;
+    showScoreDistribution: boolean;
+    showTopCompanies: boolean;
 }
 
 export const DEFAULT_DASHBOARD_PREFERENCES: DashboardPreferences = {
     chartMode: 'mixed',
     density: 'comfortable',
+    timeRange: '12m',
     showTopServices: true,
     showUserDistribution: true,
     showRecentActivity: true,
     showOperationalMix: true,
+    showScoreDistribution: false,
+    showTopCompanies: false,
 };
 
-export type WidgetPreferenceKey = 'showTopServices' | 'showUserDistribution' | 'showRecentActivity' | 'showOperationalMix';
+export type WidgetPreferenceKey =
+    | 'showTopServices'
+    | 'showUserDistribution'
+    | 'showRecentActivity'
+    | 'showOperationalMix'
+    | 'showScoreDistribution'
+    | 'showTopCompanies';
 
 export interface DashboardMetric {
     id: 'averageScore' | 'evaluations' | 'activeUsers' | 'services';
@@ -81,6 +94,20 @@ export interface ServiceRankingItem {
     evaluations: number;
 }
 
+export interface ScoreRangeBand {
+    label: string;
+    count: number;
+    percentage: number;
+    fill: string;
+}
+
+export interface CompanyRankingItem {
+    name: string;
+    averageScore: number;
+    evaluations: number;
+    serviceCount: number;
+}
+
 export interface ActivityFeedItem {
     id: number;
     score: number;
@@ -102,6 +129,10 @@ export interface DashboardViewModel {
     topServicesSummary: string;
     recentActivity: ActivityFeedItem[];
     activitySummary: string;
+    scoreRangeBands: ScoreRangeBand[];
+    scoreRangeSummary: string;
+    topCompanies: CompanyRankingItem[];
+    topCompaniesSummary: string;
 }
 
 const DISTRIBUTION_COLORS = [
@@ -212,6 +243,12 @@ const formatSignedDelta = (current: number, previous: number, lang: LanguageCode
     return `${prefix}${delta.toLocaleString(locale, { maximumFractionDigits: 0 })}%`;
 };
 
+export const filterTrendByRange = (data: TrendPoint[], range: TimeRangeMode): TrendPoint[] => {
+    if (range === 'all') return data;
+    const count = range === '3m' ? 3 : range === '6m' ? 6 : 12;
+    return data.slice(-count);
+};
+
 const buildFallbackTrendData = (locale: string): TrendPoint[] => (
     Array.from({ length: 6 }, (_, index) => {
         const monthDate = new Date();
@@ -226,7 +263,7 @@ const buildFallbackTrendData = (locale: string): TrendPoint[] => (
     })
 );
 
-export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCode): DashboardViewModel => {
+export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCode, timeRange: TimeRangeMode = '12m'): DashboardViewModel => {
     const messages = getDashboardText(lang);
     const copy = messages.viewModel;
     const locale = messages.locale;
@@ -275,7 +312,7 @@ export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCo
         },
     ];
 
-    const trendData = stats.evaluations_by_month.length > 0 ? stats.evaluations_by_month.map((item) => {
+    const allTrendData = stats.evaluations_by_month.length > 0 ? stats.evaluations_by_month.map((item) => {
         const monthDate = new Date(`${item.month}-01T00:00:00`);
 
         return {
@@ -285,6 +322,7 @@ export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCo
             averageScore: clamp(Number(item.avg_score), 0, 5),
         };
     }) : buildFallbackTrendData(locale);
+    const trendData = filterTrendByRange(allTrendData, timeRange);
 
     const operationalData: OperationalPoint[] = [
         { name: copy.operationalNames.locations, value: stats.total_locations, fill: DASHBOARD_COLORS.cyan },
@@ -333,6 +371,60 @@ export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCo
         ? copy.activitySummary(formatCount(recentActivity.length, locale))
         : copy.activitySummaryEmpty;
 
+    // Score range distribution from top_services
+    const scoreBandDefs = [
+        { label: copy.scoreOutstanding, min: 4.3, max: Infinity, fill: DASHBOARD_COLORS.success },
+        { label: copy.scoreGood, min: 3.5, max: 4.3, fill: DASHBOARD_COLORS.cyan },
+        { label: copy.scoreAttention, min: 3.0, max: 3.5, fill: DASHBOARD_COLORS.warning },
+        { label: copy.scoreImprove, min: 0, max: 3.0, fill: DASHBOARD_COLORS.danger },
+    ];
+    const validServices = stats.top_services.filter((s) => s.evaluation_count > 0);
+    const scoreRangeBands: ScoreRangeBand[] = scoreBandDefs
+        .map((band) => {
+            const count = validServices.filter((s) => {
+                const score = clamp(Number(s.avg_score), 0, 5);
+                return score >= band.min && score < band.max;
+            }).length;
+            return {
+                label: band.label,
+                count,
+                percentage: validServices.length > 0 ? (count / validServices.length) * 100 : 0,
+                fill: band.fill,
+            };
+        })
+        .filter((b) => b.count > 0);
+
+    const scoreRangeSummary = scoreRangeBands.length > 0
+        ? copy.scoreRangeSummary(scoreRangeBands[0].label, scoreRangeBands[0].count)
+        : copy.scoreRangeSummaryEmpty;
+
+    // Top companies — grouped from top_services
+    const companyMap = new Map<string, { totalScore: number; count: number; evaluations: number }>();
+    stats.top_services.forEach((s) => {
+        const score = clamp(Number(s.avg_score), 0, 5);
+        const existing = companyMap.get(s.company_name);
+        if (existing) {
+            existing.totalScore += score;
+            existing.count += 1;
+            existing.evaluations += s.evaluation_count;
+        } else {
+            companyMap.set(s.company_name, { totalScore: score, count: 1, evaluations: s.evaluation_count });
+        }
+    });
+    const topCompanies: CompanyRankingItem[] = Array.from(companyMap.entries())
+        .map(([name, data]) => ({
+            name,
+            averageScore: data.count > 0 ? data.totalScore / data.count : 0,
+            evaluations: data.evaluations,
+            serviceCount: data.count,
+        }))
+        .sort((a, b) => b.averageScore - a.averageScore)
+        .slice(0, 5);
+
+    const topCompaniesSummary = topCompanies.length > 0
+        ? copy.topCompaniesSummary(topCompanies[0].name)
+        : copy.topCompaniesSummaryEmpty;
+
     return {
         metrics,
         trendData,
@@ -346,6 +438,10 @@ export const deriveDashboardViewModel = (stats: DashboardStats, lang: LanguageCo
         topServicesSummary,
         recentActivity,
         activitySummary,
+        scoreRangeBands,
+        scoreRangeSummary,
+        topCompanies,
+        topCompaniesSummary,
     };
 };
 

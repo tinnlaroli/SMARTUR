@@ -13,17 +13,17 @@ class Dashboard {
             totalPOI: pool.query(`SELECT COUNT(*) FROM point_of_interest WHERE is_active = TRUE`),
             pendingContacts: pool.query(`SELECT COUNT(*) FROM contact_subscription WHERE status = 'pending'`),
             evaluationsByMonth: pool.query(`
-                SELECT 
+                SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
                     COUNT(*) as count,
                     AVG(total_score) as avg_score
-                FROM service_evaluation 
-                WHERE is_active = TRUE AND created_at >= NOW() - INTERVAL '12 months'
+                FROM service_evaluation
+                WHERE is_active = TRUE AND created_at >= NOW() - INTERVAL '24 months'
                 GROUP BY TO_CHAR(created_at, 'YYYY-MM')
                 ORDER BY month ASC
             `),
             topServices: pool.query(`
-                SELECT 
+                SELECT
                     se.id_service,
                     ts.name as service_name,
                     c.name as company_name,
@@ -35,7 +35,7 @@ class Dashboard {
                 WHERE se.is_active = TRUE
                 GROUP BY se.id_service, ts.name, c.name
                 ORDER BY avg_score DESC
-                LIMIT 5
+                LIMIT 10
             `),
             recentEvaluations: pool.query(`
                 SELECT 

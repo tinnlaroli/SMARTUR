@@ -8,6 +8,8 @@ import {
     KpiStrip,
     OperationalMixCard,
     RecentActivityCard,
+    ScoreDistributionCard,
+    TopCompaniesCard,
     TopServicesCard,
     TrendChartCard,
     UserDistributionCard,
@@ -45,7 +47,7 @@ export const Home = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [preferencesOpen, setPreferencesOpen] = useState(false);
-    const { preferences, setChartMode, setDensity, toggleWidget, resetPreferences } = useDashboardPreferences();
+    const { preferences, setChartMode, setDensity, setTimeRange, toggleWidget, resetPreferences } = useDashboardPreferences();
 
     const fetchStats = async (mode: 'initial' | 'refresh' = 'initial') => {
         if (mode === 'refresh' && stats) {
@@ -72,8 +74,8 @@ export const Home = () => {
     }, []);
 
     const viewModel = useMemo(() => (
-        stats ? deriveDashboardViewModel(stats, lang) : null
-    ), [lang, stats]);
+        stats ? deriveDashboardViewModel(stats, lang, preferences.timeRange) : null
+    ), [lang, stats, preferences.timeRange]);
 
     const bottomWidgets = useMemo(() => {
         if (!viewModel || !stats) return [];
@@ -110,13 +112,38 @@ export const Home = () => {
                     />
                 )
                 : null,
-        ].filter((widget): widget is ReactElement => widget !== null);
+            preferences.showScoreDistribution
+                ? (
+                    <ScoreDistributionCard
+                        key="score-distribution"
+                        data={viewModel.scoreRangeBands}
+                        summary={viewModel.scoreRangeSummary}
+                        density={preferences.density}
+                    />
+                )
+                : null,
+            preferences.showTopCompanies
+                ? (
+                    <TopCompaniesCard
+                        key="top-companies"
+                        companies={viewModel.topCompanies}
+                        summary={viewModel.topCompaniesSummary}
+                        density={preferences.density}
+                    />
+                )
+                : null,
+        ].filter((w): w is ReactElement => w !== null);
     }, [preferences, stats, viewModel]);
 
+    // Dynamic grid config based on widget count
+    const count = bottomWidgets.length;
     const bottomColClass =
-        bottomWidgets.length === 1 ? 'grid-cols-1' :
-        bottomWidgets.length === 2 ? 'grid-cols-2' :
+        count === 1 ? 'grid-cols-1' :
+        count === 2 ? 'grid-cols-2' :
+        count === 4 ? 'grid-cols-2' :
         'grid-cols-3';
+    const trendFlex = count > 0 ? 'flex-[3]' : 'flex-1';
+    const bottomFlex = count > 3 ? 'flex-[3]' : 'flex-[2]';
 
     if (loading) {
         return (
@@ -187,29 +214,31 @@ export const Home = () => {
                 preferences={preferences}
                 onChartModeChange={setChartMode}
                 onDensityChange={setDensity}
+                onTimeRangeChange={setTimeRange}
                 onToggleWidget={toggleWidget}
                 onReset={resetPreferences}
             />
 
             <KpiStrip metrics={viewModel.metrics} density={preferences.density} />
 
-            {/* Main content: trend chart column + optional operational sidebar */}
+            {/* Main content: chart column + optional operational sidebar */}
             <div className="flex min-h-0 flex-1 gap-4">
 
-                {/* Left column: trend chart (flex-1) + bottom widgets */}
+                {/* Left column: trend chart + bottom widget grid */}
                 <div className="flex min-h-0 flex-1 flex-col gap-4">
-                    <div className={`min-h-0 ${bottomWidgets.length > 0 ? 'flex-[3]' : 'flex-1'}`}>
+                    <div className={`min-h-0 ${trendFlex}`}>
                         <TrendChartCard
                             chartMode={preferences.chartMode}
                             data={viewModel.trendData}
                             summary={viewModel.trendSummary}
                             insights={viewModel.trendInsights}
                             density={preferences.density}
+                            timeRange={preferences.timeRange}
                         />
                     </div>
 
                     {bottomWidgets.length > 0 && (
-                        <div className={`grid min-h-0 flex-[2] gap-4 ${bottomColClass}`}>
+                        <div className={`grid min-h-0 gap-4 ${bottomFlex} ${bottomColClass}`}>
                             {bottomWidgets}
                         </div>
                     )}

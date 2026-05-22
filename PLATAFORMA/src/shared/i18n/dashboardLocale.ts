@@ -64,7 +64,7 @@ type DashboardLocale = {
     };
     widgets: {
         metricEyebrows: Record<'averageScore' | 'evaluations' | 'activeUsers' | 'services', string>;
-        widgetOptions: Record<'showTopServices' | 'showUserDistribution' | 'showRecentActivity' | 'showOperationalMix', { label: string; description: string }>;
+        widgetOptions: Record<'showTopServices' | 'showUserDistribution' | 'showRecentActivity' | 'showOperationalMix' | 'showScoreDistribution' | 'showTopCompanies', { label: string; description: string }>;
         headerTitle: string;
         headerSubtitle: string;
         personalize: string;
@@ -94,6 +94,16 @@ type DashboardLocale = {
         evaluationsShort: string;
         recentActivityTitle: string;
         recentActivityEmpty: string;
+        scoreDistributionTitle: string;
+        scoreDistributionEmpty: string;
+        topCompaniesTitle: string;
+        topCompaniesEmpty: string;
+        servicesShort: string;
+        timeRangeLabel: string;
+        timeRange3m: string;
+        timeRange6m: string;
+        timeRange12m: string;
+        timeRangeAll: string;
     };
     viewModel: {
         roleLabels: Record<number, string>;
@@ -140,6 +150,10 @@ type DashboardLocale = {
         activitySummary: (count: string) => string;
         activitySummaryEmpty: string;
         newDelta: string;
+        scoreRangeSummary: (topBand: string, count: number) => string;
+        scoreRangeSummaryEmpty: string;
+        topCompaniesSummary: (name: string) => string;
+        topCompaniesSummaryEmpty: string;
     };
     modules: DashboardModules;
 };
@@ -242,6 +256,14 @@ const es: DashboardLocale = {
                 label: 'Cobertura operativa',
                 description: 'Compara lugares, servicios, empresas y POI.',
             },
+            showScoreDistribution: {
+                label: 'Distribucion de scores',
+                description: 'Clasifica los servicios por banda de calidad.',
+            },
+            showTopCompanies: {
+                label: 'Top empresas',
+                description: 'Ranking de empresas por desempeno acumulado.',
+            },
         },
         headerTitle: 'Dashboard de Inicio',
         headerSubtitle: 'KPIs de calidad, actividad y adopcion disenados para leerse rapido, sin depender de scroll ni indicadores artificiales.',
@@ -272,6 +294,16 @@ const es: DashboardLocale = {
         evaluationsShort: 'eval.',
         recentActivityTitle: 'Actividad reciente',
         recentActivityEmpty: 'Aun no hay evaluaciones recientes para resumir actividad.',
+        scoreDistributionTitle: 'Distribucion de scores',
+        scoreDistributionEmpty: 'No hay servicios con evaluaciones para mostrar distribucion.',
+        topCompaniesTitle: 'Top empresas',
+        topCompaniesEmpty: 'No hay empresas con evaluaciones disponibles aun.',
+        servicesShort: 'serv.',
+        timeRangeLabel: 'Periodo de la grafica',
+        timeRange3m: '3 meses',
+        timeRange6m: '6 meses',
+        timeRange12m: '12 meses',
+        timeRangeAll: 'Historico',
     },
     viewModel: {
         roleLabels: {
@@ -323,6 +355,10 @@ const es: DashboardLocale = {
         activitySummary: (count) => `Mostrando las ${count} actividades mas recientes disponibles.`,
         activitySummaryEmpty: 'Sin actividad reciente registrada.',
         newDelta: 'nuevo',
+        scoreRangeSummary: (topBand, count) => `${count} servicio(s) en la banda "${topBand}".`,
+        scoreRangeSummaryEmpty: 'Sin servicios evaluados para clasificar.',
+        topCompaniesSummary: (name) => `${name} lidera el ranking por calidad acumulada.`,
+        topCompaniesSummaryEmpty: 'Aun no hay empresas con evaluaciones visibles.',
     },
     modules: dashboardModulesByLang.es,
 };
@@ -425,6 +461,14 @@ const en: DashboardLocale = {
                 label: 'Operational coverage',
                 description: 'Compares locations, services, companies, and POI.',
             },
+            showScoreDistribution: {
+                label: 'Score distribution',
+                description: 'Classifies services by quality band.',
+            },
+            showTopCompanies: {
+                label: 'Top companies',
+                description: 'Company ranking by cumulative performance.',
+            },
         },
         headerTitle: 'Home Dashboard',
         headerSubtitle: 'Quality, activity, and adoption KPIs designed for quick reading without relying on scroll or artificial indicators.',
@@ -455,6 +499,16 @@ const en: DashboardLocale = {
         evaluationsShort: 'eval.',
         recentActivityTitle: 'Recent activity',
         recentActivityEmpty: 'There are no recent evaluations to summarize activity yet.',
+        scoreDistributionTitle: 'Score distribution',
+        scoreDistributionEmpty: 'No evaluated services to display distribution.',
+        topCompaniesTitle: 'Top companies',
+        topCompaniesEmpty: 'No companies with visible evaluations yet.',
+        servicesShort: 'serv.',
+        timeRangeLabel: 'Chart period',
+        timeRange3m: '3 months',
+        timeRange6m: '6 months',
+        timeRange12m: '12 months',
+        timeRangeAll: 'All time',
     },
     viewModel: {
         roleLabels: {
@@ -506,6 +560,10 @@ const en: DashboardLocale = {
         activitySummary: (count) => `Showing the ${count} most recent available activities.`,
         activitySummaryEmpty: 'No recent activity recorded.',
         newDelta: 'new',
+        scoreRangeSummary: (topBand, count) => `${count} service(s) in the "${topBand}" band.`,
+        scoreRangeSummaryEmpty: 'No evaluated services to classify.',
+        topCompaniesSummary: (name) => `${name} leads the ranking by cumulative quality.`,
+        topCompaniesSummaryEmpty: 'No companies with visible evaluations yet.',
     },
     modules: dashboardModulesByLang.en,
 };
@@ -608,6 +666,14 @@ const fr: DashboardLocale = {
                 label: 'Couverture operationnelle',
                 description: 'Compare lieux, services, entreprises et POI.',
             },
+            showScoreDistribution: {
+                label: 'Distribution des scores',
+                description: 'Classe les services par bande de qualite.',
+            },
+            showTopCompanies: {
+                label: 'Top entreprises',
+                description: 'Classement des entreprises par performance cumulee.',
+            },
         },
         headerTitle: 'Dashboard d accueil',
         headerSubtitle: 'Des KPI de qualite, d activite et d adoption concus pour etre lus rapidement sans dependre du scroll ni d indicateurs artificiels.',
@@ -638,6 +704,16 @@ const fr: DashboardLocale = {
         evaluationsShort: 'eval.',
         recentActivityTitle: 'Activite recente',
         recentActivityEmpty: 'Il n y a pas encore d evaluations recentes a resumer.',
+        scoreDistributionTitle: 'Distribution des scores',
+        scoreDistributionEmpty: 'Aucun service evalue pour afficher la distribution.',
+        topCompaniesTitle: 'Top entreprises',
+        topCompaniesEmpty: 'Aucune entreprise avec des evaluations visibles pour le moment.',
+        servicesShort: 'serv.',
+        timeRangeLabel: 'Periode du graphique',
+        timeRange3m: '3 mois',
+        timeRange6m: '6 mois',
+        timeRange12m: '12 mois',
+        timeRangeAll: 'Historique',
     },
     viewModel: {
         roleLabels: {
@@ -689,6 +765,10 @@ const fr: DashboardLocale = {
         activitySummary: (count) => `Affichage des ${count} activites les plus recentes disponibles.`,
         activitySummaryEmpty: 'Aucune activite recente enregistree.',
         newDelta: 'nouveau',
+        scoreRangeSummary: (topBand, count) => `${count} service(s) dans la bande "${topBand}".`,
+        scoreRangeSummaryEmpty: 'Aucun service evalue a classifier.',
+        topCompaniesSummary: (name) => `${name} mene le classement par qualite cumulee.`,
+        topCompaniesSummaryEmpty: 'Aucune entreprise avec des evaluations visibles.',
     },
     modules: dashboardModulesByLang.fr,
 };
