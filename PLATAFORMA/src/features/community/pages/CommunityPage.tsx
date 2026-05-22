@@ -70,19 +70,9 @@ export const CommunityPage = () => {
                         Publicaciones creadas por usuarios desde la app móvil
                     </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                    <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
-                        {totalRecords} publicaciones
-                    </span>
-                    <button
-                        onClick={() => setIsCreateOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: MODULE_COLORS.community }}
-                    >
-                        <Plus className="size-4" />
-                        Nueva publicación
-                    </button>
-                </div>
+                <span className="rounded-full px-3 py-1 text-sm font-semibold shrink-0" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
+                    {totalRecords} publicaciones
+                </span>
             </div>
 
             {/* Info banner */}
@@ -95,6 +85,18 @@ export const CommunityPage = () => {
                         Desde aquí puedes moderar y eliminar contenido inapropiado.
                     </p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex items-center justify-end">
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: MODULE_COLORS.community }}
+                >
+                    <Plus className="size-4" />
+                    Nueva publicación
+                </button>
             </div>
 
             {/* Posts grid */}

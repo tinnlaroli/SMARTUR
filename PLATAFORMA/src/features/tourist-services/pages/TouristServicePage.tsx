@@ -85,38 +85,13 @@ export const TouristServicePage = () => {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
             {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.touristServices.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.touristServices.subtitle}
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
-
-                    {selectedServices.length === 1 && (
-                        <button
-                            onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
-                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
-                        >
-                            <ClipboardCheck className="size-4" />
-                            {m.touristServices.evaluate}
-                        </button>
-                    )}
-
-                    <button
-                        onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: MODULE_COLORS.services }}
-                    >
-                        <Plus className="size-4" />
-                        {m.touristServices.add}
-                    </button>
-                </div>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.touristServices.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.touristServices.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
@@ -126,6 +101,30 @@ export const TouristServicePage = () => {
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Servicios turísticos</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los servicios son las ofertas concretas de cada compañía: hoteles, restaurantes, tours y más. Son los elementos que el turista puede explorar y evaluar en la app.</p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
+
+                {selectedServices.length === 1 && (
+                    <button
+                        onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
+                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
+                    >
+                        <ClipboardCheck className="size-4" />
+                        {m.touristServices.evaluate}
+                    </button>
+                )}
+
+                <button
+                    onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: MODULE_COLORS.services }}
+                >
+                    <Plus className="size-4" />
+                    {m.touristServices.add}
+                </button>
             </div>
 
             <SelectionBar

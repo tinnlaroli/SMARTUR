@@ -74,27 +74,13 @@ export const LocationPage = () => {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
             {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.locations.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.locations.subtitle}
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.locations.searchPlaceholder} />
-                    <button
-                        onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: 'var(--color-orange)' }}
-                    >
-                        <Plus className="size-4" />
-                        {m.locations.add}
-                    </button>
-                </div>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.locations.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.locations.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
@@ -104,6 +90,19 @@ export const LocationPage = () => {
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Ubicaciones</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Define los municipios y zonas geográficas de la región. Las ubicaciones agrupan los servicios y POIs para que el motor de recomendaciones los contextualice correctamente.</p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.locations.searchPlaceholder} />
+                <button
+                    onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: 'var(--color-orange)' }}
+                >
+                    <Plus className="size-4" />
+                    {m.locations.add}
+                </button>
             </div>
 
             <SelectionBar

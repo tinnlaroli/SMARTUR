@@ -107,23 +107,13 @@ export const ActivitiesPage = () => {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
             {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.activities.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.activities.subtitle}
-                    </p>
-                </div>
-                <button
-                    onClick={() => setIsCreateOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                    style={{ background: MODULE_COLORS.activities }}
-                >
-                    <Plus className="size-4" />
-                    Nueva actividad
-                </button>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.activities.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.activities.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
@@ -133,6 +123,18 @@ export const ActivitiesPage = () => {
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Actividades</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registro de actividades y experiencias disponibles en la región. Se asocian a servicios y POIs para enriquecer las rutas personalizadas generadas por la IA.</p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex items-center justify-end shrink-0">
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: MODULE_COLORS.activities }}
+                >
+                    <Plus className="size-4" />
+                    Nueva actividad
+                </button>
             </div>
 
             <SelectionBar

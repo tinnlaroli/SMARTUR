@@ -60,27 +60,13 @@ export const UserPage = () => {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
             {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.users.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.users.subtitle}
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.users.searchPlaceholder} />
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: 'var(--color-purple)' }}
-                    >
-                        <UserPlus className="size-4" />
-                        {m.users.add}
-                    </button>
-                </div>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.users.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.users.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
@@ -90,6 +76,19 @@ export const UserPage = () => {
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de usuarios</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Administra las cuentas registradas en la plataforma. Puedes crear, editar, activar o desactivar usuarios y asignar roles de acceso.</p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.users.searchPlaceholder} />
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: 'var(--color-purple)' }}
+                >
+                    <UserPlus className="size-4" />
+                    {m.users.add}
+                </button>
             </div>
 
             <SelectionBar

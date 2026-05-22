@@ -75,28 +75,13 @@ export const CompanyPage = () => {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
             {/* Header */}
-            <div className="flex flex-wrap items-start justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.companies.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.companies.subtitle}
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.companies.searchPlaceholder} />
-
-                    <button
-                        onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
-                        style={{ background: MODULE_COLORS.companies }}
-                    >
-                        <Plus className="size-4" />
-                        {m.companies.add}
-                    </button>
-                </div>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.companies.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.companies.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
@@ -106,6 +91,19 @@ export const CompanyPage = () => {
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de compañías</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registra y administra las empresas turísticas de la región. Cada compañía puede tener múltiples servicios asociados visibles en la app móvil.</p>
                 </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.companies.searchPlaceholder} />
+                <button
+                    onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                    className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                    style={{ background: MODULE_COLORS.companies }}
+                >
+                    <Plus className="size-4" />
+                    {m.companies.add}
+                </button>
             </div>
 
             <SelectionBar
