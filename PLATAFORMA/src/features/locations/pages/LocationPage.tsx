@@ -97,12 +97,6 @@ export const LocationPage = () => {
                 </div>
             </div>
 
-            <SelectionBar
-                count={selectedLocations.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedLocations([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <MapPin className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.locations }} />
@@ -111,6 +105,13 @@ export const LocationPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Define los municipios y zonas geográficas de la región. Las ubicaciones agrupan los servicios y POIs para que el motor de recomendaciones los contextualice correctamente.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedLocations.length}
+                onDelete={handleDeleteSelected}
+                onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedLocations[0] })}
+                onClear={() => setSelectedLocations([])}
+            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

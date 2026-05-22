@@ -20,11 +20,20 @@ export const useCommunity = () => {
         }
     }, []);
 
+    const createPost = useCallback(async (formData: FormData): Promise<boolean> => {
+        try {
+            await communityApi.createPost(formData);
+            return true;
+        } catch {
+            return false;
+        }
+    }, []);
+
     const deletePost = useCallback(async (postId: number) => {
         await communityApi.deletePost(postId);
         setPosts((prev) => prev.filter((p) => p.id !== postId));
         setTotalRecords((n) => n - 1);
     }, []);
 
-    return { posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost };
+    return { posts, isLoading, totalPages, totalRecords, fetchPosts, createPost, deletePost };
 };

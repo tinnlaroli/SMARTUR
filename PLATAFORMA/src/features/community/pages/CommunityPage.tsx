@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useCommunity } from '../hooks/useCommunity';
-import { MessageSquare, ImageIcon, Trash2, Store, Star } from 'lucide-react';
+import { MessageSquare, ImageIcon, Trash2, Store, Star, Plus } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useConfirm } from '../../../components/ui/ConfirmModal';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import CreatePostModal from '../components/CreatePostModal';
 
 const LIMIT = 20;
 
@@ -26,11 +27,12 @@ function AuthorAvatar({ author }: { author: { name: string; photo_url: string | 
 }
 
 export const CommunityPage = () => {
-    const { posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost } = useCommunity();
+    const { posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost, createPost } = useCommunity();
     const [searchParams, setSearchParams] = useSearchParams();
     const toast = useToast();
     const { confirm, modal: confirmModal } = useConfirm();
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const page = Number(searchParams.get('page')) || 1;
 
@@ -59,7 +61,7 @@ export const CommunityPage = () => {
         <div className="flex flex-col gap-6" id="comunidad-module">
             {confirmModal}
             {/* Header */}
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
                         Comunidad Mobile
@@ -68,9 +70,19 @@ export const CommunityPage = () => {
                         Publicaciones creadas por usuarios desde la app móvil
                     </p>
                 </div>
-                <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
-                    {totalRecords} publicaciones
-                </span>
+                <div className="flex items-center gap-3 shrink-0">
+                    <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
+                        {totalRecords} publicaciones
+                    </span>
+                    <button
+                        onClick={() => setIsCreateOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                        style={{ background: MODULE_COLORS.community }}
+                    >
+                        <Plus className="size-4" />
+                        Nueva publicación
+                    </button>
+                </div>
             </div>
 
             {/* Info banner */}
@@ -179,6 +191,22 @@ export const CommunityPage = () => {
                     currentPage={page}
                     totalPages={totalPages}
                     onPageChange={(p) => setSearchParams({ page: String(p) })}
+                />
+            )}
+
+            {isCreateOpen && (
+                <CreatePostModal
+                    onClose={() => setIsCreateOpen(false)}
+                    onSubmit={async (fd) => {
+                        const ok = await createPost(fd);
+                        if (ok) {
+                            toast.success('Publicación creada', 'La publicación ya es visible en la app móvil.');
+                            fetchPosts(page, LIMIT);
+                        } else {
+                            toast.error('Error', 'No se pudo crear la publicación.');
+                        }
+                        return ok;
+                    }}
                 />
             )}
         </div>

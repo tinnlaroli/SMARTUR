@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { ClipboardCheck, Eye } from 'lucide-react';
 import type { TouristService } from '../types/types';
 import {
     DataTable,
@@ -8,7 +7,6 @@ import {
     DataTableHead,
     DataTableHeadCell,
     DataTableHeaderSelect,
-    DataTableLinkButton,
     DataTableRow,
     DataTableScroll,
     DataTableShell,
@@ -34,7 +32,6 @@ interface Props {
     selectedServices: number[];
     onToggle: (id: number) => void;
     onViewDetail: (id: number) => void;
-    onEvaluate: (service: TouristService) => void;
 }
 
 export default function TouristServiceTable({
@@ -42,7 +39,6 @@ export default function TouristServiceTable({
     selectedServices,
     onToggle,
     onViewDetail,
-    onEvaluate,
 }: Props) {
     const [sort, setSort] = useState<SortState | null>(null);
     const [typeFilter, setTypeFilter] = useState('');
@@ -88,13 +84,12 @@ export default function TouristServiceTable({
                                 </div>
                             </DataTableHeadCell>
                             <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
-                            <DataTableHeadCell className="w-28 text-right">Acciones</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
                         {displayData.map((service, index) => (
-                            <DataTableRow key={service.id} index={index}>
-                                <DataTableCell className="w-14">
+                            <DataTableRow key={service.id} index={index} className="cursor-pointer" onClick={() => onViewDetail(service.id)}>
+                                <DataTableCell className="w-14" onClick={(e) => e.stopPropagation()}>
                                     <input
                                         type="checkbox"
                                         checked={selectedServices.includes(service.id)}
@@ -103,9 +98,9 @@ export default function TouristServiceTable({
                                     />
                                 </DataTableCell>
                                 <DataTableCell>
-                                    <DataTableLinkButton onClick={() => onViewDetail(service.id)} title={service.name}>
+                                    <span className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>
                                         {service.name}
-                                    </DataTableLinkButton>
+                                    </span>
                                 </DataTableCell>
                                 <DataTableCell className="min-w-[220px] max-w-md">
                                     <p className="truncate" title={service.description}>
@@ -123,27 +118,6 @@ export default function TouristServiceTable({
                                         text={service.active ? 'Activo' : 'Inactivo'}
                                         color={service.active ? TABLE_BADGE_COLORS.emerald : TABLE_BADGE_COLORS.rose}
                                     />
-                                </DataTableCell>
-                                <DataTableCell className="w-28">
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => onViewDetail(service.id)}
-                                            className="rounded-lg p-1.5 transition-colors hover:bg-violet-500/10"
-                                            style={{ color: 'var(--color-text-alt)' }}
-                                            title="Ver detalle"
-                                        >
-                                            <Eye className="size-4" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => onEvaluate(service)}
-                                            className="rounded-lg p-1.5 text-emerald-600 transition-colors hover:bg-emerald-500/10 dark:text-emerald-400"
-                                            title="Evaluar Servicio"
-                                        >
-                                            <ClipboardCheck className="size-4" />
-                                        </button>
-                                    </div>
                                 </DataTableCell>
                             </DataTableRow>
                         ))}

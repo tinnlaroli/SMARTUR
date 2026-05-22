@@ -99,12 +99,6 @@ export const CompanyPage = () => {
                 </div>
             </div>
 
-            <SelectionBar
-                count={selectedCompanies.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedCompanies([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Building2 className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.companies }} />
@@ -113,6 +107,13 @@ export const CompanyPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registra y administra las empresas turísticas de la región. Cada compañía puede tener múltiples servicios asociados visibles en la app móvil.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedCompanies.length}
+                onDelete={handleDeleteSelected}
+                onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedCompanies[0] })}
+                onClear={() => setSelectedCompanies([])}
+            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

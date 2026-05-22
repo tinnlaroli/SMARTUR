@@ -126,13 +126,6 @@ export const ActivitiesPage = () => {
                 </button>
             </div>
 
-            <SelectionBar
-                count={selectedIds.length}
-                onDelete={handleDeleteSelected}
-                onEdit={handleEditSelected}
-                onClear={() => setSelectedIds([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Activity className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.activities }} />
@@ -141,6 +134,13 @@ export const ActivitiesPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registro de actividades y experiencias disponibles en la región. Se asocian a servicios y POIs para enriquecer las rutas personalizadas generadas por la IA.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedIds.length}
+                onDelete={handleDeleteSelected}
+                onEdit={handleEditSelected}
+                onClear={() => setSelectedIds([])}
+            />
 
             <DataTableShell className="h-full">
                 {activities.length === 0 && !isLoading ? (

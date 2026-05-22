@@ -119,12 +119,6 @@ export const TouristServicePage = () => {
                 </div>
             </div>
 
-            <SelectionBar
-                count={selectedServices.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedServices([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Wrench className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.services }} />
@@ -133,6 +127,13 @@ export const TouristServicePage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los servicios son las ofertas concretas de cada compañía: hoteles, restaurantes, tours y más. Son los elementos que el turista puede explorar y evaluar en la app.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedServices.length}
+                onDelete={handleDeleteSelected}
+                onEdit={() => dispatchModal({ type: 'OPEN_DETAIL', id: selectedServices[0] })}
+                onClear={() => setSelectedServices([])}
+            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (
@@ -157,10 +158,6 @@ export const TouristServicePage = () => {
                         selectedServices={selectedServices}
                         onToggle={toggleService}
                         onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
-                        onEvaluate={(service) => {
-                            setSelectedServices([service.id]);
-                            dispatchModal({ type: 'OPEN_EVALUATION' });
-                        }}
                     />
                 )}
             </div>

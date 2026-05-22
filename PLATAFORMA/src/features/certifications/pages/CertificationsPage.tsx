@@ -18,23 +18,18 @@ export const CertificationsPage = () => {
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
-            <div className="flex items-center gap-3 shrink-0">
-                <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: 'var(--color-orange)' }}>
-                    <Award className="size-5 text-white" />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        {m.certifications.title}
-                    </h1>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {m.certifications.subtitle}
-                    </p>
-                </div>
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    {m.certifications.title}
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    {m.certifications.subtitle}
+                </p>
             </div>
 
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <Award className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <Award className="size-5 mt-0.5 shrink-0" style={{ color: '#f97316' }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Certificaciones</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Gestiona los certificados de calidad asignados a servicios turísticos. Las certificaciones aumentan la visibilidad y confianza de los negocios en la app móvil.</p>

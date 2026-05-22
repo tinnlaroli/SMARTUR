@@ -97,13 +97,6 @@ export const POIPage = () => {
                 </button>
             </div>
 
-            <SelectionBar
-                count={selectedIds.length}
-                onDelete={handleDeleteSelected}
-                onEdit={handleEditSelected}
-                onClear={() => setSelectedIds([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Star className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.poi }} />
@@ -112,6 +105,13 @@ export const POIPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los POIs son atracciones naturales, culturales o históricas que no pertenecen a una empresa. Los turistas los descubren, guardan como favoritos y generan interacciones que alimentan el motor de recomendaciones.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedIds.length}
+                onDelete={handleDeleteSelected}
+                onEdit={handleEditSelected}
+                onClear={() => setSelectedIds([])}
+            />
 
             <DataTableShell className="h-full">
                 {points.length === 0 && !isLoading ? (

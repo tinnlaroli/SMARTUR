@@ -83,12 +83,6 @@ export const UserPage = () => {
                 </div>
             </div>
 
-            <SelectionBar
-                count={selectedUsers.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedUsers([])}
-            />
-
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Users className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.users }} />
@@ -97,6 +91,13 @@ export const UserPage = () => {
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Administra las cuentas registradas en la plataforma. Puedes crear, editar, activar o desactivar usuarios y asignar roles de acceso.</p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedUsers.length}
+                onDelete={handleDeleteSelected}
+                onEdit={() => { setSelectedId(selectedUsers[0]); setIsDetailModalOpen(true); }}
+                onClear={() => setSelectedUsers([])}
+            />
 
             <div className="flex min-h-0 flex-1 flex-col">
                 {isLoading && (

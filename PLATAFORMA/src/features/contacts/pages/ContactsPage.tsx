@@ -143,12 +143,6 @@ export const ContactsPage = () => {
                 </span>
             </div>
 
-            <SelectionBar
-                count={selectedIds.length}
-                onDelete={handleDeleteSelected}
-                onClear={() => setSelectedIds([])}
-            />
-
             {/* Info banner */}
             <div className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Mail className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.contacts }} />
@@ -160,6 +154,12 @@ export const ContactsPage = () => {
                     </p>
                 </div>
             </div>
+
+            <SelectionBar
+                count={selectedIds.length}
+                onDelete={handleDeleteSelected}
+                onClear={() => setSelectedIds([])}
+            />
 
             {/* Table */}
             <DataTableShell className="h-full">

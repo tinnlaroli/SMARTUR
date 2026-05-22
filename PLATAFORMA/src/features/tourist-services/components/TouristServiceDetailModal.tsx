@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTouristService } from '../hooks/useTouristService';
-import { UserPen, X, Wrench, Building2, MapPin, Tag, Activity, Award } from 'lucide-react';
+import { UserPen, X, Wrench, Building2, MapPin, Tag, Activity, Award, ClipboardCheck } from 'lucide-react';
 import EditTouristServiceModal from './EditTouristServiceModal';
 import type { UpdateTouristServiceDTO } from '../types/types';
 import EvaluationResultModal from '../../evaluations/components/EvaluationResultModal';
+import EvaluationWizardModal from '../../evaluations/components/EvaluationWizardModal';
 import { companyServices } from '../../companies/api/companyApi';
 import { locationApi } from '../../locations/api/locationApi';
+import { instrumentApi } from '../../instrument-builder/api/instrumentApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+
+const SERVICE_TYPE_MAP: Record<string, string> = {
+    hotel: 'hotel', restaurant: 'restaurante', tour: 'tour',
+    transporte: 'transporte', spa: 'spa',
+};
+function normalizeType(s: string): string {
+    return SERVICE_TYPE_MAP[s.toLowerCase()] ?? s.toLowerCase();
+}
 
 interface Props {
     isOpen: boolean;
@@ -29,9 +39,11 @@ const TouristServiceDetailModal: React.FC<Props> = ({
     const { service, isLoading, error, findById } = useTouristService();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+    const [isEvaluationOpen, setIsEvaluationOpen] = useState(false);
     const [evaluationId, setEvaluationId] = useState<number | null>(null);
     const [companyName, setCompanyName] = useState<string>('');
     const [locationName, setLocationName] = useState<string>('');
+    const [hasTemplates, setHasTemplates] = useState<boolean | null>(null);
 
     useEffect(() => {
         if (serviceId && isOpen) {
@@ -70,6 +82,16 @@ const TouristServiceDetailModal: React.FC<Props> = ({
             cancelled = true;
         };
     }, [service, isOpen, mod]);
+
+    useEffect(() => {
+        if (!service || !isOpen) { setHasTemplates(null); return; }
+        const target = normalizeType(service.service_type);
+        instrumentApi.getTemplates(1, 200).then((res) => {
+            const active = res.templates.filter((t) => t.estado);
+            const match = active.some((t) => normalizeType(String(t.servicio ?? '')) === target);
+            setHasTemplates(match);
+        }).catch(() => setHasTemplates(false));
+    }, [service, isOpen]);
 
     if (!isOpen) return null;
 
@@ -199,7 +221,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                                             setEvaluationId(service.id_evaluation!);
                                             setIsResultModalOpen(true);
                                         }}
-                                        className="w-full inline-flex items-center justify-center gap-2 
+                                        className="w-full inline-flex items-center justify-center gap-2
                                         rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white
                                         hover:bg-emerald-700 shadow-sm transition-all duration-200 active:scale-[0.98] font-bold"
                                     >
@@ -209,8 +231,22 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                                 )}
 
                                 <button
+                                    onClick={() => hasTemplates && setIsEvaluationOpen(true)}
+                                    disabled={hasTemplates === false}
+                                    title={hasTemplates === false ? 'Sin instrumentos disponibles para este tipo de servicio' : 'Evaluar servicio'}
+                                    className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 active:scale-[0.98] ${
+                                        hasTemplates === false
+                                            ? 'bg-zinc-300 dark:bg-zinc-700 cursor-not-allowed opacity-60'
+                                            : 'bg-emerald-600 hover:bg-emerald-700'
+                                    }`}
+                                >
+                                    <ClipboardCheck className="size-4" />
+                                    <span>Evaluar</span>
+                                </button>
+
+                                <button
                                     onClick={() => setIsEditModalOpen(true)}
-                                    className="w-full inline-flex items-center justify-center gap-2 
+                                    className="w-full inline-flex items-center justify-center gap-2
                                     rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white
                                     hover:bg-violet-700 shadow-sm transition-all duration-200 active:scale-[0.98]"
                                 >
@@ -234,6 +270,15 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                     isOpen={isResultModalOpen}
                     onClose={() => setIsResultModalOpen(false)}
                     evaluationId={evaluationId}
+                />
+            )}
+            {isEvaluationOpen && service && (
+                <EvaluationWizardModal
+                    isOpen={isEvaluationOpen}
+                    onClose={() => setIsEvaluationOpen(false)}
+                    serviceId={service.id_service}
+                    serviceName={service.name}
+                    serviceType={service.service_type}
                 />
             )}
         </div>
