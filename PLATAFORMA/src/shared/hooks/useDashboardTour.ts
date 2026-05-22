@@ -11,7 +11,11 @@ type StepText = { title: string; description: string };
 const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     es: [
         {
-            title: 'Bienvenido al Dashboard',
+            title: '✦ Bienvenido a SMARTUR Admin',
+            description: `Este tour rápido te guiará por los módulos del panel de administración. Usa ${kw('→ / ←')} para navegar entre pasos o ${kw('Esc')} para salir en cualquier momento.`,
+        },
+        {
+            title: 'Dashboard',
             description: `Tu panel de control central. Ve ${kw('KPIs')}, gráficas de actividad y el estado del sistema en tiempo real.`,
         },
         {
@@ -65,7 +69,11 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     ],
     en: [
         {
-            title: 'Welcome to the Dashboard',
+            title: '✦ Welcome to SMARTUR Admin',
+            description: `This quick tour walks you through the main modules of the admin panel. Use ${kw('→ / ←')} to navigate or ${kw('Esc')} to exit at any time.`,
+        },
+        {
+            title: 'Dashboard',
             description: `Your central control panel. View ${kw('KPIs')}, activity charts and system status in real time.`,
         },
         {
@@ -119,7 +127,11 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     ],
     fr: [
         {
-            title: 'Bienvenue sur le Tableau de Bord',
+            title: '✦ Bienvenue sur SMARTUR Admin',
+            description: `Cette visite rapide vous guide à travers les modules du panneau d'administration. Utilisez ${kw('→ / ←')} pour naviguer ou ${kw('Échap')} pour quitter à tout moment.`,
+        },
+        {
+            title: 'Tableau de Bord',
             description: `Votre panneau de contrôle central. Consultez les ${kw('KPIs')}, graphiques d'activité et l'état du système en temps réel.`,
         },
         {
@@ -173,7 +185,8 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     ],
 };
 
-const STEP_ELEMENTS = [
+const STEP_ELEMENTS: (string | undefined)[] = [
+    undefined,                    // intro — centered welcome card
     '#sidebar-item-home',
     '#sidebar-item-users',
     '#sidebar-item-companies',
@@ -194,20 +207,56 @@ const TOUR_CSS = `
     border-radius: 20px !important;
     background: var(--color-bg) !important;
     border: 1px solid var(--color-border) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+    box-shadow:
+      0 0 0 1px rgba(var(--rgb-purple-accent), 0.15),
+      0 24px 64px rgba(0,0,0,0.18),
+      0 4px 16px rgba(var(--rgb-purple-accent), 0.12) !important;
+    animation: smarturTourIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+  @keyframes smarturTourIn {
+    from { opacity: 0; transform: scale(0.93) translateY(8px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
   }
   .driver-popover-title {
     color: var(--color-text) !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.3 !important;
   }
   .driver-popover-description {
     color: var(--color-text-alt) !important;
+    font-size: 0.875rem !important;
+    line-height: 1.65 !important;
+    margin-top: 5px !important;
+  }
+  .driver-popover-footer {
+    margin-top: 14px !important;
   }
   .driver-popover-footer button {
     border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    transition: opacity 0.15s ease !important;
+  }
+  .driver-popover-footer .driver-popover-next-btn {
+    background: var(--color-purple) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(var(--rgb-purple-accent), 0.35) !important;
+  }
+  .driver-popover-footer .driver-popover-next-btn:hover,
+  .driver-popover-footer .driver-popover-next-btn:focus {
+    opacity: 0.88 !important;
   }
   .driver-popover-progress-text {
     color: var(--color-text-alt) !important;
+    font-size: 0.73rem !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+  .driver-overlay {
+    background: rgba(0,0,0,0.55) !important;
+    backdrop-filter: blur(4px) !important;
   }
 `;
 
@@ -229,15 +278,18 @@ export function useDashboardTour(lang: LanguageCode = 'es') {
             }
 
             const texts = STEPS_BY_LANG[lang] ?? STEPS_BY_LANG.es;
-            const steps = STEP_ELEMENTS.map((element, i) => ({
-                element,
-                popover: {
-                    title: texts[i]?.title ?? '',
-                    description: texts[i]?.description ?? '',
-                    side: 'right' as const,
-                    align: 'start' as const,
-                },
-            }));
+            const steps = STEP_ELEMENTS.map((element, i) => {
+                const step: Record<string, unknown> = {
+                    popover: {
+                        title: texts[i]?.title ?? '',
+                        description: texts[i]?.description ?? '',
+                        side: element ? 'right' : 'bottom',
+                        align: element ? 'start' : 'center',
+                    },
+                };
+                if (element) step.element = element;
+                return step;
+            });
 
             const driverObj = driver({
                 showProgress: true,

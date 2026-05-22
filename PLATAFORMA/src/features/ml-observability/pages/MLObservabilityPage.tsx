@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
 import { mlApi } from '../api/mlApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -65,10 +65,51 @@ function SkeletonCard() {
     );
 }
 
+const TRAINING_LOCK_KEY = 'smartur_ml_training_lock';
+const TRAINING_LOCK_MS = 3 * 60 * 1000; // 3 minutes — typical training window
+
 export const MLObservabilityPage = () => {
     const { data, isLoading, error, fetchHealth } = useMLHealth();
     const toast = useToast();
-    const [training, setTraining] = useState(false);
+    const trainTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const [training, setTraining] = useState(() => {
+        try {
+            const ts = localStorage.getItem(TRAINING_LOCK_KEY);
+            if (!ts) return false;
+            const age = Date.now() - Number(ts);
+            if (age >= TRAINING_LOCK_MS) {
+                localStorage.removeItem(TRAINING_LOCK_KEY);
+                return false;
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    });
+
+    // Auto-expire lock based on remaining time
+    useEffect(() => {
+        try {
+            const ts = localStorage.getItem(TRAINING_LOCK_KEY);
+            if (!ts) return;
+            const age = Date.now() - Number(ts);
+            const remaining = TRAINING_LOCK_MS - age;
+            if (remaining <= 0) {
+                localStorage.removeItem(TRAINING_LOCK_KEY);
+                setTraining(false);
+                return;
+            }
+            trainTimerRef.current = setTimeout(() => {
+                localStorage.removeItem(TRAINING_LOCK_KEY);
+                setTraining(false);
+            }, remaining);
+        } catch { /* ignore */ }
+
+        return () => {
+            if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+        };
+    }, []);
 
     useEffect(() => { fetchHealth(); }, [fetchHealth]);
 
@@ -103,14 +144,27 @@ export const MLObservabilityPage = () => {
 
     const handleTrain = async () => {
         setTraining(true);
+        const lockTime = Date.now();
+        localStorage.setItem(TRAINING_LOCK_KEY, String(lockTime));
+
+        // Auto-release after 3 minutes regardless
+        if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+        trainTimerRef.current = setTimeout(() => {
+            localStorage.removeItem(TRAINING_LOCK_KEY);
+            setTraining(false);
+        }, TRAINING_LOCK_MS);
+
         try {
             await mlApi.trainModel();
-            toast.success('Entrenamiento iniciado', 'El modelo está re-entrenando en background. Usa "Actualizar" para ver los resultados cuando termine.');
+            toast.success('Entrenamiento iniciado', 'El modelo está re-entrenando en segundo plano. El botón se habilitará automáticamente en ~3 minutos. Usa "Actualizar" para ver los nuevos resultados.');
         } catch {
             toast.error('Error', 'No se pudo iniciar el entrenamiento.');
-        } finally {
+            // Release lock on failure
+            if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+            localStorage.removeItem(TRAINING_LOCK_KEY);
             setTraining(false);
         }
+        // Note: setTraining(false) NOT called on success — timer handles it
     };
 
     if (error) {
@@ -151,11 +205,21 @@ export const MLObservabilityPage = () => {
                     <button
                         onClick={handleTrain}
                         disabled={training || isLoading}
-                        className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={training ? 'Entrenamiento en curso — espera ~3 minutos antes de volver a entrenar' : 'Entrenar modelo'}
                         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                     >
-                        <Play className={`size-4 ${training ? 'animate-pulse' : ''}`} style={{ color: 'var(--color-green)' }} />
-                        {training ? 'Iniciando…' : 'Entrenar modelo'}
+                        {training ? (
+                            <>
+                                <span className="size-4 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                Entrenando en segundo plano…
+                            </>
+                        ) : (
+                            <>
+                                <Play className="size-4" style={{ color: 'var(--color-green)' }} />
+                                Entrenar modelo
+                            </>
+                        )}
                     </button>
                     <button
                         onClick={fetchHealth}
@@ -371,11 +435,20 @@ export const MLObservabilityPage = () => {
                         <button
                             onClick={handleTrain}
                             disabled={training}
-                            className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ background: 'var(--color-green)' }}
                         >
-                            <Play className="size-4" />
-                            Iniciar primer entrenamiento
+                            {training ? (
+                                <>
+                                    <span className="size-4 shrink-0 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                    Entrenando…
+                                </>
+                            ) : (
+                                <>
+                                    <Play className="size-4" />
+                                    Iniciar primer entrenamiento
+                                </>
+                            )}
                         </button>
                     </div>
                 )}

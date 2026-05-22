@@ -37,8 +37,12 @@ export function SelectionBar({
                             <button
                                 type="button"
                                 onClick={onEdit}
-                                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80 active:scale-95"
+                                style={{
+                                    borderColor: 'var(--color-purple)',
+                                    color: 'var(--color-purple)',
+                                    background: 'rgba(var(--rgb-purple-accent), 0.08)',
+                                }}
                             >
                                 <Pencil className="size-3.5" />
                                 {editLabel}

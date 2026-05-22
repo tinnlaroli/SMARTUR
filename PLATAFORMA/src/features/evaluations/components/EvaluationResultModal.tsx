@@ -1,5 +1,5 @@
-import React, { useReducer, useEffect, useMemo } from 'react';
-import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info } from 'lucide-react';
+import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
+import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer } from 'lucide-react';
 import { evaluationsApi } from '../api/evaluationsApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -64,6 +64,84 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
         fetchDetails();
         return () => controller.abort();
     }, [isOpen, evaluationId]);
+
+    const handlePrint = useCallback(() => {
+        if (!evaluation) return;
+
+        const printContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Evaluación #${evaluationId} — SMARTUR</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; color: #18181b; padding: 2.5rem; max-width: 680px; margin: 0 auto; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 2px solid #7c3aed; }
+    .logo { font-size: 1.4rem; font-weight: 900; color: #7c3aed; letter-spacing: -0.5px; }
+    .meta { font-size: 0.8rem; color: #71717a; margin-top: 2px; }
+    .score-card { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #fff; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.75rem; }
+    .score-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; opacity: 0.75; }
+    .score-value { font-size: 4rem; font-weight: 900; line-height: 1; margin: 0.2rem 0; }
+    .score-value span { font-size: 1.25rem; opacity: 0.6; }
+    .score-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.8rem; opacity: 0.85; }
+    .section-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; color: #71717a; margin-bottom: 0.875rem; }
+    .criterion { border: 1px solid #e4e4e7; border-radius: 12px; padding: 0.875rem 1rem; margin-bottom: 0.6rem; }
+    .criterion-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
+    .criterion-name { font-size: 0.875rem; font-weight: 600; color: #18181b; }
+    .criterion-score { background: #ede9fe; color: #7c3aed; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+    .criterion-obs { font-size: 0.8rem; color: #71717a; font-style: italic; }
+    .general-obs { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 12px; padding: 1rem 1.125rem; font-size: 0.875rem; color: #52525b; font-style: italic; line-height: 1.65; }
+    .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e4e4e7; font-size: 0.72rem; color: #a1a1aa; text-align: center; }
+    @media print { body { padding: 1rem; } .score-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">SMARTUR</div>
+      <div class="meta">Resultado de Evaluación · ID #${evaluationId}</div>
+    </div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-label">Puntuación Total</div>
+    <div class="score-value">${Number(evaluation.totalScore).toFixed(1)}<span> / 5.0</span></div>
+    <div class="score-meta">
+      <div>⏱ ${evaluation.evaluationTime} min</div>
+      <div>👤 Evaluador #${evaluation.evaluatorId}</div>
+    </div>
+  </div>
+
+  ${evaluation.details && evaluation.details.length > 0 ? `
+  <div class="section-title">Criterios evaluados</div>
+  ${evaluation.details.map((d: any) => `
+    <div class="criterion">
+      <div class="criterion-header">
+        <span class="criterion-name">${d.criterion_name}</span>
+        <span class="criterion-score">${d.assigned_score} / 4</span>
+      </div>
+      <div class="criterion-obs">"${d.observations || 'Sin observaciones específicas'}"</div>
+    </div>
+  `).join('')}
+  ` : ''}
+
+  <div class="section-title" style="margin-top:1.25rem">Observaciones generales</div>
+  <div class="general-obs">"${evaluation.generalObservations || 'No se registraron observaciones generales.'}"</div>
+
+  <div class="footer">
+    Generado por SMARTUR · ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+  </div>
+</body>
+</html>`;
+
+        const win = window.open('', '_blank', 'width=820,height=640');
+        if (!win) return;
+        win.document.write(printContent);
+        win.document.close();
+        win.focus();
+        // Small delay so styles render before print dialog
+        setTimeout(() => win.print(), 400);
+    }, [evaluation, evaluationId]);
 
     if (!isOpen) return null;
 
@@ -192,7 +270,20 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
                     )}
                 </div>
 
-                <div className="border-t border-zinc-200 dark:border-zinc-800 px-8 py-4 bg-zinc-50 dark:bg-zinc-900/50 flex justify-end">
+                <div className="border-t border-zinc-200 dark:border-zinc-800 px-8 py-4 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-between gap-3">
+                    <button
+                        onClick={handlePrint}
+                        disabled={!evaluation}
+                        className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-80 active:scale-95"
+                        style={{
+                            borderColor: 'var(--color-purple)',
+                            color: 'var(--color-purple)',
+                            background: 'rgba(var(--rgb-purple-accent), 0.07)',
+                        }}
+                    >
+                        <Printer className="size-4" />
+                        Exportar / Imprimir
+                    </button>
                     <button
                         onClick={onClose}
                         className="px-6 py-2 bg-zinc-800 dark:bg-zinc-700 text-white rounded-xl text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-600 transition-all"
