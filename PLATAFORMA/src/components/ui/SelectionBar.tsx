@@ -26,8 +26,7 @@ export function SelectionBar({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.18 }}
-                    className="flex shrink-0 items-center gap-3 rounded-xl border px-4 py-2.5"
-                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    className="flex shrink-0 items-center gap-3"
                 >
                     <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                         {count} seleccionado{count !== 1 ? 's' : ''}
