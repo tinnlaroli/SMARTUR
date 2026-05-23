@@ -4,10 +4,13 @@ import {
     BarChart3,
     Briefcase,
     Building2,
+    Check,
     Gauge,
+    LayoutGrid,
     Layers3,
     LineChart,
     MapPin,
+    Plus,
     RefreshCw,
     Settings2,
     Star,
@@ -54,6 +57,13 @@ interface DashboardHeaderProps {
     refreshing: boolean;
     preferencesOpen: boolean;
     onTogglePreferences: () => void;
+    /** Whether the widget grid is in edit/rearrange mode */
+    isEditing?: boolean;
+    onToggleEditing?: () => void;
+    /** Opens the widget catalog drawer */
+    onOpenCatalog?: () => void;
+    /** Resets grid to default layout */
+    onResetGrid?: () => void;
 }
 
 interface DashboardPreferencesPanelProps {
@@ -482,6 +492,10 @@ export const DashboardHeader = ({
     refreshing,
     preferencesOpen,
     onTogglePreferences,
+    isEditing = false,
+    onToggleEditing,
+    onOpenCatalog,
+    onResetGrid,
 }: DashboardHeaderProps) => {
     const { lang } = useLanguage();
     const copy = getDashboardText(lang).widgets;
@@ -500,29 +514,100 @@ export const DashboardHeader = ({
                 </p>
             </div>
 
-            <div className="relative flex shrink-0 items-center gap-2">
-                <button
-                    type="button"
-                    onClick={onTogglePreferences}
-                    className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
-                    style={{
-                        borderColor: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-border)',
-                        background: preferencesOpen ? `${DASHBOARD_COLORS.purple}12` : 'var(--color-bg)',
-                        color: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-text)',
-                    }}
-                >
-                    <Settings2 className="size-4" />
-                    {copy.personalize}
-                </button>
-                <button
-                    type="button"
-                    onClick={onRefresh}
-                    className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-                    style={{ background: DASHBOARD_COLORS.purple }}
-                >
-                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    {copy.refresh}
-                </button>
+            <div className="relative flex shrink-0 flex-wrap items-center gap-2">
+                {/* ── Edit mode toolbar ── */}
+                {isEditing ? (
+                    <>
+                        {/* Add widget */}
+                        {onOpenCatalog && (
+                            <button
+                                type="button"
+                                onClick={onOpenCatalog}
+                                className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                                style={{
+                                    borderColor: DASHBOARD_COLORS.purple,
+                                    background: `${DASHBOARD_COLORS.purple}12`,
+                                    color: DASHBOARD_COLORS.purple,
+                                }}
+                            >
+                                <Plus className="size-4" />
+                                Agregar
+                            </button>
+                        )}
+                        {/* Reset grid */}
+                        {onResetGrid && (
+                            <button
+                                type="button"
+                                onClick={onResetGrid}
+                                className="inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition hover:opacity-90"
+                                style={{
+                                    borderColor: 'var(--color-border)',
+                                    background: 'var(--color-bg)',
+                                    color: 'var(--color-text-alt)',
+                                }}
+                            >
+                                Restaurar
+                            </button>
+                        )}
+                        {/* Done (exit edit mode) */}
+                        {onToggleEditing && (
+                            <button
+                                type="button"
+                                onClick={onToggleEditing}
+                                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                                style={{ background: DASHBOARD_COLORS.purple }}
+                            >
+                                <Check className="size-4" />
+                                Listo
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {/* Preferences */}
+                        <button
+                            type="button"
+                            onClick={onTogglePreferences}
+                            className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
+                            style={{
+                                borderColor: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-border)',
+                                background: preferencesOpen ? `${DASHBOARD_COLORS.purple}12` : 'var(--color-bg)',
+                                color: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-text)',
+                            }}
+                        >
+                            <Settings2 className="size-4" />
+                            {copy.personalize}
+                        </button>
+
+                        {/* Refresh */}
+                        <button
+                            type="button"
+                            onClick={onRefresh}
+                            className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                            style={{ background: DASHBOARD_COLORS.purple }}
+                        >
+                            <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            {copy.refresh}
+                        </button>
+
+                        {/* Edit grid toggle */}
+                        {onToggleEditing && (
+                            <button
+                                type="button"
+                                onClick={onToggleEditing}
+                                title="Editar disposición del dashboard"
+                                className="inline-flex items-center justify-center rounded-2xl border p-2 transition hover:opacity-90"
+                                style={{
+                                    borderColor: 'var(--color-border)',
+                                    background: 'var(--color-bg)',
+                                    color: 'var(--color-text-alt)',
+                                }}
+                            >
+                                <LayoutGrid className="size-4" />
+                            </button>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );

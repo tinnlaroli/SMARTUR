@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ChevronRight, Wallet, DollarSign, Star, Clock, Calendar, CalendarRange, Briefcase } from 'lucide-react';
 import type { FormContext } from '../types/types';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Step1Props {
     data: Partial<FormContext>;
@@ -67,6 +68,8 @@ const diasRangeToDays = (range: string) => {
 
 export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     useGSAP(
         () => {
@@ -107,15 +110,19 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
         onNext();
     };
 
+    const unselectedBtn = isDark
+        ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+        : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300';
+
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className="mb-2 text-3xl font-semibold text-white">¿Qué te interesa?</h2>
-                <p className="text-zinc-400">Selecciona tus preferencias de viaje</p>
+                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>¿Qué te interesa?</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Selecciona tus preferencias de viaje</p>
             </div>
 
             <div className="form-section mb-8">
-                <label className="mb-4 block text-sm font-medium text-zinc-300">Rango de edad</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Rango de edad</label>
                 <div className="grid grid-cols-5 gap-2">
                     {edadOptions.map((o) => (
                         <button
@@ -123,7 +130,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
                             type="button"
                             onClick={() => setEdadRange(o.value)}
                             className={`rounded-xl border py-3 transition-all duration-200 ${
-                                edad_range === o.value ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                                edad_range === o.value ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20' : unselectedBtn
                             }`}
                         >
                             <span className="text-sm font-semibold">{o.label}</span>
@@ -133,7 +140,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
             </div>
 
             <div className="form-section mb-8">
-                <label className="mb-4 block text-sm font-medium text-zinc-300">Presupuesto diario</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Presupuesto diario</label>
                 <div className="grid grid-cols-3 gap-4">
                     {presupuestoOptions.map((o) => (
                         <button
@@ -143,7 +150,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
                             className={`flex flex-col items-center rounded-2xl border p-4 text-center transition-all duration-200 ${
                                 presupuesto_bucket === o.value
                                     ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20'
-                                    : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                                    : unselectedBtn
                             }`}
                         >
                             <div className="mb-3">
@@ -157,7 +164,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
             </div>
 
             <div className="form-section mb-10">
-                <label className="mb-4 block text-sm font-medium text-zinc-300">Duración del viaje</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Duración del viaje</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {duracionOptions.map((o) => (
                         <button
@@ -167,7 +174,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
                             className={`flex flex-col items-center rounded-2xl border p-4 text-center transition-all duration-200 ${
                                 duracion_dias_range === o.value
                                     ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20'
-                                    : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                                    : unselectedBtn
                             }`}
                         >
                             <div className="mb-3">

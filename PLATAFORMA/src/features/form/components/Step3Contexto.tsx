@@ -3,6 +3,7 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ChevronRight, ChevronLeft, User, Heart, Users, Users2, Bed, Car, Utensils, Route } from 'lucide-react';
 import type { FormContext } from '../types/types';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 interface Step3Props {
     data: Partial<FormContext>;
@@ -27,6 +28,8 @@ const servicesList = [
 
 export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     useGSAP(
         () => {
@@ -64,15 +67,23 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
         onNext();
     };
 
+    const unselectedBtn = isDark
+        ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+        : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300';
+
+    const backBtn = isDark
+        ? 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+        : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300';
+
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className="mb-2 text-3xl font-semibold text-white">Contexto del Viaje</h2>
-                <p className="text-zinc-400">Cuéntanos sobre tu compañía y servicios preferidos</p>
+                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>Contexto del Viaje</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Cuéntanos sobre tu compañía y servicios preferidos</p>
             </div>
 
             <div className="form-section mb-8">
-                <label className="mb-4 block text-sm font-medium text-zinc-300">Viajas con</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Viajas con</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {companyOptions.map((c) => (
                         <button
@@ -80,7 +91,7 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
                             onClick={() => setGroupType(c.value)}
                             type="button"
                             className={`flex flex-col items-center rounded-2xl border p-5 text-center transition-all duration-200 ${
-                                group_type === c.value ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20' : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                                group_type === c.value ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20' : unselectedBtn
                             }`}
                         >
                             <div className="mb-3">
@@ -93,7 +104,7 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
             </div>
 
             <div className="form-section mb-10">
-                <label className="mb-4 block text-sm font-medium text-zinc-300">Servicios que quieres incluir</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Servicios que quieres incluir</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {servicesList.map((s) => (
                         <button
@@ -103,7 +114,7 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
                             className={`flex flex-col items-center rounded-2xl border p-5 text-center transition-all duration-200 ${
                                 services.includes(s.value)
                                     ? 'border-violet-500 bg-violet-600 text-white shadow-lg shadow-violet-500/20'
-                                    : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700'
+                                    : unselectedBtn
                             }`}
                         >
                             <div className="mb-3">
@@ -118,7 +129,7 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
             <div className="flex justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-6 py-3 font-semibold text-zinc-400 transition-all hover:border-zinc-700 active:scale-95"
+                    className={`flex items-center gap-2 rounded-xl border px-6 py-3 font-semibold transition-all active:scale-95 ${backBtn}`}
                 >
                     <ChevronLeft className="size-5" />
                     <span>Atrás</span>

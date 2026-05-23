@@ -113,3 +113,75 @@ button {
     transform: none !important;
   }
 }
+
+/* ─── Widget Grid System ──────────────────────────────────────────────── */
+
+/* Wobble / shake animation for edit mode */
+@keyframes widgetWobble {
+  0%   { transform: rotate(-1.2deg) scale(1.01); }
+  25%  { transform: rotate(1.2deg)  scale(1.01); }
+  50%  { transform: rotate(-0.9deg) scale(1.01); }
+  75%  { transform: rotate(0.9deg)  scale(1.01); }
+  100% { transform: rotate(-1.2deg) scale(1.01); }
+}
+
+.widget-wobble {
+  animation: widgetWobble 0.6s ease-in-out infinite;
+  transform-origin: center 90%;
+  will-change: transform;
+}
+
+/* Responsive grid container */
+.widget-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: auto;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .widget-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 200px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .widget-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 200px;
+  }
+}
+
+/* Responsive column overrides for widget cells */
+/* On mobile: all widgets go full-width, single row height */
+@media (max-width: 639px) {
+  .widget-grid > .widget-cell {
+    grid-column: 1 / -1 !important;
+    grid-row: span 1 !important;
+    min-height: 180px;
+  }
+}
+
+/* On tablet (sm - lg): max 2 cols, single row height for tall widgets */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .widget-grid > .widget-cell {
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+    min-height: 200px;
+  }
+}
+
+/* Drag-over highlight for drop targets */
+.widget-cell--drag-over {
+  outline: 2px solid var(--color-purple);
+  outline-offset: -2px;
+  border-radius: 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-wobble {
+    animation: none !important;
+    transform: none !important;
+  }
+}
