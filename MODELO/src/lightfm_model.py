@@ -241,7 +241,7 @@ class SmarturLightFMModel:
 
         # ── Train ────────────────────────────────────────────────────────────
         model = LightFM(
-            no_components=64,
+            no_components=96,
             loss='warp',
             learning_rate=0.05,
             item_alpha=1e-6,
@@ -249,8 +249,8 @@ class SmarturLightFMModel:
             random_state=42,
         )
 
-        n_epochs = 30
-        _logger.info(f"[LightFM] Entrenando {n_epochs} epochs con pérdida WARP...")
+        n_epochs = 50
+        _logger.info(f"[LightFM] Entrenando {n_epochs} epochs con pérdida WARP (96 componentes)...")
         model.fit(
             interactions,
             user_features=user_features_matrix,

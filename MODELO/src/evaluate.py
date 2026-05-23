@@ -283,6 +283,119 @@ def evaluar_ranking(engine, context_model, n_users=100, k=5, relevance_threshold
 
 
 # ---------------------------------------------------------------------------
+# Evaluación local con datos reales SMARTUR
+# ---------------------------------------------------------------------------
+
+def evaluar_ranking_local(
+    context_model,
+    lightfm_model=None,
+    content_model=None,
+    k: int = 5,
+    min_users: int = 20,
+    min_interactions: int = 3,
+) -> dict | None:
+    """
+    Evalúa NDCG@k, Precision@k y Hit Rate@k usando interacciones reales de SMARTUR.
+
+    Retorna None si no hay suficientes datos (señal para usar eval Yelp como fallback).
+    Solo cuenta cuando hay >= min_users usuarios con >= min_interactions cada uno.
+
+    Ventaja sobre evaluar_ranking(): los ítems recomendados (POIs de Altas Montañas)
+    y los ítems del test set son los mismos, por lo que NDCG refleja calidad real.
+    """
+    try:
+        from poi_repository import fetch_real_interactions
+        from fusion import recommend_hybrid
+        import numpy as np
+    except ImportError as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[eval_local] Import error: {e}")
+        return None
+
+    df = fetch_real_interactions(min_events=1)
+    if df is None or df.empty:
+        return None
+
+    # Keep only users with enough interactions for a meaningful 80/20 split
+    user_counts = df.groupby('user_id').size()
+    eligible = user_counts[user_counts >= min_interactions].index.tolist()
+
+    if len(eligible) < min_users:
+        import logging
+        logging.getLogger(__name__).info(
+            f"[eval_local] Solo {len(eligible)} usuarios elegibles (mínimo {min_users}) "
+            "— usando eval Yelp como fallback."
+        )
+        return None
+
+    ndcg_scores, precision_scores, hit_scores = [], [], []
+
+    for uid in eligible:
+        user_df = df[df['user_id'] == uid].sort_values('implicit_score', ascending=False)
+        n_total = len(user_df)
+        split = max(1, int(n_total * 0.8))
+
+        # Train items (used to warm context if needed) and test items (ground truth)
+        test_items = set(user_df.iloc[split:]['item_id'].tolist())
+        if not test_items:
+            continue
+
+        # Relevant items: those the user liked (implicit_score >= 4.0)
+        relevant = set(
+            user_df[user_df['implicit_score'] >= 4.0]['item_id'].tolist()
+        ) & test_items
+        if not relevant:
+            # All test items count as relevant (weak signal scenario)
+            relevant = test_items
+
+        try:
+            recs = recommend_hybrid(
+                user_id=str(uid),
+                engine=None,          # will use local POIs only
+                context_model=context_model,
+                alpha=0.4,
+                context={},
+                top_n=max(k * 2, 10),
+                lightfm_model=lightfm_model,
+                content_model=content_model,
+            )
+        except Exception:
+            continue
+
+        if not recs:
+            continue
+
+        rec_ids = [r['item_id'] for r in recs[:k]]
+
+        # NDCG@k
+        dcg = sum(
+            1.0 / np.log2(pos + 2)
+            for pos, rid in enumerate(rec_ids)
+            if rid in relevant
+        )
+        ideal_hits = min(len(relevant), k)
+        idcg = sum(1.0 / np.log2(pos + 2) for pos in range(ideal_hits))
+        ndcg_scores.append(dcg / idcg if idcg > 0 else 0.0)
+
+        # Precision@k
+        hits_at_k = sum(1 for rid in rec_ids if rid in relevant)
+        precision_scores.append(hits_at_k / k)
+
+        # Hit Rate@k (binary: did at least one relevant item appear?)
+        hit_scores.append(1.0 if hits_at_k > 0 else 0.0)
+
+    if not ndcg_scores:
+        return None
+
+    results = {
+        'ndcg':      float(np.mean(ndcg_scores)),
+        'precision': float(np.mean(precision_scores)),
+        'hit_rate':  float(np.mean(hit_scores)),
+    }
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 

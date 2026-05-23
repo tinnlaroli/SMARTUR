@@ -28,12 +28,13 @@ context_model   = None
 gbm_model       = None
 lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
+quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Carga los modelos pesados una sola vez al iniciar la API."""
-    global engine, context_model, gbm_model, lightfm_model, content_model_cb
+    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores
     if os.getenv("SKIP_MODEL_BOOT") == "1":
         logger.warning("SKIP_MODEL_BOOT=1: saltando carga de modelos en arranque")
         yield
@@ -80,6 +81,15 @@ async def lifespan(app: FastAPI):
         except Exception as cm_err:
             content_model_cb = None
             logger.warning(f"ContentModel no disponible: {cm_err}")
+
+        # ── Quality scores (inference boost from service_evaluation) ──────────
+        try:
+            from poi_repository import fetch_quality_scores
+            quality_scores = fetch_quality_scores()
+            logger.info(f"[init] Quality scores cargados: {len(quality_scores)} servicios evaluados")
+        except Exception as qs_err:
+            quality_scores = {}
+            logger.warning(f"[init] Quality scores no disponibles: {qs_err}")
 
         lfm_status = "LightFM✓" if lightfm_model is not None else "LightFM✗"
         cm_status  = "ContentModel✓" if content_model_cb is not None else "ContentModel✗"
@@ -190,16 +200,23 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
     try:
         logger.info(f"Recomendación POST para usuario: {user_id}")
 
-        # Merge traveler profile from DB with request context.
-        # Request context overrides DB profile (user's in-session adjustments take precedence).
-        merged_context = dict(payload.context) if payload.context else {}
+        # Smart merge: DB profile fills gaps; request overrides only non-empty fields.
+        # This prevents an empty request context from masking a rich DB profile,
+        # which was causing cold-start users to get flat (all-zero) feature vectors.
         try:
-            profile_ctx = fetch_traveler_profile(user_id)
-            if profile_ctx:
-                merged_context = {**profile_ctx, **merged_context}
-                logger.info(f"Perfil de viajero cargado para usuario {user_id}")
+            profile_ctx = fetch_traveler_profile(user_id) or {}
         except Exception as e:
+            profile_ctx = {}
             logger.warning(f"No se pudo cargar perfil de viajero para {user_id}: {e}")
+
+        request_ctx = dict(payload.context) if payload.context else {}
+        merged_context = dict(profile_ctx)  # base: DB profile
+        for key, val in request_ctx.items():
+            # Request field wins only if it's actually set (non-empty/non-null)
+            if val is not None and val != [] and val != '':
+                merged_context[key] = val
+        if profile_ctx:
+            logger.info(f"Perfil de viajero cargado para usuario {user_id}")
 
         recs = recommend_hybrid(
             user_id=user_id,
@@ -210,6 +227,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             top_n=payload.top_n,
             lightfm_model=lightfm_model,
             content_model=content_model_cb,
+            quality_scores=quality_scores,
         )
         return RecommendationResponse(
             user_id=user_id,
@@ -405,25 +423,31 @@ def _run_full_training():
     Pearson/SVD matrix, computes full algorithm comparison metrics, appends
     ranking metrics, and persists to DB.
     """
-    global engine, context_model, gbm_model, lightfm_model, content_model_cb
+    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores
     try:
         import pandas as pd
         from model_metrics import save_metrics, compare_algorithms
         from poi_repository import fetch_real_interactions, fetch_evaluation_scores
 
         # ── 1. Merge real DB interactions (if any accumulated) ───────────────
+        # Threshold lowered 50→10 so early adopters immediately influence training.
+        # Weight scaled adaptively (3× min → 10× max) to compensate for the 266K
+        # Yelp corpus — without this, SMARTUR signals are drowned out.
+        _MIN_REAL = 10
         try:
-            real_df = fetch_real_interactions(min_events=2)
-            if real_df is not None and len(real_df) >= 50:
+            real_df = fetch_real_interactions(min_events=1)
+            if real_df is not None and len(real_df) >= _MIN_REAL:
                 real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
                 real_df['user_id'] = real_df['user_id'].astype(str)
-                # Weight real interactions 2× to offset the much larger CSV corpus
-                engine.train_data = pd.concat(
-                    [engine.train_data, real_df, real_df], ignore_index=True
+                n_repeats = max(3, min(10, len(real_df) // 5))
+                tiles = [real_df] * n_repeats
+                engine.train_data = pd.concat([engine.train_data] + tiles, ignore_index=True)
+                logger.info(
+                    f"[train] Datos reales: {len(real_df)} interacciones, ponderadas {n_repeats}×"
                 )
-                logger.info(f"[train] {len(real_df)} interacciones reales integradas al entrenamiento.")
             else:
-                logger.info("[train] Menos de 50 interacciones reales en DB — usando solo CSV.")
+                n_real = len(real_df) if real_df is not None else 0
+                logger.info(f"[train] Solo {n_real} interacciones reales (mínimo {_MIN_REAL}) — usando solo CSV.")
         except Exception as exc:
             logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
 
@@ -480,16 +504,29 @@ def _run_full_training():
             metrics = _compute_simple_metrics(engine, context_model)
 
         # ── 6. Ranking metrics (NDCG@5, Precision@5, Hit Rate@10) ────────────
+        # Prefer local SMARTUR evaluation when we have enough real interactions;
+        # Yelp eval always returns NDCG≈0 because recommender returns Veracruz POIs.
         try:
-            from evaluate import evaluar_ranking
-            ranking = evaluar_ranking(engine, context_model, n_users=50, k=5)
-            if ranking:
+            from evaluate import evaluar_ranking, evaluar_ranking_local
+            ranking = evaluar_ranking_local(
+                context_model=context_model,
+                lightfm_model=lightfm_model,
+                content_model=content_model_cb,
+                k=5,
+            )
+            if ranking is not None:
                 metrics['ranking'] = ranking
                 logger.info(
-                    f"[train] Ranking — NDCG@5={ranking.get('ndcg', 0):.4f}, "
+                    f"[train] Ranking local SMARTUR — NDCG@5={ranking.get('ndcg', 0):.4f}, "
                     f"P@5={ranking.get('precision', 0):.4f}, "
                     f"HR@10={ranking.get('hit_rate', 0):.4f}"
                 )
+            else:
+                # Fallback: Yelp-based eval (will show NDCG≈0 by design)
+                ranking = evaluar_ranking(engine, context_model, n_users=50, k=5)
+                if ranking:
+                    metrics['ranking'] = ranking
+                    logger.info("[train] Ranking Yelp (fallback — sin suficientes datos reales SMARTUR)")
         except Exception as exc:
             logger.warning(f"[train] Ranking evaluation omitida: {exc}")
 
@@ -507,6 +544,14 @@ def _run_full_training():
             logger.info("[train] Métricas persistidas en DB correctamente.")
         else:
             logger.warning("[train] Métricas solo disponibles en archivo local (DB no actualizada).")
+
+        # ── 9. Refresh quality scores in-memory (new evaluations during training) ──
+        try:
+            from poi_repository import fetch_quality_scores
+            quality_scores = fetch_quality_scores()
+            logger.info(f"[train] Quality scores refrescados: {len(quality_scores)} servicios")
+        except Exception as exc:
+            logger.warning(f"[train] Quality scores no actualizados: {exc}")
 
         logger.info(f"[train] Entrenamiento completado. Muestra: {metrics.get('sample_size', '?')} predicciones.")
     except Exception as e:

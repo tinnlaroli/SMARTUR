@@ -116,6 +116,7 @@ def recommend_hybrid(
     user_id, engine, context_model,
     alpha=0.4, context=None, top_n=5,
     lightfm_model=None, content_model=None,
+    quality_scores=None,
 ):
     """
     Sistema Híbrido SMARTUR v4 (Retrieval + Ranking multi-señal).
@@ -151,6 +152,8 @@ def recommend_hybrid(
             effective_alpha = 0.1  # fallback conservador
     else:
         # Fallback desarrollo: candidatos Yelp KNN
+        if engine is None:
+            return []   # no local POIs and no engine → cannot recommend
         candidate_ids = engine.get_candidate_pool(user_id, top_n=200)
         biz_candidates = engine.df_biz[engine.df_biz['business_id'].isin(candidate_ids)]
         effective_alpha = alpha
@@ -168,7 +171,7 @@ def recommend_hybrid(
     final_ids = refined_df['business_id'].tolist()
 
     # ── Fase B: Ranking ──────────────────────────────────────────────────
-    ref_df = local_biz if not local_biz.empty else engine.df_biz
+    ref_df = local_biz if not local_biz.empty else (engine.df_biz if engine is not None else pd.DataFrame())
     rf_scores = context_model.predict_with_context(final_ids, user_context=context, df_biz_override=ref_df)
     rf_map = dict(zip(final_ids, rf_scores))
 
@@ -176,7 +179,7 @@ def recommend_hybrid(
     all_biz_names   = ref_df.set_index('business_id')['name'].to_dict()
     biz_kind_lookup = ref_df.set_index('business_id')['kind'].to_dict() if 'kind' in ref_df.columns else {}
     local_id_set    = set(local_biz['business_id']) if not local_biz.empty else set()
-    matrix_col_set  = set(engine.user_item_matrix_columns)
+    matrix_col_set  = set(engine.user_item_matrix_columns) if engine is not None else set()
 
     # ── LightFM or ContentModel scores ───────────────────────────────────
     # Determine cold-start status for blending weights
@@ -205,7 +208,7 @@ def recommend_hybrid(
         elif biz_id in matrix_col_set:
             score_cf = predict_cf_pearson(user_id, biz_id, engine)
         else:
-            score_cf = engine.train_data['stars'].mean()
+            score_cf = engine.train_data['stars'].mean() if engine is not None else 3.5
 
         score_rf  = rf_map.get(biz_id, 3.0)
         score_lfm = lfm_map.get(biz_id, 3.0)
@@ -221,6 +224,15 @@ def recommend_hybrid(
         else:
             # LightFM not available → classic blend
             final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
+
+        # Quality boost from admin service_evaluation (service_evaluation.total_score).
+        # Non-linear: 0 boost for quality ≤ 0.5 (score ≤ 50/100), +0.3 max at quality = 1.0.
+        # This rewards well-evaluated services without demoting unevaluated POIs.
+        if quality_scores:
+            q = quality_scores.get(biz_id, 0.0)
+            if q > 0.5:
+                quality_boost = 0.3 * (q - 0.5) / 0.5  # linear: 0 @ q=0.5, 0.3 @ q=1.0
+                final_score = min(5.0, final_score + quality_boost)
 
         nombre = all_biz_names.get(biz_id, 'Desconocido')
         kind   = biz_kind_lookup.get(biz_id, 'poi')

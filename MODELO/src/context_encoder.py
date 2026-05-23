@@ -98,6 +98,11 @@ class ContextEncoder:
         tipos = context.get('tiposTurismo', [])
         if isinstance(tipos, str):
             tipos = [tipos]
+        # Cold-start fallback: when no tourism preference is set, use the most
+        # common types for the Altas Montañas region so the user gets a
+        # meaningful ranking instead of a flat all-zeros feature vector.
+        if not tipos:
+            tipos = ['naturaleza', 'cultural']
         for t in self.tourism_types:
             features[f'user_tur_{t}'] = 1 if t in tipos else 0
 

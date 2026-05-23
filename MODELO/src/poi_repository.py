@@ -149,7 +149,7 @@ def fetch_all_items(active_only=True):
     return pd.concat([pois, services], ignore_index=True)
 
 
-def fetch_real_interactions(min_events: int = 2) -> pd.DataFrame:
+def fetch_real_interactions(min_events: int = 1) -> pd.DataFrame:
     """
     Builds a user-item implicit rating matrix from live SMARTUR interaction data.
 
@@ -325,3 +325,33 @@ def fetch_traveler_profile(user_id):
         'group_type': (travel_type or 'solo').lower(),
         'requiere_accesibilidad': bool(has_accessibility),
     }
+
+
+def fetch_quality_scores() -> dict:
+    """
+    Returns {business_id: quality_normalized} where quality ∈ [0, 1].
+    Uses MAX(total_score)/100.0 per service from service_evaluation.
+    Only active services with a non-null total_score are included.
+    Services without evaluations are not present (callers should default to 0.0).
+    """
+    conn = None
+    try:
+        conn = get_poi_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT 'svc_' || id_service::text AS business_id,
+                   MAX(total_score) / 100.0   AS quality
+            FROM service_evaluation
+            WHERE is_active = TRUE AND total_score IS NOT NULL
+            GROUP BY id_service
+        """)
+        rows = cur.fetchall()
+        cur.close()
+        return {row[0]: float(row[1]) for row in rows}
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(f"[fetch_quality_scores] error: {exc}")
+        return {}
+    finally:
+        if conn:
+            conn.close()
