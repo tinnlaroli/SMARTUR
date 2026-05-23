@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
-    Activity, Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit,
+    Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit,
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,7 @@ interface MenuItem {
 const MENU_GROUP_KEYS = [
     { labelKey: 'sidebar.group.principal',      items: ['home'] },
     { labelKey: 'sidebar.group.gestion',        items: ['users', 'companies', 'services', 'poi', 'locations'] },
-    { labelKey: 'sidebar.group.mobile',         items: ['community', 'contacts', 'profiles', 'activities'] },
+    { labelKey: 'sidebar.group.mobile',         items: ['community', 'contacts', 'profiles'] },
     { labelKey: 'sidebar.group.certifications', items: ['certifications', 'instruments'] },
     { labelKey: 'sidebar.group.reports',        items: ['stats'] },
     { labelKey: 'sidebar.group.system',         items: ['ml', 'settings'] },
@@ -44,7 +44,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'services',       label: t('sidebar.services'),       icon: Wrench,     path: '/dashboard/servicios',                  roles: [1] },
         { id: 'locations',      label: t('sidebar.locations'),      icon: MapPin,     path: '/dashboard/ubicaciones',                roles: [1] },
         { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle, path: '/dashboard/perfiles',                   roles: [1] },
-        { id: 'activities',     label: t('sidebar.activities'),     icon: Activity,   path: '/dashboard/actividades',                roles: [1] },
         { id: 'certifications', label: t('sidebar.certifications'), icon: Award,      path: '/dashboard/certificaciones',            roles: [1] },
         { id: 'poi',            label: t('sidebar.poi'),            icon: Star,       path: '/dashboard/poi',                        roles: [1] },
         { id: 'community',      label: t('sidebar.community'),      icon: MessageSquare, path: '/dashboard/comunidad',               roles: [1] },

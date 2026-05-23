@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: 'actividades',
-                                        element: <ActivitiesPage />,
+                                        element: <Navigate to="/dashboard/companias" replace />,
                                     },
                                     {
                                         path: 'certificaciones',
