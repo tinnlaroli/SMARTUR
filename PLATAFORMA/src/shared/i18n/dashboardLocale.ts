@@ -211,6 +211,15 @@ type DashboardLocale = {
         localBlendRf: string;
         localBlendGbm: string;
         usersLabel: string;
+        schedulerTitle: string;
+        schedulerEnabled: string;
+        schedulerDisabled: string;
+        schedulerHour: string;
+        schedulerNextRun: string;
+        schedulerNever: string;
+        schedulerSave: string;
+        schedulerSaved: string;
+        schedulerSaveError: string;
     };
     viewModel: {
         roleLabels: Record<number, string>;
@@ -551,6 +560,15 @@ const es: DashboardLocale = {
         localBlendRf: 'RF',
         localBlendGbm: 'GBM',
         usersLabel: 'usuarios en matriz',
+        schedulerTitle: 'Reentrenamiento Automático',
+        schedulerEnabled: 'Activo',
+        schedulerDisabled: 'Desactivado',
+        schedulerHour: 'Hora de ejecución (UTC)',
+        schedulerNextRun: 'Próxima corrida',
+        schedulerNever: 'Sin programar',
+        schedulerSave: 'Guardar cambios',
+        schedulerSaved: 'Programación actualizada',
+        schedulerSaveError: 'Error al actualizar el scheduler',
     },
     viewModel: {
         roleLabels: {
@@ -896,6 +914,15 @@ const en: DashboardLocale = {
         localBlendRf: 'RF',
         localBlendGbm: 'GBM',
         usersLabel: 'users in matrix',
+        schedulerTitle: 'Automatic Retraining',
+        schedulerEnabled: 'Active',
+        schedulerDisabled: 'Disabled',
+        schedulerHour: 'Run hour (UTC)',
+        schedulerNextRun: 'Next run',
+        schedulerNever: 'Not scheduled',
+        schedulerSave: 'Save changes',
+        schedulerSaved: 'Schedule updated',
+        schedulerSaveError: 'Error updating scheduler',
     },
     viewModel: {
         roleLabels: {
@@ -1241,6 +1268,15 @@ const fr: DashboardLocale = {
         localBlendRf: 'RF',
         localBlendGbm: 'GBM',
         usersLabel: 'utilisateurs dans la matrice',
+        schedulerTitle: 'Reentrainement automatique',
+        schedulerEnabled: 'Actif',
+        schedulerDisabled: 'Desactive',
+        schedulerHour: 'Heure d execution (UTC)',
+        schedulerNextRun: 'Prochaine execution',
+        schedulerNever: 'Non programme',
+        schedulerSave: 'Enregistrer les modifications',
+        schedulerSaved: 'Planification mise a jour',
+        schedulerSaveError: 'Erreur lors de la mise a jour du planificateur',
     },
     viewModel: {
         roleLabels: {

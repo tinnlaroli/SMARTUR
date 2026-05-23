@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional
 
 from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 """
 SMARTUR API Base File
@@ -29,6 +29,7 @@ gbm_model       = None
 lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
+_scheduler      = None   # APScheduler instance — module-level so endpoints can read/update it
 
 
 @asynccontextmanager
@@ -103,7 +104,7 @@ async def lifespan(app: FastAPI):
     # APScheduler runs _run_full_training() every day at 02:00 UTC so that
     # new user interactions accumulated during the day are incorporated
     # automatically — no admin button needed.
-    _scheduler = None
+    global _scheduler
     try:
         from apscheduler.schedulers.background import BackgroundScheduler
         _scheduler = BackgroundScheduler(timezone='UTC')
@@ -195,6 +196,79 @@ def health_poi_db():
         return {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"POI DB unavailable: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Scheduler config — readable and writable from the admin dashboard
+# ---------------------------------------------------------------------------
+
+@app.get("/scheduler")
+def get_scheduler_config():
+    """
+    Returns the current nightly retraining schedule.
+    Readable by the PLATAFORMA admin dashboard.
+    """
+    if _scheduler is None:
+        return {"enabled": False, "hour": 2, "minute": 0, "next_run": None}
+    job = _scheduler.get_job('nightly_retrain')
+    if job is None:
+        return {"enabled": False, "hour": 2, "minute": 0, "next_run": None}
+    # APScheduler CronTrigger stores fields in a list; find hour/minute by name
+    try:
+        trigger = job.trigger
+        field_map = {f.name: f for f in trigger.fields}
+        hour   = int(str(field_map['hour'].expressions[0]))
+        minute = int(str(field_map['minute'].expressions[0]))
+    except Exception:
+        hour, minute = 2, 0
+    next_run = job.next_run_time.isoformat() if job.next_run_time else None
+    return {"enabled": True, "hour": hour, "minute": minute, "next_run": next_run}
+
+
+class SchedulerConfigRequest(BaseModel):
+    enabled: bool
+    hour: int = Field(default=2, ge=0, le=23)
+    minute: int = Field(default=0, ge=0, le=59)
+
+
+@app.put("/scheduler")
+def put_scheduler_config(payload: SchedulerConfigRequest):
+    """
+    Enable/disable and/or reschedule nightly retraining.
+    Changes take effect immediately without restarting the container.
+    Called by the PLATAFORMA admin dashboard scheduler card.
+    """
+    if _scheduler is None:
+        raise HTTPException(status_code=503, detail="Scheduler no disponible en este entorno.")
+
+    if not payload.enabled:
+        try:
+            _scheduler.remove_job('nightly_retrain')
+        except Exception:
+            pass  # already removed — not an error
+        logger.info("[scheduler] Reentrenamiento automático DESHABILITADO desde el dashboard")
+        return {"ok": True, "enabled": False, "next_run": None}
+
+    _scheduler.add_job(
+        _run_full_training,
+        trigger='cron',
+        hour=payload.hour,
+        minute=payload.minute,
+        id='nightly_retrain',
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    job = _scheduler.get_job('nightly_retrain')
+    next_run = job.next_run_time.isoformat() if job and job.next_run_time else None
+    logger.info(
+        f"[scheduler] Reprogramado a {payload.hour:02d}:{payload.minute:02d} UTC "
+        "desde el dashboard"
+    )
+    return {
+        "ok": True, "enabled": True,
+        "hour": payload.hour, "minute": payload.minute,
+        "next_run": next_run,
+    }
 
 
 @app.get("/recommend/{user_id}", response_model=RecommendationResponse)

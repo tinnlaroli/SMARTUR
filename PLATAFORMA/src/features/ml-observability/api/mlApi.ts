@@ -42,6 +42,13 @@ export interface ModelStatus {
     users_count: number;
 }
 
+export interface SchedulerConfig {
+    enabled: boolean;
+    hour: number;    // 0–23 UTC
+    minute: number;  // 0–59
+    next_run: string | null;  // ISO datetime string UTC, or null if disabled
+}
+
 export const mlApi = {
     getHealth: async (): Promise<MLHealth> => {
         const { data } = await api.get<MLHealth>('/ml/health');
@@ -55,6 +62,18 @@ export const mlApi = {
 
     trainModel: async (): Promise<{ ok: boolean; message: string }> => {
         const { data } = await api.post('/ml/train');
+        return data;
+    },
+
+    getSchedulerConfig: async (): Promise<SchedulerConfig> => {
+        const { data } = await api.get<SchedulerConfig>('/ml/scheduler-config');
+        return data;
+    },
+
+    updateSchedulerConfig: async (
+        config: Omit<SchedulerConfig, 'next_run'>
+    ): Promise<{ ok: boolean; next_run?: string | null }> => {
+        const { data } = await api.put('/ml/scheduler-config', config);
         return data;
     },
 };

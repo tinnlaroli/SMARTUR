@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
-import { mlApi, type ModelStatus } from '../api/mlApi';
+import { mlApi, type ModelStatus, type SchedulerConfig } from '../api/mlApi';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -8,7 +8,7 @@ import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
     BarChart2, AlertCircle, RefreshCw, Activity, Play, Target, Trophy,
-    Crosshair, CheckCircle2, XCircle, Info,
+    Crosshair, CheckCircle2, XCircle, Info, Clock4, Loader2,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
@@ -114,6 +114,11 @@ export const MLObservabilityPage = () => {
     const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
     const [statusLoading, setStatusLoading] = useState(false);
 
+    const [schedConfig, setSchedConfig]   = useState<SchedulerConfig | null>(null);
+    const [schedEnabled, setSchedEnabled] = useState(false);
+    const [schedHour, setSchedHour]       = useState(2);
+    const [schedSaving, setSchedSaving]   = useState(false);
+
     const fetchModelStatus = useCallback(async () => {
         setStatusLoading(true);
         try {
@@ -125,6 +130,30 @@ export const MLObservabilityPage = () => {
             setStatusLoading(false);
         }
     }, []);
+
+    const fetchScheduler = useCallback(async () => {
+        try {
+            const cfg = await mlApi.getSchedulerConfig();
+            setSchedConfig(cfg);
+            setSchedEnabled(cfg.enabled);
+            setSchedHour(cfg.hour);
+        } catch { /* non-fatal */ }
+    }, []);
+
+    const handleSaveScheduler = async () => {
+        setSchedSaving(true);
+        try {
+            const res = await mlApi.updateSchedulerConfig({ enabled: schedEnabled, hour: schedHour, minute: 0 });
+            if (res.ok) {
+                await fetchScheduler();
+                toast.success(copy.schedulerSaved, '');
+            }
+        } catch {
+            toast.error(copy.schedulerSaveError, '');
+        } finally {
+            setSchedSaving(false);
+        }
+    };
 
     // Release lock + stop polling helper
     const releaseLock = useCallback(() => {
@@ -167,6 +196,7 @@ export const MLObservabilityPage = () => {
     useEffect(() => {
         void fetchHealth();
         void fetchModelStatus();
+        void fetchScheduler();
 
         try {
             const ts = localStorage.getItem(TRAINING_LOCK_KEY);
@@ -366,6 +396,107 @@ export const MLObservabilityPage = () => {
                         ) : null}
                     </div>
                 )}
+
+                {/* Scheduler card */}
+                <div
+                    className="rounded-2xl border p-4"
+                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                >
+                    <div className="flex items-center gap-2 mb-3">
+                        <Clock4 className="size-4" style={{ color: 'var(--color-purple)' }} />
+                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {copy.schedulerTitle}
+                        </p>
+                        <span
+                            className="ml-auto rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
+                            style={{
+                                borderColor: schedEnabled ? `${DASHBOARD_COLORS.success}44` : 'var(--color-border)',
+                                background: schedEnabled ? `${DASHBOARD_COLORS.success}10` : 'var(--color-bg-alt)',
+                                color: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
+                            }}
+                        >
+                            {schedEnabled ? copy.schedulerEnabled : copy.schedulerDisabled}
+                        </span>
+                    </div>
+
+                    {schedConfig?.next_run && (
+                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.schedulerNextRun}:{' '}
+                            <span className="font-mono" style={{ color: 'var(--color-text)' }}>
+                                {new Date(schedConfig.next_run).toLocaleString(locale, {
+                                    timeZone: 'UTC',
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })} UTC
+                            </span>
+                        </p>
+                    )}
+                    {!schedConfig?.next_run && schedConfig !== null && (
+                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.schedulerNextRun}: <span style={{ color: 'var(--color-text)' }}>{copy.schedulerNever}</span>
+                        </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-4">
+                        {/* Toggle */}
+                        <button
+                            role="switch"
+                            aria-checked={schedEnabled}
+                            onClick={() => setSchedEnabled(v => !v)}
+                            className="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors"
+                            style={{
+                                background: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-border)',
+                            }}
+                        >
+                            <span
+                                className="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+                                style={{ transform: schedEnabled ? 'translateX(18px)' : 'translateX(2px)' }}
+                            />
+                        </button>
+                        <label className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.schedulerEnabled}
+                        </label>
+
+                        {/* Hour picker */}
+                        {schedEnabled && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    {copy.schedulerHour}:
+                                </span>
+                                <select
+                                    value={schedHour}
+                                    onChange={(e) => setSchedHour(Number(e.target.value))}
+                                    className="rounded-lg border px-2 py-1 text-xs font-mono"
+                                    style={{
+                                        borderColor: 'var(--color-border)',
+                                        background: 'var(--color-bg-alt)',
+                                        color: 'var(--color-text)',
+                                    }}
+                                >
+                                    {Array.from({ length: 24 }, (_, i) => (
+                                        <option key={i} value={i}>
+                                            {String(i).padStart(2, '0')}:00 UTC
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {/* Save button */}
+                        <button
+                            onClick={() => void handleSaveScheduler()}
+                            disabled={schedSaving}
+                            className="ml-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                        >
+                            {schedSaving
+                                ? <Loader2 className="size-3.5 animate-spin" />
+                                : <CheckCircle2 className="size-3.5" style={{ color: DASHBOARD_COLORS.success }} />
+                            }
+                            {copy.schedulerSave}
+                        </button>
+                    </div>
+                </div>
 
                 {/* KPI Strip */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

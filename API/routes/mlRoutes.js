@@ -191,4 +191,43 @@ router.post('/ml/feedback', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/v2/ml/scheduler-config
+ * Returns the current nightly retraining schedule from MODELO.
+ * Readable by the PLATAFORMA admin dashboard without a UI restart.
+ */
+router.get('/ml/scheduler-config', verifyToken, async (req, res) => {
+    try {
+        const r = await fetch(`${MODELO_URL}/scheduler`, {
+            signal: AbortSignal.timeout(5_000),
+        });
+        const data = await r.json().catch(() => ({}));
+        res.json(data);
+    } catch (_err) {
+        // Non-fatal — dashboard degrades gracefully
+        res.json({ enabled: false, hour: 2, minute: 0, next_run: null });
+    }
+});
+
+/**
+ * PUT /api/v2/ml/scheduler-config
+ * Reschedules or enables/disables nightly retraining.
+ * Body: { enabled: boolean, hour: number (0-23), minute?: number (0-59) }
+ */
+router.put('/ml/scheduler-config', verifyToken, async (req, res) => {
+    try {
+        const r = await fetch(`${MODELO_URL}/scheduler`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+            signal: AbortSignal.timeout(5_000),
+        });
+        const data = await r.json().catch(() => ({}));
+        res.json(data);
+    } catch (err) {
+        console.error('[ml/scheduler-config] PUT error:', err.message);
+        res.status(502).json({ message: 'No se pudo actualizar el scheduler.' });
+    }
+});
+
 export default router;
