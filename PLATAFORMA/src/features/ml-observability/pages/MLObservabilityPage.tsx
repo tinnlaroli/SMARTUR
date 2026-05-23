@@ -355,118 +355,106 @@ export const MLObservabilityPage = () => {
             {/* Scrollable content */}
             <div className="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
 
-                {/* Model stack status badges */}
-                {(modelStatus || statusLoading) && (
+                {/* Model status + Scheduler — side by side */}
+                <div className="flex gap-3 items-stretch">
+
+                    {/* Model stack status badges */}
+                    {(modelStatus || statusLoading) && (
+                        <div
+                            className="flex-1 rounded-2xl border p-4"
+                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                        >
+                            <div className="flex items-center gap-2 mb-3">
+                                <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
+                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    {copy.modelStatusTitle}
+                                </p>
+                                {modelStatus && (
+                                    <span
+                                        className="ml-auto rounded-full px-2 py-0.5 text-[11px] font-mono"
+                                        style={{ background: 'rgba(var(--rgb-text),0.06)', color: 'var(--color-text-alt)' }}
+                                    >
+                                        {modelStatus.users_count.toLocaleString(locale)} {copy.usersLabel}
+                                    </span>
+                                )}
+                            </div>
+                            {statusLoading && !modelStatus ? (
+                                <div className="flex gap-2">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="h-6 w-20 rounded-full animate-pulse"
+                                            style={{ background: 'var(--color-bg-alt)' }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : modelStatus ? (
+                                <div className="flex flex-wrap gap-2">
+                                    <ModelBadge label="CF / SVD" ready={modelStatus.engine_ready && modelStatus.svd_ready} />
+                                    <ModelBadge label="Random Forest" ready={modelStatus.rf_ready} />
+                                    <ModelBadge label="Gradient Boosting" ready={modelStatus.gbm_ready} />
+                                    <ModelBadge label="LightFM WARP" ready={modelStatus.lightfm_ready} />
+                                    <ModelBadge label="Content TF-IDF" ready={modelStatus.content_ready} />
+                                </div>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {/* Scheduler — compact panel */}
                     <div
-                        className="rounded-2xl border p-4"
+                        className="w-60 shrink-0 rounded-2xl border p-3 flex flex-col gap-2.5"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
-                        <div className="flex items-center gap-2 mb-3">
-                            <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                {copy.modelStatusTitle}
+                        {/* Header */}
+                        <div className="flex items-center gap-1.5">
+                            <Clock4 className="size-3.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                            <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                                {copy.schedulerTitle}
                             </p>
-                            {modelStatus && (
-                                <span
-                                    className="ml-auto rounded-full px-2 py-0.5 text-[11px] font-mono"
-                                    style={{ background: 'rgba(var(--rgb-text),0.06)', color: 'var(--color-text-alt)' }}
-                                >
-                                    {modelStatus.users_count.toLocaleString(locale)} {copy.usersLabel}
-                                </span>
-                            )}
+                            <span
+                                className="ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                                style={{
+                                    borderColor: schedEnabled ? `${DASHBOARD_COLORS.success}44` : 'var(--color-border)',
+                                    background: schedEnabled ? `${DASHBOARD_COLORS.success}10` : 'var(--color-bg-alt)',
+                                    color: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
+                                }}
+                            >
+                                {schedEnabled ? copy.schedulerEnabled : copy.schedulerDisabled}
+                            </span>
                         </div>
-                        {statusLoading && !modelStatus ? (
-                            <div className="flex gap-2">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="h-6 w-20 rounded-full animate-pulse"
-                                        style={{ background: 'var(--color-bg-alt)' }}
-                                    />
-                                ))}
-                            </div>
-                        ) : modelStatus ? (
-                            <div className="flex flex-wrap gap-2">
-                                <ModelBadge label="CF / SVD" ready={modelStatus.engine_ready && modelStatus.svd_ready} />
-                                <ModelBadge label="Random Forest" ready={modelStatus.rf_ready} />
-                                <ModelBadge label="Gradient Boosting" ready={modelStatus.gbm_ready} />
-                                <ModelBadge label="LightFM WARP" ready={modelStatus.lightfm_ready} />
-                                <ModelBadge label="Content TF-IDF" ready={modelStatus.content_ready} />
-                            </div>
-                        ) : null}
-                    </div>
-                )}
 
-                {/* Scheduler card */}
-                <div
-                    className="rounded-2xl border p-4"
-                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                >
-                    <div className="flex items-center gap-2 mb-3">
-                        <Clock4 className="size-4" style={{ color: 'var(--color-purple)' }} />
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {copy.schedulerTitle}
-                        </p>
-                        <span
-                            className="ml-auto rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
-                            style={{
-                                borderColor: schedEnabled ? `${DASHBOARD_COLORS.success}44` : 'var(--color-border)',
-                                background: schedEnabled ? `${DASHBOARD_COLORS.success}10` : 'var(--color-bg-alt)',
-                                color: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
-                            }}
-                        >
-                            {schedEnabled ? copy.schedulerEnabled : copy.schedulerDisabled}
-                        </span>
-                    </div>
-
-                    {schedConfig?.next_run && (
-                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-alt)' }}>
+                        {/* Next run */}
+                        <p className="text-[11px] truncate" style={{ color: 'var(--color-text-alt)' }}>
                             {copy.schedulerNextRun}:{' '}
                             <span className="font-mono" style={{ color: 'var(--color-text)' }}>
-                                {new Date(schedConfig.next_run).toLocaleString(locale, {
-                                    timeZone: 'UTC',
-                                    dateStyle: 'medium',
-                                    timeStyle: 'short',
-                                })} UTC
+                                {schedConfig?.next_run
+                                    ? new Date(schedConfig.next_run).toLocaleString(locale, {
+                                        timeZone: 'UTC', month: 'short', day: 'numeric',
+                                        hour: '2-digit', minute: '2-digit',
+                                    }) + ' UTC'
+                                    : copy.schedulerNever}
                             </span>
                         </p>
-                    )}
-                    {!schedConfig?.next_run && schedConfig !== null && (
-                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.schedulerNextRun}: <span style={{ color: 'var(--color-text)' }}>{copy.schedulerNever}</span>
-                        </p>
-                    )}
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        {/* Toggle */}
-                        <button
-                            role="switch"
-                            aria-checked={schedEnabled}
-                            onClick={() => setSchedEnabled(v => !v)}
-                            className="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors"
-                            style={{
-                                background: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-border)',
-                            }}
-                        >
-                            <span
-                                className="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
-                                style={{ transform: schedEnabled ? 'translateX(18px)' : 'translateX(2px)' }}
-                            />
-                        </button>
-                        <label className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.schedulerEnabled}
-                        </label>
-
-                        {/* Hour picker */}
-                        {schedEnabled && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    {copy.schedulerHour}:
-                                </span>
+                        {/* Toggle + hour */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                role="switch"
+                                aria-checked={schedEnabled}
+                                onClick={() => setSchedEnabled(v => !v)}
+                                className="relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors"
+                                style={{ background: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-border)' }}
+                            >
+                                <span
+                                    className="inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform"
+                                    style={{ transform: schedEnabled ? 'translateX(14px)' : 'translateX(2px)' }}
+                                />
+                            </button>
+                            {schedEnabled ? (
                                 <select
                                     value={schedHour}
                                     onChange={(e) => setSchedHour(Number(e.target.value))}
-                                    className="rounded-lg border px-2 py-1 text-xs font-mono"
+                                    className="flex-1 rounded-lg border px-1.5 py-0.5 text-[11px] font-mono"
                                     style={{
                                         borderColor: 'var(--color-border)',
                                         background: 'var(--color-bg-alt)',
@@ -479,23 +467,28 @@ export const MLObservabilityPage = () => {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-                        )}
+                            ) : (
+                                <span className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                    {copy.schedulerHour}
+                                </span>
+                            )}
+                        </div>
 
-                        {/* Save button */}
+                        {/* Save */}
                         <button
                             onClick={() => void handleSaveScheduler()}
                             disabled={schedSaving}
-                            className="ml-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                            className="mt-auto flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
                             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                         >
                             {schedSaving
-                                ? <Loader2 className="size-3.5 animate-spin" />
-                                : <CheckCircle2 className="size-3.5" style={{ color: DASHBOARD_COLORS.success }} />
+                                ? <Loader2 className="size-3 animate-spin" />
+                                : <CheckCircle2 className="size-3" style={{ color: DASHBOARD_COLORS.success }} />
                             }
                             {copy.schedulerSave}
                         </button>
                     </div>
+
                 </div>
 
                 {/* KPI Strip */}
