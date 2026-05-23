@@ -14,15 +14,28 @@ const MODELO_URL = process.env.MODELO_URL || 'http://modelo:8000';
  *   - Click-through rate on recommendations (30 days)
  */
 router.get('/ml/health', verifyToken, async (req, res) => {
+    // Each query runs independently so a missing table or empty result
+    // never kills the entire endpoint — the dashboard degrades gracefully.
+    const safeQuery = async (sql, fallback) => {
+        try {
+            const result = await db.query(sql);
+            return result;
+        } catch (err) {
+            console.warn('[ml/health] query fallback:', err.message);
+            return { rows: fallback };
+        }
+    };
+
     try {
         const [metricsRes, sessionsRes, feedbackRes] = await Promise.all([
-            db.query(
+            safeQuery(
                 `SELECT metrics_json, created_at
                  FROM ml_model_metrics
                  ORDER BY created_at DESC
                  LIMIT 1`,
+                [],
             ),
-            db.query(
+            safeQuery(
                 `SELECT
                    COUNT(*)::int AS total,
                    AVG(execution_time_ms)::numeric(10,2) AS avg_latency_ms,
@@ -31,13 +44,15 @@ router.get('/ml/health', verifyToken, async (req, res) => {
                  WHERE created_at > NOW() - INTERVAL '30 days'
                  GROUP BY DATE_TRUNC('day', created_at)
                  ORDER BY day DESC`,
+                [],
             ),
-            db.query(
+            safeQuery(
                 `SELECT
                    COUNT(*)::int AS total,
                    SUM(CASE WHEN clicked THEN 1 ELSE 0 END)::int AS clicked
                  FROM ml_recommendation_feedback
                  WHERE created_at > NOW() - INTERVAL '30 days'`,
+                [{ total: 0, clicked: 0 }],
             ),
         ]);
 
@@ -47,7 +62,7 @@ router.get('/ml/health', verifyToken, async (req, res) => {
             ctr_30d: feedbackRes.rows[0] ?? { total: 0, clicked: 0 },
         });
     } catch (err) {
-        console.error('[ml/health] error:', err.message);
+        console.error('[ml/health] fatal error:', err.message);
         res.status(500).json({ message: 'Error al obtener estado del modelo ML.' });
     }
 });
