@@ -1,4 +1,4 @@
-import React, { type DragEvent, type ReactNode } from 'react';
+import React, { type DragEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { X, Minus, Plus } from 'lucide-react';
 import { type WidgetDef, type WidgetInstance } from '../widgets/widgetRegistry';
 
@@ -17,11 +17,40 @@ interface WidgetShellProps {
     children: ReactNode;
 }
 
-/** Wraps a single widget in the grid. In edit mode it shows:
- *  - iOS-style wobble animation
+type FlashState = 'min' | 'max' | null;
+
+const FLASH_DURATION = 420; // ms — how long the red indicator stays visible
+
+/** Resize button that flashes red when it can't go further (Figma-style) */
+const ResizeBtn: React.FC<{
+    label: string;
+    icon: React.ElementType;
+    flashActive: boolean;
+    onClick: (e: React.MouseEvent) => void;
+}> = ({ label, icon: Icon, flashActive, onClick }) => (
+    <button
+        type="button"
+        title={label}
+        onClick={onClick}
+        onDragStart={(e) => e.stopPropagation()}
+        className="flex size-5 items-center justify-center rounded-md transition-all"
+        style={{
+            color: flashActive ? '#fff' : 'rgba(255,255,255,0.75)',
+            background: flashActive ? 'rgba(239,68,68,0.85)' : 'transparent',
+            transform: flashActive ? 'scale(1.15)' : 'scale(1)',
+        }}
+    >
+        <Icon className="size-3" strokeWidth={2.5} />
+    </button>
+);
+
+/**
+ * Wraps a single widget in the grid. In edit mode it shows:
+ *  - Subtle iOS-style wobble animation (±0.55°)
  *  - Floating "×" remove button (top-right)
- *  - Compact resize toolbar (bottom-right)
- *  - Semi-transparent drag overlay with label
+ *  - Compact resize toolbar (bottom-right) with Figma-style boundary feedback:
+ *    buttons flash red when a limit is reached instead of going disabled
+ *  - Semi-transparent drag overlay
  */
 export const WidgetShell: React.FC<WidgetShellProps> = ({
     instance,
@@ -37,14 +66,71 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
     isDragOver,
     children,
 }) => {
-    // Stagger wobble so adjacent widgets don't move in perfect sync
-    const wobbleDelay = `${(index % 7) * 0.07}s`;
+    /* ── Wobble stagger ──────────────────────────────────────────── */
+    const wobbleDelay = `${(index % 7) * 0.09}s`;
 
-    const canShrinkCol = instance.colSpan > def.minColSpan;
-    const canGrowCol   = instance.colSpan < def.maxColSpan;
-    const canShrinkRow = instance.rowSpan > def.minRowSpan;
-    const canGrowRow   = instance.rowSpan < def.maxRowSpan;
-    const canResize = canShrinkCol || canGrowCol || canShrinkRow || canGrowRow;
+    /* ── Resize boundary flash state ────────────────────────────── */
+    const [colFlash, setColFlash] = useState<FlashState>(null);
+    const [rowFlash, setRowFlash] = useState<FlashState>(null);
+    const colTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const rowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Cleanup timers on unmount
+    useEffect(() => () => {
+        if (colTimer.current) clearTimeout(colTimer.current);
+        if (rowTimer.current) clearTimeout(rowTimer.current);
+    }, []);
+
+    const triggerColFlash = (side: 'min' | 'max') => {
+        if (colTimer.current) clearTimeout(colTimer.current);
+        setColFlash(side);
+        colTimer.current = setTimeout(() => setColFlash(null), FLASH_DURATION);
+    };
+
+    const triggerRowFlash = (side: 'min' | 'max') => {
+        if (rowTimer.current) clearTimeout(rowTimer.current);
+        setRowFlash(side);
+        rowTimer.current = setTimeout(() => setRowFlash(null), FLASH_DURATION);
+    };
+
+    /* ── Resize handlers with boundary detection ─────────────────── */
+    const handleColMinus = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (instance.colSpan <= def.minColSpan) {
+            triggerColFlash('min');
+        } else {
+            onResize(-1, 0);
+        }
+    };
+
+    const handleColPlus = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (instance.colSpan >= def.maxColSpan) {
+            triggerColFlash('max');
+        } else {
+            onResize(1, 0);
+        }
+    };
+
+    const handleRowMinus = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (instance.rowSpan <= def.minRowSpan) {
+            triggerRowFlash('min');
+        } else {
+            onResize(0, -1);
+        }
+    };
+
+    const handleRowPlus = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (instance.rowSpan >= def.maxRowSpan) {
+            triggerRowFlash('max');
+        } else {
+            onResize(0, 1);
+        }
+    };
+
+    const isResizable = def.minColSpan !== def.maxColSpan || def.minRowSpan !== def.maxRowSpan;
 
     return (
         <div
@@ -70,10 +156,10 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                 {children}
             </div>
 
-            {/* ── Edit-mode overlay ─────────────────────────────────── */}
+            {/* ── Edit-mode overlay ──────────────────────────────── */}
             {isEditing && (
                 <>
-                    {/* Drag capture + drop highlight overlay */}
+                    {/* Drag capture + drop highlight */}
                     <div
                         aria-hidden
                         className={`absolute inset-0 z-[5] cursor-grab rounded-[28px] transition-all duration-150${
@@ -84,7 +170,7 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         style={{ pointerEvents: 'auto' }}
                     />
 
-                    {/* × Remove button — top-right */}
+                    {/* × Remove button */}
                     <button
                         type="button"
                         aria-label={`Eliminar widget ${def.label}`}
@@ -98,7 +184,7 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         <X className="size-3.5" strokeWidth={2.5} />
                     </button>
 
-                    {/* Widget name label — top-left */}
+                    {/* Widget name label */}
                     <div
                         aria-hidden
                         onDragStart={(e) => e.stopPropagation()}
@@ -109,69 +195,53 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         {def.label}
                     </div>
 
-                    {/* Resize toolbar — bottom-right */}
-                    {canResize && (
+                    {/* Resize toolbar */}
+                    {isResizable && (
                         <div
                             onDragStart={(e) => e.stopPropagation()}
                             className="absolute bottom-2.5 right-2.5 z-[15] flex items-center gap-0.5 rounded-xl px-1.5 py-1 backdrop-blur-md"
-                            style={{ background: 'rgba(10,10,10,0.65)' }}
+                            style={{ background: 'rgba(10,10,10,0.70)' }}
                         >
                             {/* Column resize */}
-                            {(canShrinkCol || canGrowCol) && (
+                            {(def.minColSpan !== def.maxColSpan) && (
                                 <>
-                                    <button
-                                        type="button"
-                                        disabled={!canShrinkCol}
-                                        title="Reducir ancho"
-                                        onClick={(e) => { e.stopPropagation(); onResize(-1, 0); }}
-                                        onDragStart={(e) => e.stopPropagation()}
-                                        className="flex size-5 items-center justify-center rounded-md text-white/80 transition hover:bg-white/15 disabled:opacity-25"
-                                    >
-                                        <Minus className="size-3" strokeWidth={2.5} />
-                                    </button>
-                                    <span className="px-0.5 text-[9px] font-bold text-white/50">W</span>
-                                    <button
-                                        type="button"
-                                        disabled={!canGrowCol}
-                                        title="Ampliar ancho"
-                                        onClick={(e) => { e.stopPropagation(); onResize(1, 0); }}
-                                        onDragStart={(e) => e.stopPropagation()}
-                                        className="flex size-5 items-center justify-center rounded-md text-white/80 transition hover:bg-white/15 disabled:opacity-25"
-                                    >
-                                        <Plus className="size-3" strokeWidth={2.5} />
-                                    </button>
+                                    <ResizeBtn
+                                        label="Reducir ancho"
+                                        icon={Minus}
+                                        flashActive={colFlash === 'min'}
+                                        onClick={handleColMinus}
+                                    />
+                                    <span className="px-0.5 text-[9px] font-bold text-white/40">W</span>
+                                    <ResizeBtn
+                                        label="Ampliar ancho"
+                                        icon={Plus}
+                                        flashActive={colFlash === 'max'}
+                                        onClick={handleColPlus}
+                                    />
                                 </>
                             )}
 
-                            {/* Separator between col/row controls */}
-                            {(canShrinkCol || canGrowCol) && (canShrinkRow || canGrowRow) && (
+                            {/* Separator */}
+                            {(def.minColSpan !== def.maxColSpan) && (def.minRowSpan !== def.maxRowSpan) && (
                                 <span className="mx-0.5 h-3 w-px bg-white/20" />
                             )}
 
                             {/* Row resize */}
-                            {(canShrinkRow || canGrowRow) && (
+                            {(def.minRowSpan !== def.maxRowSpan) && (
                                 <>
-                                    <button
-                                        type="button"
-                                        disabled={!canShrinkRow}
-                                        title="Reducir alto"
-                                        onClick={(e) => { e.stopPropagation(); onResize(0, -1); }}
-                                        onDragStart={(e) => e.stopPropagation()}
-                                        className="flex size-5 items-center justify-center rounded-md text-white/80 transition hover:bg-white/15 disabled:opacity-25"
-                                    >
-                                        <Minus className="size-3" strokeWidth={2.5} />
-                                    </button>
-                                    <span className="px-0.5 text-[9px] font-bold text-white/50">H</span>
-                                    <button
-                                        type="button"
-                                        disabled={!canGrowRow}
-                                        title="Ampliar alto"
-                                        onClick={(e) => { e.stopPropagation(); onResize(0, 1); }}
-                                        onDragStart={(e) => e.stopPropagation()}
-                                        className="flex size-5 items-center justify-center rounded-md text-white/80 transition hover:bg-white/15 disabled:opacity-25"
-                                    >
-                                        <Plus className="size-3" strokeWidth={2.5} />
-                                    </button>
+                                    <ResizeBtn
+                                        label="Reducir alto"
+                                        icon={Minus}
+                                        flashActive={rowFlash === 'min'}
+                                        onClick={handleRowMinus}
+                                    />
+                                    <span className="px-0.5 text-[9px] font-bold text-white/40">H</span>
+                                    <ResizeBtn
+                                        label="Ampliar alto"
+                                        icon={Plus}
+                                        flashActive={rowFlash === 'max'}
+                                        onClick={handleRowPlus}
+                                    />
                                 </>
                             )}
                         </div>

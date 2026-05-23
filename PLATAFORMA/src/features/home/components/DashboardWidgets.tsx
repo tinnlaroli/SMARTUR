@@ -12,7 +12,6 @@ import {
     MapPin,
     Plus,
     RefreshCw,
-    Settings2,
     Star,
     Users,
 } from 'lucide-react';
@@ -55,8 +54,10 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 interface DashboardHeaderProps {
     onRefresh: () => void;
     refreshing: boolean;
-    preferencesOpen: boolean;
-    onTogglePreferences: () => void;
+    /** @deprecated — no longer renders a preferences button; kept for compatibility */
+    preferencesOpen?: boolean;
+    /** @deprecated — no longer used; kept for compatibility */
+    onTogglePreferences?: () => void;
     /** Whether the widget grid is in edit/rearrange mode */
     isEditing?: boolean;
     onToggleEditing?: () => void;
@@ -490,8 +491,6 @@ const TrendTooltip = ({ active, label, payload }: TrendTooltipProps) => {
 export const DashboardHeader = ({
     onRefresh,
     refreshing,
-    preferencesOpen,
-    onTogglePreferences,
     isEditing = false,
     onToggleEditing,
     onOpenCatalog,
@@ -515,10 +514,10 @@ export const DashboardHeader = ({
             </div>
 
             <div className="relative flex shrink-0 flex-wrap items-center gap-2">
-                {/* ── Edit mode toolbar ── */}
                 {isEditing ? (
+                    /* ── Edit-mode toolbar ───────────────────────────────── */
                     <>
-                        {/* Add widget */}
+                        {/* Add widget from catalog */}
                         {onOpenCatalog && (
                             <button
                                 type="button"
@@ -534,7 +533,8 @@ export const DashboardHeader = ({
                                 Agregar
                             </button>
                         )}
-                        {/* Reset grid */}
+
+                        {/* Reset to default layout */}
                         {onResetGrid && (
                             <button
                                 type="button"
@@ -549,7 +549,8 @@ export const DashboardHeader = ({
                                 Restaurar
                             </button>
                         )}
-                        {/* Done (exit edit mode) */}
+
+                        {/* Done — exit edit mode */}
                         {onToggleEditing && (
                             <button
                                 type="button"
@@ -563,23 +564,9 @@ export const DashboardHeader = ({
                         )}
                     </>
                 ) : (
+                    /* ── Normal toolbar ──────────────────────────────────── */
                     <>
-                        {/* Preferences */}
-                        <button
-                            type="button"
-                            onClick={onTogglePreferences}
-                            className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
-                            style={{
-                                borderColor: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-border)',
-                                background: preferencesOpen ? `${DASHBOARD_COLORS.purple}12` : 'var(--color-bg)',
-                                color: preferencesOpen ? DASHBOARD_COLORS.purple : 'var(--color-text)',
-                            }}
-                        >
-                            <Settings2 className="size-4" />
-                            {copy.personalize}
-                        </button>
-
-                        {/* Refresh */}
+                        {/* Actualizar */}
                         <button
                             type="button"
                             onClick={onRefresh}
@@ -590,20 +577,20 @@ export const DashboardHeader = ({
                             {copy.refresh}
                         </button>
 
-                        {/* Edit grid toggle */}
+                        {/* Personalizar — opens edit / rearrange mode */}
                         {onToggleEditing && (
                             <button
                                 type="button"
                                 onClick={onToggleEditing}
-                                title="Editar disposición del dashboard"
-                                className="inline-flex items-center justify-center rounded-2xl border p-2 transition hover:opacity-90"
+                                className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition hover:opacity-90"
                                 style={{
                                     borderColor: 'var(--color-border)',
                                     background: 'var(--color-bg)',
-                                    color: 'var(--color-text-alt)',
+                                    color: 'var(--color-text)',
                                 }}
                             >
                                 <LayoutGrid className="size-4" />
+                                {copy.personalize}
                             </button>
                         )}
                     </>

@@ -86,7 +86,7 @@ const NotificationPanel = ({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 6, scale: 0.96 }}
         transition={{ duration: 0.18 }}
-        className="fixed right-6 top-16 z-[100] w-80 rounded-2xl border p-4 shadow-2xl"
+        className="fixed right-6 top-16 z-[200] w-80 rounded-2xl border p-4 shadow-2xl"
         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
     >
         <div className="mb-3 flex items-center justify-between gap-3">

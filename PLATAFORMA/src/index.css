@@ -116,18 +116,16 @@ button {
 
 /* ─── Widget Grid System ──────────────────────────────────────────────── */
 
-/* Wobble / shake animation for edit mode */
+/* Wobble / shake animation for edit mode — subtle, like iOS */
 @keyframes widgetWobble {
-  0%   { transform: rotate(-1.2deg) scale(1.01); }
-  25%  { transform: rotate(1.2deg)  scale(1.01); }
-  50%  { transform: rotate(-0.9deg) scale(1.01); }
-  75%  { transform: rotate(0.9deg)  scale(1.01); }
-  100% { transform: rotate(-1.2deg) scale(1.01); }
+  0%   { transform: rotate(-0.55deg); }
+  50%  { transform: rotate(0.55deg); }
+  100% { transform: rotate(-0.55deg); }
 }
 
 .widget-wobble {
-  animation: widgetWobble 0.6s ease-in-out infinite;
-  transform-origin: center 90%;
+  animation: widgetWobble 1.15s ease-in-out infinite;
+  transform-origin: center 85%;
   will-change: transform;
 }
 

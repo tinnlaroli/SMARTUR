@@ -4,7 +4,6 @@ import { dashboardApi, type DashboardStats } from './api/dashboardApi';
 import {
     DashboardHeader,
     DashboardLoadingShell,
-    DashboardPreferencesPanel,
     KpiStrip,
     OperationalMixCard,
     RecentActivityCard,
@@ -57,11 +56,9 @@ export const Home = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [preferencesOpen, setPreferencesOpen] = useState(false);
 
     /* Preferences (chart mode, density, time range) */
-    const { preferences, setChartMode, setDensity, setTimeRange, toggleWidget, resetPreferences } =
-        useDashboardPreferences();
+    const { preferences } = useDashboardPreferences();
 
     /* Widget grid state (instances, edit mode, catalog) */
     const {
@@ -268,37 +265,14 @@ export const Home = () => {
 
     return (
         <div className="relative flex flex-col gap-4">
-            {/* Click-away to close preferences panel */}
-            {preferencesOpen && (
-                <button
-                    type="button"
-                    aria-label={copy.home.closePreferences}
-                    className="absolute inset-0 z-10 cursor-default"
-                    onClick={() => setPreferencesOpen(false)}
-                />
-            )}
-
             {/* ── Header ──────────────────────────────────────────── */}
             <DashboardHeader
                 onRefresh={() => { void fetchStats('refresh'); }}
                 refreshing={refreshing}
-                preferencesOpen={preferencesOpen}
-                onTogglePreferences={() => setPreferencesOpen((c) => !c)}
                 isEditing={isEditing}
                 onToggleEditing={toggleEditing}
                 onOpenCatalog={openCatalog}
                 onResetGrid={resetGrid}
-            />
-
-            {/* ── Preferences panel ───────────────────────────────── */}
-            <DashboardPreferencesPanel
-                open={preferencesOpen}
-                preferences={preferences}
-                onChartModeChange={setChartMode}
-                onDensityChange={setDensity}
-                onTimeRangeChange={setTimeRange}
-                onToggleWidget={toggleWidget}
-                onReset={resetPreferences}
             />
 
             {/* ── Widget grid ─────────────────────────────────────── */}
