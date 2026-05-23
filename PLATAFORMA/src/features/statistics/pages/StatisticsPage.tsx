@@ -1,6 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useStatistics } from '../hooks/useStatistics';
-import { DollarSign, Briefcase, Zap, BarChart3, Loader2 } from 'lucide-react';
+import { statisticsApi } from '../api/statisticsApi';
+import type { TouristOption, LocationOption } from '../types/types';
+import {
+    DollarSign, Briefcase, Zap, BarChart3, Loader2,
+    Users, MapPin, TrendingUp, Leaf, ChevronDown, Search,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartURSpinner } from '../../../components/ui/SmartURSpinner';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -10,33 +15,215 @@ import type { Company } from '../../companies/types/types';
 
 type TabKey = 'expenditure' | 'employment' | 'input';
 
-const Label = ({ children }: { children: React.ReactNode }) => (
-    <label className="block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>
-        {children}
-    </label>
-);
-
-const inputCls = "mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2";
+/* ── Shared styles ─────────────────────────────────────────────────────────── */
+const inputCls =
+    'mt-1.5 w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-violet-500/40';
 const inputStyle: React.CSSProperties = {
     background: 'var(--color-bg-alt)',
     borderColor: 'var(--color-border)',
     color: 'var(--color-text)',
 };
 
-const kpiCardStyle: React.CSSProperties = {
-    background: 'var(--color-bg-alt)',
-    borderColor: 'var(--color-border)',
+const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
+    <label className="mb-1 block text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>
+        {children}
+        {required && <span className="ml-1 text-pink-500">*</span>}
+    </label>
+);
+
+/* ── KPI card ──────────────────────────────────────────────────────────────── */
+const KpiCard = ({
+    label,
+    value,
+    sub,
+    color,
+    icon: Icon,
+}: {
+    label: string;
+    value: string | number;
+    sub?: string;
+    color: string;
+    icon: React.ElementType;
+}) => (
+    <div
+        className="flex items-start gap-3 rounded-2xl border p-4"
+        style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+    >
+        <div
+            className="flex size-9 shrink-0 items-center justify-center rounded-xl"
+            style={{ background: `${color}1A` }}
+        >
+            <Icon className="size-4" style={{ color }} />
+        </div>
+        <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>
+                {label}
+            </p>
+            <p className="mt-0.5 truncate text-xl font-bold leading-tight" style={{ color: 'var(--color-text)' }}>
+                {value}
+            </p>
+            {sub && (
+                <p className="mt-0.5 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                    {sub}
+                </p>
+            )}
+        </div>
+    </div>
+);
+
+/* ── Searchable select (for tourists) ─────────────────────────────────────── */
+const SearchSelect = ({
+    placeholder,
+    options,
+    value,
+    onChange,
+    loading,
+    renderLabel,
+    renderSub,
+}: {
+    placeholder: string;
+    options: TouristOption[];
+    value: number;
+    onChange: (v: number) => void;
+    loading: boolean;
+    renderLabel: (o: TouristOption) => string;
+    renderSub: (o: TouristOption) => string;
+}) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
+
+    const filtered = useMemo(
+        () =>
+            options.filter(
+                (o) =>
+                    renderLabel(o).toLowerCase().includes(search.toLowerCase()) ||
+                    renderSub(o).toLowerCase().includes(search.toLowerCase()),
+            ),
+        [options, search],
+    );
+
+    const selected = options.find((o) => o.userId === value);
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setOpen((p) => !p)}
+                className={`${inputCls} flex items-center justify-between gap-2 text-left`}
+                style={inputStyle}
+            >
+                {loading ? (
+                    <span className="flex items-center gap-2" style={{ color: 'var(--color-text-alt)' }}>
+                        <Loader2 className="size-4 animate-spin" /> Cargando…
+                    </span>
+                ) : selected ? (
+                    <span className="flex flex-col leading-tight">
+                        <span style={{ color: 'var(--color-text)' }}>{renderLabel(selected)}</span>
+                        <span className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>{renderSub(selected)}</span>
+                    </span>
+                ) : (
+                    <span style={{ color: 'var(--color-text-alt)' }}>{placeholder}</span>
+                )}
+                <ChevronDown className="size-4 shrink-0" style={{ color: 'var(--color-text-alt)' }} />
+            </button>
+
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute z-50 mt-1 w-full rounded-xl border shadow-xl overflow-hidden"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    >
+                        <div className="flex items-center gap-2 border-b px-3 py-2" style={{ borderColor: 'var(--color-border)' }}>
+                            <Search className="size-4 shrink-0" style={{ color: 'var(--color-text-alt)' }} />
+                            <input
+                                autoFocus
+                                className="w-full bg-transparent text-sm outline-none"
+                                style={{ color: 'var(--color-text)' }}
+                                placeholder="Buscar por nombre o correo…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                        <div className="max-h-52 overflow-y-auto">
+                            {filtered.length === 0 ? (
+                                <p className="px-4 py-3 text-sm" style={{ color: 'var(--color-text-alt)' }}>Sin resultados</p>
+                            ) : (
+                                filtered.map((o) => (
+                                    <button
+                                        key={o.userId}
+                                        type="button"
+                                        className="flex w-full flex-col px-4 py-2.5 text-left transition-colors hover:bg-violet-500/10"
+                                        onClick={() => { onChange(o.userId); setOpen(false); setSearch(''); }}
+                                    >
+                                        <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                                            {renderLabel(o)}
+                                        </span>
+                                        <span className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                            {renderSub(o)}
+                                        </span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 };
 
-const SkeletonRow = () => (
+/* ── Skeleton row ──────────────────────────────────────────────────────────── */
+const SkeletonRow = ({ cols }: { cols: number }) => (
     <tr>
-        {[1, 2, 3, 4].map((i) => (
+        {Array.from({ length: cols }).map((_, i) => (
             <td key={i} className="px-3 py-2">
-                <div className="h-3 rounded animate-pulse" style={{ background: 'var(--color-border)', width: `${60 + i * 10}%` }} />
+                <div className="h-3 rounded animate-pulse" style={{ background: 'var(--color-border)', width: `${55 + ((i * 17) % 40)}%` }} />
             </td>
         ))}
     </tr>
 );
+
+/* ── Table wrapper ─────────────────────────────────────────────────────────── */
+const DataTable = ({ headers, loading, empty, colSpan, children }: {
+    headers: string[];
+    loading: boolean;
+    empty: boolean;
+    colSpan: number;
+    children: React.ReactNode;
+}) => (
+    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+                <thead>
+                    <tr style={{ background: 'var(--color-bg-alt)' }}>
+                        {headers.map((h) => (
+                            <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--color-text-alt)' }}>
+                                {h}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {loading ? (
+                        [1, 2, 3].map((i) => <SkeletonRow key={i} cols={colSpan} />)
+                    ) : empty ? (
+                        <tr>
+                            <td colSpan={colSpan} className="px-3 py-8 text-center text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                Sin registros aún — usa el formulario para añadir el primero
+                            </td>
+                        </tr>
+                    ) : children}
+                </tbody>
+            </table>
+        </div>
+    </div>
+);
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
 
 export const StatisticsPage = () => {
     const {
@@ -51,50 +238,98 @@ export const StatisticsPage = () => {
     const { lang } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
 
-    // Companies for dropdowns
+    // ── Reference data ────────────────────────────────────────────────────
     const [companies, setCompanies] = useState<Company[]>([]);
+    const [tourists, setTourists] = useState<TouristOption[]>([]);
+    const [locations, setLocations] = useState<LocationOption[]>([]);
     const [loadingCompanies, setLoadingCompanies] = useState(false);
+    const [loadingTourists, setLoadingTourists] = useState(false);
+    const [loadingLocations, setLoadingLocations] = useState(false);
 
     useEffect(() => {
-        let cancelled = false;
+        let alive = true;
+
         setLoadingCompanies(true);
         companyServices.findAll(1, 200)
-            .then((res) => { if (!cancelled) setCompanies(res.companies); })
+            .then((r) => { if (alive) setCompanies(r.companies); })
             .catch(() => {})
-            .finally(() => { if (!cancelled) setLoadingCompanies(false); });
-        return () => { cancelled = true; };
+            .finally(() => { if (alive) setLoadingCompanies(false); });
+
+        setLoadingTourists(true);
+        statisticsApi.getTourists()
+            .then((r) => { if (alive) setTourists(r); })
+            .catch(() => {})
+            .finally(() => { if (alive) setLoadingTourists(false); });
+
+        setLoadingLocations(true);
+        statisticsApi.getLocations()
+            .then((r) => { if (alive) setLocations(r); })
+            .catch(() => {})
+            .finally(() => { if (alive) setLoadingLocations(false); });
+
+        return () => { alive = false; };
     }, []);
 
-    // Fetch records when tab changes
+    // ── Fetch on tab change ───────────────────────────────────────────────
     useEffect(() => {
         if (activeTab === 'expenditure') fetchExpenditures();
         if (activeTab === 'employment') fetchEmployments();
         if (activeTab === 'input') fetchInputs();
     }, [activeTab]);
 
-    const tabs = useMemo(
-        () =>
-            [
-                { key: 'expenditure' as const, label: m.statistics.tabExpenditure, icon: DollarSign, color: 'var(--color-purple)' },
-                { key: 'employment' as const, label: m.statistics.tabEmployment, icon: Briefcase, color: 'var(--color-cyan)' },
-                { key: 'input' as const, label: m.statistics.tabCarbon, icon: Zap, color: 'var(--color-green)' },
-            ] as const,
-        [lang],
+    // ── Tourist / company lookup helpers ─────────────────────────────────
+    const companyMap = useMemo(() => new Map(companies.map((c) => [c.id, c.name])), [companies]);
+    const touristMap = useMemo(
+        () => new Map(tourists.map((t) => [t.userId, `${t.name} (${t.email})`])),
+        [tourists],
     );
 
+    // ── Form state ───────────────────────────────────────────────────────
+    const [selTourist, setSelTourist] = useState<number>(0);
+
+    // ── Tab definitions ──────────────────────────────────────────────────
+    const tabs = useMemo(
+        () => [
+            { key: 'expenditure' as const, label: m.statistics.tabExpenditure, icon: DollarSign, color: 'var(--color-purple)' },
+            { key: 'employment' as const, label: m.statistics.tabEmployment, icon: Briefcase, color: 'var(--color-cyan)' },
+            { key: 'input' as const, label: m.statistics.tabCarbon, icon: Zap, color: 'var(--color-green)' },
+        ] as const,
+        [lang],
+    );
     const activeTabData = tabs.find((t) => t.key === activeTab)!;
 
-    // KPI helpers
+    // ── KPI derived ──────────────────────────────────────────────────────
     const totalExpAmount = expenditures.reduce((s, r) => s + Number(r.amount), 0);
+    const avgExpAmount = expenditures.length > 0 ? totalExpAmount / expenditures.length : 0;
+    const mostCommonExpType = useMemo(() => {
+        if (!expenditures.length) return '—';
+        const freq: Record<string, number> = {};
+        expenditures.forEach((r) => { freq[r.expenditureType] = (freq[r.expenditureType] || 0) + 1; });
+        return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
+    }, [expenditures]);
+
     const totalSalary = employments.reduce((s, r) => s + Number(r.salary), 0);
-    const totalCO2 = inputs.reduce((s, r) => s + Number(r.carbon_footprint), 0);
+    const avgSalary = employments.length > 0 ? totalSalary / employments.length : 0;
+    const fullTimeCount = employments.filter((r) => r.contractType === 'Tiempo Completo').length;
+
+    const totalCO2 = inputs.reduce((s, r) => s + Number(r.carbonFootprint ?? 0), 0);
+    const totalCost = inputs.reduce((s, r) => s + Number(r.cost), 0);
+    const mostCommonInput = useMemo(() => {
+        if (!inputs.length) return '—';
+        const freq: Record<string, number> = {};
+        inputs.forEach((r) => { freq[r.inputType] = (freq[r.inputType] || 0) + 1; });
+        return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—';
+    }, [inputs]);
+
+    /* ── Format helpers ─────────────────────────────────────────────────── */
+    const mxn = (v: number) => `$${v.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+
             {/* Header */}
             <div className="flex items-center gap-3 shrink-0">
-                <div className="flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: 'var(--color-purple)' }}>
+                <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: 'var(--color-purple)' }}>
                     <BarChart3 className="size-5 text-white" />
                 </div>
                 <div>
@@ -107,17 +342,8 @@ export const StatisticsPage = () => {
                 </div>
             </div>
 
-            {/* Info banner */}
-            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <BarChart3 className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
-                <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Estadísticas del sistema</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Panel de reportes con métricas de evaluaciones, actividad de usuarios, servicios más visitados y tendencias por período. Útil para tomar decisiones operativas y de calidad.</p>
-                </div>
-            </div>
-
             {/* Tabs */}
-            <div className="flex gap-1 rounded-2xl p-1.5" style={{ background: 'var(--color-bg-alt)' }}>
+            <div className="flex gap-1 rounded-2xl p-1.5 shrink-0" style={{ background: 'var(--color-bg-alt)' }}>
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.key;
                     return (
@@ -142,22 +368,21 @@ export const StatisticsPage = () => {
                 })}
             </div>
 
-            {/* Form panel */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Content */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="rounded-2xl border p-6 shadow-sm"
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.18 }}
+                        className="rounded-2xl border p-5 shadow-sm"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
-                        {/* Panel title */}
+                        {/* Panel header */}
                         <div className="mb-5 flex items-center gap-3">
-                            <div className="flex size-9 items-center justify-center rounded-xl"
-                                style={{ background: activeTabData.color }}>
+                            <div className="flex size-9 items-center justify-center rounded-xl" style={{ background: activeTabData.color }}>
                                 <activeTabData.icon className="size-4 text-white" />
                             </div>
                             <div>
@@ -172,56 +397,108 @@ export const StatisticsPage = () => {
                             </div>
                         </div>
 
-                        {/* Split layout: form left, KPIs + table right */}
-                        <div className="flex flex-col lg:flex-row gap-6">
+                        {/* 2-column: form left + data right */}
+                        <div className="flex flex-col gap-6 lg:flex-row">
 
-                            {/* ── LEFT: Form ── */}
-                            <div className="lg:w-80 shrink-0">
+                            {/* ── LEFT: Form (fixed width) ────────────────────────────────── */}
+                            <div className="w-full shrink-0 lg:w-72">
+                                <p className="mb-3 text-xs font-bold uppercase tracking-wide" style={{ color: activeTabData.color }}>
+                                    Registrar nuevo
+                                </p>
+
+                                {/* ── GASTO TURÍSTICO ─────────────────────────────────────── */}
                                 {activeTab === 'expenditure' && (
                                     <form
+                                        key="exp-form"
                                         onSubmit={async (e) => {
                                             e.preventDefault();
+                                            if (!selTourist) return;
                                             const fd = new FormData(e.currentTarget);
                                             const ok = await recordExpenditure({
-                                                id_tourist: Number(fd.get('tourist_id')),
+                                                id_tourist: selTourist,
                                                 expenditure_type: fd.get('type') as string,
                                                 amount: Number(fd.get('amount')),
                                                 destination: fd.get('destination') as string,
                                             });
-                                            if (ok) e.currentTarget.reset();
+                                            if (ok) { e.currentTarget.reset(); setSelTourist(0); }
                                         }}
-                                        className="space-y-4"
+                                        className="space-y-3"
                                     >
+                                        {/* Turista */}
                                         <div>
-                                            <Label>ID del turista</Label>
-                                            <input name="tourist_id" type="number" placeholder="ID del turista" min="1"
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>Turista</Label>
+                                            <SearchSelect
+                                                placeholder="Buscar turista…"
+                                                options={tourists}
+                                                value={selTourist}
+                                                onChange={setSelTourist}
+                                                loading={loadingTourists}
+                                                renderLabel={(o) => o.name}
+                                                renderSub={(o) => o.email}
+                                            />
+                                            {tourists.length === 0 && !loadingTourists && (
+                                                <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                                    Sin perfiles registrados aún
+                                                </p>
+                                            )}
                                         </div>
+
+                                        {/* Tipo de gasto */}
                                         <div>
-                                            <Label>{m.statistics.expType}</Label>
-                                            <input name="type" placeholder={m.statistics.expTypePh}
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>{m.statistics.expType}</Label>
+                                            <select name="type" className={inputCls} style={inputStyle} required>
+                                                <option value="">Seleccionar tipo…</option>
+                                                <option value="Alojamiento">🏨 Alojamiento</option>
+                                                <option value="Gastronomía">🍽️ Gastronomía</option>
+                                                <option value="Transporte">🚌 Transporte</option>
+                                                <option value="Actividades recreativas">🎯 Actividades recreativas</option>
+                                                <option value="Compras y artesanías">🛍️ Compras y artesanías</option>
+                                                <option value="Servicios turísticos">🗺️ Servicios turísticos</option>
+                                                <option value="Otros">📦 Otros</option>
+                                            </select>
                                         </div>
+
+                                        {/* Monto */}
                                         <div>
-                                            <Label>{m.statistics.amount}</Label>
-                                            <input name="amount" type="number" placeholder={m.statistics.amountPh}
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>{m.statistics.amount}</Label>
+                                            <div className="relative">
+                                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: 'var(--color-text-alt)', marginTop: '2px' }}>$</span>
+                                                <input name="amount" type="number" min="0" step="0.01" placeholder="0.00"
+                                                    className={`${inputCls} pl-7`} style={inputStyle} required />
+                                            </div>
                                         </div>
+
+                                        {/* Destino — selector de ubicaciones */}
                                         <div>
-                                            <Label>{m.statistics.destination}</Label>
-                                            <input name="destination" placeholder={m.statistics.destinationPh}
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>{m.statistics.destination}</Label>
+                                            {loadingLocations ? (
+                                                <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                                    <Loader2 className="size-4 animate-spin" /> Cargando ubicaciones…
+                                                </div>
+                                            ) : (
+                                                <select name="destination" className={inputCls} style={inputStyle} required>
+                                                    <option value="">Seleccionar destino…</option>
+                                                    {locations.map((loc) => (
+                                                        <option key={loc.id} value={loc.name}>
+                                                            {loc.name}{loc.municipality ? ` — ${loc.municipality}` : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
                                         </div>
-                                        <button type="submit" disabled={isLoading}
-                                            className="mt-2 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+
+                                        <button type="submit" disabled={isLoading || !selTourist}
+                                            className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={22} /> {m.statistics.saving}</> : m.statistics.btnSaveExpense}
+                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnSaveExpense}
                                         </button>
                                     </form>
                                 )}
 
+                                {/* ── EMPLEO ──────────────────────────────────────────────── */}
                                 {activeTab === 'employment' && (
                                     <form
+                                        key="emp-form"
                                         onSubmit={async (e) => {
                                             e.preventDefault();
                                             const fd = new FormData(e.currentTarget);
@@ -235,59 +512,70 @@ export const StatisticsPage = () => {
                                             });
                                             if (ok) e.currentTarget.reset();
                                         }}
-                                        className="space-y-4"
+                                        className="space-y-3"
                                     >
                                         <div>
-                                            <Label>Empresa</Label>
+                                            <Label required>Empresa</Label>
                                             {loadingCompanies ? (
                                                 <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
                                                     <Loader2 className="size-4 animate-spin" /> Cargando…
                                                 </div>
                                             ) : (
                                                 <select name="company_id" className={inputCls} style={inputStyle} required>
+                                                    <option value="">Seleccionar empresa…</option>
                                                     {companies.map((c) => (
                                                         <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
                                                 </select>
                                             )}
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.position}</Label>
+                                            <Label required>{m.statistics.position}</Label>
                                             <input name="position" placeholder={m.statistics.positionPh}
                                                 className={inputCls} style={inputStyle} required />
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.contractType}</Label>
-                                            <select name="contract" className={inputCls} style={inputStyle}>
+                                            <Label required>{m.statistics.contractType}</Label>
+                                            <select name="contract" className={inputCls} style={inputStyle} required>
                                                 <option value="Tiempo Completo">{m.statistics.contractFull}</option>
                                                 <option value="Medio Tiempo">{m.statistics.contractHalf}</option>
                                                 <option value="Temporal">{m.statistics.contractTemporal}</option>
                                             </select>
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.gender}</Label>
-                                            <select name="gender" className={inputCls} style={inputStyle}>
+                                            <Label required>{m.statistics.gender}</Label>
+                                            <select name="gender" className={inputCls} style={inputStyle} required>
                                                 <option value="Masculino">{m.statistics.genderMale}</option>
                                                 <option value="Femenino">{m.statistics.genderFemale}</option>
                                                 <option value="No binario">{m.statistics.genderNb}</option>
                                                 <option value="Prefiero no decir">{m.statistics.genderPreferNot}</option>
                                             </select>
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.salary}</Label>
-                                            <input name="salary" type="number" placeholder={m.statistics.salaryPh}
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>{m.statistics.salary}</Label>
+                                            <div className="relative">
+                                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: 'var(--color-text-alt)', marginTop: '2px' }}>$</span>
+                                                <input name="salary" type="number" min="0" placeholder="0.00"
+                                                    className={`${inputCls} pl-7`} style={inputStyle} required />
+                                            </div>
                                         </div>
+
                                         <button type="submit" disabled={isLoading}
-                                            className="mt-2 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                            className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={22} /> {m.statistics.saving}</> : m.statistics.btnRegisterEmployee}
+                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnRegisterEmployee}
                                         </button>
                                     </form>
                                 )}
 
+                                {/* ── INSUMOS ─────────────────────────────────────────────── */}
                                 {activeTab === 'input' && (
                                     <form
+                                        key="inp-form"
                                         onSubmit={async (e) => {
                                             e.preventDefault();
                                             const fd = new FormData(e.currentTarget);
@@ -300,207 +588,194 @@ export const StatisticsPage = () => {
                                             });
                                             if (ok) e.currentTarget.reset();
                                         }}
-                                        className="space-y-4"
+                                        className="space-y-3"
                                     >
                                         <div>
-                                            <Label>Empresa</Label>
+                                            <Label required>Empresa</Label>
                                             {loadingCompanies ? (
                                                 <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
                                                     <Loader2 className="size-4 animate-spin" /> Cargando…
                                                 </div>
                                             ) : (
                                                 <select name="company_id" className={inputCls} style={inputStyle} required>
+                                                    <option value="">Seleccionar empresa…</option>
                                                     {companies.map((c) => (
                                                         <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
                                                 </select>
                                             )}
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.inputType}</Label>
-                                            <select name="type" className={inputCls} style={inputStyle}>
-                                                <option value="Energía Eléctrica">{m.statistics.inputElectric}</option>
-                                                <option value="Agua">{m.statistics.inputWater}</option>
-                                                <option value="Gas - Combustible">{m.statistics.inputGas}</option>
+                                            <Label required>{m.statistics.inputType}</Label>
+                                            <select name="type" className={inputCls} style={inputStyle} required>
+                                                <option value="Energía Eléctrica">⚡ {m.statistics.inputElectric}</option>
+                                                <option value="Agua">💧 {m.statistics.inputWater}</option>
+                                                <option value="Gas - Combustible">🔥 {m.statistics.inputGas}</option>
+                                                <option value="Residuos sólidos">♻️ Residuos sólidos</option>
+                                                <option value="Otros insumos">📦 Otros insumos</option>
                                             </select>
                                         </div>
+
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <Label>{m.statistics.consumption}</Label>
-                                                <input name="consumption" type="number" placeholder={m.statistics.consumptionPh}
+                                                <Label required>{m.statistics.consumption}</Label>
+                                                <input name="consumption" type="number" min="0" step="0.01" placeholder={m.statistics.consumptionPh}
                                                     className={inputCls} style={inputStyle} required />
                                             </div>
                                             <div>
-                                                <Label>{m.statistics.carbon}</Label>
-                                                <input name="carbon" type="number" step="0.01" placeholder={m.statistics.carbonPh}
+                                                <Label required>CO₂ (kg)</Label>
+                                                <input name="carbon" type="number" min="0" step="0.001" placeholder="0.000"
                                                     className={inputCls} style={inputStyle} required />
                                             </div>
                                         </div>
+
                                         <div>
-                                            <Label>{m.statistics.cost}</Label>
-                                            <input name="cost" type="number" placeholder={m.statistics.costPh}
-                                                className={inputCls} style={inputStyle} required />
+                                            <Label required>{m.statistics.cost}</Label>
+                                            <div className="relative">
+                                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: 'var(--color-text-alt)', marginTop: '2px' }}>$</span>
+                                                <input name="cost" type="number" min="0" step="0.01" placeholder="0.00"
+                                                    className={`${inputCls} pl-7`} style={inputStyle} required />
+                                            </div>
                                         </div>
+
                                         <button type="submit" disabled={isLoading}
-                                            className="mt-2 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                            className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={22} /> {m.statistics.saving}</> : m.statistics.btnSaveIndicators}
+                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnSaveIndicators}
                                         </button>
                                     </form>
                                 )}
                             </div>
 
-                            {/* ── RIGHT: KPIs + Table ── */}
-                            <div className="flex-1 min-w-0">
-                                {/* KPI chips */}
+                            {/* ── RIGHT: KPIs + table ─────────────────────────────────────── */}
+                            <div className="flex-1 min-w-0 space-y-4">
+
+                                {/* KPI grid — 2×2 */}
                                 {activeTab === 'expenditure' && (
                                     <>
-                                        <div className="flex gap-3 mb-4">
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Total registros</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{expenditures.length}</p>
-                                            </div>
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Monto total</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-purple)' }}>
-                                                    ${totalExpAmount.toLocaleString('es-MX', { minimumFractionDigits: 0 })}
-                                                </p>
-                                            </div>
+                                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                                            <KpiCard label="Registros" value={expenditures.length} color="var(--color-purple)" icon={BarChart3} />
+                                            <KpiCard label="Monto total" value={mxn(totalExpAmount)} color="var(--color-purple)" icon={DollarSign} />
+                                            <KpiCard label="Promedio / registro" value={mxn(avgExpAmount)} color="var(--color-purple)" icon={TrendingUp} />
+                                            <KpiCard label="Tipo más frecuente" value={mostCommonExpType} color="var(--color-purple)" icon={BarChart3} />
                                         </div>
-                                        <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr style={{ background: 'var(--color-bg-alt)' }}>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Tipo</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Monto</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Destino</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Turista ID</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {loadingExpenditures ? (
-                                                        [1,2,3].map((i) => <SkeletonRow key={i} />)
-                                                    ) : expenditures.length === 0 ? (
-                                                        <tr>
-                                                            <td colSpan={4} className="px-3 py-6 text-center text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                                Sin registros aún
-                                                            </td>
-                                                        </tr>
-                                                    ) : (
-                                                        expenditures.slice(-10).reverse().map((r) => (
-                                                            <tr key={r.id_expenditure} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.expenditure_type}</td>
-                                                                <td className="px-3 py-2 font-medium" style={{ color: 'var(--color-purple)' }}>${Number(r.amount).toLocaleString('es-MX')}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.destination}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text-alt)' }}>{r.id_tourist}</td>
-                                                            </tr>
-                                                        ))
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
+
+                                        <DataTable
+                                            headers={['Turista', 'Tipo de gasto', 'Monto', 'Destino', 'Fecha']}
+                                            loading={loadingExpenditures}
+                                            empty={expenditures.length === 0}
+                                            colSpan={5}
+                                        >
+                                            {expenditures.slice(-20).reverse().map((r) => (
+                                                <tr key={r.id} className="border-t transition-colors hover:bg-violet-500/5" style={{ borderColor: 'var(--color-border)' }}>
+                                                    <td className="px-3 py-2.5">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                                                                {touristMap.get(r.touristId)?.split(' (')[0] ?? `ID ${r.touristId}`}
+                                                            </span>
+                                                            <span className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                                                {touristMap.get(r.touristId)?.match(/\((.+)\)/)?.[1] ?? ''}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        <span className="rounded-full border px-2 py-0.5 text-xs font-medium"
+                                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+                                                            {r.expenditureType}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 font-semibold tabular-nums" style={{ color: 'var(--color-purple)' }}>
+                                                        {mxn(Number(r.amount))}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 flex items-center gap-1.5" style={{ color: 'var(--color-text)' }}>
+                                                        <MapPin className="size-3.5 shrink-0 opacity-50" />
+                                                        {r.destination}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                                        {r.date ? new Date(r.date).toLocaleDateString('es-MX') : '—'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </DataTable>
                                     </>
                                 )}
 
                                 {activeTab === 'employment' && (
                                     <>
-                                        <div className="flex gap-3 mb-4">
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Total registros</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{employments.length}</p>
-                                            </div>
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Salario promedio</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-cyan)' }}>
-                                                    ${employments.length > 0 ? Math.round(totalSalary / employments.length).toLocaleString('es-MX') : 0}
-                                                </p>
-                                            </div>
+                                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                                            <KpiCard label="Empleos registrados" value={employments.length} color="var(--color-cyan)" icon={Users} />
+                                            <KpiCard label="Salario promedio" value={mxn(avgSalary)} color="var(--color-cyan)" icon={DollarSign} />
+                                            <KpiCard label="Nómina total" value={mxn(totalSalary)} color="var(--color-cyan)" icon={TrendingUp} />
+                                            <KpiCard label="Tiempo completo" value={`${fullTimeCount} / ${employments.length}`} color="var(--color-cyan)" icon={Briefcase} sub={employments.length ? `${Math.round((fullTimeCount / employments.length) * 100)}%` : ''} />
                                         </div>
-                                        <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr style={{ background: 'var(--color-bg-alt)' }}>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Puesto</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Contrato</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Género</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Salario</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Empresa ID</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {loadingEmployments ? (
-                                                        [1,2,3].map((i) => <SkeletonRow key={i} />)
-                                                    ) : employments.length === 0 ? (
-                                                        <tr>
-                                                            <td colSpan={5} className="px-3 py-6 text-center text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                                Sin registros aún
-                                                            </td>
-                                                        </tr>
-                                                    ) : (
-                                                        employments.slice(-10).reverse().map((r) => (
-                                                            <tr key={r.id_employment} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.position}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.contract_type}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.gender}</td>
-                                                                <td className="px-3 py-2 font-medium" style={{ color: 'var(--color-cyan)' }}>${Number(r.salary).toLocaleString('es-MX')}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text-alt)' }}>{r.id_company}</td>
-                                                            </tr>
-                                                        ))
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
+
+                                        <DataTable
+                                            headers={['Empresa', 'Puesto', 'Contrato', 'Género', 'Salario']}
+                                            loading={loadingEmployments}
+                                            empty={employments.length === 0}
+                                            colSpan={5}
+                                        >
+                                            {employments.slice(-20).reverse().map((r) => (
+                                                <tr key={r.id} className="border-t transition-colors hover:bg-cyan-500/5" style={{ borderColor: 'var(--color-border)' }}>
+                                                    <td className="px-3 py-2.5 font-medium" style={{ color: 'var(--color-text)' }}>
+                                                        {companyMap.get(r.companyId) ?? `Empresa ${r.companyId}`}
+                                                    </td>
+                                                    <td className="px-3 py-2.5" style={{ color: 'var(--color-text)' }}>{r.position}</td>
+                                                    <td className="px-3 py-2.5">
+                                                        <span className="rounded-full border px-2 py-0.5 text-xs font-medium"
+                                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+                                                            {r.contractType}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>{r.gender}</td>
+                                                    <td className="px-3 py-2.5 font-semibold tabular-nums" style={{ color: 'var(--color-cyan)' }}>
+                                                        {mxn(Number(r.salary))}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </DataTable>
                                     </>
                                 )}
 
                                 {activeTab === 'input' && (
                                     <>
-                                        <div className="flex gap-3 mb-4">
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Total registros</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{inputs.length}</p>
-                                            </div>
-                                            <div className="rounded-xl border px-4 py-2.5 flex-1" style={kpiCardStyle}>
-                                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>CO₂ total (kg)</p>
-                                                <p className="text-lg font-bold" style={{ color: 'var(--color-green)' }}>
-                                                    {totalCO2.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </p>
-                                            </div>
+                                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                                            <KpiCard label="Registros" value={inputs.length} color="var(--color-green)" icon={BarChart3} />
+                                            <KpiCard label="CO₂ total (kg)" value={totalCO2.toFixed(2)} color="var(--color-green)" icon={Leaf} />
+                                            <KpiCard label="Costo total" value={mxn(totalCost)} color="var(--color-green)" icon={DollarSign} />
+                                            <KpiCard label="Insumo frecuente" value={mostCommonInput} color="var(--color-green)" icon={Zap} />
                                         </div>
-                                        <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr style={{ background: 'var(--color-bg-alt)' }}>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Tipo</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Consumo</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>CO₂</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Costo</th>
-                                                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Empresa ID</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {loadingInputs ? (
-                                                        [1,2,3].map((i) => <SkeletonRow key={i} />)
-                                                    ) : inputs.length === 0 ? (
-                                                        <tr>
-                                                            <td colSpan={5} className="px-3 py-6 text-center text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                                Sin registros aún
-                                                            </td>
-                                                        </tr>
-                                                    ) : (
-                                                        inputs.slice(-10).reverse().map((r) => (
-                                                            <tr key={r.id_input} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{r.input_type}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text)' }}>{Number(r.consumption).toLocaleString('es-MX')}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-green)' }}>{Number(r.carbon_footprint).toFixed(2)}</td>
-                                                                <td className="px-3 py-2 font-medium" style={{ color: 'var(--color-text)' }}>${Number(r.cost).toLocaleString('es-MX')}</td>
-                                                                <td className="px-3 py-2" style={{ color: 'var(--color-text-alt)' }}>{r.id_company}</td>
-                                                            </tr>
-                                                        ))
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
+
+                                        <DataTable
+                                            headers={['Empresa', 'Insumo', 'Consumo', 'CO₂ (kg)', 'Costo']}
+                                            loading={loadingInputs}
+                                            empty={inputs.length === 0}
+                                            colSpan={5}
+                                        >
+                                            {inputs.slice(-20).reverse().map((r) => (
+                                                <tr key={r.id} className="border-t transition-colors hover:bg-green-500/5" style={{ borderColor: 'var(--color-border)' }}>
+                                                    <td className="px-3 py-2.5 font-medium" style={{ color: 'var(--color-text)' }}>
+                                                        {companyMap.get(r.companyId) ?? `Empresa ${r.companyId}`}
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        <span className="rounded-full border px-2 py-0.5 text-xs font-medium"
+                                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+                                                            {r.inputType}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 tabular-nums text-xs" style={{ color: 'var(--color-text)' }}>
+                                                        {r.consumption != null ? Number(r.consumption).toLocaleString('es-MX') : '—'}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 font-semibold tabular-nums" style={{ color: 'var(--color-green)' }}>
+                                                        {r.carbonFootprint != null ? Number(r.carbonFootprint).toFixed(3) : '—'}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 tabular-nums" style={{ color: 'var(--color-text)' }}>
+                                                        {mxn(Number(r.cost))}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </DataTable>
                                     </>
                                 )}
                             </div>
