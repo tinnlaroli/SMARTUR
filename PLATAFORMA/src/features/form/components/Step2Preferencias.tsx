@@ -55,8 +55,8 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
     );
 
     const [tiposTurismo, setTipos] = useState<string[]>(data.tiposTurismo || []);
-    const [actividad_level, setActividad] = useState<number>(data.actividad_level ?? 3);
-    const [preferencia_lugar, setPreferenciaLugar] = useState<string>(data.preferencia_lugar || 'indiferente');
+    const [actividad_level, setActividad] = useState<number>(data.actividad_level ?? 0);
+    const [preferencia_lugar, setPreferenciaLugar] = useState<string>(data.preferencia_lugar || '');
 
     const toggleTipo = (v: string) => {
         setTipos((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
@@ -82,7 +82,10 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Tipos de turismo (elige al menos 1)</label>
+                <label className={`mb-4 flex items-center gap-1 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                    Tipos de turismo
+                    <span className="text-pink-500">*</span>
+                </label>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                     {tiposTurismoList.map((t) => (
                         <button
@@ -107,7 +110,10 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Nivel de actividad</label>
+                <label className={`mb-4 flex items-center gap-1.5 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                    Nivel de actividad
+                    <span className="text-xs font-normal text-zinc-400">(opcional)</span>
+                </label>
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
                     {actividadLevels.map((level) => (
                         <button
@@ -132,7 +138,10 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
             </div>
 
             <div className="form-section mb-10">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Preferencia de lugar</label>
+                <label className={`mb-4 flex items-center gap-1.5 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                    Preferencia de lugar
+                    <span className="text-xs font-normal text-zinc-400">(opcional)</span>
+                </label>
                 <div className="grid grid-cols-3 gap-3">
                     {lugarOptions.map((lugar) => (
                         <button
