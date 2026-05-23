@@ -1,7 +1,103 @@
-import React, { type DragEvent, type ReactNode, useEffect, useRef, useState } from 'react';
-import { X, Minus, Plus } from 'lucide-react';
+import React, { type DragEvent, type ReactNode, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { DASHBOARD_COLORS } from '../utils/dashboard';
 import { type WidgetDef, type WidgetInstance } from '../widgets/widgetRegistry';
 
+/* ── Resize drag state ───────────────────────────────────────────────── */
+interface ResizeDragData {
+    /** Which axis(es) are being resized */
+    axis: 'col' | 'row' | 'both';
+    startX: number;
+    startY: number;
+    startColSpan: number;
+    startRowSpan: number;
+    /** Approximate pixel width of one grid column at drag start */
+    cellW: number;
+    /** Approximate pixel height of one grid row at drag start */
+    cellH: number;
+}
+
+/* ── Resize handle component ─────────────────────────────────────────── */
+interface ResizeHandleProps {
+    axis: 'col' | 'row' | 'both';
+    isActive: boolean;
+    onPointerDown: (axis: 'col' | 'row' | 'both', e: React.PointerEvent<HTMLDivElement>) => void;
+    onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+    onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => void;
+}
+
+const ResizeHandle: React.FC<ResizeHandleProps> = ({
+    axis,
+    isActive,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+}) => {
+    const purple = DASHBOARD_COLORS.purple;
+
+    const commonProps = {
+        onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => onPointerDown(axis, e),
+        onPointerMove,
+        onPointerUp,
+        onPointerCancel: onPointerUp,
+        // Prevent the HTML5 drag from firing when the user grabs a resize handle
+        draggable: false,
+        onDragStart: (e: React.DragEvent) => e.preventDefault(),
+    };
+
+    if (axis === 'col') {
+        return (
+            <div
+                {...commonProps}
+                title="Arrastra para cambiar ancho"
+                className="absolute right-0 top-8 bottom-8 z-[10] w-2.5 cursor-ew-resize rounded-r-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                style={{
+                    background: isActive ? purple : `${purple}55`,
+                    boxShadow: isActive ? `0 0 0 2px ${purple}40` : 'none',
+                }}
+            />
+        );
+    }
+
+    if (axis === 'row') {
+        return (
+            <div
+                {...commonProps}
+                title="Arrastra para cambiar alto"
+                className="absolute bottom-0 left-8 right-8 z-[10] h-2.5 cursor-ns-resize rounded-b-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                style={{
+                    background: isActive ? purple : `${purple}55`,
+                    boxShadow: isActive ? `0 0 0 2px ${purple}40` : 'none',
+                }}
+            />
+        );
+    }
+
+    // Corner — 'both'
+    return (
+        <div
+            {...commonProps}
+            title="Arrastra para cambiar tamaño"
+            className="absolute bottom-0 right-0 z-[15] size-9 cursor-nwse-resize rounded-br-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-end justify-end p-2"
+            style={{
+                background: isActive ? `${purple}70` : `${purple}35`,
+            }}
+        >
+            {/* 2 × 2 dot grid — corner indicator */}
+            <div className="grid grid-cols-2 gap-[3px]">
+                {[0, 1, 2, 3].map((i) => (
+                    <div
+                        key={i}
+                        className="size-[3px] rounded-full"
+                        style={{ background: isActive ? '#fff' : `${purple}dd` }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+/* ── Main shell ──────────────────────────────────────────────────────── */
 interface WidgetShellProps {
     instance: WidgetInstance;
     def: WidgetDef;
@@ -17,40 +113,18 @@ interface WidgetShellProps {
     children: ReactNode;
 }
 
-type FlashState = 'min' | 'max' | null;
-
-const FLASH_DURATION = 420; // ms — how long the red indicator stays visible
-
-/** Resize button that flashes red when it can't go further (Figma-style) */
-const ResizeBtn: React.FC<{
-    label: string;
-    icon: React.ElementType;
-    flashActive: boolean;
-    onClick: (e: React.MouseEvent) => void;
-}> = ({ label, icon: Icon, flashActive, onClick }) => (
-    <button
-        type="button"
-        title={label}
-        onClick={onClick}
-        onDragStart={(e) => e.stopPropagation()}
-        className="flex size-5 items-center justify-center rounded-md transition-all"
-        style={{
-            color: flashActive ? '#fff' : 'rgba(255,255,255,0.75)',
-            background: flashActive ? 'rgba(239,68,68,0.85)' : 'transparent',
-            transform: flashActive ? 'scale(1.15)' : 'scale(1)',
-        }}
-    >
-        <Icon className="size-3" strokeWidth={2.5} />
-    </button>
-);
-
 /**
- * Wraps a single widget in the grid. In edit mode it shows:
- *  - Subtle iOS-style wobble animation (±0.55°)
- *  - Floating "×" remove button (top-right)
- *  - Compact resize toolbar (bottom-right) with Figma-style boundary feedback:
- *    buttons flash red when a limit is reached instead of going disabled
- *  - Semi-transparent drag overlay
+ * Wraps a single widget in the grid.
+ *
+ * Edit mode provides:
+ *  - Very subtle wobble animation (±0.3°)
+ *  - "×" remove button (top-right)
+ *  - Edge / corner drag handles for resizing:
+ *      · Right edge  → column span (cursor: ew-resize)
+ *      · Bottom edge → row span    (cursor: ns-resize)
+ *      · Bottom-right corner → both (cursor: nwse-resize)
+ *  - Handles appear on hover; turn solid while actively dragging
+ *  - Semi-transparent overlay that captures drag-to-reorder events
  */
 export const WidgetShell: React.FC<WidgetShellProps> = ({
     instance,
@@ -66,185 +140,170 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
     isDragOver,
     children,
 }) => {
-    /* ── Wobble stagger ──────────────────────────────────────────── */
+    const shellRef = useRef<HTMLDivElement>(null);
+    const dragDataRef = useRef<ResizeDragData | null>(null);
+    const [isResizing, setIsResizing] = useState(false);
+    const [activeAxis, setActiveAxis] = useState<'col' | 'row' | 'both' | null>(null);
+
+    /* Stagger wobble between widgets */
     const wobbleDelay = `${(index % 7) * 0.09}s`;
 
-    /* ── Resize boundary flash state ────────────────────────────── */
-    const [colFlash, setColFlash] = useState<FlashState>(null);
-    const [rowFlash, setRowFlash] = useState<FlashState>(null);
-    const colTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const rowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    /* Which resize handles to show */
+    const canResizeCol  = def.minColSpan !== def.maxColSpan;
+    const canResizeRow  = def.minRowSpan !== def.maxRowSpan;
 
-    // Cleanup timers on unmount
-    useEffect(() => () => {
-        if (colTimer.current) clearTimeout(colTimer.current);
-        if (rowTimer.current) clearTimeout(rowTimer.current);
-    }, []);
-
-    const triggerColFlash = (side: 'min' | 'max') => {
-        if (colTimer.current) clearTimeout(colTimer.current);
-        setColFlash(side);
-        colTimer.current = setTimeout(() => setColFlash(null), FLASH_DURATION);
-    };
-
-    const triggerRowFlash = (side: 'min' | 'max') => {
-        if (rowTimer.current) clearTimeout(rowTimer.current);
-        setRowFlash(side);
-        rowTimer.current = setTimeout(() => setRowFlash(null), FLASH_DURATION);
-    };
-
-    /* ── Resize handlers with boundary detection ─────────────────── */
-    const handleColMinus = (e: React.MouseEvent) => {
+    /* ── Pointer resize handlers ──────────────────────────────────── */
+    const handleResizePointerDown = (
+        axis: 'col' | 'row' | 'both',
+        e: React.PointerEvent<HTMLDivElement>,
+    ) => {
         e.stopPropagation();
-        if (instance.colSpan <= def.minColSpan) {
-            triggerColFlash('min');
-        } else {
-            onResize(-1, 0);
-        }
+        e.preventDefault();
+        if (!shellRef.current) return;
+
+        const rect = shellRef.current.getBoundingClientRect();
+        // Approx per-cell dimensions at drag start
+        const cellW = rect.width  / instance.colSpan;
+        const cellH = rect.height / instance.rowSpan;
+
+        dragDataRef.current = {
+            axis,
+            startX: e.clientX,
+            startY: e.clientY,
+            startColSpan: instance.colSpan,
+            startRowSpan: instance.rowSpan,
+            cellW,
+            cellH,
+        };
+
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setIsResizing(true);
+        setActiveAxis(axis);
     };
 
-    const handleColPlus = (e: React.MouseEvent) => {
+    const handleResizePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        const d = dragDataRef.current;
+        if (!d) return;
         e.stopPropagation();
-        if (instance.colSpan >= def.maxColSpan) {
-            triggerColFlash('max');
-        } else {
-            onResize(1, 0);
+
+        let targetCol = instance.colSpan;
+        let targetRow = instance.rowSpan;
+
+        if (d.axis === 'col' || d.axis === 'both') {
+            const dx    = e.clientX - d.startX;
+            const steps = Math.round(dx / d.cellW);
+            targetCol   = Math.max(def.minColSpan, Math.min(def.maxColSpan, d.startColSpan + steps));
         }
+
+        if (d.axis === 'row' || d.axis === 'both') {
+            const dy    = e.clientY - d.startY;
+            const steps = Math.round(dy / d.cellH);
+            targetRow   = Math.max(def.minRowSpan, Math.min(def.maxRowSpan, d.startRowSpan + steps));
+        }
+
+        const dc = targetCol - instance.colSpan;
+        const dr = targetRow - instance.rowSpan;
+        if (dc !== 0 || dr !== 0) onResize(dc, dr);
     };
 
-    const handleRowMinus = (e: React.MouseEvent) => {
+    const handleResizePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
         e.stopPropagation();
-        if (instance.rowSpan <= def.minRowSpan) {
-            triggerRowFlash('min');
-        } else {
-            onResize(0, -1);
-        }
+        dragDataRef.current = null;
+        setIsResizing(false);
+        setActiveAxis(null);
     };
 
-    const handleRowPlus = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (instance.rowSpan >= def.maxRowSpan) {
-            triggerRowFlash('max');
-        } else {
-            onResize(0, 1);
-        }
+    const resizeHandleProps = {
+        onPointerDown: handleResizePointerDown,
+        onPointerMove: handleResizePointerMove,
+        onPointerUp:   handleResizePointerUp,
     };
-
-    const isResizable = def.minColSpan !== def.maxColSpan || def.minRowSpan !== def.maxRowSpan;
 
     return (
         <div
-            className={`relative h-full select-none${isEditing ? ' widget-wobble' : ''}`}
-            style={isEditing ? { animationDelay: wobbleDelay } : undefined}
-            draggable={isEditing}
+            ref={shellRef}
+            className={[
+                'group relative h-full select-none',
+                // Wobble only when editing and NOT actively resizing (stops jitter during resize)
+                isEditing && !isResizing ? 'widget-wobble' : '',
+                // Drop-target highlight when dragging another widget over this one
+                isDragOver ? 'ring-2 ring-violet-500 ring-offset-0 rounded-[28px]' : '',
+                // Active resize ring
+                isResizing ? 'ring-2 ring-violet-400 ring-offset-0 rounded-[28px]' : '',
+            ].filter(Boolean).join(' ')}
+            style={isEditing && !isResizing ? { animationDelay: wobbleDelay } : undefined}
+            /* HTML5 drag-to-reorder — disabled while a resize drag is in progress */
+            draggable={isEditing && !isResizing}
             onDragStart={(e) => {
+                if (isResizing) { e.preventDefault(); return; }
                 e.stopPropagation();
                 onDragStart();
             }}
-            onDragOver={(e) => {
-                e.preventDefault();
-                onDragOver(e);
-            }}
+            onDragOver={(e) => { e.preventDefault(); onDragOver(e); }}
             onDragLeave={onDragLeave}
-            onDrop={(e) => {
-                e.preventDefault();
-                onDrop(e);
-            }}
+            onDrop={(e) => { e.preventDefault(); onDrop(e); }}
         >
-            {/* Widget content — always rendered */}
-            <div className="h-full">
-                {children}
-            </div>
+            {/* Widget content */}
+            <div className="h-full">{children}</div>
 
             {/* ── Edit-mode overlay ──────────────────────────────── */}
             {isEditing && (
                 <>
-                    {/* Drag capture + drop highlight */}
+                    {/* Semi-transparent drag-grab area (covers the content) */}
                     <div
                         aria-hidden
-                        className={`absolute inset-0 z-[5] cursor-grab rounded-[28px] transition-all duration-150${
-                            isDragOver
-                                ? ' ring-2 ring-violet-500 ring-offset-0 bg-violet-500/10'
-                                : ''
-                        }`}
-                        style={{ pointerEvents: 'auto' }}
+                        className="absolute inset-0 z-[5] cursor-grab rounded-[28px]"
+                        style={{
+                            pointerEvents: isResizing ? 'none' : 'auto',
+                            background: isDragOver ? 'rgba(139,92,246,0.08)' : 'transparent',
+                        }}
                     />
 
-                    {/* × Remove button */}
+                    {/* × Remove button — always on top */}
                     <button
                         type="button"
                         aria-label={`Eliminar widget ${def.label}`}
-                        onDragStart={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRemove();
-                        }}
-                        className="absolute right-2.5 top-2.5 z-[15] flex size-6 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-600 active:scale-90"
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                        className="absolute right-2.5 top-2.5 z-[25] flex size-6 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-600 active:scale-90"
                     >
                         <X className="size-3.5" strokeWidth={2.5} />
                     </button>
 
-                    {/* Widget name label */}
+                    {/* Widget name / drag hint label — top-left */}
                     <div
                         aria-hidden
-                        onDragStart={(e) => e.stopPropagation()}
-                        className="absolute left-2.5 top-2.5 z-[15] flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md"
-                        style={{ background: 'rgba(10,10,10,0.65)' }}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                        className="absolute left-2.5 top-2.5 z-[25] flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-md"
+                        style={{ background: 'rgba(10,10,10,0.60)' }}
                     >
-                        <span className="mr-0.5 opacity-60">⠿</span>
+                        <span className="mr-0.5 opacity-55">⠿</span>
                         {def.label}
                     </div>
 
-                    {/* Resize toolbar */}
-                    {isResizable && (
-                        <div
-                            onDragStart={(e) => e.stopPropagation()}
-                            className="absolute bottom-2.5 right-2.5 z-[15] flex items-center gap-0.5 rounded-xl px-1.5 py-1 backdrop-blur-md"
-                            style={{ background: 'rgba(10,10,10,0.70)' }}
-                        >
-                            {/* Column resize */}
-                            {(def.minColSpan !== def.maxColSpan) && (
-                                <>
-                                    <ResizeBtn
-                                        label="Reducir ancho"
-                                        icon={Minus}
-                                        flashActive={colFlash === 'min'}
-                                        onClick={handleColMinus}
-                                    />
-                                    <span className="px-0.5 text-[9px] font-bold text-white/40">W</span>
-                                    <ResizeBtn
-                                        label="Ampliar ancho"
-                                        icon={Plus}
-                                        flashActive={colFlash === 'max'}
-                                        onClick={handleColPlus}
-                                    />
-                                </>
-                            )}
-
-                            {/* Separator */}
-                            {(def.minColSpan !== def.maxColSpan) && (def.minRowSpan !== def.maxRowSpan) && (
-                                <span className="mx-0.5 h-3 w-px bg-white/20" />
-                            )}
-
-                            {/* Row resize */}
-                            {(def.minRowSpan !== def.maxRowSpan) && (
-                                <>
-                                    <ResizeBtn
-                                        label="Reducir alto"
-                                        icon={Minus}
-                                        flashActive={rowFlash === 'min'}
-                                        onClick={handleRowMinus}
-                                    />
-                                    <span className="px-0.5 text-[9px] font-bold text-white/40">H</span>
-                                    <ResizeBtn
-                                        label="Ampliar alto"
-                                        icon={Plus}
-                                        flashActive={rowFlash === 'max'}
-                                        onClick={handleRowPlus}
-                                    />
-                                </>
-                            )}
-                        </div>
+                    {/* ── Resize handles ─────────────────────────── */}
+                    {canResizeCol && (
+                        <ResizeHandle
+                            axis="col"
+                            isActive={activeAxis === 'col' || activeAxis === 'both'}
+                            {...resizeHandleProps}
+                        />
+                    )}
+                    {canResizeRow && (
+                        <ResizeHandle
+                            axis="row"
+                            isActive={activeAxis === 'row' || activeAxis === 'both'}
+                            {...resizeHandleProps}
+                        />
+                    )}
+                    {canResizeCol && canResizeRow && (
+                        <ResizeHandle
+                            axis="both"
+                            isActive={activeAxis === 'both'}
+                            {...resizeHandleProps}
+                        />
                     )}
                 </>
             )}
