@@ -361,7 +361,7 @@ export const MLObservabilityPage = () => {
                     {/* Model stack status badges */}
                     {(modelStatus || statusLoading) && (
                         <div
-                            className="flex-1 rounded-2xl border p-4"
+                            className="flex-[5] min-w-0 rounded-2xl border p-4"
                             style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                         >
                             <div className="flex items-center gap-2 mb-3">
@@ -402,7 +402,7 @@ export const MLObservabilityPage = () => {
 
                     {/* Scheduler — compact panel */}
                     <div
-                        className="w-60 shrink-0 rounded-2xl border p-3 flex flex-col gap-2.5"
+                        className="flex-[3] rounded-2xl border p-3 flex flex-col gap-2.5"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
                         {/* Header */}
