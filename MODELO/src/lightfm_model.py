@@ -279,40 +279,36 @@ class SmarturLightFMModel:
     def _build_training_user_features(self, rev: pd.DataFrame) -> list:
         """
         Infers user feature vectors from their liked items.
-        Same heuristic as rf_model._simulate_user_contexts() but produces
-        LightFM-compatible (user_id, [active_feature_tags]) tuples.
+        Fully vectorized via pandas groupby().any() — handles 60k+ users in seconds.
         """
-        has_cats = 'categories' in rev.columns
-        liked_mask = rev['stars'].astype(float) >= 4.0
+        if 'categories' not in rev.columns:
+            return [(uid, ['uf:budget_2', 'uf:group_amigos'])
+                    for uid in rev['user_id'].unique()]
 
+        cats   = rev['categories'].fillna('').str.lower()
+        liked  = rev['stars'].astype(float) >= 4.0
+        uids   = rev['user_id']
+
+        # Vectorized: one groupby per feature (single pass through data per pattern)
+        def _user_has(pattern):
+            return (liked & cats.str.contains(pattern, regex=True, na=False)).groupby(uids).any()
+
+        feat_series = {
+            f'uf:tur_{t}': _user_has(p) for t, p in _TOURISM_PATTERNS.items()
+        }
+        feat_series['uf:pref_outdoor'] = _user_has(
+            r'park|hiking|nature|outdoor|volcano|mountain')
+        feat_series['uf:wants_tours']  = _user_has(r'tours?\b|excursion')
+        feat_series['uf:pref_food']    = _user_has(r'restaurant|food|caf[eé]|gastronomy')
+
+        all_uids = uids.unique()
         result = []
-        for uid in rev['user_id'].unique():
-            user_mask = rev['user_id'] == uid
-            user_liked = liked_mask & user_mask
-
-            active = []
-
-            if has_cats:
-                liked_cats = rev.loc[user_liked, 'categories'].fillna('').str.lower()
-
-                # Tourism types from liked item categories
-                for t, pattern in _TOURISM_PATTERNS.items():
-                    if liked_cats.str.contains(pattern, regex=True, na=False).any():
-                        active.append(f'uf:tur_{t}')
-
-                # Derived boolean prefs
-                if liked_cats.str.contains(r'park|hiking|nature|outdoor|volcano|mountain', regex=True, na=False).any():
-                    active.append('uf:pref_outdoor')
-                if liked_cats.str.contains(r'tours?\b|excursion', regex=True, na=False).any():
-                    active.append('uf:wants_tours')
-                if liked_cats.str.contains(r'restaurant|food|caf[eé]|gastronomy', regex=True, na=False).any():
-                    active.append('uf:pref_food')
-
-            # Default group / budget (not inferrable from Yelp)
-            active.append('uf:group_amigos')
-            active.append('uf:budget_2')
-
-            result.append((uid, list(set(active)) or ['uf:budget_2', 'uf:group_amigos']))
+        for uid in all_uids:
+            active = ['uf:group_amigos', 'uf:budget_2']  # stable defaults
+            for feat, series in feat_series.items():
+                if uid in series.index and series[uid]:
+                    active.append(feat)
+            result.append((uid, active))
 
         return result
 
