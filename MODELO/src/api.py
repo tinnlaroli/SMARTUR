@@ -14,7 +14,7 @@ Conecta los flujos entre el Engine de Pearson y el Modelo Contextual de RF.
 """
 
 from engine import SmarturEngine
-from rf_model import SmarturContextModel
+from rf_model import SmarturContextModel, _MODELS
 from fusion import recommend_hybrid
 import json
 from pathlib import Path
@@ -225,14 +225,47 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
 def get_metrics():
     """
     Returns the latest stored algorithm metrics for the admin dashboard.
-    Reads models/algorithm_metrics.json written by evaluate.py / optimize_alpha.py.
+    Priority:
+      1. DB table ml_model_metrics (most recent row)
+      2. models/algorithm_metrics.json (written by _run_full_training)
     """
-    metrics_path = Path("models/algorithm_metrics.json")
+    # 1. Try DB first
+    try:
+        _persist_metrics_to_db  # ensure helper is defined (imported below function)
+        import psycopg2
+        conn = psycopg2.connect(
+            host=os.environ.get("DB_HOST", "localhost"),
+            port=int(os.environ.get("DB_PORT", 5432)),
+            dbname=os.environ.get("DB_NAME", "smartur"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", ""),
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT metrics_json FROM ml_model_metrics ORDER BY created_at DESC LIMIT 1"
+                )
+                row = cur.fetchone()
+        finally:
+            conn.close()
+        if row:
+            return row[0]  # psycopg2 returns jsonb as dict automatically
+    except Exception as db_err:
+        logger.warning(f"[metrics] DB fallback: {db_err}")
+
+    # 2. Fall back to JSON file in the models volume
+    metrics_path = Path(_MODELS) / "algorithm_metrics.json"
     if not metrics_path.exists():
         raise HTTPException(status_code=404, detail="No hay métricas almacenadas todavía.")
     try:
         with open(metrics_path, encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        # Reject placeholder content written before first real training
+        if "status" in data and "note" in data and len(data) == 2:
+            raise HTTPException(status_code=404, detail="Métricas aún no calculadas. Llama a /train primero.")
+        return data
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error leyendo métricas: {e}")
         raise HTTPException(status_code=500, detail="Error al leer métricas.")
