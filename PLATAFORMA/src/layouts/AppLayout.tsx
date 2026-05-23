@@ -189,7 +189,7 @@ export default function AppLayout() {
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
     const copy = getDashboardText(lang);
-    const { startTour } = useDashboardTour(lang);
+    const { startTour } = useDashboardTour(lang, navigate);
 
     const userRole = user?.role_id || 2;
 

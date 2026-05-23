@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { LanguageCode } from '../../contexts/LanguageContext';
 
 const TOUR_KEY = 'smartur_dashboard_tour_v2';
@@ -6,200 +6,222 @@ const TOUR_KEY = 'smartur_dashboard_tour_v2';
 const kw = (text: string) =>
     `<strong style="color:var(--color-purple)">${text}</strong>`;
 
+const dim = (text: string) =>
+    `<span style="opacity:0.65;font-size:0.8rem">${text}</span>`;
+
 type StepText = { title: string; description: string };
 
 const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     es: [
         {
             title: '✦ Bienvenido a SMARTUR Admin',
-            description: `Este tour rápido te guiará por los módulos del panel de administración. Usa ${kw('→ / ←')} para navegar entre pasos o ${kw('Esc')} para salir en cualquier momento.`,
+            description: `Este tour rápido te guiará por los módulos del panel. Usa ${kw('→ / ←')} para avanzar o retroceder, ${kw('Esc')} para salir. ${dim('El tour navega automáticamente a cada módulo.')}`,
         },
         {
             title: 'Dashboard',
-            description: `Tu panel de control central. Ve ${kw('KPIs')}, gráficas de actividad y el estado del sistema en tiempo real.`,
+            description: `Tu panel central. Ve ${kw('KPIs de calidad')}, gráfica de actividad mensual, distribución de usuarios y el ranking de servicios mejor evaluados. ${dim('Se actualiza en tiempo real.')}`,
         },
         {
             title: 'Usuarios',
-            description: `Gestiona cuentas de ${kw('turistas registrados')}: crea, edita, desactiva o consulta historial de actividad.`,
+            description: `Gestiona cuentas de ${kw('turistas registrados')}: crea, edita, desactiva o consulta historial de actividad. ${dim('Incluye filtros por rol y búsqueda por nombre.')}`,
         },
         {
             title: 'Compañías',
-            description: `Administra las ${kw('empresas turísticas')} registradas. Cada compañía puede tener múltiples servicios asociados.`,
+            description: `Administra las ${kw('empresas turísticas')} del sistema. Cada compañía puede tener múltiples servicios y actividades asociadas. ${dim('Primer paso antes de crear servicios.')}`,
         },
         {
             title: 'Servicios Turísticos',
-            description: `Ofertas concretas de una compañía: ${kw('hoteles')}, restaurantes, tours, transporte. Lo que el turista puede reservar o evaluar.`,
+            description: `Ofertas concretas de una empresa: ${kw('hoteles, restaurantes, tours, transporte')}. Se evalúan con rúbricas y su score alimenta el motor de recomendaciones de la app. ${dim('Los servicios con score ≥ 50 reciben prioridad en IA.')}`,
         },
         {
             title: 'Ubicaciones',
-            description: `Define las ${kw('zonas geográficas')} donde operan los servicios y puntos de interés de la región.`,
+            description: `Define las ${kw('zonas geográficas')} donde operan servicios y puntos de interés. ${dim('Las ubicaciones son la base para el filtrado por distancia en la app móvil.')}`,
         },
         {
             title: 'Puntos de Interés',
-            description: `Atracciones, monumentos o lugares naturales que no pertenecen a una empresa. El turista los ${kw('descubre y guarda como favoritos')}.`,
+            description: `Atracciones, monumentos o sitios naturales ${kw('sin empresa propietaria')} (cascadas, volcanes, zonas arqueológicas). El turista los descubre en el mapa y los guarda como favoritos. ${dim('Son candidatos directos en el motor de recomendaciones.')}`,
         },
         {
             title: 'Actividades',
-            description: `Experiencias disponibles en la región. Se asocian a servicios y POIs para ${kw('enriquecer las rutas')} generadas por la IA.`,
+            description: `Registra la ${kw('actividad productiva')} de cada empresa: valor de producción, impacto ambiental y social. ${dim('Datos para reportes de sostenibilidad turística.')}`,
         },
         {
             title: 'Comunidad',
-            description: `Publicaciones creadas por usuarios desde la app móvil. Puedes ${kw('moderar y eliminar')} contenido inapropiado.`,
+            description: `Publicaciones creadas por usuarios desde la app móvil. Puedes ${kw('moderar y eliminar')} contenido inapropiado. ${dim('Solo aparece contenido publicado por turistas reales.')}`,
         },
         {
             title: 'Contactos y Suscripciones',
-            description: `Correos capturados desde los ${kw('formularios de contacto')}. Útil para campañas de email y seguimiento B2B.`,
+            description: `Correos capturados desde formularios de contacto del landing. ${dim('Útil para campañas de email y seguimiento B2B con potenciales socios.')}`,
         },
         {
             title: 'Estadísticas',
-            description: `Reportes detallados: ${kw('visitas por lugar')}, evaluaciones promedio, actividad de usuarios y tendencias por período.`,
+            description: `Registra indicadores de ${kw('sostenibilidad turística')}: gasto por turista, empleos generados por empresa, y huella de carbono. ${dim('3 tabs: Gasto · Empleo · Carbono.')}`,
         },
         {
             title: 'ML / Observabilidad IA',
-            description: `Monitorea la salud del ${kw('motor de recomendaciones')}: RMSE, latencia de inferencia y tasa de clicks sobre sugerencias.`,
+            description: `Monitorea el ${kw('motor de recomendaciones')}: RMSE, latencia, sesiones y CTR 30d. Entrena el modelo con un clic y controla el reentrenamiento automático nocturno. ${dim('LightFM WARP + CF Pearson + Random Forest + TF-IDF.')}`,
         },
         {
             title: 'Instrumentos de Evaluación',
-            description: `Crea y edita ${kw('plantillas de rúbricas')} para evaluar servicios. Define criterios, pesos y niveles de calificación.`,
+            description: `Crea y edita ${kw('rúbricas de evaluación')} para servicios. Define criterios, pesos y niveles de calificación. ${dim('Las plantillas se aplican cuando un evaluador califica un servicio.')}`,
         },
         {
             title: 'Configuración',
-            description: `Ajusta el ${kw('idioma')}, tema visual, preferencias de alertas y detalles de tu cuenta.`,
+            description: `Ajusta el ${kw('idioma')}, tema visual (claro/oscuro), alertas del panel y detalles de tu cuenta. ${dim('Los cambios se guardan automáticamente en este navegador.')}`,
         },
     ],
     en: [
         {
             title: '✦ Welcome to SMARTUR Admin',
-            description: `This quick tour walks you through the main modules of the admin panel. Use ${kw('→ / ←')} to navigate or ${kw('Esc')} to exit at any time.`,
+            description: `This quick tour walks you through the main modules. Use ${kw('→ / ←')} to navigate or ${kw('Esc')} to exit. ${dim('The tour automatically navigates to each module.')}`,
         },
         {
             title: 'Dashboard',
-            description: `Your central control panel. View ${kw('KPIs')}, activity charts and system status in real time.`,
+            description: `Your central control panel. View ${kw('quality KPIs')}, monthly activity charts, user distribution and the top-rated services ranking. ${dim('Updates in real time.')}`,
         },
         {
             title: 'Users',
-            description: `Manage ${kw('registered tourist')} accounts — create, edit, deactivate or review activity history.`,
+            description: `Manage ${kw('registered tourist')} accounts — create, edit, deactivate or review activity history. ${dim('Includes role filters and name search.')}`,
         },
         {
             title: 'Companies',
-            description: `Manage registered ${kw('tourism businesses')}. Each company can have multiple associated services.`,
+            description: `Manage registered ${kw('tourism businesses')}. Each company can have multiple associated services and activities. ${dim('First step before creating services.')}`,
         },
         {
             title: 'Tourist Services',
-            description: `Concrete offers from a company: ${kw('hotels')}, restaurants, tours, transport. What tourists can book or evaluate.`,
+            description: `Concrete offerings: ${kw('hotels, restaurants, tours, transport')}. Evaluated with rubrics — scores feed the app recommendation engine. ${dim('Services scoring ≥ 50 get priority in AI rankings.')}`,
         },
         {
             title: 'Locations',
-            description: `Define the ${kw('geographic zones')} where services and points of interest operate.`,
+            description: `Define the ${kw('geographic zones')} where services and POIs operate. ${dim('Used for distance-based filtering in the mobile app.')}`,
         },
         {
             title: 'Points of Interest',
-            description: `Attractions, monuments or natural sites that don't belong to a company. Tourists ${kw('discover and save them as favorites')}.`,
+            description: `Attractions, monuments or natural sites ${kw('without a business owner')} (waterfalls, volcanoes, ruins). Tourists discover and save them as favorites. ${dim('Direct candidates in the recommendation engine.')}`,
         },
         {
             title: 'Activities',
-            description: `Experiences available in the region. Linked to services and POIs to ${kw('enrich AI-generated routes')}.`,
+            description: `Records the ${kw('productive activity')} of each company: production value, environmental and social impact. ${dim('Data for tourism sustainability reporting.')}`,
         },
         {
             title: 'Community',
-            description: `Posts created by users from the mobile app. You can ${kw('moderate and remove')} inappropriate content.`,
+            description: `Posts created by users from the mobile app. You can ${kw('moderate and remove')} inappropriate content. ${dim('Only content published by real tourists appears here.')}`,
         },
         {
             title: 'Contacts & Subscriptions',
-            description: `Emails captured from ${kw('contact forms')}. Useful for email campaigns and B2B follow-up.`,
+            description: `Emails captured from landing page contact forms. ${dim('Useful for email campaigns and B2B follow-up with potential partners.')}`,
         },
         {
             title: 'Statistics',
-            description: `Detailed reports: ${kw('visits per location')}, average evaluations, user activity and period trends.`,
+            description: `Records ${kw('tourism sustainability indicators')}: tourist spending, jobs generated per company, and carbon footprint. ${dim('3 tabs: Spending · Employment · Carbon.')}`,
         },
         {
             title: 'ML / AI Observability',
-            description: `Monitor the health of the ${kw('recommendation engine')}: RMSE, inference latency and click-through rate.`,
+            description: `Monitor the ${kw('recommendation engine')}: RMSE, latency, sessions and 30d CTR. Train the model with one click and control the nightly auto-retraining schedule. ${dim('LightFM WARP + CF Pearson + Random Forest + TF-IDF.')}`,
         },
         {
             title: 'Evaluation Instruments',
-            description: `Create and edit ${kw('rubric templates')} for service evaluation. Define criteria, weights and scoring levels.`,
+            description: `Create and edit ${kw('evaluation rubrics')} for services. Define criteria, weights and scoring levels. ${dim('Templates are applied when an evaluator rates a service.')}`,
         },
         {
             title: 'Settings',
-            description: `Adjust ${kw('language')}, visual theme, alert preferences and account details.`,
+            description: `Adjust ${kw('language')}, visual theme (light/dark), panel alerts and account details. ${dim('Changes are saved automatically in this browser.')}`,
         },
     ],
     fr: [
         {
             title: '✦ Bienvenue sur SMARTUR Admin',
-            description: `Cette visite rapide vous guide à travers les modules du panneau d'administration. Utilisez ${kw('→ / ←')} pour naviguer ou ${kw('Échap')} pour quitter à tout moment.`,
+            description: `Cette visite rapide vous guide à travers les modules. Utilisez ${kw('→ / ←')} pour naviguer ou ${kw('Échap')} pour quitter. ${dim('Le tour navigue automatiquement vers chaque module.')}`,
         },
         {
             title: 'Tableau de Bord',
-            description: `Votre panneau de contrôle central. Consultez les ${kw('KPIs')}, graphiques d'activité et l'état du système en temps réel.`,
+            description: `Votre panneau central. Consultez les ${kw('KPIs de qualité')}, graphiques d'activité, distribution des utilisateurs et classement des services. ${dim('Se met à jour en temps réel.')}`,
         },
         {
             title: 'Utilisateurs',
-            description: `Gérez les comptes des ${kw('touristes inscrits')}: créez, modifiez, désactivez ou consultez l'historique.`,
+            description: `Gérez les comptes des ${kw('touristes inscrits')} — créez, modifiez, désactivez ou consultez l'historique. ${dim('Filtres par rôle et recherche par nom inclus.')}`,
         },
         {
             title: 'Entreprises',
-            description: `Administrez les ${kw('entreprises touristiques')} enregistrées. Chaque entreprise peut avoir plusieurs services associés.`,
+            description: `Gérez les ${kw('entreprises touristiques')} enregistrées. Chaque entreprise peut avoir plusieurs services et activités. ${dim('Première étape avant de créer des services.')}`,
         },
         {
             title: 'Services Touristiques',
-            description: `Offres concrètes: ${kw('hôtels')}, restaurants, circuits, transport. Ce que le touriste peut réserver ou évaluer.`,
+            description: `Offres concrètes: ${kw('hôtels, restaurants, circuits, transport')}. Évalués par rubriques — les scores alimentent le moteur de recommandations. ${dim('Les services avec score ≥ 50 ont priorité en IA.')}`,
         },
         {
             title: 'Lieux',
-            description: `Définissez les ${kw('zones géographiques')} où opèrent les services et points d'intérêt.`,
+            description: `Définissez les ${kw('zones géographiques')} où opèrent services et POIs. ${dim('Utilisé pour le filtrage par distance dans l\'app mobile.')}`,
         },
         {
             title: "Points d'Intérêt",
-            description: `Sites naturels, monuments ou attractions sans entreprise propriétaire. Les touristes les ${kw('découvrent et les sauvegardent')}.`,
+            description: `Sites naturels, monuments ou attractions ${kw('sans entreprise propriétaire')} (cascades, volcans, ruines). Les touristes les découvrent et les sauvegardent. ${dim('Candidats directs dans le moteur de recommandations.')}`,
         },
         {
             title: 'Activités',
-            description: `Expériences disponibles dans la région. Associées aux services et POIs pour ${kw('enrichir les itinéraires IA')}.`,
+            description: `Enregistre l'${kw('activité productive')} de chaque entreprise: valeur de production, impact environnemental et social. ${dim('Données pour les rapports de durabilité touristique.')}`,
         },
         {
             title: 'Communauté',
-            description: `Publications créées depuis l'app mobile. Vous pouvez ${kw('modérer et supprimer')} le contenu inapproprié.`,
+            description: `Publications créées depuis l'app mobile. Vous pouvez ${kw('modérer et supprimer')} le contenu inapproprié. ${dim('Uniquement le contenu publié par de vrais touristes.')}`,
         },
         {
             title: 'Contacts & Abonnements',
-            description: `Emails saisis via les ${kw('formulaires de contact')}. Utile pour les campagnes email et le suivi B2B.`,
+            description: `Emails saisis via les formulaires du landing. ${dim('Utile pour les campagnes email et le suivi B2B avec des partenaires potentiels.')}`,
         },
         {
             title: 'Statistiques',
-            description: `Rapports détaillés: ${kw('visites par lieu')}, évaluations moyennes, activité des utilisateurs et tendances.`,
+            description: `Enregistre les ${kw('indicateurs de durabilité')}: dépenses touristiques, emplois par entreprise, empreinte carbone. ${dim('3 onglets: Dépenses · Emploi · Carbone.')}`,
         },
         {
             title: 'ML / Observabilité IA',
-            description: `Surveillez la santé du ${kw("moteur de recommandations")}: RMSE, latence d'inférence et taux de clics.`,
+            description: `Surveillez le ${kw('moteur de recommandations')}: RMSE, latence, sessions et CTR 30j. Entraînez d'un clic et gérez le calendrier de réentraînement nocturne. ${dim('LightFM WARP + CF Pearson + Random Forest + TF-IDF.')}`,
         },
         {
             title: "Instruments d'Évaluation",
-            description: `Créez et éditez des ${kw('modèles de grilles')} pour évaluer les services. Définissez critères, poids et niveaux.`,
+            description: `Créez et éditez des ${kw('grilles d\'évaluation')} pour les services. Définissez critères, poids et niveaux. ${dim('Les modèles sont appliqués quand un évaluateur note un service.')}`,
         },
         {
             title: 'Paramètres',
-            description: `Ajustez la ${kw('langue')}, le thème visuel, les préférences d'alertes et les détails du compte.`,
+            description: `Ajustez la ${kw('langue')}, le thème visuel, les alertes et les détails du compte. ${dim('Les modifications sont enregistrées automatiquement dans ce navigateur.')}`,
         },
     ],
 };
 
+/** Sidebar element IDs — must match the data-id attributes on SidebarItem */
 const STEP_ELEMENTS: (string | undefined)[] = [
-    undefined,                    // intro — centered welcome card
-    '#sidebar-item-home',
-    '#sidebar-item-users',
-    '#sidebar-item-companies',
-    '#sidebar-item-services',
-    '#sidebar-item-locations',
-    '#sidebar-item-poi',
-    '#sidebar-item-activities',
-    '#sidebar-item-community',
-    '#sidebar-item-contacts',
-    '#sidebar-item-stats',
-    '#sidebar-item-ml',
-    '#sidebar-item-instruments',
-    '#sidebar-item-settings',
+    undefined,                       // 0 intro — centered card
+    '#sidebar-item-home',            // 1 Dashboard
+    '#sidebar-item-users',           // 2 Users
+    '#sidebar-item-companies',       // 3 Companies
+    '#sidebar-item-services',        // 4 Services
+    '#sidebar-item-locations',       // 5 Locations
+    '#sidebar-item-poi',             // 6 POI
+    '#sidebar-item-activities',      // 7 Activities
+    '#sidebar-item-community',       // 8 Community
+    '#sidebar-item-contacts',        // 9 Contacts
+    '#sidebar-item-stats',           // 10 Statistics
+    '#sidebar-item-ml',              // 11 ML
+    '#sidebar-item-instruments',     // 12 Instruments
+    '#sidebar-item-settings',        // 13 Settings
+];
+
+/** Route to navigate to when each step highlights */
+const STEP_ROUTES: (string | undefined)[] = [
+    undefined,
+    '/dashboard',
+    '/dashboard/usuarios',
+    '/dashboard/companias',
+    '/dashboard/servicios',
+    '/dashboard/ubicaciones',
+    '/dashboard/poi',
+    '/dashboard/actividades',
+    '/dashboard/comunidad',
+    '/dashboard/contactos',
+    '/dashboard/estadisticas',
+    '/dashboard/ml',
+    '/dashboard/instrumentos',
+    '/dashboard/configuracion',
 ];
 
 const TOUR_CSS = `
@@ -211,33 +233,41 @@ const TOUR_CSS = `
       0 0 0 1px rgba(var(--rgb-purple-accent), 0.15),
       0 24px 64px rgba(0,0,0,0.18),
       0 4px 16px rgba(var(--rgb-purple-accent), 0.12) !important;
-    animation: smarturTourIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    animation: smarturTourIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    max-width: 380px !important;
   }
   @keyframes smarturTourIn {
-    from { opacity: 0; transform: scale(0.93) translateY(8px); }
+    from { opacity: 0; transform: scale(0.94) translateY(6px); }
     to   { opacity: 1; transform: scale(1)    translateY(0); }
   }
   .driver-popover-title {
     color: var(--color-text) !important;
     font-weight: 800 !important;
-    font-size: 1.05rem !important;
+    font-size: 1rem !important;
     letter-spacing: -0.02em !important;
     line-height: 1.3 !important;
   }
   .driver-popover-description {
     color: var(--color-text-alt) !important;
     font-size: 0.875rem !important;
-    line-height: 1.65 !important;
-    margin-top: 5px !important;
+    line-height: 1.7 !important;
+    margin-top: 6px !important;
   }
   .driver-popover-footer {
     margin-top: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
   }
   .driver-popover-footer button {
     border-radius: 10px !important;
     font-weight: 600 !important;
     font-size: 0.8rem !important;
-    transition: opacity 0.15s ease !important;
+    transition: opacity 0.15s ease, transform 0.1s ease !important;
+    padding: 6px 14px !important;
+  }
+  .driver-popover-footer button:active {
+    transform: scale(0.97) !important;
   }
   .driver-popover-footer .driver-popover-next-btn {
     background: var(--color-purple) !important;
@@ -253,29 +283,60 @@ const TOUR_CSS = `
     color: var(--color-text-alt) !important;
     font-size: 0.73rem !important;
     font-variant-numeric: tabular-nums !important;
+    flex: 1 !important;
+    text-align: center !important;
   }
   .driver-overlay {
-    background: rgba(0,0,0,0.55) !important;
-    backdrop-filter: blur(4px) !important;
+    background: rgba(0,0,0,0.45) !important;
+    backdrop-filter: blur(3px) !important;
+    transition: opacity 0.25s ease !important;
+  }
+  /* Highlighted element — subtle glow ring instead of hard cutout */
+  .driver-active-element {
+    border-radius: 12px !important;
+    transition: box-shadow 0.2s ease !important;
   }
 `;
 
-export function useDashboardTour(lang: LanguageCode = 'es') {
-    const hasSeenTour = () => localStorage.getItem(TOUR_KEY) === 'done';
+// Module-level promise cache — shared across all hook instances
+let _driverPreload: Promise<typeof import('driver.js')> | null = null;
+
+function preloadDriver() {
+    if (!_driverPreload) {
+        _driverPreload = import('driver.js');
+        import('driver.js/dist/driver.css').catch(() => {/* ignore */});
+    }
+    return _driverPreload;
+}
+
+export function useDashboardTour(
+    lang: LanguageCode = 'es',
+    navigate?: (path: string) => void,
+) {
+    const hasSeenTour  = () => localStorage.getItem(TOUR_KEY) === 'done';
     const markTourDone = () => localStorage.setItem(TOUR_KEY, 'done');
+
+    // Inject CSS once
+    const cssInjected = useRef(false);
+
+    // Start preloading driver.js immediately — before the tour fires
+    useEffect(() => {
+        preloadDriver();
+    }, []);
 
     const startTour = useCallback(async () => {
         try {
-            const { driver } = await import('driver.js');
-            await import('driver.js/dist/driver.css');
-
-            // Inject dark-mode aware styles
-            if (!document.getElementById('smartur-tour-css')) {
+            // CSS injection (once)
+            if (!cssInjected.current && !document.getElementById('smartur-tour-css')) {
                 const style = document.createElement('style');
                 style.id = 'smartur-tour-css';
                 style.textContent = TOUR_CSS;
                 document.head.appendChild(style);
+                cssInjected.current = true;
             }
+
+            // driver.js should already be cached from the preload
+            const { driver } = await preloadDriver();
 
             const texts = STEPS_BY_LANG[lang] ?? STEPS_BY_LANG.es;
             const steps = STEP_ELEMENTS.map((element, i) => {
@@ -299,7 +360,16 @@ export function useDashboardTour(lang: LanguageCode = 'es') {
                 doneBtnText: lang === 'fr' ? 'Terminé' : lang === 'en' ? 'Done' : 'Listo',
                 progressText: '{{current}} / {{total}}',
                 allowHTML: true,
+                smoothScroll: true,
                 steps,
+                onHighlightStarted: (_el, _step, opts) => {
+                    // Navigate to the corresponding route so the main content updates
+                    const idx = (opts as { state?: { activeIndex?: number } }).state?.activeIndex ?? 0;
+                    const route = STEP_ROUTES[idx];
+                    if (route && navigate) {
+                        navigate(route);
+                    }
+                },
                 onDestroyStarted: () => {
                     markTourDone();
                     driverObj.destroy();
@@ -308,15 +378,17 @@ export function useDashboardTour(lang: LanguageCode = 'es') {
 
             driverObj.drive();
         } catch (e) {
-            console.warn('Tour no disponible:', e);
+            console.warn('[tour] no disponible:', e);
         }
-    }, [lang]);
+    }, [lang, navigate]);
 
     useEffect(() => {
         if (!hasSeenTour()) {
-            const timer = setTimeout(startTour, 1200);
+            // Reduced to 800 ms — driver.js is already preloading in background
+            const timer = setTimeout(startTour, 800);
             return () => clearTimeout(timer);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [startTour]);
 
     return { startTour, hasSeenTour };
