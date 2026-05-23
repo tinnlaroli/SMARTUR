@@ -23,15 +23,17 @@ from poi_repository import fetch_pois, get_poi_connection, fetch_traveler_profil
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("smartur-api")
 
-engine        = None
-context_model = None
-gbm_model     = None
+engine          = None
+context_model   = None
+gbm_model       = None
+lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
+content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Carga los modelos pesados una sola vez al iniciar la API."""
-    global engine, context_model, gbm_model
+    global engine, context_model, gbm_model, lightfm_model, content_model_cb
     if os.getenv("SKIP_MODEL_BOOT") == "1":
         logger.warning("SKIP_MODEL_BOOT=1: saltando carga de modelos en arranque")
         yield
@@ -54,7 +56,34 @@ async def lifespan(app: FastAPI):
             logger.info("Modelo GBM no encontrado, entrenando ahora por única vez...")
             gbm_model.train(engine.train_data)
 
-        logger.info("SMARTUR v3 listo (RF + GBM + SVD/Pearson CF).")
+        # ── LightFM (cold-start matrix factorization) ──────────────────────
+        logger.info("Cargando LightFM (cold-start WARP factorization)...")
+        try:
+            from lightfm_model import SmarturLightFMModel
+            lightfm_model = SmarturLightFMModel()
+            if not lightfm_model.load():
+                logger.info("Modelo LightFM no encontrado, entrenando en arranque...")
+                ok = lightfm_model.train(engine.train_data, context_model.df_biz)
+                if not ok:
+                    lightfm_model = None
+                    logger.warning("LightFM no disponible (¿falta instalar la librería?).")
+        except Exception as lfm_err:
+            lightfm_model = None
+            logger.warning(f"LightFM no disponible: {lfm_err}")
+
+        # ── ContentModel (TF-IDF fallback) ────────────────────────────────
+        logger.info("Cargando ContentModel (TF-IDF fallback)...")
+        try:
+            from content_model import SmarturContentModel
+            content_model_cb = SmarturContentModel()
+            content_model_cb.fit(context_model.df_biz)
+        except Exception as cm_err:
+            content_model_cb = None
+            logger.warning(f"ContentModel no disponible: {cm_err}")
+
+        lfm_status = "LightFM✓" if lightfm_model is not None else "LightFM✗"
+        cm_status  = "ContentModel✓" if content_model_cb is not None else "ContentModel✗"
+        logger.info(f"SMARTUR v4 listo (RF + GBM + SVD/CF + {lfm_status} + {cm_status}).")
     except Exception as e:
         logger.error(f"Error crítico en el arranque: {e}")
         # Falla rápido y ruidosamente; previene iniciar en un estado degradado "zombie"
@@ -104,11 +133,13 @@ def health():
     """
     return {
         "status": "ok",
-        "engine_ready": engine is not None and engine.user_item_matrix is not None,
-        "rf_ready": context_model is not None and getattr(context_model, 'is_fitted', False),
-        "gbm_ready": gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
-        "svd_ready": engine is not None and hasattr(engine, 'user_latent'),
-        "users_count": engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
+        "engine_ready":   engine is not None and engine.user_item_matrix is not None,
+        "rf_ready":       context_model is not None and getattr(context_model, 'is_fitted', False),
+        "gbm_ready":      gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
+        "svd_ready":      engine is not None and hasattr(engine, 'user_latent'),
+        "lightfm_ready":  lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
+        "content_ready":  content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
+        "users_count":    engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
         "skip_model_boot": os.getenv("SKIP_MODEL_BOOT") == "1",
     }
 
@@ -137,7 +168,9 @@ def get_recommendation(
 
     try:
         recs = recommend_hybrid(
-            user_id, engine, context_model, alpha=alpha, top_n=top_n
+            user_id, engine, context_model,
+            alpha=alpha, top_n=top_n,
+            lightfm_model=lightfm_model, content_model=content_model_cb,
         )
         return RecommendationResponse(
             user_id=user_id,
@@ -175,6 +208,8 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             alpha=payload.alpha,
             context=merged_context,
             top_n=payload.top_n,
+            lightfm_model=lightfm_model,
+            content_model=content_model_cb,
         )
         return RecommendationResponse(
             user_id=user_id,
@@ -333,14 +368,15 @@ def _persist_metrics_to_db(metrics_json: dict) -> bool:
 
 def _run_full_training():
     """
-    Background worker: retrains all models (RF + GBM), refreshes Pearson/SVD matrix,
-    computes full algorithm comparison metrics, appends ranking metrics, and persists to DB.
+    Background worker: retrains all models (RF + GBM + LightFM), refreshes
+    Pearson/SVD matrix, computes full algorithm comparison metrics, appends
+    ranking metrics, and persists to DB.
     """
-    global engine, context_model, gbm_model
+    global engine, context_model, gbm_model, lightfm_model, content_model_cb
     try:
         import pandas as pd
         from model_metrics import save_metrics, compare_algorithms
-        from poi_repository import fetch_real_interactions
+        from poi_repository import fetch_real_interactions, fetch_evaluation_scores
 
         # ── 1. Merge real DB interactions (if any accumulated) ───────────────
         try:
@@ -358,6 +394,21 @@ def _run_full_training():
         except Exception as exc:
             logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
 
+        # ── 1b. Merge admin evaluation scores ───────────────────────────────
+        try:
+            eval_df = fetch_evaluation_scores()
+            if eval_df is not None and len(eval_df) > 0:
+                # evaluation scores only cover tourist services (svc_N IDs)
+                # Merge columns must match training schema
+                eval_df['user_id'] = eval_df['user_id'].astype(str)
+                eval_df = eval_df.rename(columns={'business_id': 'business_id', 'stars': 'stars'})
+                engine.train_data = pd.concat(
+                    [engine.train_data, eval_df], ignore_index=True
+                )
+                logger.info(f"[train] {len(eval_df)} scores de evaluación admin integrados al entrenamiento.")
+        except Exception as exc:
+            logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
+
         # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
         logger.info("[train] Actualizando matriz de Pearson + SVD...")
         engine.prepare_pearson_matrix()
@@ -372,6 +423,21 @@ def _run_full_training():
             gbm_model.train(engine.train_data)
         else:
             logger.warning("[train] GBM no cargado — solo RF+CF en comparativa.")
+
+        # ── 4b. Retrain LightFM ──────────────────────────────────────────────
+        if lightfm_model is not None:
+            logger.info("[train] Reentrenando LightFM...")
+            try:
+                lightfm_model.train(engine.train_data, context_model.df_biz)
+            except Exception as lfm_err:
+                logger.warning(f"[train] LightFM reentrenamiento falló: {lfm_err}")
+
+        # ── 4c. Refit ContentModel ───────────────────────────────────────────
+        if content_model_cb is not None:
+            try:
+                content_model_cb.fit(context_model.df_biz)
+            except Exception as cm_err:
+                logger.warning(f"[train] ContentModel refit falló: {cm_err}")
 
         # ── 5. Full algorithm comparison ─────────────────────────────────────
         logger.info("[train] Calculando comparativa de algoritmos...")

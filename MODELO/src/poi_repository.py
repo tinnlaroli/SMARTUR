@@ -245,6 +245,47 @@ def fetch_real_interactions(min_events: int = 2) -> pd.DataFrame:
     return df[["user_id", "item_id", "implicit_score"]]
 
 
+def fetch_evaluation_scores() -> pd.DataFrame:
+    """
+    Converts admin quality scores (0-100) from service_evaluation into implicit
+    ratings (1-5) that can be merged into the RF/GBM training corpus.
+    This gives the models a signal that well-evaluated tourist services should
+    be ranked higher, even for cold-start users.
+
+    Mapping:  total_score >= 80 → 4.5  |  total_score >= 60 → 3.5  |  else → 2.5
+
+    Returns DataFrame[user_id, business_id, stars]. Returns empty on error.
+    """
+    sql = """
+        SELECT
+            evaluator_id::text                 AS user_id,
+            'svc_' || id_service::text         AS business_id,
+            CASE
+                WHEN total_score >= 80 THEN 4.5
+                WHEN total_score >= 60 THEN 3.5
+                ELSE 2.5
+            END::float                         AS stars
+        FROM service_evaluation
+        WHERE is_active = TRUE
+          AND total_score IS NOT NULL
+          AND evaluator_id IS NOT NULL
+    """
+    try:
+        with get_poi_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql)
+                cols = [d[0] for d in cur.description]
+                rows = cur.fetchall()
+    except Exception as exc:
+        _logger.warning(f"fetch_evaluation_scores: DB query failed — {exc}")
+        return pd.DataFrame(columns=["user_id", "business_id", "stars"])
+
+    if not rows:
+        return pd.DataFrame(columns=["user_id", "business_id", "stars"])
+
+    return pd.DataFrame(rows, columns=cols)
+
+
 def fetch_traveler_profile(user_id):
     """
     Reads traveler_profile for a numeric user_id and returns a context dict

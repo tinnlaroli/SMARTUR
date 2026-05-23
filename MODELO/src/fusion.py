@@ -1,14 +1,20 @@
 """
-SMARTUR Fusion v3: Pipeline de dos etapas (Retrieval → Ranking).
+SMARTUR Fusion v4: Pipeline de dos etapas (Retrieval → Ranking).
 
 Fase A (Retrieval):
   1. Pool amplio de ~200 candidatos vía KNN/Pearson
   2. Filtro duro: elimina ítems que violen restricciones binarias
   3. Filtro suave: prioriza categorías según tiposTurismo
 
-Fase B (Ranking):
-  1. RF contextual re-rankea con vector [Item + User + Interaction]
-  2. Blend final: α × CF_score + (1-α) × RF_contextual_score
+Fase B (Ranking) — 4 señales:
+  - CF/SVD Pearson (warm users only)
+  - RF contextual [Item + User + Match features]
+  - LightFM WARP (cold-start + warm via feature embeddings)
+  - ContentModel TF-IDF (fallback cuando LightFM no disponible)
+
+Blending:
+  Cold-start: 0.60 LightFM + 0.40 RF
+  Warm user:  0.30 LightFM + 0.30 CF + 0.40 RF
 """
 
 import pandas as pd
@@ -106,17 +112,21 @@ def filtrar_candidatos_por_contexto(biz_df, context):
 # Pipeline principal
 # ---------------------------------------------------------------------------
 
-def recommend_hybrid(user_id, engine, context_model, alpha=0.4, context=None, top_n=5):
+def recommend_hybrid(
+    user_id, engine, context_model,
+    alpha=0.4, context=None, top_n=5,
+    lightfm_model=None, content_model=None,
+):
     """
-    Sistema Híbrido SMARTUR (Retrieval + Ranking).
+    Sistema Híbrido SMARTUR v4 (Retrieval + Ranking multi-señal).
 
     Modo producción (local POIs disponibles):
       - Candidatos: SOLO POIs de la BD local (Altas Montañas, Veracruz)
-      - Ranking: 100% RF contextual (alpha=0 automático, CF no aplica)
+      - Ranking: LightFM + RF (cold-start); LightFM + CF + RF (warm)
 
     Modo desarrollo/fallback (sin BD local):
       - Candidatos: 200 negocios Yelp vía KNN
-      - Ranking: α × CF + (1-α) × RF
+      - Ranking: α × CF + (1-α) × RF (+ LightFM si disponible)
     """
     # ── Fase A: Retrieval ────────────────────────────────────────────────
     try:
@@ -162,34 +172,66 @@ def recommend_hybrid(user_id, engine, context_model, alpha=0.4, context=None, to
     rf_scores = context_model.predict_with_context(final_ids, user_context=context, df_biz_override=ref_df)
     rf_map = dict(zip(final_ids, rf_scores))
 
-    biz_cat_lookup = ref_df.set_index('business_id')['categories'].to_dict()
-    all_biz_names = ref_df.set_index('business_id')['name'].to_dict()
+    biz_cat_lookup  = ref_df.set_index('business_id')['categories'].to_dict()
+    all_biz_names   = ref_df.set_index('business_id')['name'].to_dict()
     biz_kind_lookup = ref_df.set_index('business_id')['kind'].to_dict() if 'kind' in ref_df.columns else {}
-    local_id_set = set(local_biz['business_id']) if not local_biz.empty else set()
-    matrix_col_set = set(engine.user_item_matrix_columns)
+    local_id_set    = set(local_biz['business_id']) if not local_biz.empty else set()
+    matrix_col_set  = set(engine.user_item_matrix_columns)
+
+    # ── LightFM or ContentModel scores ───────────────────────────────────
+    # Determine cold-start status for blending weights
+    is_cold_start = str(user_id) not in (
+        getattr(lightfm_model, '_known_users', set()) if lightfm_model else set()
+    ) and str(user_id) not in (getattr(engine, 'user_index', {}) or {})
+
+    if lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False):
+        lfm_scores  = lightfm_model.predict(str(user_id), final_ids, user_context=context)
+        lfm_map     = dict(zip(final_ids, lfm_scores))
+        use_content = False
+    elif content_model is not None and getattr(content_model, 'is_fitted', False):
+        cb_scores  = content_model.score(final_ids, user_context=context)
+        lfm_map    = dict(zip(final_ids, cb_scores))
+        use_content = True
+    else:
+        lfm_map     = {}
+        use_content = False
 
     recommendations = []
 
     for biz_id in final_ids:
+        # CF / SVD signal
         if biz_id in local_id_set:
-            score_cf = 4.0
+            score_cf = 4.0          # local POI → proxy positive signal
         elif biz_id in matrix_col_set:
             score_cf = predict_cf_pearson(user_id, biz_id, engine)
         else:
             score_cf = engine.train_data['stars'].mean()
-        score_rf = rf_map.get(biz_id, 3.0)
 
-        final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
+        score_rf  = rf_map.get(biz_id, 3.0)
+        score_lfm = lfm_map.get(biz_id, 3.0)
+
+        # Blending weights:
+        #   Cold-start user → lean on LightFM (feature-based) + RF (content)
+        #   Warm user       → balanced: LightFM + CF + RF
+        if lfm_map:
+            if is_cold_start:
+                final_score = 0.60 * score_lfm + 0.40 * score_rf
+            else:
+                final_score = 0.30 * score_lfm + 0.30 * score_cf + 0.40 * score_rf
+        else:
+            # LightFM not available → classic blend
+            final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
+
         nombre = all_biz_names.get(biz_id, 'Desconocido')
-        kind = biz_kind_lookup.get(biz_id, 'poi')
+        kind   = biz_kind_lookup.get(biz_id, 'poi')
 
         recommendations.append({
-            'item_id': str(biz_id),
-            'title': str(nombre),
-            'score': float(round(final_score, 3)),
-            'pred_cf': float(round(score_cf, 3)),
-            'pred_rf': float(round(score_rf, 3)),
-            'kind': kind,
+            'item_id':  str(biz_id),
+            'title':    str(nombre),
+            'score':    float(round(final_score, 3)),
+            'pred_cf':  float(round(score_cf, 3)),
+            'pred_rf':  float(round(score_rf, 3)),
+            'kind':     kind,
         })
 
     sorted_recs = sorted(recommendations, key=lambda x: x['score'], reverse=True)

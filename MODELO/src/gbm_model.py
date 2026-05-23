@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 
-from rf_model import SmarturContextModel, _DATA, _MODELS
+from rf_model import SmarturContextModel, _DATA, _MODELS, _compute_dist_km
 
 
 class SmarturGbmModel(SmarturContextModel):
@@ -27,6 +27,10 @@ class SmarturGbmModel(SmarturContextModel):
     def train(self, reviews_df):
         train_df = reviews_df.merge(self.df_biz, on='business_id', suffixes=('_user', '_biz'))
         self._extract_top_categories(train_df)
+
+        # Compute geographic distance from Altas Montañas center (proxy for training data)
+        train_df['dist_km'] = _compute_dist_km(train_df)
+
         train_df = self._add_category_features(train_df)
         train_df = self._simulate_user_contexts(train_df)
 

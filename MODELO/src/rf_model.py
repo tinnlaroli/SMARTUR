@@ -26,6 +26,31 @@ TOURISM_ANCHOR_CATEGORIES = [
     'history', 'monument', 'zocalo', 'botanical garden',
 ]
 
+# Geographic center of Altas Montañas, Veracruz — used as fallback when user location is unknown.
+ALTAS_MONTANAS_CENTER = (18.95, -97.05)
+
+
+def _compute_dist_km(df, user_lat=None, user_lon=None):
+    """
+    Haversine distance (km) from each row's lat/lon to the user's position.
+    Falls back to ALTAS_MONTANAS_CENTER when user location is unknown.
+    Result is clipped to [0, 500] km so distant Yelp training items saturate
+    at 500 (no variance for them) while local POIs spread from 0–50 km.
+    """
+    lat0 = float(user_lat) if user_lat is not None else ALTAS_MONTANAS_CENTER[0]
+    lon0 = float(user_lon) if user_lon is not None else ALTAS_MONTANAS_CENTER[1]
+    if 'latitude' not in df.columns or 'longitude' not in df.columns:
+        return pd.Series(0.0, index=df.index)
+    R = 6371.0
+    lat1 = np.radians(lat0)
+    lon1 = np.radians(lon0)
+    lat2 = np.radians(df['latitude'].fillna(lat0).astype(float))
+    lon2 = np.radians(df['longitude'].fillna(lon0).astype(float))
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    return (2 * R * np.arcsin(np.sqrt(a.clip(0, 1)))).clip(0, 500)
+
 
 class SmarturContextModel:
     """
@@ -45,7 +70,8 @@ class SmarturContextModel:
         self.numeric_features = [
             'review_count', 'is_open',
             'price_level', 'is_accessible', 'outdoor',
-            'is_good_for_kids', 'is_romantic'
+            'is_good_for_kids', 'is_romantic',
+            'dist_km',   # haversine distance from user / Altas Montañas center
         ]
         self.cat_features = []
         self.features = []  # Item + Context (todas agregadas al train)
@@ -189,15 +215,27 @@ class SmarturContextModel:
         for g in self.encoder.group_types:
             result[f'user_group_{g}'] = (groups == g).astype(int)
 
-        # 4. Age range — no inferible desde Yelp, mantener aleatorio
-        result['user_age_range'] = np.random.randint(1, 6, size=n)
+        # 4. Age range — neutral value (not reliably inferrable from Yelp ratings)
+        result['user_age_range'] = 3
 
-        # 5. Preferencias booleanas (no inferibles desde Yelp con certeza)
-        result['user_requires_accessibility'] = np.random.binomial(1, 0.05, size=n)
-        result['user_pref_outdoor'] = np.random.binomial(1, 0.2, size=n)
-        result['user_wants_tours'] = np.random.binomial(1, 0.15, size=n)
-        result['user_needs_hotel'] = np.random.binomial(1, 0.05, size=n)
-        result['user_pref_food'] = np.random.binomial(1, 0.9, size=n)
+        # 5. Infer boolean preferences from categories of items rated ≥4.
+        # Replacing random noise with inferred signal eliminates the main source of
+        # spurious correlations; the RF now learns real user–category co-occurrence.
+        outdoor_rx = r'park|hiking|outdoor|nature|adventure|volcano|mountain|viewpoint|waterfall'
+        tours_rx   = r'\btours?\b|excursion|senderismo'
+        hotel_rx   = r'hotel|accommodation|bed & breakfast|hostel|campground'
+        food_rx    = r'restaurant|food|caf[eé]|dining|gastronomy|market|local food'
+
+        def _infer_pref(pattern, default=0):
+            has_cat  = cats_lower.str.contains(pattern, na=False, regex=True)
+            user_map = (liked_mask & has_cat).groupby(df['user_id']).any().astype(int)
+            return result['user_id'].map(user_map).fillna(default).astype(int)
+
+        result['user_pref_outdoor']           = _infer_pref(outdoor_rx)
+        result['user_wants_tours']            = _infer_pref(tours_rx)
+        result['user_needs_hotel']            = _infer_pref(hotel_rx)
+        result['user_pref_food']              = _infer_pref(food_rx, default=1)  # food pref is common
+        result['user_requires_accessibility'] = 0  # cannot infer from ratings; keep neutral
 
         # 6. Match features (ahora correlacionados con ratings reales)
         result['budget_delta'] = (result['user_budget'] - result.get('price_level', 2)).abs()
@@ -228,6 +266,11 @@ class SmarturContextModel:
 
         # 1. Pipeline de Item
         self._extract_top_categories(train_df)
+
+        # Compute geographic distance from Altas Montañas center (proxy for training data).
+        # Yelp items (Phoenix/Las Vegas) will saturate at 500 km; local POIs spread 0–50 km.
+        train_df['dist_km'] = _compute_dist_km(train_df)
+
         train_df = self._add_category_features(train_df)
 
         # 2. Pipeline de User (Generación Sintética)
@@ -239,9 +282,16 @@ class SmarturContextModel:
         X = train_df[self.features].fillna(0)
         y = train_df['stars_user']
 
+        # Profundidad dinámica: evita sobreajuste con datasets pequeños (26 POIs locales)
+        n_items = len(train_df['business_id'].unique())
+        max_depth = 12 if n_items > 5000 else (7 if n_items > 500 else 4)
+        n_est = min(200, max(50, n_items * 5))
+        self.model.set_params(max_depth=max_depth, n_estimators=n_est)
+
         print(f"RF (True ML Contextual): entrenando sobre {X.shape[0]} interacciones con {X.shape[1]} variables cruzadas.")
+        print(f"  max_depth={max_depth}, n_estimators={n_est}, n_items={n_items}")
         print(f"Features en red: {self.features}")
-        
+
         self.model.fit(X, y)
 
         os.makedirs(_MODELS, exist_ok=True)
@@ -283,6 +333,12 @@ class SmarturContextModel:
         ref_df = df_biz_override if df_biz_override is not None else self.df_biz
         biz_indexed = ref_df.set_index('business_id')
         biz_features = biz_indexed.reindex(business_ids).reset_index()
+
+        # Compute geographic distance using real user location if available
+        user_lat = user_context.get('lat') if user_context else None
+        user_lon = user_context.get('lon') if user_context else None
+        biz_features['dist_km'] = _compute_dist_km(biz_features, user_lat, user_lon)
+
         biz_features = self._add_category_features(biz_features)
 
         # Codificamos al usuario real (React Form)

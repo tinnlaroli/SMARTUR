@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
@@ -94,6 +95,32 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     }
   }
 
+  /// Requests device GPS location with a short timeout.
+  /// Returns null silently if permission is denied or unavailable —
+  /// the backend will fall back to the Altas Montañas geographic center.
+  Future<Position?> _getDeviceLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return null;
+      }
+      if (permission == LocationPermission.deniedForever) return null;
+
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,   // city-level, saves battery
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+    } catch (_) {
+      return null; // Any error (timeout, hardware) → graceful fallback
+    }
+  }
+
   Future<void> _fetchRecommendations() async {
     final l10n = AppLocalizations.of(context);
     setState(() {
@@ -112,6 +139,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         return;
       }
 
+      // Request GPS location in parallel with the rest of the setup.
+      // If denied or unavailable, lat/lon will be null and the backend
+      // falls back to the Altas Montañas geographic center (18.95, -97.05).
+      final position = await _getDeviceLocation();
+
       final url = Uri.parse('${EnvConfig.aiEngineUrl}/recommend/$userId');
       final payload = {
         "alpha": 0.2,
@@ -125,7 +157,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           "needs_hotel": _needsHotel,
           "pref_food": _prefFood,
           "requiere_accesibilidad": _reqAccesibilidad,
-          "pref_outdoor": _prefOutdoor
+          "pref_outdoor": _prefOutdoor,
+          // Geographic coordinates for distance-based ranking.
+          // null values are accepted by the backend (uses region center as fallback).
+          "lat": position?.latitude,
+          "lon": position?.longitude,
         }
       };
 
