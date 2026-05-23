@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
-import '../../../core/constants/env_config.dart';
+import '../../../core/constants/api_constants.dart';
+import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
@@ -147,7 +147,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       // falls back to the Altas Montañas geographic center (18.95, -97.05).
       final position = await _getDeviceLocation();
 
-      final url = Uri.parse('${EnvConfig.aiEngineUrl}/recommend/$userId');
+      // Route via Node.js API proxy so verifyToken middleware is applied.
+      // Direct calls to aiEngineUrl (port 8000) bypass authentication entirely.
+      final url = Uri.parse('${ApiConstants.baseUrl}/ml/recommend/$userId');
       final payload = {
         "alpha": 0.2,
         "top_n": 5,
@@ -168,11 +170,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         }
       };
 
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 20));
+      // ApiClient injects Authorization: Bearer <token>, Content-Type: application/json,
+      // and applies a 20s timeout — no need for manual headers or .timeout().
+      final response = await ApiClient.post(url, body: jsonEncode(payload));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

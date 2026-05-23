@@ -930,6 +930,24 @@ abstract class AppLocalizations {
   /// **'Resumen generado por IA con reseñas y puntuaciones de otros turistas.'**
   String get tabAiPlaceholder;
 
+  /// No description provided for @tabRate.
+  ///
+  /// In es, this message translates to:
+  /// **'Calificar'**
+  String get tabRate;
+
+  /// No description provided for @rateHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu calificación mejora tus recomendaciones'**
+  String get rateHint;
+
+  /// No description provided for @rateThanks.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Gracias por calificar!'**
+  String get rateThanks;
+
   /// No description provided for @invalidCredentials.
   ///
   /// In es, this message translates to:

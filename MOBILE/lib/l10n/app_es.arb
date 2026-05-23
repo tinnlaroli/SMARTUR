@@ -147,6 +147,9 @@
   "tabLocationPlaceholder": "Mapa y puntos clave para visitar.",
   "tabGastronomyPlaceholder": "Platillos típicos y cafés recomendados de la zona.",
   "tabAiPlaceholder": "Resumen generado por IA con reseñas y puntuaciones de otros turistas.",
+  "tabRate": "Calificar",
+  "rateHint": "Tu calificación mejora tus recomendaciones",
+  "rateThanks": "¡Gracias por calificar!",
 
   "invalidCredentials": "Credenciales incorrectas.",
   "invalidCode": "Código inválido o expirado.",

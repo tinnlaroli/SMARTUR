@@ -454,6 +454,15 @@ class AppLocalizationsEs extends AppLocalizations {
       'Resumen generado por IA con reseñas y puntuaciones de otros turistas.';
 
   @override
+  String get tabRate => 'Calificar';
+
+  @override
+  String get rateHint => 'Tu calificación mejora tus recomendaciones';
+
+  @override
+  String get rateThanks => '¡Gracias por calificar!';
+
+  @override
   String get invalidCredentials => 'Credenciales incorrectas.';
 
   @override

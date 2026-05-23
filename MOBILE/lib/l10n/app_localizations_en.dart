@@ -452,6 +452,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'AI-generated summary with reviews and ratings from other tourists.';
 
   @override
+  String get tabRate => 'Rate';
+
+  @override
+  String get rateHint => 'Your rating improves your recommendations';
+
+  @override
+  String get rateThanks => 'Thanks for rating!';
+
+  @override
   String get invalidCredentials => 'Invalid credentials.';
 
   @override

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
@@ -236,20 +237,8 @@ class _DetailViewPageState extends State<DetailViewPage> {
                       child: _RightMosaic(galleryUrls: widget.galleryUrls),
                     ),
 
-                  // Star rating row (non-intrusive, shown when place ref is available)
-                  if (_kind != null && _pid != null)
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 108,
-                      child: _StarRatingRow(
-                        userRating: _userRating,
-                        busy: _ratingBusy,
-                        onRate: _ratePlace,
-                      ),
-                    ),
-
                   // Main content — bottom sheet style
+                  // (Rating is now inside _BottomContent as the 4th tab)
                   Positioned(
                     left: 0,
                     right: 0,
@@ -259,85 +248,15 @@ class _DetailViewPageState extends State<DetailViewPage> {
                       locationLine: widget.locationLine,
                       rating: widget.rating,
                       subtitle: widget.subtitle,
+                      userRating: _kind != null && _pid != null ? _userRating : null,
+                      ratingBusy: _ratingBusy,
+                      onRate: _kind != null && _pid != null ? _ratePlace : (_) {},
                     ),
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-
-class _StarRatingRow extends StatelessWidget {
-  final int? userRating;
-  final bool busy;
-  final void Function(int stars) onRate;
-
-  const _StarRatingRow({
-    required this.userRating,
-    required this.busy,
-    required this.onRate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(40),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(color: Colors.white.withOpacity(0.12)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Tu calificación',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 10),
-              ...List.generate(5, (i) {
-                final star = i + 1;
-                final filled = userRating != null && star <= userRating!;
-                return GestureDetector(
-                  onTap: busy ? null : () => onRate(star),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Icon(
-                      filled ? Icons.star_rounded : Icons.star_border_rounded,
-                      size: 22,
-                      color: filled ? const Color(0xFFFBBF24) : Colors.white54,
-                    ),
-                  ),
-                );
-              }),
-              if (busy)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
-                    ),
-                  ),
-                ),
-            ],
-          ),
         ),
       ),
     );
@@ -378,12 +297,18 @@ class _BottomContent extends StatelessWidget {
   final String locationLine;
   final double rating;
   final String subtitle;
+  final int? userRating;
+  final bool ratingBusy;
+  final void Function(int) onRate;
 
   const _BottomContent({
     required this.title,
     required this.locationLine,
     required this.rating,
     required this.subtitle,
+    required this.userRating,
+    required this.ratingBusy,
+    required this.onRate,
   });
 
   @override
@@ -470,6 +395,7 @@ class _BottomContent extends StatelessWidget {
                   Tab(text: l10n.tabHistory),
                   Tab(text: l10n.tabLocation),
                   Tab(text: l10n.tabGastronomy),
+                  Tab(text: l10n.tabRate),
                 ],
               ),
               const SizedBox(height: 10),
@@ -481,6 +407,11 @@ class _BottomContent extends StatelessWidget {
                     _TabText(text: subtitle),
                     _TabText(text: l10n.tabLocationPlaceholder),
                     _TabText(text: l10n.tabGastronomyPlaceholder),
+                    _RatingTab(
+                      userRating: userRating,
+                      busy: ratingBusy,
+                      onRate: onRate,
+                    ),
                   ],
                 ),
               ),
@@ -664,6 +595,95 @@ class _TabText extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.72),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Gamified rating tab — shown as 4th tab in detail view ──
+
+class _RatingTab extends StatelessWidget {
+  final int? userRating;
+  final bool busy;
+  final void Function(int) onRate;
+
+  const _RatingTab({
+    required this.userRating,
+    required this.busy,
+    required this.onRate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final hasRated = userRating != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!hasRated) ...[
+            Text(
+              l10n.rateHint,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 11,
+                color: Colors.white.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+          ],
+          // 5 interactive stars
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              final star = i + 1;
+              final filled = userRating != null && star <= userRating!;
+              return GestureDetector(
+                onTap: busy ? null : () => onRate(star),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Icon(
+                    filled ? Icons.star_rounded : Icons.star_border_rounded,
+                    size: 32,
+                    color: filled ? const Color(0xFFFBBF24) : Colors.white38,
+                  ),
+                ),
+              );
+            }),
+          ),
+          if (hasRated) ...[
+            const SizedBox(height: 8),
+            Lottie.asset(
+              'assets/lottie/rating_success.json',
+              width: 72,
+              height: 72,
+              repeat: false,
+            ),
+            Text(
+              l10n.rateThanks,
+              style: const TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 11,
+                color: Color(0xFFFBBF24),
+              ),
+            ),
+          ],
+          if (busy)
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
