@@ -11,4 +11,5 @@ pytest>=7.2
 kagglehub>=0.1
 psycopg2-binary>=2.9
 lightfm>=1.17
+apscheduler>=3.10
 

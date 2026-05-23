@@ -26,6 +26,7 @@ class ApiConstants {
   // ML interaction telemetry
   static const String meInteractions = '/me/interactions';
   static const String meRating = '/me/rating';
+  static const String mlFeedback = '/ml/feedback';
 
   // Explore
   static const String exploreHome = '/explore/home';

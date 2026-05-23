@@ -17,11 +17,79 @@ Blending:
   Warm user:  0.30 LightFM + 0.30 CF + 0.40 RF
 """
 
+import numpy as np
 import pandas as pd
 
 from cf import predict_cf_pearson
 from context_encoder import MAPEO_CATEGORIAS
 from poi_repository import fetch_all_items
+
+# Center of Altas Montañas region — used as user location fallback
+_ALTAS_MONTANAS_LAT = 18.95
+_ALTAS_MONTANAS_LON = -97.05
+
+# Keywords per tourism type for explanation tags
+_TOURISM_KEYWORDS: dict[str, list[str]] = {
+    'naturaleza':    ['park', 'hiking', 'waterfall', 'nature', 'botanical', 'outdoor', 'mountain', 'volcano'],
+    'aventura':      ['adventure', 'hiking', 'mountain', 'volcano', 'outdoor'],
+    'cultural':      ['museum', 'history', 'monument', 'landmark', 'cathedral', 'market'],
+    'gastronomico':  ['restaurant', 'food', 'gastronomy', 'cafe', 'market'],
+    'rural':         ['hacienda', 'ranch', 'rural', 'countryside', 'sanctuary'],
+}
+
+
+def _compute_dist_km_series(df: pd.DataFrame, user_lat: float, user_lon: float) -> pd.Series:
+    """Haversine distance (km) from (user_lat, user_lon) to each row in df."""
+    R = 6371.0
+    lat1 = np.radians(user_lat)
+    lon1 = np.radians(user_lon)
+    lat2 = np.radians(df['latitude'].fillna(user_lat))
+    lon2 = np.radians(df['longitude'].fillna(user_lon))
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+    return (2 * R * np.arcsin(np.sqrt(a))).clip(0, 500)
+
+
+def _build_reason_tags(
+    biz_id: str,
+    cats: str,
+    context: dict,
+    quality_scores: dict | None,
+    dist_km: float | None,
+) -> list[str]:
+    """
+    Generates up to 2 human-readable explanation tags for a recommendation:
+    1. Tourism-type match (e.g. "Coincide con naturaleza")
+    2. Quality signal (e.g. "Muy bien evaluado")   — OR —
+       Distance signal  (e.g. "A 3.2 km de ti")
+    """
+    tags: list[str] = []
+    cats_lower = cats.lower() if cats else ''
+    tipos: list[str] = context.get('tiposTurismo', []) or []
+
+    # Tourism match
+    for tipo in tipos:
+        keywords = _TOURISM_KEYWORDS.get(tipo, [])
+        if any(k in cats_lower for k in keywords):
+            tags.append(f"Coincide con {tipo}")
+            break
+
+    if len(tags) < 2:
+        # Quality signal (priority over distance when service is well evaluated)
+        q = (quality_scores or {}).get(biz_id, 0.0)
+        if q >= 0.7:
+            tags.append("Muy bien evaluado")
+        elif q >= 0.5:
+            tags.append("Bien evaluado")
+        # Distance signal (fallback when no quality data)
+        elif dist_km is not None:
+            if dist_km < 5:
+                tags.append(f"A {dist_km:.1f} km de ti")
+            elif dist_km < 15:
+                tags.append(f"Cerca ({dist_km:.0f} km)")
+
+    return tags[:2]
 
 # ---------------------------------------------------------------------------
 # Filtros
@@ -181,6 +249,18 @@ def recommend_hybrid(
     local_id_set    = set(local_biz['business_id']) if not local_biz.empty else set()
     matrix_col_set  = set(engine.user_item_matrix_columns) if engine is not None else set()
 
+    # ── Distance map for explanation tags ────────────────────────────────
+    # Use user-supplied lat/lon from context; fall back to region center.
+    dist_km_map: dict[str, float] = {}
+    if not ref_df.empty and 'latitude' in ref_df.columns and 'longitude' in ref_df.columns:
+        try:
+            user_lat = float(context.get('lat') or _ALTAS_MONTANAS_LAT)
+            user_lon = float(context.get('lon') or _ALTAS_MONTANAS_LON)
+            distances = _compute_dist_km_series(ref_df, user_lat, user_lon)
+            dist_km_map = dict(zip(ref_df['business_id'], distances))
+        except Exception:
+            pass  # explanation tags gracefully degrade without distance
+
     # ── LightFM or ContentModel scores ───────────────────────────────────
     # Determine cold-start status for blending weights
     is_cold_start = str(user_id) not in (
@@ -236,14 +316,19 @@ def recommend_hybrid(
 
         nombre = all_biz_names.get(biz_id, 'Desconocido')
         kind   = biz_kind_lookup.get(biz_id, 'poi')
+        cats   = biz_cat_lookup.get(biz_id, '')
 
         recommendations.append({
-            'item_id':  str(biz_id),
-            'title':    str(nombre),
-            'score':    float(round(final_score, 3)),
-            'pred_cf':  float(round(score_cf, 3)),
-            'pred_rf':  float(round(score_rf, 3)),
-            'kind':     kind,
+            'item_id':     str(biz_id),
+            'title':       str(nombre),
+            'score':       float(round(final_score, 3)),
+            'pred_cf':     float(round(score_cf, 3)),
+            'pred_rf':     float(round(score_rf, 3)),
+            'kind':        kind,
+            'reason_tags': _build_reason_tags(
+                biz_id, cats, context or {},
+                quality_scores, dist_km_map.get(biz_id),
+            ),
         })
 
     sorted_recs = sorted(recommendations, key=lambda x: x['score'], reverse=True)

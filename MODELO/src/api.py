@@ -98,7 +98,36 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error crítico en el arranque: {e}")
         # Falla rápido y ruidosamente; previene iniciar en un estado degradado "zombie"
         raise RuntimeError(f"Boot abortado: Los modelos no pudieron cargar ({e})")
+
+    # ── Scheduled nightly retraining ─────────────────────────────────────
+    # APScheduler runs _run_full_training() every day at 02:00 UTC so that
+    # new user interactions accumulated during the day are incorporated
+    # automatically — no admin button needed.
+    _scheduler = None
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        _scheduler = BackgroundScheduler(timezone='UTC')
+        _scheduler.add_job(
+            _run_full_training,
+            trigger='cron',
+            hour=2, minute=0,
+            id='nightly_retrain',
+            replace_existing=True,
+            misfire_grace_time=3600,  # allow up to 1h late start (e.g. if container was down)
+        )
+        _scheduler.start()
+        logger.info("[scheduler] Reentrenamiento nocturno programado (02:00 UTC diario)")
+    except Exception as sched_err:
+        logger.warning(f"[scheduler] No disponible: {sched_err}")
+
     yield
+
+    # ── Teardown ──────────────────────────────────────────────────────────
+    if _scheduler is not None:
+        try:
+            _scheduler.shutdown(wait=False)
+        except Exception:
+            pass
 
 
 app = FastAPI(title="SMARTUR Recommender API v2", version="2.1", lifespan=lifespan)
@@ -121,6 +150,7 @@ class RecItem(BaseModel):
     pred_cf: float
     pred_rf: float
     kind: str = 'poi'
+    reason_tags: list[str] = []  # human-readable explanation tags, e.g. ["Coincide con naturaleza", "A 3.2 km"]
 
 
 class RecommendationResponse(BaseModel):
@@ -231,7 +261,18 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
         )
         return RecommendationResponse(
             user_id=user_id,
-            recommendations=[RecItem(**r) for r in recs],
+            recommendations=[
+                RecItem(
+                    item_id=r.get('item_id', ''),
+                    title=r.get('title', ''),
+                    score=r.get('score', 0.0),
+                    pred_cf=r.get('pred_cf', 0.0),
+                    pred_rf=r.get('pred_rf', 0.0),
+                    kind=r.get('kind', 'poi'),
+                    reason_tags=r.get('reason_tags', []),
+                )
+                for r in recs
+            ],
             alpha=payload.alpha,
         )
     except Exception as e:

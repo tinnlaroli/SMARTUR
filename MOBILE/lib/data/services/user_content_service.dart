@@ -96,6 +96,35 @@ class UserContentService {
     }
   }
 
+  /// Records whether a recommended item was clicked or dismissed.
+  /// Fire-and-forget — never blocks the UI, errors are silently swallowed.
+  /// [sessionId] is the session ID returned by the ML recommend endpoint.
+  /// [itemId]   is the business_id of the recommended POI/service.
+  /// [rankPos]  is the 0-based position in the recommendation list.
+  /// [clicked]  true when the user tapped the item; false when dismissed.
+  Future<void> recordRecommendationFeedback({
+    required int sessionId,
+    required String itemId,
+    required int rankPos,
+    required bool clicked,
+  }) async {
+    try {
+      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.mlFeedback}');
+      await ApiClient.post(
+        uri,
+        body: jsonEncode({
+          'session_id': sessionId,
+          'item_id': itemId,
+          'rank_pos': rankPos,
+          'clicked': clicked,
+        }),
+        timeout: const Duration(seconds: 8),
+      );
+    } catch (_) {
+      // Fire-and-forget: losing a feedback event is acceptable vs. blocking UX
+    }
+  }
+
   /// Upserts an explicit 1–5 star rating for a place.
   Future<void> ratePlace({
     required String placeKind,
