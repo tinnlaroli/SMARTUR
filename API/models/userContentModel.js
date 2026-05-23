@@ -10,7 +10,7 @@ export async function placeExists(kind, placeId) {
     }
     if (kind === 'poi') {
         const r = await pool.query(
-            `SELECT id_point, name, image_url, description, id_location, rating FROM point_of_interest WHERE id_point = $1`,
+            `SELECT id AS id_point, name, image_url, description, id_location, rating FROM point_of_interest WHERE id = $1 AND is_active = TRUE`,
             [placeId],
         );
         return r.rows[0] || null;

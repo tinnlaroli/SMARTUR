@@ -104,13 +104,13 @@ CREATE TABLE tourism_type (
   name VARCHAR(100) NOT NULL
 );
 
--- point_of_interest schema aligned for ML inference
+-- point_of_interest: ML inference columns + display columns for mobile app
 DROP TABLE IF EXISTS point_of_interest CASCADE;
 
 CREATE TABLE point_of_interest (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
-  categories_raw TEXT NOT NULL,
+  categories_raw TEXT NOT NULL DEFAULT '',
   categories_mapped JSONB NOT NULL DEFAULT '[]'::jsonb,
   price_level SMALLINT NOT NULL DEFAULT 2,
   is_accessible BOOLEAN NOT NULL DEFAULT FALSE,
@@ -118,7 +118,12 @@ CREATE TABLE point_of_interest (
   latitude DECIMAL(10,6),
   longitude DECIMAL(10,6),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  is_active BOOLEAN NOT NULL DEFAULT TRUE
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  -- Display columns (mobile app + community)
+  id_location  INT REFERENCES location(id_location),
+  description  TEXT,
+  image_url    TEXT,
+  rating       DECIMAL(2,1) DEFAULT 4.0
 );
 
 CREATE INDEX idx_poi_created_at ON point_of_interest(created_at DESC);
@@ -425,11 +430,19 @@ INSERT INTO tourist_service (name, description, id_company, id_location, service
   ('Senderismo Macuiltépetl', 'Salida guiada al parque.', 3, 1, 'tour', true,
    'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800');
 
-INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude) VALUES
-  ('Parque Macuiltépetl', 'park, viewpoint', '["nature"]', 1, true, true, 19.531240, -96.915890),
-  ('Museo Interactivo', 'museum, science', '["culture"]', 2, true, false, 19.531240, -96.915890),
-  ('Cascada de Texolo', 'waterfall', '["nature"]', 1, false, true, 19.451800, -96.959700),
-  ('Ex-Hacienda de Toxpan', 'hacienda, history', '["culture"]', 1, true, true, 18.894200, -96.934700);
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Parque Macuiltépetl', 'park, viewpoint', '["nature"]', 1, true, true, 19.531240, -96.915890, 1,
+   'Cerro volcánico con miradores panorámicos y senderos naturales en Xalapa.',
+   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.7),
+  ('Museo Interactivo de Xalapa', 'museum, science', '["culture"]', 2, true, false, 19.531240, -96.915890, 1,
+   'Museo con exposiciones interactivas de ciencia y tecnología, ideal para familias.',
+   'https://images.pexels.com/photos/1839919/pexels-photo-1839919.jpeg?auto=compress&w=800', 4.5),
+  ('Cascada de Texolo', 'waterfall', '["nature"]', 1, false, true, 19.451800, -96.959700, 2,
+   'Impresionante cascada de 40 metros en el bosque tropical de Coatepec.',
+   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.8),
+  ('Ex-Hacienda de Toxpan', 'hacienda, history', '["culture"]', 1, true, true, 19.451800, -96.959700, 2,
+   'Hacienda colonial del siglo XIX con jardines y rica historia cafetalera.',
+   'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800', 4.3);
 
 -- bcrypt hash for password: Password1a
 INSERT INTO "user" (name, email, password, role_id, photo_url, avatar_icon_key) VALUES
@@ -466,10 +479,16 @@ INSERT INTO tourist_service (name, description, id_company, id_location, service
   ('Posada Fortín Plaza', 'Hospedaje céntrico en Fortín.', 7, 5, 'hotel', true,
    'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&w=800');
 
-INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude) VALUES
-  ('Pico de Orizaba', 'volcano, mountain', '["nature"]', 1, false, true, 18.849100, -97.105100),
-  ('Palacio de Hierro Orizaba', 'monument, history', '["culture"]', 1, true, false, 18.849100, -97.105100),
-  ('Jardín Botánico Fortín', 'botanical garden', '["nature"]', 1, true, true, 18.901200, -96.998500);
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Pico de Orizaba', 'volcano, mountain', '["nature"]', 1, false, true, 18.849100, -97.105100, 4,
+   'El volcán más alto de México. Destino para alpinismo y naturaleza extrema.',
+   'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800', 4.9),
+  ('Palacio de Hierro Orizaba', 'monument, history', '["culture"]', 1, true, false, 18.849100, -97.105100, 4,
+   'Emblemático edificio art nouveau importado de Bélgica, símbolo de Orizaba.',
+   'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&w=800', 4.6),
+  ('Jardín Botánico Fortín', 'botanical garden', '["nature"]', 1, true, true, 18.901200, -96.998500, 5,
+   'Jardín con más de 3,000 especies de plantas tropicales y orquídeas.',
+   'https://images.pexels.com/photos/1353938/pexels-photo-1353938.jpeg?auto=compress&w=800', 4.5);
 
 -- Córdoba: más servicios y puntos (filtros hotel / restaurante / tour / museo / naturaleza)
 INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
@@ -485,11 +504,19 @@ INSERT INTO tourist_service (name, description, id_company, id_location, service
   ('Tour Ciudad de los 30 Caballeros', 'Recorrido colonial, leyendas y barrio de La Villa.', 10, 3, 'tour', true,
    'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&w=800');
 
-INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude) VALUES
-  ('Catedral de Córdoba', 'cathedral, religion', '["culture"]', 1, true, false, 18.894200, -96.934700),
-  ('Los Portales de Córdoba', 'zocalo, town square', '["culture", "gastronomy"]', 2, true, true, 18.894200, -96.934700),
-  ('Parque Ecológico Cerro del Metate', 'park, hiking', '["nature"]', 1, false, true, 18.894200, -96.934700),
-  ('Municipio de La Villa', 'neighborhood, architecture', '["culture"]', 1, true, true, 18.894200, -96.934700);
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Catedral de Córdoba', 'cathedral, religion', '["culture"]', 1, true, false, 18.894200, -96.934700, 3,
+   'Catedral barroca del siglo XVII en el centro histórico de Córdoba.',
+   'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800', 4.5),
+  ('Los Portales de Córdoba', 'zocalo, town square', '["culture", "gastronomy"]', 2, true, true, 18.894200, -96.934700, 3,
+   'Paseo colonial con cafés, tiendas y vida nocturna junto al zócalo.',
+   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.4),
+  ('Parque Ecológico Cerro del Metate', 'park, hiking', '["nature"]', 1, false, true, 18.894200, -96.934700, 3,
+   'Área natural protegida con senderos y vistas al valle de Córdoba.',
+   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.3),
+  ('Municipio de La Villa', 'neighborhood, architecture', '["culture"]', 1, true, true, 18.894200, -96.934700, 3,
+   'Barrio histórico con arquitectura colonial y gastronomía típica cordobesa.',
+   'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800', 4.2);
 
 -- Xico (nueva ciudad): Pueblo Mágico, variedad de tipos para filtros
 INSERT INTO location (name, state, municipality, latitude, longitude) VALUES
@@ -508,11 +535,19 @@ INSERT INTO tourist_service (name, description, id_company, id_location, service
   ('Tour Cascada de Texolo y miradores', 'Salida guiada desde Xico.', 13, 6, 'tour', true,
    'https://images.pexels.com/photos/237272/pexels-photo-237272.jpeg?auto=compress&w=800');
 
-INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude) VALUES
-  ('Cascada de Texolo', 'waterfall', '["nature"]', 1, false, true, 19.421800, -97.010200),
-  ('Santuario de María Magdalena', 'sanctuary, religion', '["culture"]', 1, true, false, 19.421800, -97.010200),
-  ('Mercado de Xico', 'market, local food', '["gastronomy"]', 1, true, false, 19.421800, -97.010200),
-  ('Mirador de la Niebla', 'viewpoint, coffee', '["nature"]', 1, true, true, 19.421800, -97.010200);
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Cascada de Texolo (Xico)', 'waterfall', '["nature"]', 1, false, true, 19.421800, -97.010200, 6,
+   'Majestuosa cascada de niebla en el corazón del Pueblo Mágico de Xico.',
+   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.9),
+  ('Santuario de María Magdalena', 'sanctuary, religion', '["culture"]', 1, true, false, 19.421800, -97.010200, 6,
+   'Santuario histórico dedicado a la patrona de Xico, con procesiones famosas.',
+   'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800', 4.6),
+  ('Mercado de Xico', 'market, local food', '["gastronomy"]', 1, true, false, 19.421800, -97.010200, 6,
+   'Mercado artesanal con mole xiqueño, conservas y productos locales únicos.',
+   'https://images.pexels.com/photos/1132558/pexels-photo-1132558.jpeg?auto=compress&w=800', 4.7),
+  ('Mirador de la Niebla', 'viewpoint, coffee', '["nature"]', 1, true, true, 19.421800, -97.010200, 6,
+   'Mirador entre niebla y cafetales con vistas al barranco y la cascada de Texolo.',
+   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.8);
 
 -- Evaluation instrument seed data
 INSERT INTO evaluation_template (name, version, service_type, active, creation_date) VALUES
