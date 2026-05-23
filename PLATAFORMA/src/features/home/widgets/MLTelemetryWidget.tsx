@@ -3,6 +3,8 @@ import { Activity, BrainCircuit, MousePointerClick, Timer, Zap } from 'lucide-re
 import { mlApi, type MLHealth } from '../../ml-observability/api/mlApi';
 import { DASHBOARD_COLORS } from '../utils/dashboard';
 import type { DensityMode } from '../utils/dashboard';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Props {
     density: DensityMode;
@@ -43,6 +45,10 @@ const MetricCell: React.FC<{
  * Shows: best algorithm, RMSE, click-through rate (30d) and avg inference latency.
  */
 const MLTelemetryWidget: React.FC<Props> = ({ density }) => {
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).widgets;
+    const locale = getDashboardText(lang).locale;
+
     const [health, setHealth] = useState<MLHealth | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -72,6 +78,7 @@ const MLTelemetryWidget: React.FC<Props> = ({ density }) => {
     const latency = latestSession
         ? `${Number(latestSession.avg_latency_ms).toFixed(0)} ms`
         : '—';
+    const sessions = health?.daily_sessions?.[0]?.total?.toLocaleString(locale) ?? '—';
 
     return (
         <section
@@ -88,10 +95,10 @@ const MLTelemetryWidget: React.FC<Props> = ({ density }) => {
                 </div>
                 <div className="min-w-0">
                     <h2 className="truncate text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                        Telemetría IA
+                        {copy.mlTelemetryTitle}
                     </h2>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Motor de recomendaciones
+                        {copy.mlTelemetrySubtitle}
                     </p>
                 </div>
                 {/* Live indicator */}
@@ -101,7 +108,7 @@ const MLTelemetryWidget: React.FC<Props> = ({ density }) => {
                         style={{ background: health ? DASHBOARD_COLORS.success : DASHBOARD_COLORS.warning }}
                     />
                     <span className="text-[10px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                        {health ? algo : loading ? 'cargando…' : 'sin datos'}
+                        {health ? algo : loading ? copy.mlTelemetryLoading : copy.mlTelemetryNoData}
                     </span>
                 </div>
             </div>
@@ -110,26 +117,26 @@ const MLTelemetryWidget: React.FC<Props> = ({ density }) => {
             <div className="flex min-h-0 flex-1 gap-2">
                 <MetricCell
                     icon={Activity}
-                    label="RMSE"
+                    label={copy.mlTelemetryRmse}
                     value={loading ? '…' : rmse}
                     color={DASHBOARD_COLORS.purple}
                 />
                 <MetricCell
                     icon={MousePointerClick}
-                    label="CTR 30d"
+                    label={copy.mlTelemetryCtr}
                     value={loading ? '…' : ctr}
                     color={DASHBOARD_COLORS.cyan}
                 />
                 <MetricCell
                     icon={Timer}
-                    label="Latencia"
+                    label={copy.mlTelemetryLatency}
                     value={loading ? '…' : latency}
                     color={DASHBOARD_COLORS.green}
                 />
                 <MetricCell
                     icon={Zap}
-                    label="Sesiones"
-                    value={loading ? '…' : (health?.daily_sessions?.[0]?.total?.toLocaleString('es-MX') ?? '—')}
+                    label={copy.mlTelemetrySessions}
+                    value={loading ? '…' : sessions}
                     color={DASHBOARD_COLORS.orange}
                 />
             </div>

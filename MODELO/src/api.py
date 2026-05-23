@@ -193,6 +193,118 @@ def get_metrics():
         raise HTTPException(status_code=500, detail="Error al leer métricas.")
 
 
+def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dict:
+    """
+    Computes CF-Pearson + Random-Forest metrics on held-out test data.
+    Does NOT require a GBM model (simplified vs. compare_algorithms).
+    Returns a dict compatible with the ml_model_metrics schema.
+    """
+    import numpy as np
+    from math import sqrt
+    from sklearn.metrics import mean_absolute_error, mean_squared_error
+    from cf import predict_cf_pearson
+    from model_metrics import DEFAULT_METRICS
+
+    try:
+        test_data = getattr(engine_obj, 'test_data', None)
+        if test_data is None or len(test_data) == 0:
+            logger.warning("[metrics] No hay datos de prueba — usando métricas por defecto.")
+            return dict(DEFAULT_METRICS)
+
+        n_eval = min(sample_size, len(test_data))
+        test_sample = test_data.sample(n_eval, random_state=42)
+
+        actuals, preds_cf, preds_rf = [], [], []
+        for _, row in test_sample.iterrows():
+            try:
+                p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine_obj)
+                p_rf = float(rf_model.predict_with_context([row['business_id']], user_context=None)[0])
+                if np.isnan(p_cf) or np.isnan(p_rf):
+                    continue
+                actuals.append(row['stars'])
+                preds_cf.append(p_cf)
+                preds_rf.append(p_rf)
+            except Exception:
+                continue
+
+        if len(actuals) < 30:
+            logger.warning(f"[metrics] Solo {len(actuals)} muestras válidas — usando métricas por defecto.")
+            return dict(DEFAULT_METRICS)
+
+        actuals  = np.asarray(actuals, dtype=float)
+        preds_cf = np.asarray(preds_cf, dtype=float)
+        preds_rf = np.asarray(preds_rf, dtype=float)
+
+        def _rmse_mae(a, p):
+            return {
+                'rmse': float(sqrt(mean_squared_error(a, p))),
+                'mae':  float(mean_absolute_error(a, p)),
+            }
+
+        # Find best blending alpha (CF weight) for hybrid
+        best_alpha, best_rmse_h = 0.2, float('inf')
+        for alpha in np.arange(0.0, 1.05, 0.1):
+            hybrid = alpha * preds_cf + (1.0 - alpha) * preds_rf
+            rmse_h = sqrt(mean_squared_error(actuals, hybrid))
+            if rmse_h < best_rmse_h:
+                best_rmse_h = rmse_h
+                best_alpha  = float(alpha)
+
+        hybrid_preds = best_alpha * preds_cf + (1.0 - best_alpha) * preds_rf
+        baseline     = np.full_like(actuals, actuals.mean())
+
+        algorithms = {
+            'baseline':       _rmse_mae(actuals, baseline),
+            'cf_knn_pearson': _rmse_mae(actuals, preds_cf),
+            'random_forest':  _rmse_mae(actuals, preds_rf),
+            'hybrid_cf_rf':   {**_rmse_mae(actuals, hybrid_preds), 'alpha': best_alpha},
+        }
+
+        candidates = {k: algorithms[k]['rmse'] for k in ('cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')}
+        best_algorithm = min(candidates, key=candidates.get)
+
+        return {
+            'best_algorithm': best_algorithm,
+            'best_alpha':     best_alpha if best_algorithm == 'hybrid_cf_rf' else 0.2,
+            'local_blend':    {'rf': 1.0, 'gbm': 0.0},
+            'algorithms':     algorithms,
+            'sample_size':    len(actuals),
+        }
+    except Exception as exc:
+        logger.error(f"[metrics] Error calculando métricas: {exc}")
+        return dict(DEFAULT_METRICS)
+
+
+def _persist_metrics_to_db(metrics_json: dict) -> bool:
+    """
+    Inserts ML training metrics into the ml_model_metrics table
+    using the same PostgreSQL connection as poi_repository.
+    """
+    try:
+        import psycopg2
+        import json as _json
+
+        conn = psycopg2.connect(
+            host=os.getenv('POI_DB_HOST', 'localhost'),
+            port=int(os.getenv('POI_DB_PORT', 5432)),
+            database=os.getenv('POI_DB_NAME', 'smartur'),
+            user=os.getenv('POI_DB_USER', 'postgres'),
+            password=os.getenv('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '12345678')),
+            options='-c client_encoding=UTF8',
+        )
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO ml_model_metrics (metrics_json) VALUES (%s)",
+                    (_json.dumps(metrics_json, ensure_ascii=False),),
+                )
+        conn.close()
+        return True
+    except Exception as exc:
+        logger.error(f"[train] No se pudo persistir métricas en DB: {exc}")
+        return False
+
+
 def _run_full_training():
     """Background worker: refreshes Pearson matrix + retrains RF + writes metrics."""
     global engine, context_model
@@ -203,12 +315,20 @@ def _run_full_training():
         logger.info("[train] Reentrenando Random Forest...")
         context_model.train(engine.train_data)
 
-        # Optionally persist a simple metrics snapshot
-        metrics_path = Path("models/algorithm_metrics.json")
-        metrics_path.parent.mkdir(parents=True, exist_ok=True)
-        if not metrics_path.exists():
-            import json as _json
-            _json.dump({"status": "trained", "note": "run evaluate.py for full metrics"}, metrics_path.open("w"))
+        logger.info("[train] Calculando métricas post-entrenamiento...")
+        metrics = _compute_simple_metrics(engine, context_model)
+
+        from model_metrics import save_metrics
+        save_metrics(metrics)
+        logger.info(
+            f"[train] Métricas guardadas localmente — mejor algoritmo: {metrics.get('best_algorithm')} "
+            f"(RMSE={metrics.get('algorithms', {}).get(metrics.get('best_algorithm', ''), {}).get('rmse', '?'):.4f})"
+        )
+
+        if _persist_metrics_to_db(metrics):
+            logger.info("[train] Métricas persistidas en DB correctamente.")
+        else:
+            logger.warning("[train] Métricas solo disponibles en archivo local (DB no actualizada).")
 
         logger.info("[train] Entrenamiento completado.")
     except Exception as e:

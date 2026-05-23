@@ -3,6 +3,7 @@ import { Globe2, Moon, Sun } from 'lucide-react';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { DASHBOARD_COLORS } from '../utils/dashboard';
 import type { LanguageCode } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 const LANGUAGES: { code: LanguageCode; label: string; flag: string }[] = [
     { code: 'es', label: 'Español', flag: '🇲🇽' },
@@ -22,6 +23,7 @@ const cardSurface = {
 const LangSwitchWidget: React.FC = () => {
     const { lang, changeLanguage } = useLanguage();
     const { theme, toggleTheme } = useUserPreferences();
+    const copy = getDashboardText(lang).widgets;
 
     return (
         <section
@@ -38,7 +40,7 @@ const LangSwitchWidget: React.FC = () => {
                         <Globe2 className="size-3.5" style={{ color: DASHBOARD_COLORS.purple }} />
                     </div>
                     <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                        Idioma & Tema
+                        {copy.langSwitchTitle}
                     </p>
                 </div>
 
@@ -46,12 +48,12 @@ const LangSwitchWidget: React.FC = () => {
                 <button
                     type="button"
                     onClick={toggleTheme}
-                    title={theme === 'dark' ? 'Cambiar a claro' : 'Cambiar a oscuro'}
+                    title={theme === 'dark' ? copy.langSwitchToLight : copy.langSwitchToDark}
                     className="flex size-8 items-center justify-center rounded-xl border transition hover:opacity-80"
                     style={{
                         borderColor: 'var(--color-border)',
                         background: 'var(--color-bg-alt)',
-                        color: theme === 'dark' ? '#FBBF24' : '#6366F1',
+                        color: theme === 'dark' ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.purple,
                     }}
                 >
                     {theme === 'dark' ? (

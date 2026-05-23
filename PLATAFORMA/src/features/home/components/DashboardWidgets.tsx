@@ -530,7 +530,7 @@ export const DashboardHeader = ({
                                 }}
                             >
                                 <Plus className="size-4" />
-                                Agregar
+                                {copy.editAdd}
                             </button>
                         )}
 
@@ -546,7 +546,7 @@ export const DashboardHeader = ({
                                     color: 'var(--color-text-alt)',
                                 }}
                             >
-                                Restaurar
+                                {copy.editRestore}
                             </button>
                         )}
 
@@ -559,7 +559,7 @@ export const DashboardHeader = ({
                                 style={{ background: DASHBOARD_COLORS.purple }}
                             >
                                 <Check className="size-4" />
-                                Listo
+                                {copy.editDone}
                             </button>
                         )}
                     </>

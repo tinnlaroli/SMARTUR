@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
 import { mlApi } from '../api/mlApi';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
     BarChart2, AlertCircle, RefreshCw, Activity, Play,
@@ -10,15 +13,6 @@ import {
     AreaChart, Area, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-
-const ALGO_LABELS: Record<string, string> = {
-    baseline: 'Baseline (media global)',
-    cf_knn_pearson: 'CF Pearson KNN',
-    random_forest: 'Random Forest',
-    gradient_boosting: 'Gradient Boosting',
-    hybrid_cf_rf: 'Híbrido CF + RF',
-    hybrid_triple: 'Híbrido Triple',
-};
 
 function KpiCard({
     label, value, sub,
@@ -71,7 +65,12 @@ const TRAINING_LOCK_MS = 3 * 60 * 1000; // 3 minutes — typical training window
 export const MLObservabilityPage = () => {
     const { data, isLoading, error, fetchHealth } = useMLHealth();
     const toast = useToast();
-    const trainTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).mlObservability;
+    const locale = getDashboardText(lang).locale;
+
+    const trainTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const autoRefreshRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [training, setTraining] = useState(() => {
         try {
@@ -103,19 +102,23 @@ export const MLObservabilityPage = () => {
             trainTimerRef.current = setTimeout(() => {
                 localStorage.removeItem(TRAINING_LOCK_KEY);
                 setTraining(false);
+                // Auto-refresh when lock expires (training should be done)
+                void fetchHealth();
             }, remaining);
         } catch { /* ignore */ }
 
         return () => {
-            if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+            if (trainTimerRef.current)  clearTimeout(trainTimerRef.current);
+            if (autoRefreshRef.current) clearTimeout(autoRefreshRef.current);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => { fetchHealth(); }, [fetchHealth]);
 
-    const metrics = data?.latest_metrics;
-    const sessions = data?.daily_sessions ?? [];
-    const ctr = data?.ctr_30d;
+    const metrics    = data?.latest_metrics;
+    const sessions   = data?.daily_sessions ?? [];
+    const ctr        = data?.ctr_30d;
 
     const bestRmse = metrics
         ? Math.min(...Object.values(metrics.algorithms).map((a) => a.rmse))
@@ -134,7 +137,7 @@ export const MLObservabilityPage = () => {
             : null;
 
     const chartData = [...sessions].reverse().map((d) => ({
-        day: new Date(d.day).toLocaleDateString('es-MX', {
+        day: new Date(d.day).toLocaleDateString(locale, {
             month: 'short',
             day: 'numeric',
         }),
@@ -147,24 +150,24 @@ export const MLObservabilityPage = () => {
         const lockTime = Date.now();
         localStorage.setItem(TRAINING_LOCK_KEY, String(lockTime));
 
-        // Auto-release after 3 minutes regardless
+        // Release lock after 3 minutes and auto-refresh data
         if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
         trainTimerRef.current = setTimeout(() => {
             localStorage.removeItem(TRAINING_LOCK_KEY);
             setTraining(false);
+            void fetchHealth(); // auto-refresh when training window closes
         }, TRAINING_LOCK_MS);
 
         try {
             await mlApi.trainModel();
-            toast.success('Entrenamiento iniciado', 'El modelo está re-entrenando en segundo plano. El botón se habilitará automáticamente en ~3 minutos. Usa "Actualizar" para ver los nuevos resultados.');
+            toast.success(copy.toastTrainTitle, copy.toastTrainDesc);
         } catch {
-            toast.error('Error', 'No se pudo iniciar el entrenamiento.');
-            // Release lock on failure
+            toast.error(copy.toastErrorTitle, copy.toastErrorDesc);
+            // Release lock immediately on failure
             if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
             localStorage.removeItem(TRAINING_LOCK_KEY);
             setTraining(false);
         }
-        // Note: setTraining(false) NOT called on success — timer handles it
     };
 
     if (error) {
@@ -173,7 +176,7 @@ export const MLObservabilityPage = () => {
                 className="flex flex-col items-center justify-center gap-3 py-24 rounded-2xl border"
                 style={{ borderColor: 'var(--color-border)' }}
             >
-                <AlertCircle className="size-10 text-rose-400" />
+                <AlertCircle className="size-10" style={{ color: DASHBOARD_COLORS.danger }} />
                 <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                     {error}
                 </p>
@@ -182,7 +185,7 @@ export const MLObservabilityPage = () => {
                     className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white"
                     style={{ background: 'var(--color-purple)' }}
                 >
-                    <RefreshCw className="size-4" /> Reintentar
+                    <RefreshCw className="size-4" /> {copy.errorRetry}
                 </button>
             </div>
         );
@@ -195,10 +198,10 @@ export const MLObservabilityPage = () => {
             <div className="flex shrink-0 items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        ML / Observabilidad IA
+                        {copy.title}
                     </h1>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Estado del motor de recomendaciones híbrido (CF + RF)
+                        {copy.subtitle}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -206,18 +209,18 @@ export const MLObservabilityPage = () => {
                         onClick={handleTrain}
                         disabled={training || isLoading}
                         className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={training ? 'Entrenamiento en curso — espera ~3 minutos antes de volver a entrenar' : 'Entrenar modelo'}
+                        title={training ? copy.trainTooltipActive : copy.trainTooltipIdle}
                         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                     >
                         {training ? (
                             <>
                                 <span className="size-4 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                                Entrenando en segundo plano…
+                                {copy.trainingLabel}
                             </>
                         ) : (
                             <>
-                                <Play className="size-4" style={{ color: 'var(--color-green)' }} />
-                                Entrenar modelo
+                                <Play className="size-4" style={{ color: DASHBOARD_COLORS.success }} />
+                                {copy.trainBtn}
                             </>
                         )}
                     </button>
@@ -228,12 +231,12 @@ export const MLObservabilityPage = () => {
                         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                     >
                         <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        Actualizar
+                        {copy.refreshBtn}
                     </button>
                 </div>
             </div>
 
-            {/* Info banner — at top */}
+            {/* Info banner */}
             <div
                 className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
@@ -241,20 +244,34 @@ export const MLObservabilityPage = () => {
                 <BrainCircuit className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
-                        Recolección de datos activa
+                        {copy.bannerTitle}
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        La app móvil envía señales implícitas (tiempo en pantalla, favoritos, filtros
-                        seleccionados) y calificaciones explícitas (1–5 estrellas). Estos datos alimentan el
-                        motor de Collaborative Filtering. El modelo se retroalimenta automáticamente al
-                        re-entrenarse con las tablas{' '}
-                        <code className="rounded px-1 py-0.5 text-xs font-mono" style={{ background: 'rgba(var(--rgb-text),0.08)' }}>
-                            user_interaction
-                        </code>{' '}
-                        y{' '}
-                        <code className="rounded px-1 py-0.5 text-xs font-mono" style={{ background: 'rgba(var(--rgb-text),0.08)' }}>
-                            user_rating
-                        </code>.
+                        {copy.bannerDesc.split('user_interaction').map((part, i, arr) =>
+                            i < arr.length - 1 ? (
+                                <span key={i}>
+                                    {part}
+                                    <code className="rounded px-1 py-0.5 text-xs font-mono" style={{ background: 'rgba(var(--rgb-text),0.08)' }}>
+                                        user_interaction
+                                    </code>
+                                </span>
+                            ) : (
+                                <span key={i}>
+                                    {part.split('user_rating').map((p2, j, arr2) =>
+                                        j < arr2.length - 1 ? (
+                                            <span key={j}>
+                                                {p2}
+                                                <code className="rounded px-1 py-0.5 text-xs font-mono" style={{ background: 'rgba(var(--rgb-text),0.08)' }}>
+                                                    user_rating
+                                                </code>
+                                            </span>
+                                        ) : (
+                                            <span key={j}>{p2}</span>
+                                        )
+                                    )}
+                                </span>
+                            )
+                        )}
                     </p>
                 </div>
             </div>
@@ -269,36 +286,36 @@ export const MLObservabilityPage = () => {
                     ) : (
                         <>
                             <KpiCard
-                                label="Mejor RMSE almacenado"
+                                label={copy.kpiRmse}
                                 value={bestRmse != null ? bestRmse.toFixed(3) : '—'}
-                                sub="Menor = mejor predicción"
+                                sub={copy.kpiRmseSub}
                                 icon={BarChart2}
-                                accent="var(--color-purple)"
+                                accent={DASHBOARD_COLORS.purple}
                             />
                             <KpiCard
-                                label="Latencia promedio (30d)"
+                                label={copy.kpiLatency}
                                 value={avgLatency ? `${avgLatency} ms` : '—'}
-                                sub="Por solicitud de recomendación"
+                                sub={copy.kpiLatencySub}
                                 icon={Zap}
-                                accent="#f59e0b"
+                                accent={DASHBOARD_COLORS.warning}
                             />
                             <KpiCard
-                                label="Sesiones totales (30d)"
+                                label={copy.kpiSessions}
                                 value={String(totalSessions)}
-                                sub="Solicitudes de recomendación"
+                                sub={copy.kpiSessionsSub}
                                 icon={Clock}
-                                accent="#10b981"
+                                accent={DASHBOARD_COLORS.success}
                             />
                             <KpiCard
-                                label="Click-through rate (30d)"
+                                label={copy.kpiCtr}
                                 value={ctrPct ? `${ctrPct}%` : '—'}
                                 sub={
                                     ctr
-                                        ? `${ctr.clicked} clicks / ${ctr.total} recomendaciones`
-                                        : 'Sin datos aún'
+                                        ? copy.kpiCtrSub(ctr.clicked, ctr.total)
+                                        : copy.kpiCtrEmpty
                                 }
                                 icon={MousePointerClick}
-                                accent="#6366f1"
+                                accent={DASHBOARD_COLORS.cyan}
                             />
                         </>
                     )}
@@ -313,15 +330,15 @@ export const MLObservabilityPage = () => {
                         <div className="flex items-center gap-2 mb-4">
                             <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Sesiones de recomendación — últimos 30 días
+                                {copy.chartTitle}
                             </p>
                         </div>
                         <ResponsiveContainer width="100%" height={200}>
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="mlGradSessions" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-purple)" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="var(--color-purple)" stopOpacity={0} />
+                                        <stop offset="5%" stopColor={DASHBOARD_COLORS.purple} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={DASHBOARD_COLORS.purple} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -336,7 +353,15 @@ export const MLObservabilityPage = () => {
                                         color: 'var(--color-text)',
                                     }}
                                 />
-                                <Area type="monotone" dataKey="sessions" stroke="var(--color-purple)" fill="url(#mlGradSessions)" strokeWidth={2} name="Sesiones" dot={false} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="sessions"
+                                    stroke={DASHBOARD_COLORS.purple}
+                                    fill="url(#mlGradSessions)"
+                                    strokeWidth={2}
+                                    name={copy.chartSessionsName}
+                                    dot={false}
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -347,20 +372,21 @@ export const MLObservabilityPage = () => {
                     <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
                         <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Comparación de algoritmos
+                                {copy.tableTitle}
                             </p>
                             <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                En producción:{' '}
-                                <strong>{ALGO_LABELS[metrics.best_algorithm] ?? metrics.best_algorithm}</strong>{' '}
-                                · α = {metrics.best_alpha}
-                                {metrics.sample_size && ` · n = ${metrics.sample_size.toLocaleString()}`}
+                                {copy.tableSubtitle(
+                                    copy.algoLabels[metrics.best_algorithm] ?? metrics.best_algorithm,
+                                    metrics.best_alpha,
+                                    metrics.sample_size,
+                                )}
                             </p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
-                                        {['Algoritmo', 'RMSE ↓', 'MAE ↓', 'Estado'].map((h, i) => (
+                                        {[copy.tableColAlgo, copy.tableColRmse, copy.tableColMae, copy.tableColStatus].map((h, i) => (
                                             <th
                                                 key={h}
                                                 className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
@@ -385,16 +411,28 @@ export const MLObservabilityPage = () => {
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center gap-2">
                                                         <span className="font-medium" style={{ color: 'var(--color-text)' }}>
-                                                            {ALGO_LABELS[key] ?? key}
+                                                            {copy.algoLabels[key] ?? key}
                                                         </span>
                                                         {isBest && (
-                                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: 'rgba(139,92,246,0.15)', color: 'var(--color-purple)' }}>
-                                                                ACTIVO
+                                                            <span
+                                                                className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                                                style={{
+                                                                    background: `${DASHBOARD_COLORS.purple}26`,
+                                                                    color: DASHBOARD_COLORS.purple,
+                                                                }}
+                                                            >
+                                                                {copy.tagActive}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: isBest ? 'var(--color-purple)' : 'var(--color-text)', fontWeight: isBest ? 700 : 400 }}>
+                                                <td
+                                                    className="px-4 py-3 text-right font-mono text-sm"
+                                                    style={{
+                                                        color: isBest ? DASHBOARD_COLORS.purple : 'var(--color-text)',
+                                                        fontWeight: isBest ? 700 : 400,
+                                                    }}
+                                                >
                                                     {alg.rmse.toFixed(3)}
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
@@ -404,11 +442,15 @@ export const MLObservabilityPage = () => {
                                                     <span
                                                         className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
                                                         style={{
-                                                            background: isBest ? 'rgba(16,185,129,0.12)' : 'rgba(var(--rgb-text),0.06)',
-                                                            color: isBest ? '#10b981' : 'var(--color-text-alt)',
+                                                            background: isBest
+                                                                ? `${DASHBOARD_COLORS.success}1f`
+                                                                : 'rgba(var(--rgb-text),0.06)',
+                                                            color: isBest
+                                                                ? DASHBOARD_COLORS.success
+                                                                : 'var(--color-text-alt)',
                                                         }}
                                                     >
-                                                        {isBest ? 'En producción' : 'Referencia'}
+                                                        {isBest ? copy.tagProduction : copy.tagReference}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -422,31 +464,32 @@ export const MLObservabilityPage = () => {
 
                 {/* Empty state when no metrics yet */}
                 {!isLoading && !metrics && !error && (
-                    <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
+                    <div
+                        className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border"
+                        style={{ borderColor: 'var(--color-border)' }}
+                    >
                         <BrainCircuit className="size-12" style={{ color: 'var(--color-border)' }} />
                         <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                            Sin métricas almacenadas
+                            {copy.emptyTitle}
                         </p>
-                        <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                            Las métricas aparecerán la primera vez que el MODELO entrene y persista
-                            su estado en{' '}
-                            <code className="font-mono">models/algorithm_metrics.json</code>
+                        <p className="text-xs text-center max-w-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.emptyHint}
                         </p>
                         <button
                             onClick={handleTrain}
                             disabled={training}
                             className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ background: 'var(--color-green)' }}
+                            style={{ background: DASHBOARD_COLORS.success }}
                         >
                             {training ? (
                                 <>
                                     <span className="size-4 shrink-0 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                    Entrenando…
+                                    {copy.trainingLabel}
                                 </>
                             ) : (
                                 <>
                                     <Play className="size-4" />
-                                    Iniciar primer entrenamiento
+                                    {copy.emptyTrainBtn}
                                 </>
                             )}
                         </button>

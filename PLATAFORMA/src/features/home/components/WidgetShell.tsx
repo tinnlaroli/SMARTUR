@@ -2,6 +2,8 @@ import React, { type DragEvent, type ReactNode, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { DASHBOARD_COLORS } from '../utils/dashboard';
 import { type WidgetDef, type WidgetInstance } from '../widgets/widgetRegistry';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 /* ── Resize drag state ───────────────────────────────────────────────── */
 interface ResizeDragData {
@@ -21,6 +23,9 @@ interface ResizeDragData {
 interface ResizeHandleProps {
     axis: 'col' | 'row' | 'both';
     isActive: boolean;
+    hintCol: string;
+    hintRow: string;
+    hintBoth: string;
     onPointerDown: (axis: 'col' | 'row' | 'both', e: React.PointerEvent<HTMLDivElement>) => void;
     onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
     onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => void;
@@ -29,6 +34,9 @@ interface ResizeHandleProps {
 const ResizeHandle: React.FC<ResizeHandleProps> = ({
     axis,
     isActive,
+    hintCol,
+    hintRow,
+    hintBoth,
     onPointerDown,
     onPointerMove,
     onPointerUp,
@@ -49,7 +57,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
         return (
             <div
                 {...commonProps}
-                title="Arrastra para cambiar ancho"
+                title={hintCol}
                 className="absolute right-0 top-8 bottom-8 z-[10] w-2.5 cursor-ew-resize rounded-r-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                 style={{
                     background: isActive ? purple : `${purple}55`,
@@ -63,7 +71,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
         return (
             <div
                 {...commonProps}
-                title="Arrastra para cambiar alto"
+                title={hintRow}
                 className="absolute bottom-0 left-8 right-8 z-[10] h-2.5 cursor-ns-resize rounded-b-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                 style={{
                     background: isActive ? purple : `${purple}55`,
@@ -77,7 +85,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
     return (
         <div
             {...commonProps}
-            title="Arrastra para cambiar tamaño"
+            title={hintBoth}
             className="absolute bottom-0 right-0 z-[15] size-9 cursor-nwse-resize rounded-br-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex items-end justify-end p-2"
             style={{
                 background: isActive ? `${purple}70` : `${purple}35`,
@@ -140,6 +148,8 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
     isDragOver,
     children,
 }) => {
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).widgets;
     const shellRef = useRef<HTMLDivElement>(null);
     const dragDataRef = useRef<ResizeDragData | null>(null);
     const [isResizing, setIsResizing] = useState(false);
@@ -262,7 +272,7 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                     {/* × Remove button — always on top */}
                     <button
                         type="button"
-                        aria-label={`Eliminar widget ${def.label}`}
+                        aria-label={copy.shellRemoveLabel(def.label)}
                         draggable={false}
                         onDragStart={(e) => e.preventDefault()}
                         onClick={(e) => { e.stopPropagation(); onRemove(); }}
@@ -280,7 +290,7 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         style={{ background: 'rgba(10,10,10,0.60)' }}
                     >
                         <span className="mr-0.5 opacity-55">⠿</span>
-                        {def.label}
+                        {copy.widgetLabels[def.id] ?? def.label}
                     </div>
 
                     {/* ── Resize handles ─────────────────────────── */}
@@ -288,6 +298,9 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         <ResizeHandle
                             axis="col"
                             isActive={activeAxis === 'col' || activeAxis === 'both'}
+                            hintCol={copy.shellDragHintCol}
+                            hintRow={copy.shellDragHintRow}
+                            hintBoth={copy.shellDragHintBoth}
                             {...resizeHandleProps}
                         />
                     )}
@@ -295,6 +308,9 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         <ResizeHandle
                             axis="row"
                             isActive={activeAxis === 'row' || activeAxis === 'both'}
+                            hintCol={copy.shellDragHintCol}
+                            hintRow={copy.shellDragHintRow}
+                            hintBoth={copy.shellDragHintBoth}
                             {...resizeHandleProps}
                         />
                     )}
@@ -302,6 +318,9 @@ export const WidgetShell: React.FC<WidgetShellProps> = ({
                         <ResizeHandle
                             axis="both"
                             isActive={activeAxis === 'both'}
+                            hintCol={copy.shellDragHintCol}
+                            hintRow={copy.shellDragHintRow}
+                            hintBoth={copy.shellDragHintBoth}
                             {...resizeHandleProps}
                         />
                     )}

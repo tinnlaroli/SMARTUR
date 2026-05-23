@@ -2,19 +2,12 @@ import React from 'react';
 import { ArrowDown, Building2, ClipboardCheck, Layers3 } from 'lucide-react';
 import { DASHBOARD_COLORS, type DensityMode } from '../utils/dashboard';
 import type { DashboardStats } from '../api/dashboardApi';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Props {
     stats: DashboardStats;
     density: DensityMode;
-}
-
-interface FunnelStep {
-    label: string;
-    sublabel: string;
-    value: number;
-    icon: React.ElementType;
-    color: string;
-    percentage: number; // relative to first step
 }
 
 const cardSurface = {
@@ -29,31 +22,35 @@ const cardPadding = (density: DensityMode) => (density === 'compact' ? 'p-4' : '
  * Each step shows a horizontal progress bar relative to the top of the funnel.
  */
 const B2BFunnelWidget: React.FC<Props> = ({ stats, density }) => {
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).widgets;
+    const locale = getDashboardText(lang).locale;
+
     const topValue = Math.max(stats.total_companies, 1);
 
-    const steps: FunnelStep[] = [
+    const steps = [
         {
-            label: 'Compañías',
-            sublabel: 'empresas registradas',
-            value: stats.total_companies,
-            icon: Building2,
-            color: DASHBOARD_COLORS.purple,
+            label:      copy.b2bCompanies,
+            sublabel:   copy.b2bCompaniesLabel,
+            value:      stats.total_companies,
+            icon:       Building2,
+            color:      DASHBOARD_COLORS.purple,
             percentage: 100,
         },
         {
-            label: 'Servicios',
-            sublabel: 'ofertas turísticas',
-            value: stats.total_services,
-            icon: Layers3,
-            color: DASHBOARD_COLORS.cyan,
+            label:      copy.b2bServices,
+            sublabel:   copy.b2bServicesLabel,
+            value:      stats.total_services,
+            icon:       Layers3,
+            color:      DASHBOARD_COLORS.cyan,
             percentage: Math.min(100, Math.round((stats.total_services / topValue) * 100)),
         },
         {
-            label: 'Evaluaciones',
-            sublabel: 'calificaciones registradas',
-            value: stats.total_evaluations,
-            icon: ClipboardCheck,
-            color: DASHBOARD_COLORS.green,
+            label:      copy.b2bEvals,
+            sublabel:   copy.b2bEvalsLabel,
+            value:      stats.total_evaluations,
+            icon:       ClipboardCheck,
+            color:      DASHBOARD_COLORS.green,
             percentage: Math.min(100, Math.round((stats.total_evaluations / topValue) * 100)),
         },
     ];
@@ -73,10 +70,10 @@ const B2BFunnelWidget: React.FC<Props> = ({ stats, density }) => {
                 </div>
                 <div className="min-w-0">
                     <h2 className="truncate text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                        Embudo B2B
+                        {copy.b2bTitle}
                     </h2>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Conversión del pipeline empresarial
+                        {copy.b2bSubtitle}
                     </p>
                 </div>
             </div>
@@ -109,7 +106,7 @@ const B2BFunnelWidget: React.FC<Props> = ({ stats, density }) => {
                                             className="shrink-0 text-[11px] font-black tabular-nums"
                                             style={{ color: step.color }}
                                         >
-                                            {step.value.toLocaleString('es-MX')}
+                                            {step.value.toLocaleString(locale)}
                                         </span>
                                     </div>
                                     {/* Progress track */}

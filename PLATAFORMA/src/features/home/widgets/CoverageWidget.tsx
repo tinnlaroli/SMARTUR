@@ -2,17 +2,12 @@ import React from 'react';
 import { Building2, Layers3, MapPin, Star } from 'lucide-react';
 import { DASHBOARD_COLORS, type DensityMode } from '../utils/dashboard';
 import type { DashboardStats } from '../api/dashboardApi';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Props {
     stats: DashboardStats;
     density: DensityMode;
-}
-
-interface CoverageMetric {
-    label: string;
-    value: number;
-    icon: React.ElementType;
-    color: string;
 }
 
 const cardSurface = {
@@ -27,27 +22,31 @@ const cardPadding = (density: DensityMode) => (density === 'compact' ? 'p-4' : '
  * Intended as a colSpan=2, rowSpan=1 (200px) horizontal widget.
  */
 const CoverageWidget: React.FC<Props> = ({ stats, density }) => {
-    const metrics: CoverageMetric[] = [
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).widgets;
+    const locale = getDashboardText(lang).locale;
+
+    const metrics = [
         {
-            label: 'Ubicaciones',
+            label: copy.coverageLocations,
             value: stats.total_locations,
             icon: MapPin,
             color: DASHBOARD_COLORS.cyan,
         },
         {
-            label: 'Compañías',
+            label: copy.coverageCompanies,
             value: stats.total_companies,
             icon: Building2,
             color: DASHBOARD_COLORS.purple,
         },
         {
-            label: 'Servicios',
+            label: copy.coverageServices,
             value: stats.total_services,
             icon: Layers3,
             color: DASHBOARD_COLORS.green,
         },
         {
-            label: 'Puntos de Interés',
+            label: copy.coveragePoi,
             value: stats.total_poi,
             icon: Star,
             color: DASHBOARD_COLORS.orange,
@@ -69,10 +68,10 @@ const CoverageWidget: React.FC<Props> = ({ stats, density }) => {
                 </div>
                 <div className="min-w-0">
                     <h2 className="truncate text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                        Cobertura del Sistema
+                        {copy.coverageTitle}
                     </h2>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Geografía & servicios registrados
+                        {copy.coverageSubtitle}
                     </p>
                 </div>
             </div>
@@ -96,7 +95,7 @@ const CoverageWidget: React.FC<Props> = ({ stats, density }) => {
                                 className="text-xl font-black leading-none tabular-nums"
                                 style={{ color: 'var(--color-text)' }}
                             >
-                                {value.toLocaleString('es-MX')}
+                                {value.toLocaleString(locale)}
                             </p>
                             <p
                                 className="mt-1 text-[10px] font-semibold leading-tight"

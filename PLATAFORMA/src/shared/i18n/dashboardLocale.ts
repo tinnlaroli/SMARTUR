@@ -104,6 +104,97 @@ type DashboardLocale = {
         timeRange6m: string;
         timeRange12m: string;
         timeRangeAll: string;
+        /* ── Widget catalog ────────────────────────────────────────── */
+        catalogTitle: string;
+        catalogClose: string;
+        catalogAvailable: (count: number) => string;
+        catalogAllAdded: string;
+        catalogAllAddedHint: string;
+        catalogNewBadge: string;
+        catalogSizeHint: (cols: number, rows: number) => string;
+        catalogAddWidget: (label: string) => string;
+        catalogCategories: Record<'analytics' | 'operations' | 'tools', string>;
+        /* ── Per-widget translated labels & descriptions ───────────── */
+        widgetLabels: Record<string, string>;
+        widgetDescriptions: Record<string, string>;
+        /* ── Edit-mode toolbar ─────────────────────────────────────── */
+        editAdd: string;
+        editRestore: string;
+        editDone: string;
+        /* ── ML Telemetry widget ───────────────────────────────────── */
+        mlTelemetryTitle: string;
+        mlTelemetrySubtitle: string;
+        mlTelemetryLoading: string;
+        mlTelemetryNoData: string;
+        mlTelemetryRmse: string;
+        mlTelemetryCtr: string;
+        mlTelemetryLatency: string;
+        mlTelemetrySessions: string;
+        /* ── Coverage widget ───────────────────────────────────────── */
+        coverageTitle: string;
+        coverageSubtitle: string;
+        coverageLocations: string;
+        coverageCompanies: string;
+        coverageServices: string;
+        coveragePoi: string;
+        /* ── B2B Funnel widget ─────────────────────────────────────── */
+        b2bTitle: string;
+        b2bSubtitle: string;
+        b2bCompanies: string;
+        b2bCompaniesLabel: string;
+        b2bServices: string;
+        b2bServicesLabel: string;
+        b2bEvals: string;
+        b2bEvalsLabel: string;
+        /* ── LangSwitch widget ─────────────────────────────────────── */
+        langSwitchTitle: string;
+        langSwitchToDark: string;
+        langSwitchToLight: string;
+        /* ── WidgetShell (edit-mode overlays) ──────────────────────── */
+        shellDragHintCol: string;
+        shellDragHintRow: string;
+        shellDragHintBoth: string;
+        shellRemoveLabel: (label: string) => string;
+    };
+    mlObservability: {
+        title: string;
+        subtitle: string;
+        trainBtn: string;
+        trainingLabel: string;
+        refreshBtn: string;
+        bannerTitle: string;
+        bannerDesc: string;
+        errorRetry: string;
+        kpiRmse: string;
+        kpiRmseSub: string;
+        kpiLatency: string;
+        kpiLatencySub: string;
+        kpiSessions: string;
+        kpiSessionsSub: string;
+        kpiCtr: string;
+        kpiCtrSub: (clicked: number, total: number) => string;
+        kpiCtrEmpty: string;
+        chartTitle: string;
+        chartSessionsName: string;
+        tableTitle: string;
+        tableSubtitle: (best: string, alpha: number, n?: number) => string;
+        tableColAlgo: string;
+        tableColRmse: string;
+        tableColMae: string;
+        tableColStatus: string;
+        tagActive: string;
+        tagProduction: string;
+        tagReference: string;
+        emptyTitle: string;
+        emptyHint: string;
+        emptyTrainBtn: string;
+        toastTrainTitle: string;
+        toastTrainDesc: string;
+        toastErrorTitle: string;
+        toastErrorDesc: string;
+        algoLabels: Record<string, string>;
+        trainTooltipActive: string;
+        trainTooltipIdle: string;
     };
     viewModel: {
         roleLabels: Record<number, string>;
@@ -304,6 +395,130 @@ const es: DashboardLocale = {
         timeRange6m: '6 meses',
         timeRange12m: '12 meses',
         timeRangeAll: 'Historico',
+        /* ── Widget catalog ── */
+        catalogTitle: 'Agregar Widget',
+        catalogClose: 'Cerrar catalogo',
+        catalogAvailable: (count) => `${count} disponible${count !== 1 ? 's' : ''}`,
+        catalogAllAdded: 'Todos los widgets estan en el dashboard',
+        catalogAllAddedHint: 'Elimina alguno desde el modo de edicion para poder volver a agregarlo.',
+        catalogNewBadge: 'Nuevo',
+        catalogSizeHint: (cols, rows) => `${cols} col x ${rows} fila${rows !== 1 ? 's' : ''}`,
+        catalogAddWidget: (label) => `Agregar widget ${label}`,
+        catalogCategories: { analytics: 'Analitica', operations: 'Operaciones', tools: 'Herramientas' },
+        widgetLabels: {
+            'kpi-strip':          'KPI Strip',
+            'trend-chart':        'Tendencia de Actividad',
+            'top-services':       'Top Servicios',
+            'user-distribution':  'Distribucion de Usuarios',
+            'recent-activity':    'Actividad Reciente',
+            'score-distribution': 'Distribucion de Puntajes',
+            'top-companies':      'Top Companias',
+            'b2b-funnel':         'Embudo B2B',
+            'operational-mix':    'Mix Operacional',
+            'ml-telemetry':       'Telemetria IA',
+            'coverage':           'Cobertura del Sistema',
+            'lang-switch':        'Idioma & Tema',
+        },
+        widgetDescriptions: {
+            'kpi-strip':          'Metricas clave del sistema: score promedio, evaluaciones, usuarios activos y servicios.',
+            'trend-chart':        'Grafica mensual de evaluaciones y puntuaciones promedio con multiples modos de vista.',
+            'top-services':       'Los servicios mejor evaluados, con barra de progreso de puntuacion.',
+            'user-distribution':  'Proporcion de turistas, guias y administradores registrados en el sistema.',
+            'recent-activity':    'Ultimas evaluaciones realizadas en el sistema con detalle de servicios y evaluadores.',
+            'score-distribution': 'Histograma de rangos de calificacion para todas las evaluaciones registradas.',
+            'top-companies':      'Ranking de empresas turisticas con mejor desempeno en evaluaciones.',
+            'b2b-funnel':         'Conversion del pipeline empresarial: companias → servicios → evaluaciones.',
+            'operational-mix':    'Distribucion de tipos de servicios: hoteles, restaurantes, tours y transporte.',
+            'ml-telemetry':       'Estado del motor de recomendaciones: algoritmo activo, RMSE, CTR 30d y latencia.',
+            'coverage':           'Totales de ubicaciones, servicios, empresas y puntos de interes registrados.',
+            'lang-switch':        'Cambia rapidamente el idioma de la interfaz y el tema visual (claro/oscuro).',
+        },
+        /* ── Edit-mode toolbar ── */
+        editAdd: 'Agregar',
+        editRestore: 'Restaurar',
+        editDone: 'Listo',
+        /* ── ML Telemetry widget ── */
+        mlTelemetryTitle: 'Telemetria IA',
+        mlTelemetrySubtitle: 'Motor de recomendaciones',
+        mlTelemetryLoading: 'cargando...',
+        mlTelemetryNoData: 'sin datos',
+        mlTelemetryRmse: 'RMSE',
+        mlTelemetryCtr: 'CTR 30d',
+        mlTelemetryLatency: 'Latencia',
+        mlTelemetrySessions: 'Sesiones',
+        /* ── Coverage widget ── */
+        coverageTitle: 'Cobertura del Sistema',
+        coverageSubtitle: 'Geografia & servicios registrados',
+        coverageLocations: 'Ubicaciones',
+        coverageCompanies: 'Companias',
+        coverageServices: 'Servicios',
+        coveragePoi: 'Puntos de Interes',
+        /* ── B2B Funnel ── */
+        b2bTitle: 'Embudo B2B',
+        b2bSubtitle: 'Conversion del pipeline empresarial',
+        b2bCompanies: 'Companias',
+        b2bCompaniesLabel: 'empresas registradas',
+        b2bServices: 'Servicios',
+        b2bServicesLabel: 'ofertas turisticas',
+        b2bEvals: 'Evaluaciones',
+        b2bEvalsLabel: 'calificaciones registradas',
+        /* ── LangSwitch ── */
+        langSwitchTitle: 'Idioma & Tema',
+        langSwitchToDark: 'Cambiar a oscuro',
+        langSwitchToLight: 'Cambiar a claro',
+        /* ── WidgetShell ── */
+        shellDragHintCol: 'Arrastra para cambiar ancho',
+        shellDragHintRow: 'Arrastra para cambiar alto',
+        shellDragHintBoth: 'Arrastra para cambiar tamano',
+        shellRemoveLabel: (label) => `Eliminar widget ${label}`,
+    },
+    mlObservability: {
+        title: 'ML / Observabilidad IA',
+        subtitle: 'Estado del motor de recomendaciones hibrido (CF + RF)',
+        trainBtn: 'Entrenar modelo',
+        trainingLabel: 'Entrenando en segundo plano...',
+        refreshBtn: 'Actualizar',
+        bannerTitle: 'Recoleccion de datos activa',
+        bannerDesc: 'La app movil envia senales implicitas (tiempo en pantalla, favoritos, filtros seleccionados) y calificaciones explicitas (1-5 estrellas). Estos datos alimentan el motor de Collaborative Filtering. El modelo se retroalimenta automaticamente al re-entrenarse con las tablas user_interaction y user_rating.',
+        errorRetry: 'Reintentar',
+        kpiRmse: 'Mejor RMSE almacenado',
+        kpiRmseSub: 'Menor = mejor prediccion',
+        kpiLatency: 'Latencia promedio (30d)',
+        kpiLatencySub: 'Por solicitud de recomendacion',
+        kpiSessions: 'Sesiones totales (30d)',
+        kpiSessionsSub: 'Solicitudes de recomendacion',
+        kpiCtr: 'Click-through rate (30d)',
+        kpiCtrSub: (clicked, total) => `${clicked} clicks / ${total} recomendaciones`,
+        kpiCtrEmpty: 'Sin datos aun',
+        chartTitle: 'Sesiones de recomendacion — ultimos 30 dias',
+        chartSessionsName: 'Sesiones',
+        tableTitle: 'Comparacion de algoritmos',
+        tableSubtitle: (best, alpha, n) =>
+            `En produccion: ${best} · α = ${alpha}${n != null ? ` · n = ${n.toLocaleString('es-MX')}` : ''}`,
+        tableColAlgo: 'Algoritmo',
+        tableColRmse: 'RMSE ↓',
+        tableColMae: 'MAE ↓',
+        tableColStatus: 'Estado',
+        tagActive: 'ACTIVO',
+        tagProduction: 'En produccion',
+        tagReference: 'Referencia',
+        emptyTitle: 'Sin metricas almacenadas',
+        emptyHint: 'Las metricas apareceran la primera vez que el MODELO entrene y persista su estado en la base de datos.',
+        emptyTrainBtn: 'Iniciar primer entrenamiento',
+        toastTrainTitle: 'Entrenamiento iniciado',
+        toastTrainDesc: 'El modelo esta re-entrenando en segundo plano. Los resultados se actualizaran automaticamente en ~3 minutos.',
+        toastErrorTitle: 'Error',
+        toastErrorDesc: 'No se pudo iniciar el entrenamiento.',
+        algoLabels: {
+            baseline:          'Baseline (media global)',
+            cf_knn_pearson:    'CF Pearson KNN',
+            random_forest:     'Random Forest',
+            gradient_boosting: 'Gradient Boosting',
+            hybrid_cf_rf:      'Hibrido CF + RF',
+            hybrid_triple:     'Hibrido Triple',
+        },
+        trainTooltipActive: 'Entrenamiento en curso — espera ~3 minutos antes de volver a entrenar',
+        trainTooltipIdle: 'Entrenar modelo',
     },
     viewModel: {
         roleLabels: {
@@ -509,6 +724,130 @@ const en: DashboardLocale = {
         timeRange6m: '6 months',
         timeRange12m: '12 months',
         timeRangeAll: 'All time',
+        /* ── Widget catalog ── */
+        catalogTitle: 'Add Widget',
+        catalogClose: 'Close catalog',
+        catalogAvailable: (count) => `${count} available`,
+        catalogAllAdded: 'All widgets are on the dashboard',
+        catalogAllAddedHint: 'Remove one in edit mode to add it back.',
+        catalogNewBadge: 'New',
+        catalogSizeHint: (cols, rows) => `${cols} col x ${rows} row${rows !== 1 ? 's' : ''}`,
+        catalogAddWidget: (label) => `Add ${label} widget`,
+        catalogCategories: { analytics: 'Analytics', operations: 'Operations', tools: 'Tools' },
+        widgetLabels: {
+            'kpi-strip':          'KPI Strip',
+            'trend-chart':        'Activity Trend',
+            'top-services':       'Top Services',
+            'user-distribution':  'User Distribution',
+            'recent-activity':    'Recent Activity',
+            'score-distribution': 'Score Distribution',
+            'top-companies':      'Top Companies',
+            'b2b-funnel':         'B2B Funnel',
+            'operational-mix':    'Operational Mix',
+            'ml-telemetry':       'AI Telemetry',
+            'coverage':           'System Coverage',
+            'lang-switch':        'Language & Theme',
+        },
+        widgetDescriptions: {
+            'kpi-strip':          'Key system metrics: average score, evaluations, active users, and services.',
+            'trend-chart':        'Monthly evaluations and average score chart with multiple view modes.',
+            'top-services':       'Top-rated services with score progress bars.',
+            'user-distribution':  'Proportion of tourists, guides, and administrators in the system.',
+            'recent-activity':    'Latest evaluations with service and reviewer details.',
+            'score-distribution': 'Histogram of rating ranges for all recorded evaluations.',
+            'top-companies':      'Tourism companies ranked by evaluation performance.',
+            'b2b-funnel':         'Business pipeline conversion: companies to services to evaluations.',
+            'operational-mix':    'Breakdown of service types: hotels, restaurants, tours, and transport.',
+            'ml-telemetry':       'Recommendation engine status: active algorithm, RMSE, 30d CTR, and latency.',
+            'coverage':           'Total locations, services, companies, and points of interest.',
+            'lang-switch':        'Quickly switch the interface language and visual theme (light/dark).',
+        },
+        /* ── Edit-mode toolbar ── */
+        editAdd: 'Add',
+        editRestore: 'Reset layout',
+        editDone: 'Done',
+        /* ── ML Telemetry widget ── */
+        mlTelemetryTitle: 'AI Telemetry',
+        mlTelemetrySubtitle: 'Recommendation engine',
+        mlTelemetryLoading: 'loading...',
+        mlTelemetryNoData: 'no data',
+        mlTelemetryRmse: 'RMSE',
+        mlTelemetryCtr: 'CTR 30d',
+        mlTelemetryLatency: 'Latency',
+        mlTelemetrySessions: 'Sessions',
+        /* ── Coverage widget ── */
+        coverageTitle: 'System Coverage',
+        coverageSubtitle: 'Geography & registered services',
+        coverageLocations: 'Locations',
+        coverageCompanies: 'Companies',
+        coverageServices: 'Services',
+        coveragePoi: 'Points of Interest',
+        /* ── B2B Funnel ── */
+        b2bTitle: 'B2B Funnel',
+        b2bSubtitle: 'Business pipeline conversion',
+        b2bCompanies: 'Companies',
+        b2bCompaniesLabel: 'registered companies',
+        b2bServices: 'Services',
+        b2bServicesLabel: 'tourism offerings',
+        b2bEvals: 'Evaluations',
+        b2bEvalsLabel: 'recorded ratings',
+        /* ── LangSwitch ── */
+        langSwitchTitle: 'Language & Theme',
+        langSwitchToDark: 'Switch to dark',
+        langSwitchToLight: 'Switch to light',
+        /* ── WidgetShell ── */
+        shellDragHintCol: 'Drag to resize width',
+        shellDragHintRow: 'Drag to resize height',
+        shellDragHintBoth: 'Drag to resize',
+        shellRemoveLabel: (label) => `Remove ${label} widget`,
+    },
+    mlObservability: {
+        title: 'ML / AI Observability',
+        subtitle: 'Hybrid recommendation engine status (CF + RF)',
+        trainBtn: 'Train model',
+        trainingLabel: 'Training in background...',
+        refreshBtn: 'Refresh',
+        bannerTitle: 'Active data collection',
+        bannerDesc: 'The mobile app sends implicit signals (screen time, favorites, selected filters) and explicit ratings (1-5 stars). This data feeds the Collaborative Filtering engine. The model self-improves when retrained with the user_interaction and user_rating tables.',
+        errorRetry: 'Try again',
+        kpiRmse: 'Best stored RMSE',
+        kpiRmseSub: 'Lower = better prediction',
+        kpiLatency: 'Avg latency (30d)',
+        kpiLatencySub: 'Per recommendation request',
+        kpiSessions: 'Total sessions (30d)',
+        kpiSessionsSub: 'Recommendation requests',
+        kpiCtr: 'Click-through rate (30d)',
+        kpiCtrSub: (clicked, total) => `${clicked} clicks / ${total} recommendations`,
+        kpiCtrEmpty: 'No data yet',
+        chartTitle: 'Recommendation sessions — last 30 days',
+        chartSessionsName: 'Sessions',
+        tableTitle: 'Algorithm comparison',
+        tableSubtitle: (best, alpha, n) =>
+            `In production: ${best} · α = ${alpha}${n != null ? ` · n = ${n.toLocaleString('en-US')}` : ''}`,
+        tableColAlgo: 'Algorithm',
+        tableColRmse: 'RMSE ↓',
+        tableColMae: 'MAE ↓',
+        tableColStatus: 'Status',
+        tagActive: 'ACTIVE',
+        tagProduction: 'In production',
+        tagReference: 'Reference',
+        emptyTitle: 'No stored metrics',
+        emptyHint: 'Metrics will appear the first time the MODEL trains and persists its state to the database.',
+        emptyTrainBtn: 'Start first training',
+        toastTrainTitle: 'Training started',
+        toastTrainDesc: 'The model is retraining in the background. Results will auto-update in ~3 minutes.',
+        toastErrorTitle: 'Error',
+        toastErrorDesc: 'Could not start training.',
+        algoLabels: {
+            baseline:          'Baseline (global mean)',
+            cf_knn_pearson:    'CF Pearson KNN',
+            random_forest:     'Random Forest',
+            gradient_boosting: 'Gradient Boosting',
+            hybrid_cf_rf:      'Hybrid CF + RF',
+            hybrid_triple:     'Triple Hybrid',
+        },
+        trainTooltipActive: 'Training in progress — wait ~3 minutes before retraining',
+        trainTooltipIdle: 'Train model',
     },
     viewModel: {
         roleLabels: {
@@ -714,6 +1053,130 @@ const fr: DashboardLocale = {
         timeRange6m: '6 mois',
         timeRange12m: '12 mois',
         timeRangeAll: 'Historique',
+        /* ── Widget catalog ── */
+        catalogTitle: 'Ajouter un widget',
+        catalogClose: 'Fermer le catalogue',
+        catalogAvailable: (count) => `${count} disponible${count !== 1 ? 's' : ''}`,
+        catalogAllAdded: 'Tous les widgets sont sur le tableau de bord',
+        catalogAllAddedHint: 'Supprimez-en un en mode edition pour le rajouter.',
+        catalogNewBadge: 'Nouveau',
+        catalogSizeHint: (cols, rows) => `${cols} col x ${rows} ligne${rows !== 1 ? 's' : ''}`,
+        catalogAddWidget: (label) => `Ajouter le widget ${label}`,
+        catalogCategories: { analytics: 'Analytique', operations: 'Operations', tools: 'Outils' },
+        widgetLabels: {
+            'kpi-strip':          'KPI Strip',
+            'trend-chart':        'Tendance d activite',
+            'top-services':       'Top services',
+            'user-distribution':  'Repartition des utilisateurs',
+            'recent-activity':    'Activite recente',
+            'score-distribution': 'Distribution des scores',
+            'top-companies':      'Top entreprises',
+            'b2b-funnel':         'Entonnoir B2B',
+            'operational-mix':    'Mix operationnel',
+            'ml-telemetry':       'Telemetrie IA',
+            'coverage':           'Couverture du systeme',
+            'lang-switch':        'Langue & Theme',
+        },
+        widgetDescriptions: {
+            'kpi-strip':          'Indicateurs cles : score moyen, evaluations, utilisateurs actifs et services.',
+            'trend-chart':        'Graphique mensuel des evaluations et scores avec plusieurs modes d affichage.',
+            'top-services':       'Services les mieux evalues avec barres de progression.',
+            'user-distribution':  'Proportion de touristes, guides et administrateurs enregistres.',
+            'recent-activity':    'Dernieres evaluations avec details des services et evaluateurs.',
+            'score-distribution': 'Histogramme des plages de notes pour toutes les evaluations.',
+            'top-companies':      'Classement des entreprises touristiques par performance.',
+            'b2b-funnel':         'Conversion du pipeline : entreprises vers services vers evaluations.',
+            'operational-mix':    'Repartition des types de services : hotels, restaurants, circuits et transport.',
+            'ml-telemetry':       'Etat du moteur de recommandations : algorithme actif, RMSE, CTR 30j et latence.',
+            'coverage':           'Total des lieux, services, entreprises et points d interet enregistres.',
+            'lang-switch':        'Changer rapidement la langue et le theme visuel (clair/sombre).',
+        },
+        /* ── Edit-mode toolbar ── */
+        editAdd: 'Ajouter',
+        editRestore: 'Reinitialiser',
+        editDone: 'Terminer',
+        /* ── ML Telemetry widget ── */
+        mlTelemetryTitle: 'Telemetrie IA',
+        mlTelemetrySubtitle: 'Moteur de recommandations',
+        mlTelemetryLoading: 'chargement...',
+        mlTelemetryNoData: 'sans donnees',
+        mlTelemetryRmse: 'RMSE',
+        mlTelemetryCtr: 'CTR 30j',
+        mlTelemetryLatency: 'Latence',
+        mlTelemetrySessions: 'Sessions',
+        /* ── Coverage widget ── */
+        coverageTitle: 'Couverture du systeme',
+        coverageSubtitle: 'Geographie & services enregistres',
+        coverageLocations: 'Lieux',
+        coverageCompanies: 'Entreprises',
+        coverageServices: 'Services',
+        coveragePoi: 'Points d interet',
+        /* ── B2B Funnel ── */
+        b2bTitle: 'Entonnoir B2B',
+        b2bSubtitle: 'Conversion du pipeline entreprise',
+        b2bCompanies: 'Entreprises',
+        b2bCompaniesLabel: 'entreprises enregistrees',
+        b2bServices: 'Services',
+        b2bServicesLabel: 'offres touristiques',
+        b2bEvals: 'Evaluations',
+        b2bEvalsLabel: 'evaluations enregistrees',
+        /* ── LangSwitch ── */
+        langSwitchTitle: 'Langue & Theme',
+        langSwitchToDark: 'Passer en sombre',
+        langSwitchToLight: 'Passer en clair',
+        /* ── WidgetShell ── */
+        shellDragHintCol: 'Glisser pour changer la largeur',
+        shellDragHintRow: 'Glisser pour changer la hauteur',
+        shellDragHintBoth: 'Glisser pour redimensionner',
+        shellRemoveLabel: (label) => `Supprimer le widget ${label}`,
+    },
+    mlObservability: {
+        title: 'ML / Observabilite IA',
+        subtitle: 'Etat du moteur de recommandations hybride (CF + RF)',
+        trainBtn: 'Entrainer le modele',
+        trainingLabel: 'Entrainement en arriere-plan...',
+        refreshBtn: 'Actualiser',
+        bannerTitle: 'Collecte de donnees active',
+        bannerDesc: 'L application mobile envoie des signaux implicites (temps d ecran, favoris, filtres selectionnes) et des notes explicites (1 a 5 etoiles). Ces donnees alimentent le moteur de Filtrage Collaboratif. Le modele se retro-alimente automatiquement lors du reentrainement avec les tables user_interaction et user_rating.',
+        errorRetry: 'Reessayer',
+        kpiRmse: 'Meilleur RMSE stocke',
+        kpiRmseSub: 'Plus bas = meilleure prediction',
+        kpiLatency: 'Latence moyenne (30j)',
+        kpiLatencySub: 'Par requete de recommandation',
+        kpiSessions: 'Sessions totales (30j)',
+        kpiSessionsSub: 'Requetes de recommandation',
+        kpiCtr: 'Taux de clics (30j)',
+        kpiCtrSub: (clicked, total) => `${clicked} clics / ${total} recommandations`,
+        kpiCtrEmpty: 'Aucune donnee',
+        chartTitle: 'Sessions de recommandation — 30 derniers jours',
+        chartSessionsName: 'Sessions',
+        tableTitle: 'Comparaison des algorithmes',
+        tableSubtitle: (best, alpha, n) =>
+            `En production : ${best} · α = ${alpha}${n != null ? ` · n = ${n.toLocaleString('fr-FR')}` : ''}`,
+        tableColAlgo: 'Algorithme',
+        tableColRmse: 'RMSE ↓',
+        tableColMae: 'MAE ↓',
+        tableColStatus: 'Statut',
+        tagActive: 'ACTIF',
+        tagProduction: 'En production',
+        tagReference: 'Reference',
+        emptyTitle: 'Aucune metrique stockee',
+        emptyHint: 'Les metriques apparaitront la premiere fois que le MODELE s entrainera et persistera son etat en base de donnees.',
+        emptyTrainBtn: 'Demarrer le premier entrainement',
+        toastTrainTitle: 'Entrainement demarre',
+        toastTrainDesc: 'Le modele se reentrainement en arriere-plan. Les resultats se mettront a jour automatiquement en ~3 minutes.',
+        toastErrorTitle: 'Erreur',
+        toastErrorDesc: 'Impossible de demarrer l entrainement.',
+        algoLabels: {
+            baseline:          'Ligne de base (moyenne globale)',
+            cf_knn_pearson:    'CF Pearson KNN',
+            random_forest:     'Foret aleatoire',
+            gradient_boosting: 'Gradient Boosting',
+            hybrid_cf_rf:      'Hybride CF + RF',
+            hybrid_triple:     'Hybride triple',
+        },
+        trainTooltipActive: 'Entrainement en cours — attendez ~3 minutes avant de reentrainer',
+        trainTooltipIdle: 'Entrainer le modele',
     },
     viewModel: {
         roleLabels: {

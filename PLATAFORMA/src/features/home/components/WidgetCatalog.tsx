@@ -23,6 +23,8 @@ import {
     type WidgetCategory,
     type WidgetDef,
 } from '../widgets/widgetRegistry';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 /* ── Icon lookup ─────────────────────────────────────────────────────── */
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -40,19 +42,18 @@ const ICON_MAP: Record<string, React.ElementType> = {
     Users,
 };
 
-const CATEGORY_LABELS: Record<WidgetCategory, string> = {
-    analytics:  'Analítica',
-    operations: 'Operaciones',
-    tools:      'Herramientas',
-};
-
 const CATEGORY_ORDER: WidgetCategory[] = ['analytics', 'operations', 'tools'];
 
 /* ── Catalog item ────────────────────────────────────────────────────── */
 const CatalogItem: React.FC<{
     def: WidgetDef;
+    label: string;
+    description: string;
+    newBadge: string;
+    sizeHint: string;
+    addAriaLabel: string;
     onAdd: () => void;
-}> = ({ def, onAdd }) => {
+}> = ({ def, label, description, newBadge, sizeHint, addAriaLabel, onAdd }) => {
     const Icon = ICON_MAP[def.iconName] ?? BarChart3;
 
     return (
@@ -75,22 +76,22 @@ const CatalogItem: React.FC<{
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                     <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--color-text)' }}>
-                        {def.label}
+                        {label}
                     </p>
                     {def.isNew && (
                         <span
                             className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-widest text-white"
                             style={{ background: DASHBOARD_COLORS.purple }}
                         >
-                            Nuevo
+                            {newBadge}
                         </span>
                     )}
                 </div>
                 <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                    {def.description}
+                    {description}
                 </p>
                 <p className="mt-1.5 text-[10px] tabular-nums" style={{ color: 'var(--color-text-alt)' }}>
-                    {def.defaultColSpan} col × {def.defaultRowSpan} fila
+                    {sizeHint}
                 </p>
             </div>
 
@@ -100,7 +101,7 @@ const CatalogItem: React.FC<{
                 onClick={onAdd}
                 className="flex size-8 shrink-0 items-center justify-center rounded-xl text-white shadow-sm transition hover:opacity-90 active:scale-90"
                 style={{ background: DASHBOARD_COLORS.purple }}
-                aria-label={`Agregar widget ${def.label}`}
+                aria-label={addAriaLabel}
             >
                 <Plus className="size-4" />
             </button>
@@ -122,6 +123,9 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
     activeWidgetIds,
     onAdd,
 }) => {
+    const { lang } = useLanguage();
+    const copy = getDashboardText(lang).widgets;
+
     const availableWidgets = WIDGET_REGISTRY.filter((w) => !activeWidgetIds.has(w.id));
 
     // Group by category (only show categories that have at least 1 available widget)
@@ -166,7 +170,7 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
                             background: 'var(--color-bg)',
                             borderColor: 'var(--color-border)',
                         }}
-                        aria-label="Catálogo de widgets"
+                        aria-label={copy.catalogTitle}
                     >
                         {/* Header */}
                         <div
@@ -182,10 +186,10 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                                        Agregar Widget
+                                        {copy.catalogTitle}
                                     </p>
                                     <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
-                                        {availableWidgets.length} disponible{availableWidgets.length !== 1 ? 's' : ''}
+                                        {copy.catalogAvailable(availableWidgets.length)}
                                     </p>
                                 </div>
                             </div>
@@ -193,7 +197,7 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
                                 type="button"
                                 onClick={onClose}
                                 className="rounded-xl p-2 transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                aria-label="Cerrar catálogo"
+                                aria-label={copy.catalogClose}
                             >
                                 <X className="size-4" style={{ color: 'var(--color-text-alt)' }} />
                             </button>
@@ -211,13 +215,13 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
                                         className="text-sm font-medium"
                                         style={{ color: 'var(--color-text-alt)' }}
                                     >
-                                        Todos los widgets están en el dashboard
+                                        {copy.catalogAllAdded}
                                     </p>
                                     <p
                                         className="max-w-[15rem] text-xs"
                                         style={{ color: 'var(--color-text-alt)' }}
                                     >
-                                        Elimina alguno desde el modo de edición para poder volver a agregarlo.
+                                        {copy.catalogAllAddedHint}
                                     </p>
                                 </div>
                             ) : (
@@ -231,13 +235,18 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
                                                     className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em]"
                                                     style={{ color: 'var(--color-text-alt)' }}
                                                 >
-                                                    {CATEGORY_LABELS[cat]}
+                                                    {copy.catalogCategories[cat]}
                                                 </p>
                                                 <div className="space-y-2">
                                                     {items.map((def) => (
                                                         <CatalogItem
                                                             key={def.id}
                                                             def={def}
+                                                            label={copy.widgetLabels[def.id] ?? def.label}
+                                                            description={copy.widgetDescriptions[def.id] ?? def.description}
+                                                            newBadge={copy.catalogNewBadge}
+                                                            sizeHint={copy.catalogSizeHint(def.defaultColSpan, def.defaultRowSpan)}
+                                                            addAriaLabel={copy.catalogAddWidget(def.label)}
                                                             onAdd={() => handleAdd(def.id)}
                                                         />
                                                     ))}
