@@ -68,6 +68,37 @@ router.get('/ml/health', verifyToken, async (req, res) => {
 });
 
 /**
+ * GET /api/v2/ml/model-status
+ * Returns live health of each ML sub-model (LightFM, RF, GBM, SVD, Content).
+ * Proxies to MODELO /health and reshapes the response for the admin dashboard.
+ */
+router.get('/ml/model-status', verifyToken, async (req, res) => {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5_000);
+        try {
+            const r = await fetch(`${MODELO_URL}/health`, { signal: controller.signal });
+            const data = await r.json().catch(() => ({}));
+            res.json({
+                engine_ready:  Boolean(data.engine_ready),
+                rf_ready:      Boolean(data.rf_ready),
+                gbm_ready:     Boolean(data.gbm_ready),
+                svd_ready:     Boolean(data.svd_ready),
+                lightfm_ready: Boolean(data.lightfm_ready),
+                content_ready: Boolean(data.content_ready),
+                users_count:   data.users_count ?? 0,
+            });
+        } finally {
+            clearTimeout(timeout);
+        }
+    } catch (err) {
+        // Non-fatal — dashboard degrades gracefully
+        res.json({ engine_ready: false, rf_ready: false, gbm_ready: false,
+                   svd_ready: false, lightfm_ready: false, content_ready: false, users_count: 0 });
+    }
+});
+
+/**
  * POST /api/v2/ml/train
  * Triggers model retraining on MODELO (fire-and-forget from the dashboard).
  */
