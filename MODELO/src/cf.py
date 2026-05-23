@@ -55,6 +55,18 @@ def predict_cf_pearson(user_id, item_id, engine, k=20):
         user_mean = float(engine.train_data['stars'].mean())
 
     if sim_sum == 0:
+        # No KNN neighbors rated this item → try SVD dot-product for a better estimate
+        if hasattr(engine, 'user_latent') and hasattr(engine, 'item_latent'):
+            u = engine.user_index.get(user_id)
+            it = engine.item_index.get(item_id)
+            if u is not None and it is not None:
+                try:
+                    svd_pred = float(np.dot(engine.user_latent[u], engine.item_latent[it]))
+                    # SVD output is on centered scale; shift back to [1, 5]
+                    svd_pred = float(np.clip(svd_pred + user_mean, 1, 5))
+                    return svd_pred if not np.isnan(svd_pred) else user_mean
+                except Exception:
+                    pass
         return user_mean
 
     prediction = user_mean + (weighted_sum / sim_sum)

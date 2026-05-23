@@ -23,30 +23,38 @@ from poi_repository import fetch_pois, get_poi_connection, fetch_traveler_profil
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("smartur-api")
 
-engine = None
+engine        = None
 context_model = None
+gbm_model     = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Carga los modelos pesados una sola vez al iniciar la API."""
-    global engine, context_model
+    global engine, context_model, gbm_model
     if os.getenv("SKIP_MODEL_BOOT") == "1":
         logger.warning("SKIP_MODEL_BOOT=1: saltando carga de modelos en arranque")
         yield
         return
     try:
-        logger.info("Cargando Motor de Pearson (Engine)...")
+        logger.info("Cargando Motor de Pearson + SVD (Engine)...")
         engine = SmarturEngine()
         engine.prepare_pearson_matrix()
 
         logger.info("Cargando Modelo de Contexto (Random Forest)...")
         context_model = SmarturContextModel()
         if not context_model.load():
-            logger.info("Modelo de Random Forest no encontrado, entrenando ahora por única vez...")
+            logger.info("Modelo RF no encontrado, entrenando ahora por única vez...")
             context_model.train(engine.train_data)
 
-        logger.info("SMARTUR v2 listo para recibir peticiones.")
+        logger.info("Cargando Gradient Boosting (GBM)...")
+        from gbm_model import SmarturGbmModel
+        gbm_model = SmarturGbmModel()
+        if not gbm_model.load():
+            logger.info("Modelo GBM no encontrado, entrenando ahora por única vez...")
+            gbm_model.train(engine.train_data)
+
+        logger.info("SMARTUR v3 listo (RF + GBM + SVD/Pearson CF).")
     except Exception as e:
         logger.error(f"Error crítico en el arranque: {e}")
         # Falla rápido y ruidosamente; previene iniciar en un estado degradado "zombie"
@@ -98,6 +106,8 @@ def health():
         "status": "ok",
         "engine_ready": engine is not None and engine.user_item_matrix is not None,
         "rf_ready": context_model is not None and getattr(context_model, 'is_fitted', False),
+        "gbm_ready": gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
+        "svd_ready": engine is not None and hasattr(engine, 'user_latent'),
         "users_count": engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
         "skip_model_boot": os.getenv("SKIP_MODEL_BOOT") == "1",
     }
@@ -198,11 +208,15 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
     Computes CF-Pearson + Random-Forest metrics on held-out test data.
     Does NOT require a GBM model (simplified vs. compare_algorithms).
     Returns a dict compatible with the ml_model_metrics schema.
+
+    NOTE: This function is kept as a fallback for when GBM is not loaded.
+    Prefer compare_algorithms() when gbm_model is available.
     """
     import numpy as np
     from math import sqrt
     from sklearn.metrics import mean_absolute_error, mean_squared_error
     from cf import predict_cf_pearson
+    from evaluate import _infer_user_context
     from model_metrics import DEFAULT_METRICS
 
     try:
@@ -214,13 +228,25 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
         n_eval = min(sample_size, len(test_data))
         test_sample = test_data.sample(n_eval, random_state=42)
 
+        # Pre-compute user contexts so predict_with_context gets real signal
+        user_contexts = {
+            uid: _infer_user_context(uid, engine_obj)
+            for uid in test_sample['user_id'].unique()
+        }
+
         actuals, preds_cf, preds_rf = [], [], []
         for _, row in test_sample.iterrows():
             try:
                 p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine_obj)
-                p_rf = float(rf_model.predict_with_context([row['business_id']], user_context=None)[0])
-                if np.isnan(p_cf) or np.isnan(p_rf):
+                ctx  = user_contexts.get(row['user_id'])
+                p_rf = float(rf_model.predict_with_context([row['business_id']], user_context=ctx)[0])
+
+                # Only skip if RF is invalid (CF always returns a fallback mean)
+                if np.isnan(p_rf):
                     continue
+                if np.isnan(p_cf):
+                    p_cf = p_rf  # graceful CF fallback when KNN has no neighbors
+
                 actuals.append(row['stars'])
                 preds_cf.append(p_cf)
                 preds_rf.append(p_rf)
@@ -306,33 +332,86 @@ def _persist_metrics_to_db(metrics_json: dict) -> bool:
 
 
 def _run_full_training():
-    """Background worker: refreshes Pearson matrix + retrains RF + writes metrics."""
-    global engine, context_model
+    """
+    Background worker: retrains all models (RF + GBM), refreshes Pearson/SVD matrix,
+    computes full algorithm comparison metrics, appends ranking metrics, and persists to DB.
+    """
+    global engine, context_model, gbm_model
     try:
-        logger.info("[train] Actualizando matriz de Pearson...")
+        import pandas as pd
+        from model_metrics import save_metrics, compare_algorithms
+        from poi_repository import fetch_real_interactions
+
+        # ── 1. Merge real DB interactions (if any accumulated) ───────────────
+        try:
+            real_df = fetch_real_interactions(min_events=2)
+            if real_df is not None and len(real_df) >= 50:
+                real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
+                real_df['user_id'] = real_df['user_id'].astype(str)
+                # Weight real interactions 2× to offset the much larger CSV corpus
+                engine.train_data = pd.concat(
+                    [engine.train_data, real_df, real_df], ignore_index=True
+                )
+                logger.info(f"[train] {len(real_df)} interacciones reales integradas al entrenamiento.")
+            else:
+                logger.info("[train] Menos de 50 interacciones reales en DB — usando solo CSV.")
+        except Exception as exc:
+            logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
+
+        # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
+        logger.info("[train] Actualizando matriz de Pearson + SVD...")
         engine.prepare_pearson_matrix()
 
+        # ── 3. Retrain RF ────────────────────────────────────────────────────
         logger.info("[train] Reentrenando Random Forest...")
         context_model.train(engine.train_data)
 
-        logger.info("[train] Calculando métricas post-entrenamiento...")
-        metrics = _compute_simple_metrics(engine, context_model)
+        # ── 4. Retrain GBM ───────────────────────────────────────────────────
+        if gbm_model is not None:
+            logger.info("[train] Reentrenando Gradient Boosting...")
+            gbm_model.train(engine.train_data)
+        else:
+            logger.warning("[train] GBM no cargado — solo RF+CF en comparativa.")
 
-        from model_metrics import save_metrics
+        # ── 5. Full algorithm comparison ─────────────────────────────────────
+        logger.info("[train] Calculando comparativa de algoritmos...")
+        if gbm_model is not None:
+            metrics = compare_algorithms(engine, context_model, gbm_model, sample_size=800)
+        else:
+            metrics = _compute_simple_metrics(engine, context_model)
+
+        # ── 6. Ranking metrics (NDCG@5, Precision@5, Hit Rate@10) ────────────
+        try:
+            from evaluate import evaluar_ranking
+            ranking = evaluar_ranking(engine, context_model, n_users=50, k=5)
+            if ranking:
+                metrics['ranking'] = ranking
+                logger.info(
+                    f"[train] Ranking — NDCG@5={ranking.get('ndcg', 0):.4f}, "
+                    f"P@5={ranking.get('precision', 0):.4f}, "
+                    f"HR@10={ranking.get('hit_rate', 0):.4f}"
+                )
+        except Exception as exc:
+            logger.warning(f"[train] Ranking evaluation omitida: {exc}")
+
+        # ── 7. Persist locally ───────────────────────────────────────────────
         save_metrics(metrics)
-        logger.info(
-            f"[train] Métricas guardadas localmente — mejor algoritmo: {metrics.get('best_algorithm')} "
-            f"(RMSE={metrics.get('algorithms', {}).get(metrics.get('best_algorithm', ''), {}).get('rmse', '?'):.4f})"
-        )
+        _best_algo = metrics.get('best_algorithm', '—')
+        _rmse_val  = metrics.get('algorithms', {}).get(_best_algo, {}).get('rmse')
+        _rmse_str  = f"{_rmse_val:.4f}" if isinstance(_rmse_val, (int, float)) else '—'
+        logger.info(f"[train] Métricas guardadas — mejor algoritmo: {_best_algo} (RMSE={_rmse_str})")
 
-        if _persist_metrics_to_db(metrics):
+        # ── 8. Persist to DB (only if we have real algorithm data) ──────────
+        if not metrics.get('algorithms'):
+            logger.warning("[train] Métricas vacías — no se persiste en DB (datos insuficientes).")
+        elif _persist_metrics_to_db(metrics):
             logger.info("[train] Métricas persistidas en DB correctamente.")
         else:
             logger.warning("[train] Métricas solo disponibles en archivo local (DB no actualizada).")
 
-        logger.info("[train] Entrenamiento completado.")
+        logger.info(f"[train] Entrenamiento completado. Muestra: {metrics.get('sample_size', '?')} predicciones.")
     except Exception as e:
-        logger.error(f"[train] Error en background training: {e}")
+        logger.error(f"[train] Error en background training: {e}", exc_info=True)
 
 
 @app.post("/train")

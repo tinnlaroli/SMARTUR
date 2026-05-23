@@ -7,7 +7,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
-    BarChart2, AlertCircle, RefreshCw, Activity, Play,
+    BarChart2, AlertCircle, RefreshCw, Activity, Play, Target, Trophy, Crosshair,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
@@ -116,12 +116,15 @@ export const MLObservabilityPage = () => {
 
     useEffect(() => { fetchHealth(); }, [fetchHealth]);
 
-    const metrics    = data?.latest_metrics;
-    const sessions   = data?.daily_sessions ?? [];
-    const ctr        = data?.ctr_30d;
+    const metrics        = data?.latest_metrics;
+    const sessions       = data?.daily_sessions ?? [];
+    const ctr            = data?.ctr_30d;
+    const hasAlgorithms  = metrics != null && Object.keys(metrics.algorithms ?? {}).length > 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ranking        = (metrics as any)?.ranking as { ndcg?: number; precision?: number; hit_rate?: number } | undefined;
 
-    const bestRmse = metrics
-        ? Math.min(...Object.values(metrics.algorithms).map((a) => a.rmse))
+    const bestRmse = hasAlgorithms
+        ? Math.min(...Object.values(metrics!.algorithms).map((a) => (a as { rmse: number }).rmse))
         : null;
     const avgLatency =
         sessions.length > 0
@@ -368,7 +371,7 @@ export const MLObservabilityPage = () => {
                 )}
 
                 {/* Algorithm comparison table */}
-                {!isLoading && metrics && (
+                {!isLoading && metrics && hasAlgorithms && (
                     <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
                         <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -378,7 +381,8 @@ export const MLObservabilityPage = () => {
                                 {copy.tableSubtitle(
                                     copy.algoLabels[metrics.best_algorithm] ?? metrics.best_algorithm,
                                     metrics.best_alpha,
-                                    metrics.sample_size,
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    (metrics as any).sample_size,
                                 )}
                             </p>
                         </div>
@@ -400,6 +404,7 @@ export const MLObservabilityPage = () => {
                                 <tbody>
                                     {Object.entries(metrics.algorithms).map(([key, alg]) => {
                                         const isBest = key === metrics.best_algorithm;
+                                        const algTyped = alg as { rmse: number; mae: number };
                                         return (
                                             <tr
                                                 key={key}
@@ -433,10 +438,10 @@ export const MLObservabilityPage = () => {
                                                         fontWeight: isBest ? 700 : 400,
                                                     }}
                                                 >
-                                                    {alg.rmse.toFixed(3)}
+                                                    {algTyped.rmse.toFixed(3)}
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
-                                                    {alg.mae.toFixed(3)}
+                                                    {algTyped.mae.toFixed(3)}
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
                                                     <span
@@ -462,7 +467,103 @@ export const MLObservabilityPage = () => {
                     </div>
                 )}
 
-                {/* Empty state when no metrics yet */}
+                {/* Ranking metrics panel — shown only when training produced ranking data */}
+                {!isLoading && ranking && (ranking.ndcg != null || ranking.precision != null || ranking.hit_rate != null) && (
+                    <div
+                        className="rounded-2xl border p-5"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    >
+                        <div className="flex items-center gap-2 mb-4">
+                            <Trophy className="size-4" style={{ color: DASHBOARD_COLORS.warning }} />
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                {copy.rankingTitle}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            {ranking.ndcg != null && (
+                                <div
+                                    className="rounded-2xl border p-4 flex flex-col gap-1"
+                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                                >
+                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.purple}18` }}>
+                                        <Target className="size-3.5" style={{ color: DASHBOARD_COLORS.purple }} />
+                                    </div>
+                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
+                                        {ranking.ndcg.toFixed(3)}
+                                    </p>
+                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingNdcg}</p>
+                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingNdcgSub}</p>
+                                </div>
+                            )}
+                            {ranking.precision != null && (
+                                <div
+                                    className="rounded-2xl border p-4 flex flex-col gap-1"
+                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                                >
+                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.cyan}18` }}>
+                                        <Crosshair className="size-3.5" style={{ color: DASHBOARD_COLORS.cyan }} />
+                                    </div>
+                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
+                                        {ranking.precision.toFixed(3)}
+                                    </p>
+                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingPrecision}</p>
+                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingPrecisionSub}</p>
+                                </div>
+                            )}
+                            {ranking.hit_rate != null && (
+                                <div
+                                    className="rounded-2xl border p-4 flex flex-col gap-1"
+                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                                >
+                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.success}18` }}>
+                                        <Zap className="size-3.5" style={{ color: DASHBOARD_COLORS.success }} />
+                                    </div>
+                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
+                                        {(ranking.hit_rate * 100).toFixed(1)}%
+                                    </p>
+                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingHitRate}</p>
+                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingHitRateSub}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Empty state: metrics exist but algorithms is empty (data insufficient) */}
+                {!isLoading && metrics && !hasAlgorithms && (
+                    <div
+                        className="flex flex-col items-center justify-center gap-3 py-16 rounded-2xl border"
+                        style={{ borderColor: 'var(--color-border)' }}
+                    >
+                        <BarChart2 className="size-10" style={{ color: 'var(--color-border)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.emptyTitle}
+                        </p>
+                        <p className="text-xs text-center max-w-sm px-4" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.tableEmptyAlgosHint}
+                        </p>
+                        <button
+                            onClick={handleTrain}
+                            disabled={training}
+                            className="mt-1 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: DASHBOARD_COLORS.warning }}
+                        >
+                            {training ? (
+                                <>
+                                    <span className="size-4 shrink-0 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                    {copy.trainingLabel}
+                                </>
+                            ) : (
+                                <>
+                                    <Play className="size-4" />
+                                    {copy.emptyTrainBtn}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+
+                {/* Empty state when no metrics at all yet */}
                 {!isLoading && !metrics && !error && (
                     <div
                         className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border"

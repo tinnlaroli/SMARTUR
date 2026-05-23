@@ -195,6 +195,14 @@ type DashboardLocale = {
         algoLabels: Record<string, string>;
         trainTooltipActive: string;
         trainTooltipIdle: string;
+        rankingTitle: string;
+        rankingNdcg: string;
+        rankingNdcgSub: string;
+        rankingPrecision: string;
+        rankingPrecisionSub: string;
+        rankingHitRate: string;
+        rankingHitRateSub: string;
+        tableEmptyAlgosHint: string;
     };
     viewModel: {
         roleLabels: Record<number, string>;
@@ -519,6 +527,14 @@ const es: DashboardLocale = {
         },
         trainTooltipActive: 'Entrenamiento en curso — espera ~3 minutos antes de volver a entrenar',
         trainTooltipIdle: 'Entrenar modelo',
+        rankingTitle: 'Metricas de ranking (test set)',
+        rankingNdcg: 'NDCG@5',
+        rankingNdcgSub: 'Calidad del orden de recomendaciones',
+        rankingPrecision: 'Precision@5',
+        rankingPrecisionSub: 'Relevantes en el top-5',
+        rankingHitRate: 'Hit Rate@10',
+        rankingHitRateSub: 'Usuarios con al menos 1 acierto en top-10',
+        tableEmptyAlgosHint: 'El modelo entrenó pero no hubo datos suficientes para calcular métricas. Vuelve a entrenar cuando haya más interacciones.',
     },
     viewModel: {
         roleLabels: {
@@ -848,6 +864,14 @@ const en: DashboardLocale = {
         },
         trainTooltipActive: 'Training in progress — wait ~3 minutes before retraining',
         trainTooltipIdle: 'Train model',
+        rankingTitle: 'Ranking metrics (test set)',
+        rankingNdcg: 'NDCG@5',
+        rankingNdcgSub: 'Quality of recommendation ordering',
+        rankingPrecision: 'Precision@5',
+        rankingPrecisionSub: 'Relevant items in top-5',
+        rankingHitRate: 'Hit Rate@10',
+        rankingHitRateSub: 'Users with at least 1 hit in top-10',
+        tableEmptyAlgosHint: 'The model trained but there was not enough data to compute metrics. Retrain once more interactions have accumulated.',
     },
     viewModel: {
         roleLabels: {
@@ -1177,6 +1201,14 @@ const fr: DashboardLocale = {
         },
         trainTooltipActive: 'Entrainement en cours — attendez ~3 minutes avant de reentrainer',
         trainTooltipIdle: 'Entrainer le modele',
+        rankingTitle: 'Metriques de classement (jeu de test)',
+        rankingNdcg: 'NDCG@5',
+        rankingNdcgSub: 'Qualite de l ordre des recommandations',
+        rankingPrecision: 'Precision@5',
+        rankingPrecisionSub: 'Elements pertinents dans le top-5',
+        rankingHitRate: 'Taux de succes@10',
+        rankingHitRateSub: 'Utilisateurs avec au moins 1 succes dans le top-10',
+        tableEmptyAlgosHint: 'Le modele a ete entraine mais les donnees etaient insuffisantes pour calculer les metriques. Reentrainez quand plus d interactions seront disponibles.',
     },
     viewModel: {
         roleLabels: {

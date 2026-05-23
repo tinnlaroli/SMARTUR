@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import train_test_split
 from scipy.sparse import csr_matrix
 
@@ -106,7 +107,31 @@ class SmarturEngine:
             metric='cosine', algorithm='brute', n_jobs=-1
         )
         self.knn_model.fit(self.matrix_centered)
-        
+
+        # ── TruncatedSVD: Factorización Latente ──────────────────────────────
+        # Complementa el KNN de Pearson con representaciones latentes densas.
+        # Permite predicciones más robustas cuando el KNN no tiene vecinos con
+        # el ítem específico (sim_sum = 0), reduciendo los fallbacks a la media.
+        try:
+            n_components = min(50, min(n_u, n_i) - 1)
+            if n_components >= 2:
+                svd = TruncatedSVD(n_components=n_components, random_state=42)
+                # Factorizar sobre la matriz centrada para mantener coherencia con KNN
+                self.user_latent = svd.fit_transform(self.matrix_centered)  # (n_u, k)
+                self.item_latent = svd.components_.T                         # (n_i, k)
+                # Mapeos de ID → índice en la matriz de factores latentes
+                self.user_index = {uid: i for i, uid in enumerate(self.user_item_matrix_index)}
+                self.item_index = {iid: i for i, iid in enumerate(self.user_item_matrix_columns)}
+                explained = svd.explained_variance_ratio_.sum()
+                print(
+                    f"SVD listo: {n_components} componentes, "
+                    f"varianza explicada={explained:.1%}"
+                )
+            else:
+                print("SVD omitido: matrix demasiado pequeña para factorizar.")
+        except Exception as svd_err:
+            print(f"SVD falló (CF KNN sigue activo): {svd_err}")
+
         print(f"Engine listo: {n_u} usuarios y {n_i} negocios.")
 
     def get_candidate_pool(self, user_id, top_n=50):

@@ -126,10 +126,19 @@ def recommend_hybrid(user_id, engine, context_model, alpha=0.4, context=None, to
         local_biz = pd.DataFrame()
 
     if not local_biz.empty:
-        # Producción: POIs locales como pool exclusivo
+        # Producción: POIs locales como pool exclusivo.
+        # Usamos un alpha reducido (no cero) para que la señal latente de CF/SVD
+        # siga contribuyendo al score final, especialmente con el fallback SVD.
         local_biz = context_model._add_category_features(local_biz)
         biz_candidates = local_biz
-        effective_alpha = 0.0  # CF no tiene señal para POIs locales
+        try:
+            from model_metrics import load_metrics as _lm
+            _saved_alpha = float(_lm().get('best_alpha', 0.2))
+            # Reducir alpha a 30% del óptimo global para dar más peso al RF contextual
+            # que sí fue entrenado con features de los POIs locales.
+            effective_alpha = max(0.05, _saved_alpha * 0.3)
+        except Exception:
+            effective_alpha = 0.1  # fallback conservador
     else:
         # Fallback desarrollo: candidatos Yelp KNN
         candidate_ids = engine.get_candidate_pool(user_id, top_n=200)
