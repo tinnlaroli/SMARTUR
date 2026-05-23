@@ -27,71 +27,51 @@ interface ToastContextValue {
     clearNotifications: () => void;
 }
 
-// --- Estilos con fondo gris muy oscuro ---
-const notificationStyles = {
-    success: {
-        container: 'bg-zinc-950 border-l-4 border-l-green-500',
-        title: 'text-white font-medium',
-        description: 'text-zinc-300 text-sm',
-        icon: CheckCircle,
-        iconColor: 'text-green-500',
-        closeButton: 'text-zinc-500 hover:text-zinc-300',
-        shadow: 'shadow-xl',
-    },
-    error: {
-        container: 'bg-neutral-950 border-l-4 border-l-red-500',
-        title: 'text-white font-medium',
-        description: 'text-zinc-300 text-sm',
-        icon: XCircle,
-        iconColor: 'text-red-500',
-        closeButton: 'text-zinc-500 hover:text-zinc-300',
-        shadow: 'shadow-xl',
-    },
-    info: {
-        container: 'bg-zinc-950 border-l-4 border-l-blue-500',
-        title: 'text-white font-medium',
-        description: 'text-zinc-300 text-sm',
-        icon: Info,
-        iconColor: 'text-blue-500',
-        closeButton: 'text-zinc-500 hover:text-zinc-300',
-        shadow: 'shadow-xl',
-    },
-    warning: {
-        container: 'bg-zinc-950 border-l-4 border-l-yellow-500',
-        title: 'text-white font-medium',
-        description: 'text-zinc-300 text-sm',
-        icon: AlertCircle,
-        iconColor: 'text-yellow-500',
-        closeButton: 'text-zinc-500 hover:text-zinc-300',
-        shadow: 'shadow-xl',
-    },
+// Accent color per type (left border + icon)
+const TOAST_ACCENTS: Record<NotificationType, { color: string; icon: typeof CheckCircle }> = {
+    success: { color: '#22c55e', icon: CheckCircle },
+    error:   { color: '#ef4444', icon: XCircle },
+    info:    { color: '#3b82f6', icon: Info },
+    warning: { color: '#f59e0b', icon: AlertCircle },
 };
 
 // --- Componente Notification (Interno para el Contexto) ---
 const NotificationItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({ toast, onClose }) => {
-    const style = notificationStyles[toast.type];
-    const Icon = style.icon;
+    const { color, icon: Icon } = TOAST_ACCENTS[toast.type];
 
     return (
         <div
-            className={`flex w-full items-start gap-3 rounded-lg p-4 ${style.container} ${style.shadow} animate-in slide-in-from-top-2 fade-in pointer-events-auto transform transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl`}
+            className="flex w-full items-start gap-3 rounded-2xl p-4 pointer-events-auto transition-all duration-300 ease-in-out hover:-translate-y-0.5 animate-in slide-in-from-top-2 fade-in"
             role="alert"
+            style={{
+                background: 'var(--color-bg)',
+                border: '1px solid var(--color-border)',
+                borderLeft: `4px solid ${color}`,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+            }}
         >
             {/* Icono */}
             <div className="flex-shrink-0 pt-0.5">
-                <Icon className={`size-5 ${style.iconColor}`} aria-hidden="true" strokeWidth={1.75} />
+                <Icon className="size-5" style={{ color }} aria-hidden="true" strokeWidth={1.75} />
             </div>
 
             {/* Contenido */}
             <div className="min-w-0 flex-1">
-                <h3 className={`text-sm font-semibold ${style.title}`}>{toast.title}</h3>
-                {toast.description && <p className={`mt-1 text-sm leading-relaxed ${style.description}`}>{toast.description}</p>}
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {toast.title}
+                </h3>
+                {toast.description && (
+                    <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                        {toast.description}
+                    </p>
+                )}
             </div>
 
             {/* Botón cerrar */}
             <button
                 onClick={() => onClose(toast.id)}
-                className={`flex-shrink-0 rounded-lg p-1 transition-colors ${style.closeButton} focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none ${toast.type === 'success' ? 'focus:ring-green-500' : ''} ${toast.type === 'error' ? 'focus:ring-red-500' : ''} ${toast.type === 'info' ? 'focus:ring-blue-500' : ''} ${toast.type === 'warning' ? 'focus:ring-yellow-500' : ''} `}
+                className="flex-shrink-0 rounded-lg p-1 transition-colors hover:opacity-70 focus:outline-none"
+                style={{ color: 'var(--color-text-alt)' }}
                 aria-label="Cerrar notificación"
             >
                 <X className="size-4" aria-hidden="true" />

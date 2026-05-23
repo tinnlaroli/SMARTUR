@@ -286,7 +286,12 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 bg-zinc-800 dark:bg-zinc-700 text-white rounded-xl text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-600 transition-all"
+                        className="px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80 active:scale-95"
+                        style={{
+                            background: 'var(--color-bg-alt)',
+                            color: 'var(--color-text)',
+                            border: '1px solid var(--color-border)',
+                        }}
                     >
                         {res.close}
                     </button>
