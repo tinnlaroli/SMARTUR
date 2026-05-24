@@ -29,6 +29,9 @@ class ApiConstants {
   static const String mlFeedback = '/ml/feedback';
   static const String mlSessionsMe = '/ml/sessions/me';
 
+  // Session management
+  static const String meSessions = '/me/sessions';
+
   // Explore
   static const String exploreHome = '/explore/home';
   static const String locations = '/locations';

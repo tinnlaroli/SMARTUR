@@ -143,6 +143,20 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
               ADD COLUMN IF NOT EXISTS has_accessibility BOOLEAN DEFAULT FALSE,
               ADD COLUMN IF NOT EXISTS accessibility_description TEXT;`,
     },
+    {
+        name: 'v06_user_sessions',
+        sql: `CREATE TABLE IF NOT EXISTS user_sessions (
+              id          SERIAL PRIMARY KEY,
+              user_id     INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+              device_hint VARCHAR(200) NULL,
+              ip          VARCHAR(50)  NULL,
+              created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+              expires_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW() + INTERVAL '24 hours',
+              last_seen   TIMESTAMPTZ  NULL,
+              revoked     BOOLEAN      NOT NULL DEFAULT FALSE
+            );
+            CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions (user_id);`,
+    },
 ];
 
 export async function runMigrations() {

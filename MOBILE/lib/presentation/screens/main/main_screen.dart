@@ -305,19 +305,26 @@ class _NavBarItemIA extends StatefulWidget {
   State<_NavBarItemIA> createState() => _NavBarItemIAState();
 }
 
+/// 5-color cycle: pink → purple → blue → green → cyan → (back to pink)
+final _sparkleColorTween = TweenSequence<Color?>([
+  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFFEC4899), end: const Color(0xFF8B5CF6)), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF8B5CF6), end: const Color(0xFF3B82F6)), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF3B82F6), end: const Color(0xFF10B981)), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF10B981), end: const Color(0xFF06B6D4)), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF06B6D4), end: const Color(0xFFEC4899)), weight: 1),
+]);
+
 class _NavBarItemIAState extends State<_NavBarItemIA>
     with SingleTickerProviderStateMixin {
   late final AnimationController _sparkleCtrl;
-  late final Animation<double> _sparkleAnim;
 
   @override
   void initState() {
     super.initState();
     _sparkleCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-    _sparkleAnim = CurvedAnimation(parent: _sparkleCtrl, curve: Curves.easeInOut);
+      duration: const Duration(milliseconds: 4000),
+    )..repeat();
   }
 
   @override
@@ -325,6 +332,8 @@ class _NavBarItemIAState extends State<_NavBarItemIA>
     _sparkleCtrl.dispose();
     super.dispose();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -376,30 +385,30 @@ class _NavBarItemIAState extends State<_NavBarItemIA>
                     );
                   },
                 ),
-                // Sparkle dot (top-right of icon)
+                // Sparkle dot (top-right of icon) — cycles through 5 system colors
                 Positioned(
                   top: -3,
                   right: -3,
                   child: AnimatedBuilder(
-                    animation: _sparkleAnim,
-                    builder: (_, __) => Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        color: Color.lerp(
-                          const Color(0xFFFBBF24),
-                          const Color(0xFF8B5CF6),
-                          _sparkleAnim.value,
+                    animation: _sparkleCtrl,
+                    builder: (_, __) {
+                      final dotColor = _sparkleColorTween.evaluate(_sparkleCtrl) ?? SmarturStyle.purple;
+                      final pulse = (math.sin(_sparkleCtrl.value * math.pi * 4) * 0.5 + 0.5);
+                      return Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: dotColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: dotColor.withValues(alpha: 0.6 * pulse),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: SmarturStyle.purple.withValues(alpha: 0.5 * _sparkleAnim.value),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],

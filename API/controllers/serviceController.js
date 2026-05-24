@@ -2,6 +2,7 @@ import { UserService } from '../services/userService.js';
 import { sendEmail, sendEmailVerification } from '../utils/mailer.js';
 import { validatePassword, validateRequiredFields } from '../validators/userValidators.js';
 import { logSecurityEvent } from '../services/monitoringService.js';
+import { recordSession } from '../utils/sessionHelper.js';
 
 function getClientIp(req) {
     const forwarded = req.headers['x-forwarded-for'];
@@ -91,6 +92,8 @@ class ServicesController {
             }
 
             await logSecurityEvent('LOGIN_SUCCESS', email ?? null, ip, 'INFO');
+            // Fire-and-forget: record device session
+            recordSession(result.data.user.id, req);
             res.json({
                 message: 'Login exitoso',
                 token: result.data.token,

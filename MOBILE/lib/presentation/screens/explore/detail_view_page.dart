@@ -184,38 +184,35 @@ class _DetailViewPageState extends State<DetailViewPage>
       child: Scaffold(
         body: Stack(
           children: [
-            // Hero background image — double-tap to like
-            GestureDetector(
-              onDoubleTap: _onDoubleTap,
-              child: Hero(
-                tag: widget.heroTag,
-                child: SizedBox.expand(
-                  child: widget.heroImageUrl.isEmpty
-                      ? Container(
+            // Hero background image
+            Hero(
+              tag: widget.heroTag,
+              child: SizedBox.expand(
+                child: widget.heroImageUrl.isEmpty
+                    ? Container(
+                        color: Colors.grey.shade900,
+                        child: const Icon(Icons.image_not_supported_outlined,
+                            color: Colors.white38, size: 48),
+                      )
+                    : Image.network(
+                        widget.heroImageUrl,
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.high,
+                        isAntiAlias: true,
+                        gaplessPlayback: true,
+                        errorBuilder: (context, error, stack) => Container(
                           color: Colors.grey.shade900,
                           child: const Icon(Icons.image_not_supported_outlined,
                               color: Colors.white38, size: 48),
-                        )
-                      : Image.network(
-                          widget.heroImageUrl,
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.high,
-                          isAntiAlias: true,
-                          gaplessPlayback: true,
-                          errorBuilder: (context, error, stack) => Container(
-                            color: Colors.grey.shade900,
-                            child: const Icon(Icons.image_not_supported_outlined,
-                                color: Colors.white38, size: 48),
-                          ),
                         ),
-                ),
+                      ),
               ),
             ),
 
             // Double-tap heart burst overlay
             AnimatedBuilder(
               animation: _heartCtrl,
-              builder: (_, __) {
+              builder: (context, child) {
                 if (_heartCtrl.value == 0.0) return const SizedBox.shrink();
                 return Positioned.fill(
                   child: IgnorePointer(
@@ -260,6 +257,14 @@ class _DetailViewPageState extends State<DetailViewPage>
             SafeArea(
               child: Stack(
                 children: [
+                  // z-0: Double-tap capture — translucent so buttons/BottomContent still work
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onDoubleTap: _onDoubleTap,
+                      behavior: HitTestBehavior.translucent,
+                    ),
+                  ),
+
                   // Top row — atrás + favoritos (diario)
                   Positioned(
                     top: 8,

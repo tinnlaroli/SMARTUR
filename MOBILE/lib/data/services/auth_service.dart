@@ -526,6 +526,36 @@ class AuthService {
     } catch (_) {}
     return 'Error al subir imagen';
   }
+
+  // ── Session management ─────────────────────────────────────────────────
+
+  /// Returns up to 10 active (non-revoked, non-expired) sessions for the current user.
+  Future<List<Map<String, dynamic>>> fetchSessions() async {
+    final token = await getToken();
+    if (token == null) return [];
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meSessions}');
+    final response = await http.get(
+      uri,
+      headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    ).timeout(const Duration(seconds: 10));
+    if (response.statusCode == 200) {
+      final list = jsonDecode(utf8.decode(response.bodyBytes)) as List?;
+      return list?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
+    }
+    return [];
+  }
+
+  /// Revokes a session by ID. Returns true on success.
+  Future<bool> revokeSession(int sessionId) async {
+    final token = await getToken();
+    if (token == null) return false;
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meSessions}/$sessionId');
+    final response = await http.delete(
+      uri,
+      headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    ).timeout(const Duration(seconds: 10));
+    return response.statusCode == 200;
+  }
 }
 
 // ── Custom Exceptions ────────────────────────────────────────────────────

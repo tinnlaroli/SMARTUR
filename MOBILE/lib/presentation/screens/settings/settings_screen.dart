@@ -182,6 +182,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const Divider(height: 32),
 
+          // ── Seguridad — sesiones activas ────────────────────────────
+          _buildSectionHeader('Seguridad'),
+          ListTile(
+            leading: const Icon(Icons.devices_outlined, color: SmarturStyle.blue),
+            title: const Text('Sesiones activas',
+                style: TextStyle(fontFamily: 'Outfit')),
+            subtitle: Text(
+              'Ver y cerrar sesiones en otros dispositivos',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+            onTap: () => _showSessionsSheet(),
+          ),
+
+          const Divider(height: 32),
+
           // ── Información ─────────────────────────────────────────────
           _buildSectionHeader(l10n.infoSection),
           ListTile(
@@ -488,6 +508,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // ── Sesiones activas ──────────────────────────────────────────────────────
+
+  void _showSessionsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => _SessionsSheet(authService: _authService),
+    );
+  }
+
   // ── Cerrar Sesión ──────────────────────────────────────────────────────
 
   Future<void> _logout() async {
@@ -499,6 +532,168 @@ class _SettingsScreenState extends State<SettingsScreen> {
         (_) => false,
       );
     }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Bottom Sheet: Sesiones activas
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _SessionsSheet extends StatefulWidget {
+  final AuthService authService;
+  const _SessionsSheet({required this.authService});
+
+  @override
+  State<_SessionsSheet> createState() => _SessionsSheetState();
+}
+
+class _SessionsSheetState extends State<_SessionsSheet> {
+  bool _loading = true;
+  List<Map<String, dynamic>> _sessions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final data = await widget.authService.fetchSessions();
+    if (mounted) setState(() { _sessions = data; _loading = false; });
+  }
+
+  Future<void> _revoke(int id) async {
+    final ok = await widget.authService.revokeSession(id);
+    if (ok && mounted) {
+      setState(() => _sessions.removeWhere((s) => s['id'] == id));
+      SmarturNotifications.showSuccess(context, 'Sesión cerrada');
+    } else if (mounted) {
+      SmarturNotifications.showError(context, 'No se pudo cerrar la sesión');
+    }
+  }
+
+  String _formatDate(String? raw) {
+    if (raw == null) return '—';
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) { return raw; }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.55,
+      minChildSize: 0.4,
+      maxChildSize: 0.85,
+      expand: false,
+      builder: (ctx, ctrl) => Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+              color: scheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: SmarturStyle.blue.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.devices_outlined, color: SmarturStyle.blue, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Sesiones activas',
+                          style: SmarturStyle.calSansTitle.copyWith(fontSize: 17)),
+                      Text('Dispositivos conectados a tu cuenta',
+                          style: TextStyle(
+                              fontFamily: 'Outfit', fontSize: 11,
+                              color: scheme.onSurface.withValues(alpha: 0.5))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _sessions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.devices_outlined,
+                                size: 48, color: scheme.onSurface.withValues(alpha: 0.25)),
+                            const SizedBox(height: 12),
+                            Text('Sin sesiones registradas',
+                                style: TextStyle(
+                                    fontFamily: 'Outfit',
+                                    color: scheme.onSurface.withValues(alpha: 0.45))),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: ctrl,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _sessions.length,
+                        itemBuilder: (_, i) {
+                          final s = _sessions[i];
+                          final device = s['device_hint'] as String? ?? 'Dispositivo';
+                          final ip = s['ip'] as String? ?? '';
+                          final created = _formatDate(s['created_at'] as String?);
+                          final isPhone = device.toLowerCase().contains('android') ||
+                              device.toLowerCase().contains('ios');
+
+                          return ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: SmarturStyle.blue.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isPhone ? Icons.smartphone_outlined : Icons.computer_outlined,
+                                color: SmarturStyle.blue, size: 20,
+                              ),
+                            ),
+                            title: Text(device,
+                                style: const TextStyle(
+                                    fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
+                            subtitle: Text(
+                              '${ip.isNotEmpty ? '$ip · ' : ''}Desde $created',
+                              style: TextStyle(
+                                  fontFamily: 'Outfit', fontSize: 11,
+                                  color: scheme.onSurfaceVariant),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close_rounded,
+                                  color: SmarturStyle.pink, size: 20),
+                              tooltip: 'Cerrar sesión',
+                              onPressed: () => _revoke(s['id'] as int),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

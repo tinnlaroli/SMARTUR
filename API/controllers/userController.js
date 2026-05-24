@@ -14,6 +14,7 @@ import {
 } from "../validators/userValidators.js";
 
 import { OAuth2Client } from "google-auth-library";
+import { recordSession } from "../utils/sessionHelper.js";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function safeGooglePicture(url) {
@@ -446,6 +447,8 @@ class UserController {
         { expiresIn: "24h" },
       );
 
+      // Fire-and-forget: record device session
+      recordSession(user.user_id, req);
       return res.status(200).json({
         status: "success",
         message: "Autenticación exitosa",

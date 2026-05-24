@@ -610,6 +610,19 @@ CREATE TABLE IF NOT EXISTS ml_recommendation_feedback (
 );
 CREATE INDEX idx_ml_rec_feedback_session ON ml_recommendation_feedback (session_id);
 
+-- ── User sessions (device login tracking) ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id          SERIAL PRIMARY KEY,
+  user_id     INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  device_hint VARCHAR(200) NULL,
+  ip          VARCHAR(50)  NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  expires_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW() + INTERVAL '24 hours',
+  last_seen   TIMESTAMPTZ  NULL,
+  revoked     BOOLEAN      NOT NULL DEFAULT FALSE
+);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions (user_id);
+
 INSERT INTO location (name, state, municipality, latitude, longitude)
 VALUES
   ('Ixtaczoquitlán',          'Veracruz', 'Ixtaczoquitlán',        18.816700, -97.066700),
