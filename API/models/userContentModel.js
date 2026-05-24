@@ -9,11 +9,23 @@ export async function placeExists(kind, placeId) {
         return r.rows[0] || null;
     }
     if (kind === 'poi') {
-        const r = await pool.query(
-            `SELECT id AS id_point, name, image_url, description, id_location, rating FROM point_of_interest WHERE id = $1 AND is_active = TRUE`,
-            [placeId],
-        );
-        return r.rows[0] || null;
+        try {
+            const r = await pool.query(
+                `SELECT id AS id_point, name, image_url, description, id_location, rating
+                 FROM point_of_interest WHERE id = $1 AND is_active = TRUE`,
+                [placeId],
+            );
+            return r.rows[0] || null;
+        } catch (_) {
+            // Display columns (image_url, description, id_location, rating) not yet migrated —
+            // fall back to minimal columns and provide safe defaults.
+            const r = await pool.query(
+                `SELECT id AS id_point, name FROM point_of_interest WHERE id = $1 AND is_active = TRUE`,
+                [placeId],
+            );
+            if (!r.rows[0]) return null;
+            return { ...r.rows[0], image_url: null, description: null, id_location: null, rating: 4.0 };
+        }
     }
     return null;
 }
