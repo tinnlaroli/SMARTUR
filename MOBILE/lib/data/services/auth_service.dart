@@ -313,6 +313,9 @@ class AuthService {
 
   Future<Map<String, dynamic>?> loginWithGoogle({bool rememberMe = false}) async {
     try {
+      // Limpiar credential cacheado para evitar el error "reauth failed" (code 16)
+      try { await _googleSignIn.signOut(); } catch (_) {}
+
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate(
         scopeHint: ['email', 'profile'],
       );
