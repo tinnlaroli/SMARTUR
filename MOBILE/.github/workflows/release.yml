@@ -3,16 +3,17 @@ name: Build & Release APK
 on:
   push:
     tags:
-      - 'v*' # Se activa cuando creas un tag como v1.0.0, v1.0.1, etc.
-  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
-  contents: write # Necesario para poder crear la Release y subir archivos
+  contents: write
 
 jobs:
   build:
     name: Build & Release Flutter App
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,10 +30,21 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Get dependencies
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/settings.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Decode Keystore
+      - name: Decode Keystore (if available)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/smartur-release.jks
 
@@ -41,7 +53,6 @@ jobs:
           flutter build apk --release \
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
             --dart-define=AI_ENGINE_URL=${{ secrets.AI_ENGINE_URL }} \
-            --dart-define=API_BASE_URL_DEV=${{ secrets.API_BASE_URL_DEV }} \
             --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }} \
             --dart-define=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
         env:
@@ -50,12 +61,11 @@ jobs:
           KEYSTORE_PATH: smartur-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
-      - name: Build App Bundle (AAB - for Play Store)
+      - name: Build App Bundle (AAB)
         run: |
           flutter build appbundle --release \
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
             --dart-define=AI_ENGINE_URL=${{ secrets.AI_ENGINE_URL }} \
-            --dart-define=API_BASE_URL_DEV=${{ secrets.API_BASE_URL_DEV }} \
             --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }} \
             --dart-define=OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
         env:
@@ -63,6 +73,12 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEYSTORE_PATH: smartur-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
