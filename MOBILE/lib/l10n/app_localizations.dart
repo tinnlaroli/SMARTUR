@@ -1740,51 +1740,232 @@ abstract class AppLocalizations {
   /// **'Día / Mes / Año'**
   String get dateFormatPlaceholder;
 
-  // ── Recommendation screen ─────────────────────────────────────────────────
-
+  /// No description provided for @recoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descubrir mis destinos'**
   String get recoTitle;
+
+  /// No description provided for @recoDiscoverNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Descubre tu próxima aventura'**
   String get recoDiscoverNext;
+
+  /// No description provided for @recoAiPersonalizedFor.
+  ///
+  /// In es, this message translates to:
+  /// **'IA personalizada para ti'**
   String get recoAiPersonalizedFor;
+
+  /// No description provided for @recoTourismType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de turismo'**
   String get recoTourismType;
+
+  /// No description provided for @recoChooseOneOrMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige uno o más'**
   String get recoChooseOneOrMore;
+
+  /// No description provided for @recoBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
   String get recoBudget;
+
+  /// No description provided for @recoWithWho.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Con quién viajas?'**
   String get recoWithWho;
+
+  /// No description provided for @recoAgeRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Rango de edad'**
   String get recoAgeRange;
+
+  /// No description provided for @recoAdditionalPrefs.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias adicionales'**
   String get recoAdditionalPrefs;
+
+  /// No description provided for @recoOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'(opcional)'**
   String get recoOptional;
+
+  /// No description provided for @recoPreloadedBanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Basado en tu perfil'**
   String get recoPreloadedBanner;
+
+  /// No description provided for @recoSelectAtLeastOne.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona al menos una opción'**
   String get recoSelectAtLeastOne;
+
+  /// No description provided for @recoSelectAtLeastOneToContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona al menos una opción para continuar'**
   String get recoSelectAtLeastOneToContinue;
+
+  /// No description provided for @recoDiscoverDestinations.
+  ///
+  /// In es, this message translates to:
+  /// **'Descubrir destinos'**
   String get recoDiscoverDestinations;
+
+  /// No description provided for @recoNDestinations.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} destinos para ti'**
   String recoNDestinations(Object n);
+
+  /// No description provided for @recoPersonalizedByAI.
+  ///
+  /// In es, this message translates to:
+  /// **'Personalizados por IA'**
   String get recoPersonalizedByAI;
+
+  /// No description provided for @recoHelpImprove.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayúdanos a mejorar'**
   String get recoHelpImprove;
+
+  /// No description provided for @recoHowLiked.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué te parecieron estas recomendaciones?'**
   String get recoHowLiked;
+
+  /// No description provided for @recoSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Saltar'**
   String get recoSkip;
+
+  /// No description provided for @recoSend.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
   String get recoSend;
+
+  /// No description provided for @recoViewDestination.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver destino'**
   String get recoViewDestination;
+
+  /// No description provided for @recoServiceUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'El servicio de recomendaciones no está disponible en este momento'**
   String get recoServiceUnavailable;
+
+  /// No description provided for @recoConnectionError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error de conexión. Revisa tu internet e intenta de nuevo'**
   String get recoConnectionError;
+
+  /// No description provided for @recoShareButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir recomendaciones'**
   String get recoShareButton;
 
-  // ── Community — Report ────────────────────────────────────────────────────
-
-  String get communityReportPost;
-  String get communityReportReason;
-  String get communityReportSpam;
-  String get communityReportInappropriate;
-  String get communityReportFalse;
-  String get communityReportHateful;
-  String get communityReportSent;
+  /// No description provided for @communityDeletePost.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar publicación'**
   String get communityDeletePost;
+
+  /// No description provided for @communityDeletePostConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.'**
   String get communityDeletePostConfirm;
 
-  // ── Settings — Security ───────────────────────────────────────────────────
+  /// No description provided for @communityReportPost.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar publicación'**
+  String get communityReportPost;
 
+  /// No description provided for @communityReportReason.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo del reporte'**
+  String get communityReportReason;
+
+  /// No description provided for @communityReportSpam.
+  ///
+  /// In es, this message translates to:
+  /// **'Spam'**
+  String get communityReportSpam;
+
+  /// No description provided for @communityReportInappropriate.
+  ///
+  /// In es, this message translates to:
+  /// **'Contenido inapropiado'**
+  String get communityReportInappropriate;
+
+  /// No description provided for @communityReportFalse.
+  ///
+  /// In es, this message translates to:
+  /// **'Información falsa'**
+  String get communityReportFalse;
+
+  /// No description provided for @communityReportHateful.
+  ///
+  /// In es, this message translates to:
+  /// **'Discurso de odio'**
+  String get communityReportHateful;
+
+  /// No description provided for @communityReportSent.
+  ///
+  /// In es, this message translates to:
+  /// **'Reporte enviado. Lo revisaremos pronto.'**
+  String get communityReportSent;
+
+  /// No description provided for @securitySection.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguridad'**
   String get securitySection;
+
+  /// No description provided for @activeSessions.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesiones activas'**
   String get activeSessions;
+
+  /// No description provided for @activeSessionsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Administra tus dispositivos conectados'**
   String get activeSessionsSubtitle;
+
+  /// No description provided for @sessionRevokeSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión cerrada correctamente'**
   String get sessionRevokeSuccess;
+
+  /// No description provided for @sessionRevokeError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cerrar la sesión. Inténtalo de nuevo.'**
   String get sessionRevokeError;
 }
 
