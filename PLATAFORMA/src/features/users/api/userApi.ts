@@ -1,5 +1,5 @@
 import { api } from '../../../shared/api/axiosClient';
-import type { CreateUserDTO, UpdateUserDTO, User, UserResponse, UserDetailResponse } from '../types/types';
+import type { CreateUserDTO, UpdateUserDTO, User, UserResponse, UserDetailResponse, UserSession, UserRecommendationSession } from '../types/types';
 
 export const userServices = {
     findAll: async (page: number, limit: number, search?: string, role?: number): Promise<UserResponse> => {
@@ -47,5 +47,15 @@ export const userServices = {
 
     delete: async (id: number): Promise<void> => {
         await api.delete(`/users/${id}`);
+    },
+
+    getUserSessions: async (id: number): Promise<UserSession[]> => {
+        const response = await api.get(`/users/${id}/sessions`);
+        return response.data;
+    },
+
+    getUserRecommendations: async (id: number): Promise<UserRecommendationSession[]> => {
+        const response = await api.get(`/users/${id}/recommendations`);
+        return response.data;
     },
 };

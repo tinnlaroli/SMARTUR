@@ -305,13 +305,13 @@ class _NavBarItemIA extends StatefulWidget {
   State<_NavBarItemIA> createState() => _NavBarItemIAState();
 }
 
-/// 5-color cycle: pink → purple → blue → green → cyan → (back to pink)
+/// 5-color cycle using brand palette: pink → purple → blue → green → orange → pink
 final _sparkleColorTween = TweenSequence<Color?>([
-  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFFEC4899), end: const Color(0xFF8B5CF6)), weight: 1),
-  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF8B5CF6), end: const Color(0xFF3B82F6)), weight: 1),
-  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF3B82F6), end: const Color(0xFF10B981)), weight: 1),
-  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF10B981), end: const Color(0xFF06B6D4)), weight: 1),
-  TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF06B6D4), end: const Color(0xFFEC4899)), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.pink,   end: SmarturStyle.purple), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple, end: SmarturStyle.blue),   weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.blue,   end: SmarturStyle.green),  weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.green,  end: SmarturStyle.orange), weight: 1),
+  TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.orange, end: SmarturStyle.pink),   weight: 1),
 ]);
 
 class _NavBarItemIAState extends State<_NavBarItemIA>

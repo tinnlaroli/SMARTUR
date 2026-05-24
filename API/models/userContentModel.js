@@ -150,3 +150,46 @@ export async function adminDeleteCommunityPost(postId) {
     );
     return r.rowCount > 0;
 }
+
+export async function createPostReport(userId, postId, reason) {
+    const r = await pool.query(
+        `INSERT INTO post_reports (post_id, user_id, reason)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (post_id, user_id) DO UPDATE SET reason = EXCLUDED.reason, created_at = NOW()
+         RETURNING *`,
+        [postId, userId, reason],
+    );
+    return r.rows[0];
+}
+
+export async function listPostReports({ resolved = false, limit = 50, offset = 0 } = {}) {
+    const countR = await pool.query(
+        `SELECT COUNT(*)::int AS c FROM post_reports WHERE resolved = $1`,
+        [resolved],
+    );
+    const total = countR.rows[0].c;
+    const dataR = await pool.query(
+        `SELECT pr.id, pr.post_id, pr.reason, pr.created_at, pr.resolved,
+                u.user_id AS reporter_id, u.name AS reporter_name, u.photo_url AS reporter_photo_url,
+                p.caption AS post_caption, p.image_url AS post_image_url,
+                p.place_kind, p.place_id,
+                po.name AS author_name
+         FROM post_reports pr
+         JOIN "user" u ON u.user_id = pr.user_id
+         JOIN community_post p ON p.id_post = pr.post_id
+         JOIN "user" po ON po.user_id = p.user_id
+         WHERE pr.resolved = $1
+         ORDER BY pr.created_at DESC
+         LIMIT $2 OFFSET $3`,
+        [resolved, limit, offset],
+    );
+    return { total, reports: dataR.rows };
+}
+
+export async function resolvePostReport(reportId) {
+    const r = await pool.query(
+        `UPDATE post_reports SET resolved = TRUE WHERE id = $1 RETURNING *`,
+        [reportId],
+    );
+    return r.rowCount > 0;
+}

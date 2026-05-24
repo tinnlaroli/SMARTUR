@@ -251,6 +251,53 @@ export class UserContentController {
             res.status(500).json({ message: 'Error al eliminar la publicación', error: e.message });
         }
     }
+
+    static async reportCommunityPost(req, res) {
+        try {
+            const userId = req.user.id;
+            const postId = parseInt(req.params.postId, 10);
+            if (Number.isNaN(postId)) return res.status(400).json({ message: 'ID de publicación inválido' });
+            const body = safeBody(req);
+            const validReasons = ['spam', 'inappropriate', 'false_info', 'hateful'];
+            const reason = body.reason;
+            if (!validReasons.includes(reason)) {
+                return res.status(400).json({ message: `reason debe ser uno de: ${validReasons.join(', ')}` });
+            }
+            await UserContent.createPostReport(userId, postId, reason);
+            res.status(201).json({ message: 'Reporte enviado. Lo revisaremos pronto.' });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al enviar el reporte', error: e.message });
+        }
+    }
+
+    static async getPostReports(req, res) {
+        try {
+            if (req.user.role_id !== 1) return res.status(403).json({ message: 'Acceso denegado' });
+            const resolved = req.query.resolved === 'true';
+            const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
+            const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+            const { total, reports } = await UserContent.listPostReports({ resolved, limit, offset });
+            res.json({ total, reports });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al listar reportes', error: e.message });
+        }
+    }
+
+    static async resolvePostReport(req, res) {
+        try {
+            if (req.user.role_id !== 1) return res.status(403).json({ message: 'Acceso denegado' });
+            const reportId = parseInt(req.params.reportId, 10);
+            if (Number.isNaN(reportId)) return res.status(400).json({ message: 'ID de reporte inválido' });
+            const ok = await UserContent.resolvePostReport(reportId);
+            if (!ok) return res.status(404).json({ message: 'Reporte no encontrado' });
+            res.json({ message: 'Reporte marcado como resuelto' });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al resolver el reporte', error: e.message });
+        }
+    }
 }
 
 export default UserContentController;

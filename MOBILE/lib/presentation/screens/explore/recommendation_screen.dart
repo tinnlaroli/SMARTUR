@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/theme/style_guide.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/auth_service.dart';
@@ -169,7 +170,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   Future<void> _fetchRecommendations() async {
     if (_selectedTypes.isEmpty) {
-      SmarturNotifications.showError(context, 'Selecciona al menos un tipo de turismo');
+      SmarturNotifications.showError(context, AppLocalizations.of(context)!.recoSelectAtLeastOne);
       return;
     }
 
@@ -181,7 +182,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     try {
       final userId = await AuthService().getUserId();
       if (userId == null) {
-        if (mounted) SmarturNotifications.showError(context, 'Sesión expirada. Inicia sesión de nuevo.');
+        if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
         return;
       }
 
@@ -222,13 +223,13 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           if (recs.isNotEmpty) _showResults();
         }
       } else if (response.statusCode == 401) {
-        if (mounted) SmarturNotifications.showError(context, 'Sesión expirada. Inicia sesión de nuevo.');
+        if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
       } else {
-        final msg = ApiClient.extractApiMessage(response, fallback: 'El servicio de recomendaciones no está disponible ahora.');
+        final msg = ApiClient.extractApiMessage(response, fallback: AppLocalizations.of(context)!.recoServiceUnavailable);
         if (mounted) SmarturNotifications.showError(context, msg);
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, 'No se pudo conectar al servicio de recomendaciones.');
+      if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.recoConnectionError);
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -292,9 +293,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Recomendaciones IA',
-          style: TextStyle(fontFamily: 'CalSans', color: Colors.white, fontSize: 20),
+        title: Text(
+          AppLocalizations.of(context)!.recoTitle,
+          style: const TextStyle(fontFamily: 'CalSans', color: Colors.white, fontSize: 20),
         ),
       ),
       body: SmarturBackgroundTop(
@@ -333,12 +334,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Descubre tu próximo destino',
+                            AppLocalizations.of(context)!.recoDiscoverNext,
                             style: SmarturStyle.calSansTitle.copyWith(
                                 fontSize: 18, color: scheme.onSurface),
                           ),
                           Text(
-                            'IA personalizada para ti · Altas Montañas',
+                            AppLocalizations.of(context)!.recoAiPersonalizedFor,
                             style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 11,
                               color: scheme.onSurface.withValues(alpha: 0.5),
@@ -386,8 +387,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
           // ── Tourism types ─────────────────────────────────────────
           _SectionCard(
-            title: '¿Qué tipo de turismo buscas?',
-            subtitle: 'Elige uno o varios',
+            title: AppLocalizations.of(context)!.recoTourismType,
+            subtitle: AppLocalizations.of(context)!.recoChooseOneOrMore,
             required: true,
             child: Wrap(
               spacing: 8, runSpacing: 8,
@@ -407,7 +408,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
           // ── Budget ────────────────────────────────────────────────
           _SectionCard(
-            title: 'Presupuesto',
+            title: AppLocalizations.of(context)!.recoBudget,
             child: Row(
               children: _budgets.map((b) {
                 final sel = _budget == b.$1;
@@ -431,7 +432,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
           // ── Group type ────────────────────────────────────────────
           _SectionCard(
-            title: '¿Con quién viajas?',
+            title: AppLocalizations.of(context)!.recoWithWho,
             child: Row(
               children: _groups.map((g) {
                 final sel = _groupType == g.$1;
@@ -451,7 +452,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
           // ── Age range ─────────────────────────────────────────────
           _SectionCard(
-            title: 'Rango de edad',
+            title: AppLocalizations.of(context)!.recoAgeRange,
             child: Wrap(
               spacing: 6, runSpacing: 6,
               children: _ageRanges.map((a) {
@@ -484,8 +485,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
           // ── Preferences ───────────────────────────────────────────
           _SectionCard(
-            title: 'Preferencias adicionales',
-            subtitle: 'Opcional',
+            title: AppLocalizations.of(context)!.recoAdditionalPrefs,
+            subtitle: AppLocalizations.of(context)!.recoOptional,
             child: Wrap(
               spacing: 8, runSpacing: 8,
               children: [
@@ -510,7 +511,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           if (_selectedTypes.isEmpty)
             Center(
               child: Text(
-                'Selecciona al menos un tipo de turismo para continuar',
+                AppLocalizations.of(context)!.recoSelectAtLeastOneToContinue,
                 style: TextStyle(
                   fontFamily: 'Outfit', fontSize: 11,
                   color: Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
@@ -550,6 +551,45 @@ class _ResultsSheet extends StatefulWidget {
 class _ResultsSheetState extends State<_ResultsSheet> {
   /// item_id → true=liked, false=disliked, null=no opinion
   final Map<String, bool?> _ratings = {};
+  final DraggableScrollableController _sheetCtrl = DraggableScrollableController();
+  bool _closingDialogActive = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sheetCtrl.addListener(_onSheetSize);
+  }
+
+  @override
+  void dispose() {
+    _sheetCtrl.removeListener(_onSheetSize);
+    _sheetCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onSheetSize() {
+    if (!mounted || _closingDialogActive) return;
+    try {
+      if (_sheetCtrl.size < 0.55) {
+        _closingDialogActive = true;
+        // Bounce the sheet back up first, then show dialog
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+          try {
+            await _sheetCtrl.animateTo(
+              0.92,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          } catch (_) {}
+          if (mounted) {
+            await _tryClose(context);
+            if (mounted) _closingDialogActive = false;
+          }
+        });
+      }
+    } catch (_) {}
+  }
 
   /// Lookup a place with fallback for bare numeric IDs returned by MODELO
   Place? _findPlace(String itemId) =>
@@ -567,18 +607,18 @@ class _ResultsSheetState extends State<_ResultsSheet> {
     SharePlus.instance.share(ShareParams(text: text));
   }
 
-  Future<void> _tryClose(BuildContext ctx) async {
-    // Show "Ayúdanos a mejorar" dialog only if user hasn't rated anything yet
+  /// Returns true if the sheet should be closed.
+  /// Shows the "Ayúdanos a mejorar" dialog when user hasn't rated yet.
+  Future<bool> _shouldClose() async {
     final anyRated = _ratings.values.any((v) => v != null);
     if (!anyRated && widget.recommendations.isNotEmpty) {
       final shouldClose = await showDialog<bool>(
-        context: ctx,
+        context: context,
         barrierDismissible: false,
         builder: (dCtx) => _RatingBeforeCloseDialog(
           recommendations: widget.recommendations,
           findPlace: _findPlace,
           onSubmit: (ratings) {
-            // Record feedback for each rated item
             for (final entry in ratings.entries) {
               final idx = widget.recommendations.indexWhere(
                   (r) => (r['item_id'] ?? '').toString() == entry.key);
@@ -589,17 +629,33 @@ class _ResultsSheetState extends State<_ResultsSheet> {
           },
         ),
       );
-      if (shouldClose != true) return; // user cancelled
+      return shouldClose == true;
     }
-    if (ctx.mounted) Navigator.pop(ctx);
+    return true;
+  }
+
+  Future<void> _tryClose(BuildContext ctx) async {
+    if (await _shouldClose()) {
+      if (ctx.mounted) Navigator.pop(ctx);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return DraggableScrollableSheet(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (!didPop) {
+          if (await _shouldClose()) {
+            if (mounted) Navigator.pop(context);
+          }
+        }
+      },
+      child: DraggableScrollableSheet(
+      controller: _sheetCtrl,
       initialChildSize: 0.92,
-      minChildSize: 0.5,
+      minChildSize: 0.45,
       maxChildSize: 0.95,
       builder: (ctx, controller) => ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -641,11 +697,11 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${widget.recommendations.length} destinos perfectos',
+                              AppLocalizations.of(ctx)!.recoNDestinations(widget.recommendations.length),
                               style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
                             ),
                             Text(
-                              'Personalizados con IA para tu perfil',
+                              AppLocalizations.of(ctx)!.recoPersonalizedByAI,
                               style: TextStyle(
                                 fontFamily: 'Outfit', fontSize: 11,
                                 color: scheme.onSurface.withValues(alpha: 0.5),
@@ -657,7 +713,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                       // Share button
                       IconButton(
                         icon: const Icon(Icons.share_outlined),
-                        tooltip: 'Compartir',
+                        tooltip: AppLocalizations.of(ctx)!.recoShareButton,
                         onPressed: () => _shareRecommendations(ctx),
                         color: scheme.onSurface.withValues(alpha: 0.6),
                       ),
@@ -705,7 +761,8 @@ class _ResultsSheetState extends State<_ResultsSheet> {
             ),
           ),
         ),
-      ),
+        ),   // DraggableScrollableSheet
+      ),     // PopScope
     );
   }
 }
@@ -763,9 +820,9 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Ayúdanos a mejorar',
+                      Text(AppLocalizations.of(context)!.recoHelpImprove,
                           style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
-                      Text('¿Qué te parecieron estas recomendaciones?',
+                      Text(AppLocalizations.of(context)!.recoHowLiked,
                           style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 11,
                               color: scheme.onSurface.withValues(alpha: 0.55))),
@@ -846,7 +903,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text('Saltar',
+                    child: Text(AppLocalizations.of(context)!.recoSkip,
                         style: TextStyle(fontFamily: 'Outfit',
                             color: scheme.onSurface.withValues(alpha: 0.6))),
                   ),
@@ -871,8 +928,8 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       elevation: 0,
                     ),
-                    child: const Text('Enviar',
-                        style: TextStyle(fontFamily: 'Outfit',
+                    child: Text(AppLocalizations.of(context)!.recoSend,
+                        style: const TextStyle(fontFamily: 'Outfit',
                             fontWeight: FontWeight.w700,
                             color: Colors.white)),
                   ),
@@ -1100,7 +1157,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Ver destino',
+                            Text(AppLocalizations.of(context)!.recoViewDestination,
                               style: TextStyle(
                                 fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700,
                                 color: widget.place != null ? Colors.white : scheme.onSurface.withValues(alpha: 0.4),
@@ -1419,15 +1476,16 @@ class _CTAButton extends StatefulWidget {
 class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMixin {
   late final AnimationController _gradCtrl;
 
+  // Brand-palette gradient cycle: purple → pink → blue / orange → purple → green
   static final _colorA = TweenSequence<Color?>([
-    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple,       end: const Color(0xFFEC4899)), weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: const Color(0xFFEC4899),   end: const Color(0xFF3B82F6)), weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF3B82F6),   end: SmarturStyle.purple),     weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple, end: SmarturStyle.pink),   weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.pink,   end: SmarturStyle.blue),   weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.blue,   end: SmarturStyle.purple), weight: 1),
   ]);
   static final _colorB = TweenSequence<Color?>([
-    TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF9333EA),   end: const Color(0xFF8B5CF6)), weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF8B5CF6),   end: const Color(0xFF6366F1)), weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: const Color(0xFF6366F1),   end: const Color(0xFF9333EA)), weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.orange, end: SmarturStyle.purple), weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple, end: SmarturStyle.green),  weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.green,  end: SmarturStyle.orange), weight: 1),
   ]);
 
   @override

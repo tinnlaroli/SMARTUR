@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useCommunity } from '../hooks/useCommunity';
-import { MessageSquare, ImageIcon, Trash2, Store, Star, Plus } from 'lucide-react';
+import { MessageSquare, ImageIcon, Trash2, Store, Star, Plus, Flag, CheckCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useConfirm } from '../../../components/ui/ConfirmModal';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import CreatePostModal from '../components/CreatePostModal';
+import type { PostReport } from '../types/types';
 
 const LIMIT = 20;
+
+type Tab = 'posts' | 'reports';
+
+const REASON_LABELS: Record<string, string> = {
+    spam: 'Spam',
+    inappropriate: 'Inapropiado',
+    false_info: 'Info falsa',
+    hateful: 'Contenido odioso',
+};
 
 function formatDate(iso: string) {
     return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
@@ -27,16 +37,54 @@ function AuthorAvatar({ author }: { author: { name: string; photo_url: string | 
 }
 
 export const CommunityPage = () => {
-    const { posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost, createPost } = useCommunity();
+    const {
+        posts, isLoading, totalPages, totalRecords, fetchPosts, deletePost, createPost,
+        reports, reportsLoading, totalReports, fetchReports, resolveReport,
+    } = useCommunity();
     const [searchParams, setSearchParams] = useSearchParams();
     const toast = useToast();
     const { confirm, modal: confirmModal } = useConfirm();
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<Tab>('posts');
+    const [resolvingId, setResolvingId] = useState<number | null>(null);
 
     const page = Number(searchParams.get('page')) || 1;
 
     useEffect(() => { fetchPosts(page, LIMIT); }, [page, fetchPosts]);
+    useEffect(() => { if (activeTab === 'reports') fetchReports(false); }, [activeTab, fetchReports]);
+
+    const handleResolve = async (report: PostReport) => {
+        setResolvingId(report.id);
+        try {
+            await resolveReport(report.id);
+            toast.success('Reporte resuelto', 'El reporte fue marcado como resuelto.');
+        } catch {
+            toast.error('Error', 'No se pudo resolver el reporte.');
+        } finally {
+            setResolvingId(null);
+        }
+    };
+
+    const handleDeleteReported = async (report: PostReport) => {
+        const ok = await confirm({
+            title: 'Eliminar publicación reportada',
+            message: `¿Eliminar la publicación de "${report.author_name}" (reportada por ${report.reporter_name} como "${REASON_LABELS[report.reason] ?? report.reason}")? Esta acción es permanente.`,
+            confirmLabel: 'Eliminar',
+            variant: 'danger',
+        });
+        if (!ok) return;
+        setDeletingId(report.post_id);
+        try {
+            await deletePost(report.post_id);
+            await resolveReport(report.id);
+            toast.success('Publicación eliminada', 'La publicación fue eliminada y el reporte resuelto.');
+        } catch {
+            toast.error('Error', 'No se pudo eliminar la publicación.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const handleDelete = async (id: number, caption: string) => {
         const ok = await confirm({
@@ -70,11 +118,45 @@ export const CommunityPage = () => {
                         Publicaciones creadas por usuarios desde la app móvil
                     </p>
                 </div>
-                <span className="rounded-full px-3 py-1 text-sm font-semibold shrink-0" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
-                    {totalRecords} publicaciones
-                </span>
+                <div className="flex items-center gap-2">
+                    {totalReports > 0 && (
+                        <span className="rounded-full px-3 py-1 text-sm font-semibold shrink-0" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>
+                            {totalReports} reportes
+                        </span>
+                    )}
+                    <span className="rounded-full px-3 py-1 text-sm font-semibold shrink-0" style={{ background: 'rgba(139,92,246,0.12)', color: 'var(--color-purple)' }}>
+                        {totalRecords} publicaciones
+                    </span>
+                </div>
             </div>
 
+            {/* Tab bar */}
+            <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
+                <button
+                    onClick={() => setActiveTab('posts')}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${activeTab === 'posts' ? 'text-white shadow-sm' : 'hover:opacity-80'}`}
+                    style={activeTab === 'posts' ? { background: MODULE_COLORS.community, color: 'white' } : { color: 'var(--color-text-alt)' }}
+                >
+                    <MessageSquare className="size-4" />
+                    Publicaciones
+                </button>
+                <button
+                    onClick={() => setActiveTab('reports')}
+                    className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${activeTab === 'reports' ? 'text-white shadow-sm' : 'hover:opacity-80'}`}
+                    style={activeTab === 'reports' ? { background: '#ef4444', color: 'white' } : { color: 'var(--color-text-alt)' }}
+                >
+                    <Flag className="size-4" />
+                    Reportes
+                    {totalReports > 0 && (
+                        <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: activeTab === 'reports' ? 'rgba(255,255,255,0.25)' : 'rgba(239,68,68,0.15)', color: activeTab === 'reports' ? 'white' : '#ef4444' }}>
+                            {totalReports}
+                        </span>
+                    )}
+                </button>
+            </div>
+
+            {activeTab === 'posts' && (
+            <>
             {/* Info banner */}
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.community }} />
@@ -210,6 +292,92 @@ export const CommunityPage = () => {
                         return ok;
                     }}
                 />
+            )}
+            </> /* end activeTab === 'posts' */
+            )}
+
+            {/* ── Reports tab ──────────────────────────────────────── */}
+            {activeTab === 'reports' && (
+                <div className="flex flex-col gap-4">
+                    <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                        <Flag className="size-5 mt-0.5 shrink-0 text-red-500" />
+                        <div>
+                            <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Reportes de publicaciones</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                Publicaciones marcadas por usuarios como inapropiadas. Puedes resolver el reporte sin eliminar, o eliminar la publicación.
+                            </p>
+                        </div>
+                    </div>
+
+                    {reportsLoading ? (
+                        <div className="flex flex-col gap-3">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="rounded-2xl border animate-pulse h-28" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }} />
+                            ))}
+                        </div>
+                    ) : reports.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
+                            <CheckCircle className="size-12 text-emerald-500" />
+                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>Sin reportes pendientes</p>
+                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Todos los reportes han sido revisados</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            {reports.map((report) => (
+                                <div
+                                    key={report.id}
+                                    className="rounded-2xl border p-4 flex flex-col sm:flex-row gap-4"
+                                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                                >
+                                    {/* Post preview */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>
+                                                {REASON_LABELS[report.reason] ?? report.reason}
+                                            </span>
+                                            <span className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{formatDate(report.created_at)}</span>
+                                        </div>
+                                        {report.post_caption && (
+                                            <p className="text-sm line-clamp-2 mb-1" style={{ color: 'var(--color-text)' }}>
+                                                {report.post_caption}
+                                            </p>
+                                        )}
+                                        {report.post_image_url && (
+                                            <img src={report.post_image_url} alt="post" className="h-20 w-auto rounded-lg object-cover mb-1" />
+                                        )}
+                                        <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                            Autor: <span className="font-semibold">{report.author_name}</span>
+                                            {' · '}
+                                            Reportado por: <span className="font-semibold">{report.reporter_name}</span>
+                                        </p>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex sm:flex-col gap-2 shrink-0 justify-end">
+                                        <button
+                                            onClick={() => handleResolve(report)}
+                                            disabled={resolvingId === report.id}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 dark:hover:bg-emerald-900/10 dark:hover:border-emerald-900/50 dark:hover:text-emerald-400 disabled:opacity-50"
+                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                                        >
+                                            <CheckCircle className="size-3.5" />
+                                            {resolvingId === report.id ? 'Resolviendo...' : 'Resolver'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteReported(report)}
+                                            disabled={deletingId === report.post_id}
+                                            className="flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors hover:bg-red-50 hover:border-red-200 hover:text-red-600 dark:hover:bg-red-900/10 dark:hover:border-red-900/50 dark:hover:text-red-400 disabled:opacity-50"
+                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                                        >
+                                            <Trash2 className="size-3.5" />
+                                            {deletingId === report.post_id ? 'Eliminando...' : 'Eliminar post'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );

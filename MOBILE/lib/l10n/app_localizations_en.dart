@@ -868,4 +868,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateFormatPlaceholder => 'Day / Month / Year';
+
+  @override String get recoTitle => 'AI Recommendations';
+  @override String get recoDiscoverNext => 'Discover your next destination';
+  @override String get recoAiPersonalizedFor => 'AI personalized for you · Altas Montañas';
+  @override String get recoTourismType => 'What kind of tourism are you looking for?';
+  @override String get recoChooseOneOrMore => 'Choose one or more';
+  @override String get recoBudget => 'Budget';
+  @override String get recoWithWho => 'Who are you traveling with?';
+  @override String get recoAgeRange => 'Age range';
+  @override String get recoAdditionalPrefs => 'Additional preferences';
+  @override String get recoOptional => 'Optional';
+  @override String get recoPreloadedBanner => 'We pre-filled answers based on your saved preferences';
+  @override String get recoSelectAtLeastOne => 'Select at least one type of tourism';
+  @override String get recoSelectAtLeastOneToContinue => 'Select at least one type of tourism to continue';
+  @override String get recoDiscoverDestinations => 'Discover my destinations';
+  @override String recoNDestinations(Object n) => '$n perfect destinations';
+  @override String get recoPersonalizedByAI => 'AI-personalized for your profile';
+  @override String get recoHelpImprove => 'Help us improve';
+  @override String get recoHowLiked => 'What did you think of these recommendations?';
+  @override String get recoSkip => 'Skip';
+  @override String get recoSend => 'Send';
+  @override String get recoViewDestination => 'View destination';
+  @override String get recoServiceUnavailable => 'Recommendations service is not available right now.';
+  @override String get recoConnectionError => 'Could not connect to the recommendations service.';
+  @override String get recoShareButton => 'Share';
+  @override String get communityReportPost => 'Report post';
+  @override String get communityReportReason => 'Why are you reporting this post?';
+  @override String get communityReportSpam => 'Spam or advertising';
+  @override String get communityReportInappropriate => 'Inappropriate content';
+  @override String get communityReportFalse => 'False information';
+  @override String get communityReportHateful => 'Hate speech';
+  @override String get communityReportSent => 'Report sent. Thank you for keeping the community safe.';
+  @override String get communityDeletePost => 'Delete post';
+  @override String get communityDeletePostConfirm => 'Are you sure you want to delete this post? This action cannot be undone.';
+  @override String get securitySection => 'Security';
+  @override String get activeSessions => 'Active sessions';
+  @override String get activeSessionsSubtitle => 'Manage your connected devices';
+  @override String get sessionRevokeSuccess => 'Session closed successfully';
+  @override String get sessionRevokeError => 'Could not close the session. Please try again.';
 }

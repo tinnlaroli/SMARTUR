@@ -183,13 +183,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 32),
 
           // ── Seguridad — sesiones activas ────────────────────────────
-          _buildSectionHeader('Seguridad'),
+          _buildSectionHeader(l10n.securitySection),
           ListTile(
             leading: const Icon(Icons.devices_outlined, color: SmarturStyle.blue),
-            title: const Text('Sesiones activas',
-                style: TextStyle(fontFamily: 'Outfit')),
+            title: Text(l10n.activeSessions,
+                style: const TextStyle(fontFamily: 'Outfit')),
             subtitle: Text(
-              'Ver y cerrar sesiones en otros dispositivos',
+              l10n.activeSessionsSubtitle,
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 12,
@@ -566,9 +566,9 @@ class _SessionsSheetState extends State<_SessionsSheet> {
     final ok = await widget.authService.revokeSession(id);
     if (ok && mounted) {
       setState(() => _sessions.removeWhere((s) => s['id'] == id));
-      SmarturNotifications.showSuccess(context, 'Sesión cerrada');
+      SmarturNotifications.showSuccess(context, AppLocalizations.of(context)!.sessionRevokeSuccess);
     } else if (mounted) {
-      SmarturNotifications.showError(context, 'No se pudo cerrar la sesión');
+      SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionRevokeError);
     }
   }
 
@@ -616,9 +616,9 @@ class _SessionsSheetState extends State<_SessionsSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Sesiones activas',
+                      Text(AppLocalizations.of(context)!.activeSessions,
                           style: SmarturStyle.calSansTitle.copyWith(fontSize: 17)),
-                      Text('Dispositivos conectados a tu cuenta',
+                      Text(AppLocalizations.of(context)!.activeSessionsSubtitle,
                           style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 11,
                               color: scheme.onSurface.withValues(alpha: 0.5))),

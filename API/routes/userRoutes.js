@@ -61,6 +61,56 @@ router.delete("/me/sessions/:id", verifyToken, async (req, res) => {
 // RBAC: Solo admin puede listar todos los usuarios
 router.get("/users", verifyToken, requireRole([1]), UserController.getAll);
 
+/**
+ * GET /api/v2/users/:id/sessions  — Admin: ver sesiones de un usuario
+ */
+router.get("/users/:id/sessions", verifyToken, requireRole([1]), async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) return res.status(400).json({ message: "ID inválido" });
+    const { rows } = await pool.query(
+      `SELECT id, device_hint, ip, created_at, expires_at, last_seen, revoked
+       FROM user_sessions
+       WHERE user_id = $1
+       ORDER BY created_at DESC
+       LIMIT 20`,
+      [userId],
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("[users/:id/sessions] error:", err.message);
+    res.status(500).json({ message: "Error al obtener sesiones." });
+  }
+});
+
+/**
+ * GET /api/v2/users/:id/recommendations  — Admin: ver sesiones de recomendación de un usuario
+ */
+router.get("/users/:id/recommendations", verifyToken, requireRole([1]), async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) return res.status(400).json({ message: "ID inválido" });
+    const { rows } = await pool.query(
+      `SELECT s.id, s.created_at, s.context_snapshot,
+              COALESCE(json_agg(
+                json_build_object('item_id', f.item_id, 'rank_pos', f.rank_pos, 'clicked', f.clicked, 'clicked_at', f.clicked_at)
+                ORDER BY f.rank_pos
+              ) FILTER (WHERE f.id IS NOT NULL), '[]') AS feedback
+       FROM ml_recommendation_session s
+       LEFT JOIN ml_recommendation_feedback f ON f.session_id = s.id
+       WHERE s.user_id = $1
+       GROUP BY s.id
+       ORDER BY s.created_at DESC
+       LIMIT 20`,
+      [userId],
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("[users/:id/recommendations] error:", err.message);
+    res.status(500).json({ message: "Error al obtener recomendaciones." });
+  }
+});
+
 // Ownership: solo el propio usuario o admin puede ver su perfil
 router.get("/users/:id", verifyToken, verifyOwnership, UserController.getById);
 

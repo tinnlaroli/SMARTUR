@@ -872,4 +872,51 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get dateFormatPlaceholder => 'Día / Mes / Año';
+
+  // ── Recommendation screen ─────────────────────────────────────────────────
+
+  @override String get recoTitle => 'Recomendaciones IA';
+  @override String get recoDiscoverNext => 'Descubre tu próximo destino';
+  @override String get recoAiPersonalizedFor => 'IA personalizada para ti · Altas Montañas';
+  @override String get recoTourismType => '¿Qué tipo de turismo buscas?';
+  @override String get recoChooseOneOrMore => 'Elige uno o varios';
+  @override String get recoBudget => 'Presupuesto';
+  @override String get recoWithWho => '¿Con quién viajas?';
+  @override String get recoAgeRange => 'Rango de edad';
+  @override String get recoAdditionalPrefs => 'Preferencias adicionales';
+  @override String get recoOptional => 'Opcional';
+  @override String get recoPreloadedBanner => 'Precargamos respuestas basadas en tus preferencias guardadas';
+  @override String get recoSelectAtLeastOne => 'Selecciona al menos un tipo de turismo';
+  @override String get recoSelectAtLeastOneToContinue => 'Selecciona al menos un tipo de turismo para continuar';
+  @override String get recoDiscoverDestinations => 'Descubrir mis destinos';
+  @override String recoNDestinations(Object n) => '$n destinos perfectos';
+  @override String get recoPersonalizedByAI => 'Personalizados con IA para tu perfil';
+  @override String get recoHelpImprove => 'Ayúdanos a mejorar';
+  @override String get recoHowLiked => '¿Qué te parecieron estas recomendaciones?';
+  @override String get recoSkip => 'Saltar';
+  @override String get recoSend => 'Enviar';
+  @override String get recoViewDestination => 'Ver destino';
+  @override String get recoServiceUnavailable => 'El servicio de recomendaciones no está disponible ahora.';
+  @override String get recoConnectionError => 'No se pudo conectar al servicio de recomendaciones.';
+  @override String get recoShareButton => 'Compartir';
+
+  // ── Community — Report ────────────────────────────────────────────────────
+
+  @override String get communityReportPost => 'Reportar publicación';
+  @override String get communityReportReason => '¿Por qué reportas esta publicación?';
+  @override String get communityReportSpam => 'Spam o publicidad';
+  @override String get communityReportInappropriate => 'Contenido inapropiado';
+  @override String get communityReportFalse => 'Información falsa';
+  @override String get communityReportHateful => 'Discurso de odio';
+  @override String get communityReportSent => 'Reporte enviado. Gracias por mantener la comunidad segura.';
+  @override String get communityDeletePost => 'Eliminar publicación';
+  @override String get communityDeletePostConfirm => '¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.';
+
+  // ── Settings — Security ───────────────────────────────────────────────────
+
+  @override String get securitySection => 'Seguridad';
+  @override String get activeSessions => 'Sesiones activas';
+  @override String get activeSessionsSubtitle => 'Administra tus dispositivos conectados';
+  @override String get sessionRevokeSuccess => 'Sesión cerrada correctamente';
+  @override String get sessionRevokeError => 'No se pudo cerrar la sesión. Inténtalo de nuevo.';
 }

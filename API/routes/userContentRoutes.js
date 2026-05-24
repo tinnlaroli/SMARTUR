@@ -31,4 +31,8 @@ router.post(
 router.delete('/community/posts/:postId', verifyToken, UserContentController.deleteCommunityPost);
 router.delete('/community/posts/:postId/admin', verifyToken, UserContentController.adminDeleteCommunityPost);
 
+router.post('/community/posts/:postId/report', verifyToken, UserContentController.reportCommunityPost);
+router.get('/community/reports', verifyToken, UserContentController.getPostReports);
+router.patch('/community/reports/:reportId/resolve', verifyToken, UserContentController.resolvePostReport);
+
 export default router;

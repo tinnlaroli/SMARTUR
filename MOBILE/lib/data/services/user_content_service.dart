@@ -395,6 +395,26 @@ class UserContentService {
     }
   }
 
+  /// Reporta una publicación de comunidad.
+  /// [reason] debe ser uno de: spam, inappropriate, false_info, hateful
+  Future<void> reportCommunityPost(int postId, String reason) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.communityPosts}/$postId/report');
+    try {
+      final response = await ApiClient.post(
+        uri,
+        body: jsonEncode({'reason': reason}),
+      );
+      if (response.statusCode == 201) return;
+      final msg = _apiErrorMessageFromBody(response.body, fallback: 'No se pudo enviar el reporte');
+      throw UserContentException(msg);
+    } on TimeoutException {
+      throw UserContentException('Tiempo de espera agotado al reportar.');
+    } catch (e) {
+      if (e is UserContentException) rethrow;
+      throw UserContentException(_networkFailureMessage(e));
+    }
+  }
+
   /// Publicación multipart: lugar obligatorio; texto y/o imagen.
   ///
   /// Misma forma que curl: `multipart/form-data` con campos `place_kind`, `place_id`,

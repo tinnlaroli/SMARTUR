@@ -48,3 +48,27 @@ export interface PaginationProps {
     limit: number;
     setSearchParams: SetURLSearchParams;
 }
+
+export interface UserSession {
+    id: number;
+    device_hint: string | null;
+    ip: string | null;
+    created_at: string;
+    expires_at: string;
+    last_seen: string | null;
+    revoked: boolean;
+}
+
+export interface RecommendationFeedbackItem {
+    item_id: string;
+    rank_pos: number;
+    clicked: boolean;
+    clicked_at: string | null;
+}
+
+export interface UserRecommendationSession {
+    id: number;
+    created_at: string;
+    context_snapshot: Record<string, unknown> | null;
+    feedback: RecommendationFeedbackItem[];
+}

@@ -54,14 +54,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   Future<void> _deletePost(int postId) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar publicación', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
-        content: const Text('¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.', style: TextStyle(fontFamily: 'Outfit')),
+        title: Text(l10n.communityDeletePost, style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
+        content: Text(l10n.communityDeletePostConfirm, style: const TextStyle(fontFamily: 'Outfit')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar', style: TextStyle(color: Colors.grey))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.communityDeletePost, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -70,12 +71,23 @@ class _CommunityScreenState extends State<CommunityScreen> {
     if (!mounted) return;
 
     try {
-      SmarturNotifications.showInfo(context, 'Eliminando...');
       await UserContentService().deleteCommunityPost(postId);
       if (mounted) {
-        SmarturNotifications.showSuccess(context, 'Publicación eliminada');
+        SmarturNotifications.showSuccess(context, l10n.communityDeletePost);
         _load();
       }
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.toString());
+    }
+  }
+
+  Future<void> _reportPost(int postId, String reason) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await UserContentService().reportCommunityPost(postId, reason);
+      if (mounted) SmarturNotifications.showSuccess(context, l10n.communityReportSent);
+    } on UserContentException catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.message);
     } catch (e) {
       if (mounted) SmarturNotifications.showError(context, e.toString());
     }
@@ -168,6 +180,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             data: post,
                             currentUserId: _currentUserId,
                             onDelete: () => _deletePost(post['id'] as int),
+                            onReport: (reason) => _reportPost(post['id'] as int, reason),
                           );
                         },
                       ),
@@ -431,8 +444,80 @@ class _PostCard extends StatelessWidget {
   final Map<String, dynamic> data;
   final int? currentUserId;
   final VoidCallback onDelete;
+  final void Function(String reason) onReport;
 
-  const _PostCard({required this.data, this.currentUserId, required this.onDelete});
+  const _PostCard({
+    required this.data,
+    this.currentUserId,
+    required this.onDelete,
+    required this.onReport,
+  });
+
+  Future<void> _showReportDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final reasons = <String, String>{
+      'spam': l10n.communityReportSpam,
+      'inappropriate': l10n.communityReportInappropriate,
+      'false_info': l10n.communityReportFalse,
+      'hateful': l10n.communityReportHateful,
+    };
+    String? selected;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.flag_outlined, color: scheme.error, size: 20),
+              const SizedBox(width: 8),
+              Text(l10n.communityReportPost,
+                  style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.communityReportReason,
+                  style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.onSurfaceVariant)),
+              const SizedBox(height: 12),
+              ...reasons.entries.map((e) => RadioListTile<String>(
+                    value: e.key,
+                    groupValue: selected,
+                    activeColor: scheme.error,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(e.value, style: const TextStyle(fontFamily: 'Outfit', fontSize: 14)),
+                    onChanged: (v) => setS(() => selected = v),
+                  )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel,
+                  style: TextStyle(fontFamily: 'Outfit', color: scheme.onSurfaceVariant)),
+            ),
+            FilledButton(
+              onPressed: selected == null ? null : () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(l10n.communityReportPost,
+                  style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == true && selected != null) {
+      onReport(selected!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -479,26 +564,43 @@ class _PostCard extends StatelessWidget {
                 name,
                 style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
               ),
-              trailing: isOwner
-                  ? PopupMenuButton<String>(
+              trailing: PopupMenuButton<String>(
                       icon: Icon(Icons.more_vert, color: scheme.onSurfaceVariant),
-                      onSelected: (val) {
-                        if (val == 'delete') onDelete();
+                      onSelected: (val) async {
+                        if (val == 'delete') {
+                          onDelete();
+                        } else if (val == 'report') {
+                          await _showReportDialog(context);
+                        }
                       },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                              SizedBox(width: 8),
-                              Text('Eliminar', style: TextStyle(color: Colors.red, fontFamily: 'Outfit')),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  : null,
+                      itemBuilder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return [
+                          if (isOwner)
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(l10n.communityDeletePost, style: const TextStyle(color: Colors.red, fontFamily: 'Outfit')),
+                                ],
+                              ),
+                            ),
+                          if (!isOwner)
+                            PopupMenuItem(
+                              value: 'report',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_outlined, color: scheme.error, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(l10n.communityReportPost, style: TextStyle(color: scheme.error, fontFamily: 'Outfit')),
+                                ],
+                              ),
+                            ),
+                        ];
+                      },
+                    ),
             ),
             if (placeName.isNotEmpty)
               Padding(

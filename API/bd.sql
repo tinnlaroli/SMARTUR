@@ -610,6 +610,19 @@ CREATE TABLE IF NOT EXISTS ml_recommendation_feedback (
 );
 CREATE INDEX idx_ml_rec_feedback_session ON ml_recommendation_feedback (session_id);
 
+-- ── Post reports ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS post_reports (
+  id         SERIAL PRIMARY KEY,
+  post_id    INT NOT NULL REFERENCES community_post(id_post) ON DELETE CASCADE,
+  user_id    INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  reason     VARCHAR(50) NOT NULL CHECK (reason IN ('spam','inappropriate','false_info','hateful')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  resolved   BOOLEAN NOT NULL DEFAULT FALSE,
+  UNIQUE (post_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_post_reports_post ON post_reports (post_id);
+CREATE INDEX IF NOT EXISTS idx_post_reports_resolved ON post_reports (resolved, created_at DESC);
+
 -- ── User sessions (device login tracking) ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS user_sessions (
   id          SERIAL PRIMARY KEY,

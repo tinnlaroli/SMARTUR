@@ -1739,6 +1739,53 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Día / Mes / Año'**
   String get dateFormatPlaceholder;
+
+  // ── Recommendation screen ─────────────────────────────────────────────────
+
+  String get recoTitle;
+  String get recoDiscoverNext;
+  String get recoAiPersonalizedFor;
+  String get recoTourismType;
+  String get recoChooseOneOrMore;
+  String get recoBudget;
+  String get recoWithWho;
+  String get recoAgeRange;
+  String get recoAdditionalPrefs;
+  String get recoOptional;
+  String get recoPreloadedBanner;
+  String get recoSelectAtLeastOne;
+  String get recoSelectAtLeastOneToContinue;
+  String get recoDiscoverDestinations;
+  String recoNDestinations(Object n);
+  String get recoPersonalizedByAI;
+  String get recoHelpImprove;
+  String get recoHowLiked;
+  String get recoSkip;
+  String get recoSend;
+  String get recoViewDestination;
+  String get recoServiceUnavailable;
+  String get recoConnectionError;
+  String get recoShareButton;
+
+  // ── Community — Report ────────────────────────────────────────────────────
+
+  String get communityReportPost;
+  String get communityReportReason;
+  String get communityReportSpam;
+  String get communityReportInappropriate;
+  String get communityReportFalse;
+  String get communityReportHateful;
+  String get communityReportSent;
+  String get communityDeletePost;
+  String get communityDeletePostConfirm;
+
+  // ── Settings — Security ───────────────────────────────────────────────────
+
+  String get securitySection;
+  String get activeSessions;
+  String get activeSessionsSubtitle;
+  String get sessionRevokeSuccess;
+  String get sessionRevokeError;
 }
 
 class _AppLocalizationsDelegate
