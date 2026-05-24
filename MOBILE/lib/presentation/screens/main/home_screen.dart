@@ -24,6 +24,10 @@ import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
 import '../explore/detail_view_page.dart';
 
+/// Module-level like cache — liked state persists across widget rebuilds and scroll recycling.
+/// Key: place.id (e.g. 'poi_3', 'svc_7').  Value: liked this session.
+final _homeLikeCache = <String, bool>{};
+
 class HomeScreen extends StatefulWidget {
   final String? userName;
   final bool isNewLogin;
@@ -1404,7 +1408,8 @@ class _PlaceCard extends StatefulWidget {
 class _PlaceCardState extends State<_PlaceCard>
     with SingleTickerProviderStateMixin {
   // ── Optimistic like state ────────────────────────────────────────────────
-  bool _liked = false;
+  // Initialised from the module-level cache so state survives parent rebuilds.
+  late bool _liked;
   bool _isLiking = false; // true while API call is in-flight
 
   // ── Heart burst animation (double-tap) ───────────────────────────────────
@@ -1415,6 +1420,8 @@ class _PlaceCardState extends State<_PlaceCard>
   @override
   void initState() {
     super.initState();
+    // Restore liked state from session cache (survives parent setState / scroll recycling)
+    _liked = _homeLikeCache[widget.place.id] ?? false;
     _heartCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -1448,9 +1455,13 @@ class _PlaceCardState extends State<_PlaceCard>
     final rawId = widget.place.id; // e.g. 'poi_3' or 'svc_7'
     final parts = rawId.split('_');
     if (parts.length < 2) return; // Can't parse — skip API call
-    final kind = parts[0] == 'poi' ? 'poi' : 'service';
+    // parts[0] is already the correct kind ('poi' or 'svc') — do NOT remap to 'service'
+    final kind = parts[0];
     final placeId = int.tryParse(parts[1]);
     if (placeId == null) return;
+
+    // Persist to session cache immediately (survives parent rebuilds)
+    _homeLikeCache[rawId] = !wasLiked;
 
     setState(() => _isLiking = true);
     try {
@@ -1460,7 +1471,8 @@ class _PlaceCardState extends State<_PlaceCard>
         await UserContentService().removeFavorite(kind, placeId);
       }
     } catch (_) {
-      // Rollback on failure
+      // Rollback on failure — revert both local state and cache
+      _homeLikeCache[rawId] = wasLiked;
       if (mounted) setState(() => _liked = wasLiked);
     } finally {
       if (mounted) setState(() => _isLiking = false);
