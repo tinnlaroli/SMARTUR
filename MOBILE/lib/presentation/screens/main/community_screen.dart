@@ -67,6 +67,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
 
     if (confirm != true) return;
+    if (!mounted) return;
 
     try {
       SmarturNotifications.showInfo(context, 'Eliminando...');
