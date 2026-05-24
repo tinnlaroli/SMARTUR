@@ -43,10 +43,14 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Decode Keystore (if available)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      - name: Decode Keystore
+        continue-on-error: true
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/smartur-release.jks
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 --decode > android/app/smartur-release.jks
+          fi
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
 
       - name: Build APK (Release)
         run: |
