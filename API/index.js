@@ -30,6 +30,7 @@ import SubcriterionRouter from './routes/subcriterionRoutes.js';
 import ContactRouter from './routes/contactRoutes.js';
 import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
+import { runMigrations } from './config/migrations.js';
 dotenv.config();
 
 const app = express();
@@ -180,11 +181,14 @@ app.use('/api/v2', MLRouter);
 
 const PORT = process.env.PORT || 3000;
 
-
-
-app.listen(PORT, '0.0.0.0', () => {
-    // Servidor activo
+// Run DB migrations before accepting connections
+runMigrations().then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`[server] listening on port ${PORT}`);
+    });
+}).catch((err) => {
+    console.error('[server] startup error:', err);
+    process.exit(1);
 });
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
+
+// Health route is defined earlier (line ~123)
