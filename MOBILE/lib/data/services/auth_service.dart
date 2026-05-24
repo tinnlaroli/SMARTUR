@@ -230,9 +230,11 @@ class AuthService {
   Future<void> setRememberMe(bool remember) async {
     await _storage.write(key: _rememberMeKey, value: remember.toString());
     final now = DateTime.now();
+    // rememberMe=true  → 7 días (sesión persistente larga)
+    // rememberMe=false → 24h (igual que el JWT del servidor; no quedarse logueado días)
     final expiry = remember
         ? now.add(const Duration(days: 7))
-        : now; // sin recordar: expira al cerrar app / próxima apertura
+        : now.add(const Duration(hours: 24));
     await _storage.write(
       key: _sessionExpiryKey,
       value: expiry.millisecondsSinceEpoch.toString(),
