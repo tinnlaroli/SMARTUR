@@ -7,10 +7,10 @@ class EnvConfig {
   static const String aiEngineUrl =
       String.fromEnvironment('AI_ENGINE_URL', defaultValue: 'http://2.24.112.25:8000');
 
-  /// Client ID de Google Sign-In (server client ID)
+  /// Client ID de Google Sign-In (server client ID — Firebase Web Client)
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
-    defaultValue: '',
+    defaultValue: '1076586296171-q7mr8bdhbsm5rncmfsug58mb9t3gio2j.apps.googleusercontent.com',
   );
 
   /// API key de OpenWeatherMap (solo desde --dart-define o similar)

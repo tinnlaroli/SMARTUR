@@ -12,7 +12,12 @@
           "package_name": "com.example.app_smartur"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1076586296171-q7mr8bdhbsm5rncmfsug58mb9t3gio2j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDXF8-O5TtHt_y1IQJEjLsPzhclc4FTBU4"
