@@ -315,6 +315,26 @@ class UserContentService {
     return list;
   }
 
+  /// Returns the last 20 ML recommendation sessions for the current user.
+  /// Each item: { id, created_at, best_algorithm, execution_time_ms, context_json }
+  /// context_json contains { recommendations: [...], session_id, ... }
+  Future<List<Map<String, dynamic>>> fetchRecommendationSessions() async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.mlSessionsMe}');
+    final response = await ApiClient.get(uri, timeout: const Duration(seconds: 10));
+    if (response.statusCode == 401) {
+      throw UserContentException('Sesión expirada. Inicia sesión de nuevo.');
+    }
+    if (response.statusCode != 200) {
+      throw UserContentException('No se pudo cargar el historial de recomendaciones');
+    }
+    final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+    if (decoded is! List) return [];
+    return decoded.map<Map<String, dynamic>>((e) {
+      if (e is! Map) return <String, dynamic>{};
+      return Map<String, dynamic>.from(e as Map);
+    }).toList();
+  }
+
   Future<void> recordVisit(String placeKind, int placeId) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.meVisits}');
     try {

@@ -1,3 +1,8 @@
+plugins {
+    // Google Services plugin — required for google-services.json / Firebase / Google Sign-In
+    id("com.google.gms.google-services") version "4.4.1" apply false
+}
+
 allprojects {
     repositories {
         google()

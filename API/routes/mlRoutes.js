@@ -192,6 +192,29 @@ router.post('/ml/feedback', verifyToken, async (req, res) => {
 });
 
 /**
+ * GET /api/v2/ml/sessions/me
+ * Returns the last 20 recommendation sessions for the authenticated user.
+ * Used by the mobile app to restore history across devices / sessions.
+ */
+router.get('/ml/sessions/me', verifyToken, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const { rows } = await db.query(
+            `SELECT id, created_at, best_algorithm, execution_time_ms, context_json
+             FROM ml_recommendation_session
+             WHERE user_id = $1
+             ORDER BY created_at DESC
+             LIMIT 20`,
+            [userId],
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error('[ml/sessions/me] error:', err.message);
+        res.status(500).json({ message: 'Error al obtener sesiones.' });
+    }
+});
+
+/**
  * GET /api/v2/ml/scheduler-config
  * Returns the current nightly retraining schedule from MODELO.
  * Readable by the PLATAFORMA admin dashboard without a UI restart.

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:http/http.dart' as http;
@@ -1385,7 +1386,7 @@ int _cacheWidthForCard(BuildContext context, bool isHero) {
   return (logical * dpr).round().clamp(360, 1280);
 }
 
-class _PlaceCard extends StatelessWidget {
+class _PlaceCard extends StatefulWidget {
   final Place place;
   final bool isHero;
   final VoidCallback onTap;
@@ -1397,11 +1398,93 @@ class _PlaceCard extends StatelessWidget {
   });
 
   @override
+  State<_PlaceCard> createState() => _PlaceCardState();
+}
+
+class _PlaceCardState extends State<_PlaceCard>
+    with SingleTickerProviderStateMixin {
+  // ── Optimistic like state ────────────────────────────────────────────────
+  bool _liked = false;
+  bool _isLiking = false; // true while API call is in-flight
+
+  // ── Heart burst animation (double-tap) ───────────────────────────────────
+  late final AnimationController _heartCtrl;
+  late final Animation<double> _heartScale;
+  late final Animation<double> _heartOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _heartCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _heartScale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.4), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
+    ]).animate(CurvedAnimation(parent: _heartCtrl, curve: Curves.easeOut));
+    _heartOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
+    ]).animate(_heartCtrl);
+  }
+
+  @override
+  void dispose() {
+    _heartCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggleLike() async {
+    if (_isLiking) return;
+    HapticFeedback.lightImpact();
+
+    final wasLiked = _liked;
+    // Optimistic update — show result immediately
+    setState(() { _liked = !_liked; });
+
+    final rawId = widget.place.id; // e.g. 'poi_3' or 'svc_7'
+    final parts = rawId.split('_');
+    if (parts.length < 2) return; // Can't parse — skip API call
+    final kind = parts[0] == 'poi' ? 'poi' : 'service';
+    final placeId = int.tryParse(parts[1]);
+    if (placeId == null) return;
+
+    setState(() => _isLiking = true);
+    try {
+      if (!wasLiked) {
+        await UserContentService().addFavorite(kind, placeId);
+      } else {
+        await UserContentService().removeFavorite(kind, placeId);
+      }
+    } catch (_) {
+      // Rollback on failure
+      if (mounted) setState(() => _liked = wasLiked);
+    } finally {
+      if (mounted) setState(() => _isLiking = false);
+    }
+  }
+
+  void _onDoubleTap() {
+    if (!_liked) {
+      // Only trigger if not already liked
+      _toggleLike();
+    }
+    _heartCtrl.forward(from: 0.0);
+    HapticFeedback.mediumImpact();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final place = widget.place;
+    final isHero = widget.isHero;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
+      onDoubleTap: _onDoubleTap,
       child: Hero(
         tag: 'place_${place.id}',
         child: Container(
@@ -1461,15 +1544,11 @@ class _PlaceCard extends StatelessWidget {
                           : const [0.0, 0.35, 1.0],
                       colors: isHero
                           ? const [
-                              Color(0x00000000),
-                              Color(0x10000000),
-                              Color(0x80000000),
-                              Color(0xDD000000),
+                              Color(0x00000000), Color(0x10000000),
+                              Color(0x80000000), Color(0xDD000000),
                             ]
                           : const [
-                              Color(0x05000000),
-                              Color(0x20000000),
-                              Color(0xCC000000),
+                              Color(0x05000000), Color(0x20000000), Color(0xCC000000),
                             ],
                     ),
                   ),
@@ -1492,9 +1571,7 @@ class _PlaceCard extends StatelessWidget {
                           color: place.category.color.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            width: 0.5,
-                          ),
+                              color: Colors.white.withValues(alpha: 0.2), width: 0.5),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1504,14 +1581,12 @@ class _PlaceCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               place.category.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: 'Outfit',
                                 fontSize: isHero ? 10 : 9,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.3,
+                                color: Colors.white, letterSpacing: 0.3,
                               ),
                             ),
                           ],
@@ -1519,6 +1594,59 @@ class _PlaceCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+
+                // ── Like button (top-right) ──
+                Positioned(
+                  top: isHero ? 10 : 8,
+                  right: isHero ? 10 : 8,
+                  child: GestureDetector(
+                    onTap: _toggleLike,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: _liked
+                                ? SmarturStyle.pink.withValues(alpha: 0.85)
+                                : Colors.black.withValues(alpha: 0.30),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            size: isHero ? 18 : 15,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ── Double-tap heart burst animation ──
+                AnimatedBuilder(
+                  animation: _heartCtrl,
+                  builder: (_, __) {
+                    if (_heartCtrl.value == 0.0) return const SizedBox.shrink();
+                    return Center(
+                      child: Opacity(
+                        opacity: _heartOpacity.value,
+                        child: Transform.scale(
+                          scale: _heartScale.value,
+                          child: const Icon(
+                            Icons.favorite_rounded,
+                            color: Colors.white,
+                            size: 80,
+                            shadows: [
+                              Shadow(color: Colors.black26, blurRadius: 12),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
                 // ── Bottom content ──
@@ -1530,11 +1658,9 @@ class _PlaceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Title
                       Text(
                         place.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: 'CalSans',
                           fontSize: isHero ? 20.0 : 15.0,
@@ -1544,52 +1670,38 @@ class _PlaceCard extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: isHero ? 6 : 4),
-                      // Description (hero only shows 2 lines)
                       if (isHero)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Text(
                             place.shortDescription,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: 12,
+                              fontFamily: 'Outfit', fontSize: 12,
                               color: Colors.white.withValues(alpha: 0.8),
                               height: 1.3,
                             ),
                           ),
                         ),
-                      // Rating + Location row
                       Row(
                         children: [
-                          Icon(
-                            Icons.star_rounded,
-                            size: isHero ? 15 : 13,
-                            color: SmarturStyle.orange,
-                          ),
+                          Icon(Icons.star_rounded, size: isHero ? 15 : 13, color: SmarturStyle.orange),
                           const SizedBox(width: 3),
                           Text(
                             place.rating.toStringAsFixed(1),
                             style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontWeight: FontWeight.w800,
-                              fontSize: isHero ? 12 : 11,
-                              color: Colors.white,
+                              fontFamily: 'Outfit', fontWeight: FontWeight.w800,
+                              fontSize: isHero ? 12 : 11, color: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: isHero ? 13 : 11,
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
+                          Icon(Icons.location_on_outlined,
+                              size: isHero ? 13 : 11, color: Colors.white.withValues(alpha: 0.7)),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               place.city,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: 'Outfit',
                                 fontSize: isHero ? 11 : 10,
