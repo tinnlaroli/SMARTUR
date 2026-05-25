@@ -18,48 +18,48 @@
 
 ---
 
-## 📋 Tabla de contenidos
+## <img src="https://cdn.simpleicons.org/readme/018EF5" width="20" height="20" /> Tabla de contenidos
 
-- [Visión general](#-visión-general)
-- [Arquitectura](#-arquitectura)
-- [Stack tecnológico](#-stack-tecnológico)
-- [Estructura del repositorio](#-estructura-del-repositorio)
-- [Puesta en marcha local](#-puesta-en-marcha-local)
-- [Variables de entorno](#-variables-de-entorno)
-- [Endpoints principales](#-endpoints-principales)
-- [Base de datos](#-base-de-datos)
-- [Motor ML](#-motor-ml)
-- [GitFlow](#-gitflow)
-- [Despliegue en VPS](#-despliegue-en-vps)
-- [Usuarios de prueba](#-usuarios-de-prueba)
-- [Licencia](#-licencia)
+- [Visión general](#visión-general)
+- [Arquitectura](#arquitectura)
+- [Stack tecnológico](#stack-tecnológico)
+- [Estructura del repositorio](#estructura-del-repositorio)
+- [Puesta en marcha local](#puesta-en-marcha-local)
+- [Variables de entorno](#variables-de-entorno)
+- [Endpoints principales](#endpoints-principales)
+- [Base de datos](#base-de-datos)
+- [Motor ML](#motor-ml)
+- [GitFlow](#gitflow)
+- [Despliegue en VPS](#despliegue-en-vps)
+- [Usuarios de prueba](#usuarios-de-prueba)
+- [Licencia](#licencia)
 
 ---
 
-## 🌍 Visión general
+## <img src="https://cdn.simpleicons.org/googlemaps/4285F4" width="20" height="20" /> Visión general
 
 **SMARTUR** es una plataforma de turismo inteligente que combina recomendaciones personalizadas con inteligencia artificial, gamificación y una experiencia omnicanal (web + móvil).
 
-| Componente | Descripción |
-|------------|-------------|
-| 📱 **App Móvil** | Flutter 3 — discovery, recomendaciones y rating gamificado |
-| 🖥️ **Dashboard Admin** | React/Vite — gestión de usuarios, POIs, reportes y ML observability |
-| 🌐 **Landing** | Astro + React — marketing, descarga APK y contacto |
-| ⚙️ **API REST** | Node.js/Express 5 — autenticación, lógica de negocio, proxy ML |
-| 🤖 **Motor ML** | Python/FastAPI — recomendaciones KNN+RF, métricas en tiempo real |
+| Componente | Tecnología | Descripción |
+|------------|-----------|-------------|
+| <img src="https://cdn.simpleicons.org/flutter/02569B" width="16" height="16" /> **App Móvil** | Flutter 3 | Discovery, recomendaciones y rating gamificado |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="16" height="16" /> **Dashboard Admin** | React / Vite | Gestión de usuarios, POIs, reportes y ML observability |
+| <img src="https://cdn.simpleicons.org/astro/FF5D01" width="16" height="16" /> **Landing** | Astro + React | Marketing, descarga APK y contacto |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="16" height="16" /> **API REST** | Node.js / Express 5 | Autenticación, lógica de negocio, proxy ML |
+| <img src="https://cdn.simpleicons.org/python/3776AB" width="16" height="16" /> **Motor ML** | Python / FastAPI | Recomendaciones KNN+RF, métricas en tiempo real |
 
 ---
 
-## 🏗️ Arquitectura
+## <img src="https://cdn.simpleicons.org/docker/2496ED" width="20" height="20" /> Arquitectura
 
 ```
 Internet
     │
     ▼
  Nginx (reverse proxy)
-    ├── /                    → LANDING  :4321
+    ├── /                    → LANDING    :4321
     ├── /plataforma          → PLATAFORMA :5173
-    └── /api/v2/             → API      :4000
+    └── /api/v2/             → API        :4000
                                   │
                                   ├── postgres  :5432
                                   ├── redis     :6379
@@ -74,33 +74,33 @@ App Móvil (Flutter)
 
 ---
 
-## 🛠️ Stack tecnológico
+## <img src="https://cdn.simpleicons.org/stackshare/0690FA" width="20" height="20" /> Stack tecnológico
 
-### Backend
+### <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="16" height="16" /> Backend
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express%205-000000?style=flat-square&logo=express&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 
-### Motor ML
+### <img src="https://cdn.simpleicons.org/scikitlearn/F7931E" width="16" height="16" /> Motor ML
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)
 ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat-square&logo=pandas&logoColor=white)
 
-### Frontend Web
+### <img src="https://cdn.simpleicons.org/react/61DAFB" width="16" height="16" /> Frontend Web
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Astro](https://img.shields.io/badge/Astro-FF5D01?style=flat-square&logo=astro&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 
-### App Móvil
+### <img src="https://cdn.simpleicons.org/flutter/02569B" width="16" height="16" /> App Móvil
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
 
-### DevOps
+### <img src="https://cdn.simpleicons.org/docker/2496ED" width="16" height="16" /> DevOps
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
@@ -108,67 +108,67 @@ App Móvil (Flutter)
 
 ---
 
-## 📁 Estructura del repositorio
+## <img src="https://cdn.simpleicons.org/git/F05032" width="20" height="20" /> Estructura del repositorio
 
 ```
 DEVELOPMENT/
-├── 📄 docker-compose.yml          # Orquestación de servicios
-├── 📄 docker-compose.override.yml # Overrides locales
-├── 📄 .env                        # Variables de entorno (no se versiona)
-├── 📄 .gitignore
-├── 📄 AGENTS.md                   # Instrucciones para agentes IA
+├── docker-compose.yml          # Orquestación de servicios
+├── docker-compose.override.yml # Overrides locales
+├── .env                        # Variables de entorno (no se versiona)
+├── .gitignore
+├── AGENTS.md                   # Instrucciones para agentes IA
 │
-├── 🗂️ API/                        # Backend Node.js/Express 5
+├── API/                        # Backend Node.js/Express 5
 │   ├── src/
-│   │   ├── routes/                # Rutas REST
-│   │   ├── middleware/            # Auth, CORS, rate-limit
-│   │   └── services/             # Lógica de negocio
-│   ├── bd.sql                     # ⚠️ Esquema DB — fuente de verdad
+│   │   ├── routes/             # Rutas REST
+│   │   ├── middleware/         # Auth, CORS, rate-limit
+│   │   └── services/          # Lógica de negocio
+│   ├── bd.sql                  # [!] Esquema DB — fuente de verdad
 │   └── Dockerfile
 │
-├── 🗂️ PLATAFORMA/                 # Dashboard admin React/Vite
+├── PLATAFORMA/                 # Dashboard admin React/Vite
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
 │   │   └── services/
 │   └── Dockerfile
 │
-├── 🗂️ LANDING/                    # Sitio marketing Astro + React
+├── LANDING/                    # Sitio marketing Astro + React
 │   ├── src/
 │   └── Dockerfile
 │
-├── 🗂️ MODELO/                     # Motor ML Python/FastAPI
+├── MODELO/                     # Motor ML Python/FastAPI
 │   ├── app/
-│   │   ├── model.py               # KNN + Random Forest híbrido
-│   │   ├── routes.py              # Endpoints FastAPI
-│   │   └── data/                 # Datasets y cache del modelo
+│   │   ├── model.py            # KNN + Random Forest híbrido
+│   │   ├── routes.py           # Endpoints FastAPI
+│   │   └── data/              # Datasets y cache del modelo
 │   └── Dockerfile
 │
-├── 🗂️ MOBILE/                     # App Flutter
+├── MOBILE/                     # App Flutter
 │   ├── lib/
-│   │   ├── core/                  # Constants, config, theme
-│   │   ├── data/                  # Services, repositories
-│   │   ├── presentation/          # Screens, widgets
-│   │   └── l10n/                  # Internacionalización (ES/EN/FR/PT)
+│   │   ├── core/               # Constants, config, theme
+│   │   ├── data/               # Services, repositories
+│   │   ├── presentation/       # Screens, widgets
+│   │   └── l10n/               # Internacionalización (ES/EN/FR/PT)
 │   ├── android/
-│   └── .github/workflows/         # CI/CD — build y release APK/AAB
+│   └── .github/workflows/      # CI/CD — build y release APK/AAB
 │
-├── 🗂️ nginx/                      # Configuración Nginx
-└── 🗂️ scripts/                    # Scripts de utilidad
+├── nginx/                      # Configuración Nginx
+└── scripts/                    # Scripts de utilidad
 ```
 
 ---
 
-## 🚀 Puesta en marcha local
+## <img src="https://cdn.simpleicons.org/docker/2496ED" width="20" height="20" /> Puesta en marcha local
 
 ### Requisitos
 
 | Herramienta | Versión mínima |
 |-------------|----------------|
-| Docker Desktop | 24.x |
-| Git | 2.40+ |
-| Node.js *(opcional, dev)* | 22.x |
-| Flutter *(opcional, mobile)* | 3.x |
+| <img src="https://cdn.simpleicons.org/docker/2496ED" width="14" height="14" /> Docker Desktop | 24.x |
+| <img src="https://cdn.simpleicons.org/git/F05032" width="14" height="14" /> Git | 2.40+ |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="14" height="14" /> Node.js *(opcional, dev)* | 22.x |
+| <img src="https://cdn.simpleicons.org/flutter/02569B" width="14" height="14" /> Flutter *(opcional, mobile)* | 3.x |
 
 ### Inicio rápido
 
@@ -192,11 +192,11 @@ docker compose logs -f
 
 | Servicio | URL local | Descripción |
 |----------|-----------|-------------|
-| 🌐 Landing | http://localhost:4321 | Sitio de marketing |
-| 🖥️ Plataforma | http://localhost:5173 | Dashboard admin |
-| ⚙️ API | http://localhost:4000 | Backend REST |
-| 🤖 Modelo ML | http://localhost:8000 | Motor de recomendaciones |
-| 📊 Grafana | http://localhost:4001 | Monitoreo y métricas |
+| <img src="https://cdn.simpleicons.org/astro/FF5D01" width="14" height="14" /> Landing | http://localhost:4321 | Sitio de marketing |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="14" height="14" /> Plataforma | http://localhost:5173 | Dashboard admin |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="14" height="14" /> API | http://localhost:4000 | Backend REST |
+| <img src="https://cdn.simpleicons.org/python/3776AB" width="14" height="14" /> Modelo ML | http://localhost:8000 | Motor de recomendaciones |
+| <img src="https://cdn.simpleicons.org/grafana/F46800" width="14" height="14" /> Grafana | http://localhost:4001 | Monitoreo y métricas |
 
 > **Nota:** El MODELO puede tardar 5-10 minutos en el primer arranque (descarga y entrena el dataset inicial de Kaggle).
 
@@ -219,7 +219,7 @@ docker compose down
 
 ---
 
-## 🔑 Variables de entorno
+## <img src="https://cdn.simpleicons.org/dotenv/ECD53F" width="20" height="20" /> Variables de entorno
 
 Crea un archivo `.env` en la raíz con las siguientes variables:
 
@@ -246,7 +246,7 @@ AI_ENGINE_URL=http://modelo:8000
 
 ---
 
-## 📡 Endpoints principales
+## <img src="https://cdn.simpleicons.org/swagger/85EA2D" width="20" height="20" /> Endpoints principales
 
 ### Autenticación
 ```
@@ -282,7 +282,7 @@ GET    /api/v2/contact-subscriptions  Suscripciones de contacto
 
 ---
 
-## 🗄️ Base de datos
+## <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="20" height="20" /> Base de datos
 
 `API/bd.sql` es la **única fuente de verdad** del esquema. Cualquier cambio en la BD debe reflejarse aquí.
 
@@ -294,11 +294,11 @@ Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d s
 ssh root@<VPS_IP> "docker exec -i smartur-postgres psql -U postgres -d smartur" < API/bd.sql
 ```
 
-> ⚠️ **Regla:** No crear archivos `.sql` sueltos en el proyecto. Todo va en `API/bd.sql`.
+> **Regla:** No crear archivos `.sql` sueltos en el proyecto. Todo va en `API/bd.sql`.
 
 ---
 
-## 🤖 Motor ML
+## <img src="https://cdn.simpleicons.org/scikitlearn/F7931E" width="20" height="20" /> Motor ML
 
 El MODELO implementa un sistema híbrido **KNN + Random Forest** para recomendaciones personalizadas:
 
@@ -316,17 +316,17 @@ curl -X POST http://localhost:8000/train
 
 ---
 
-## 🌿 GitFlow
+## <img src="https://cdn.simpleicons.org/git/F05032" width="20" height="20" /> GitFlow
 
 Este repositorio sigue la convención **GitFlow**:
 
 ```
-main        ← producción estable (protegida)
-develop     ← integración de features
+main                  ← producción estable (protegida)
+develop               ← integración de features
   ├── feature/nombre-feature
   ├── feature/otro-feature
-release/vX.Y.Z  ← preparación de release
-hotfix/descripcion  ← correcciones urgentes en producción
+release/vX.Y.Z        ← preparación de release
+hotfix/descripcion    ← correcciones urgentes en producción
 ```
 
 ### Flujo de trabajo
@@ -368,7 +368,7 @@ git checkout develop && git merge hotfix/fix-critico
 
 ---
 
-## 🖥️ Despliegue en VPS
+## <img src="https://cdn.simpleicons.org/linux/000000" width="20" height="20" /> Despliegue en VPS
 
 ```bash
 # Conectar al VPS
@@ -392,7 +392,7 @@ docker compose ps
 
 ---
 
-## 👤 Usuarios de prueba
+## <img src="https://cdn.simpleicons.org/auth0/EB5424" width="20" height="20" /> Usuarios de prueba
 
 | Email | Contraseña | Rol |
 |-------|------------|-----|
@@ -401,7 +401,7 @@ docker compose ps
 
 ---
 
-## 📱 App Móvil (APK)
+## <img src="https://cdn.simpleicons.org/android/3DDC84" width="20" height="20" /> App Móvil
 
 [![Download APK](https://img.shields.io/badge/Download-APK%20Latest-4F46E5?style=for-the-badge&logo=android&logoColor=white)](https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk)
 
@@ -409,7 +409,7 @@ El APK de producción se construye automáticamente vía GitHub Actions en el re
 
 ---
 
-## 📄 Licencia
+## <img src="https://cdn.simpleicons.org/opensourceinitiative/3DA639" width="20" height="20" /> Licencia
 
 **Propietario — Todos los derechos reservados.**  
 © 2025 SMARTUR. Uso exclusivo del equipo de desarrollo.
@@ -418,7 +418,7 @@ El APK de producción se construye automáticamente vía GitHub Actions en el re
 
 <div align="center">
 
-Desarrollado con ❤️ por el equipo **SMARTUR**
+Desarrollado por el equipo **SMARTUR**
 
 [![GitHub](https://img.shields.io/badge/GitHub-tinnlaroli-181717?style=flat-square&logo=github)](https://github.com/tinnlaroli)
 
