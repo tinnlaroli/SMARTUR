@@ -418,8 +418,13 @@ El APK de producción se construye automáticamente vía GitHub Actions en el re
 
 <div align="center">
 
-Desarrollado por el equipo **SMARTUR**
+Si este proyecto te resulta útil o interesante, considera dejarle una estrella.  
+Ayuda a que más personas lo descubran y motiva a seguir mejorándolo.
+
+[![Star](https://img.shields.io/github/stars/tinnlaroli/SMARTUR?style=social)](https://github.com/tinnlaroli/SMARTUR/stargazers)
 
 [![GitHub](https://img.shields.io/badge/GitHub-tinnlaroli-181717?style=flat-square&logo=github)](https://github.com/tinnlaroli)
+
+Desarrollado por el equipo **SMARTUR**
 
 </div>
