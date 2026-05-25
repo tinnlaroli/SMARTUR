@@ -1,179 +1,425 @@
-# SMARTUR
+<div align="center">
 
-Plataforma multi-servicio para turismo inteligente con API, dashboard administrativo, sitio de marketing, motor de recomendaciones y app móvil. Este repositorio orquesta el desarrollo, despliegue y operación de todos los componentes.
+<img src="https://img.shields.io/badge/SMARTUR-Turismo%20Inteligente-4F46E5?style=for-the-badge&logoColor=white" alt="SMARTUR" height="40"/>
 
-## Objetivo del repositorio
+# SMARTUR — Plataforma de Turismo Inteligente
 
-- Unificar el backend, frontends y servicios de ML bajo una sola fuente de verdad.
-- Proveer un flujo reproducible de desarrollo local con Docker Compose.
-- Centralizar el esquema de base de datos, rutas y convenciones técnicas.
-- Documentar procesos, etapas y responsabilidades de cada servicio.
+**Monorepo oficial** · Backend · Dashboard Admin · Landing · Motor ML · App Móvil
 
-## Arquitectura general
+[![CI Mobile](https://img.shields.io/github/actions/workflow/status/tinnlaroli/SMARTUR/release.yml?label=CI%20Mobile&logo=github-actions&logoColor=white&style=flat-square)](https://github.com/tinnlaroli/SMARTUR/actions)
+[![License](https://img.shields.io/badge/license-Propietario-red?style=flat-square)](LICENSE)
+[![Node](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
 
-Servicios (Docker Compose):
+</div>
 
-- API (Node.js/Express 5) — Backend REST en `:4000`
-- PLATAFORMA (React/Vite + Nginx) — Dashboard admin en `:5173`
-- LANDING (Astro + React + Nginx) — Sitio marketing en `:4321`
-- MODELO (Python/FastAPI) — Motor ML en `:8000`
-- postgres (PostgreSQL 16) — Base de datos en `:5432`
-- redis — Cache en `:6379`
-- grafana — Analitica en `:4001`
+---
 
-## Etapas del ciclo de vida
+## 📋 Tabla de contenidos
 
-1. Descubrimiento y diseno
-   - Definicion de experiencia de usuario, flujos y KPIs.
-   - Modelado de datos y endpoints necesarios.
+- [Visión general](#-visión-general)
+- [Arquitectura](#-arquitectura)
+- [Stack tecnológico](#-stack-tecnológico)
+- [Estructura del repositorio](#-estructura-del-repositorio)
+- [Puesta en marcha local](#-puesta-en-marcha-local)
+- [Variables de entorno](#-variables-de-entorno)
+- [Endpoints principales](#-endpoints-principales)
+- [Base de datos](#-base-de-datos)
+- [Motor ML](#-motor-ml)
+- [GitFlow](#-gitflow)
+- [Despliegue en VPS](#-despliegue-en-vps)
+- [Usuarios de prueba](#-usuarios-de-prueba)
+- [Licencia](#-licencia)
 
-2. Implementacion
-   - Desarrollo por servicio (API, frontends, ML, mobile).
-   - Integracion via `/api/v2/` y proxies Nginx.
+---
 
-3. Entrenamiento y calibracion ML
-   - Ingestion de interacciones y ratings.
-   - Entrenamiento inicial del modelo y metricas.
+## 🌍 Visión general
 
-4. Validacion
-   - Pruebas funcionales, integraciones, rendimiento.
-   - Verificacion de rutas y esquema DB.
+**SMARTUR** es una plataforma de turismo inteligente que combina recomendaciones personalizadas con inteligencia artificial, gamificación y una experiencia omnicanal (web + móvil).
 
-5. Despliegue
-   - Docker Compose local y VPS.
-   - Actualizacion sincronizada de `API/bd.sql`.
+| Componente | Descripción |
+|------------|-------------|
+| 📱 **App Móvil** | Flutter 3 — discovery, recomendaciones y rating gamificado |
+| 🖥️ **Dashboard Admin** | React/Vite — gestión de usuarios, POIs, reportes y ML observability |
+| 🌐 **Landing** | Astro + React — marketing, descarga APK y contacto |
+| ⚙️ **API REST** | Node.js/Express 5 — autenticación, lógica de negocio, proxy ML |
+| 🤖 **Motor ML** | Python/FastAPI — recomendaciones KNN+RF, métricas en tiempo real |
 
-## Estructura del repositorio
+---
+
+## 🏗️ Arquitectura
+
+```
+Internet
+    │
+    ▼
+ Nginx (reverse proxy)
+    ├── /                    → LANDING  :4321
+    ├── /plataforma          → PLATAFORMA :5173
+    └── /api/v2/             → API      :4000
+                                  │
+                                  ├── postgres  :5432
+                                  ├── redis     :6379
+                                  └── MODELO    :8000 (interno)
+
+App Móvil (Flutter)
+    └── → API :4000  (con JWT)
+             └── /api/v2/ml/recommend  → MODELO :8000
+```
+
+**Principio clave:** el MODELO nunca es accesible directamente desde clientes externos — toda llamada ML pasa por el proxy autenticado de la API.
+
+---
+
+## 🛠️ Stack tecnológico
+
+### Backend
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express%205-000000?style=flat-square&logo=express&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=json-web-tokens&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+
+### Motor ML
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat-square&logo=pandas&logoColor=white)
+
+### Frontend Web
+![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Astro](https://img.shields.io/badge/Astro-FF5D01?style=flat-square&logo=astro&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+
+### App Móvil
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+
+### DevOps
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
+
+---
+
+## 📁 Estructura del repositorio
 
 ```
 DEVELOPMENT/
-├── docker-compose.yml
-├── .env
-├── AGENTS.md
-├── API/
-├── PLATAFORMA/
-├── LANDING/
-├── MODELO/
-├── MOBILE/
-└── BD/
+├── 📄 docker-compose.yml          # Orquestación de servicios
+├── 📄 docker-compose.override.yml # Overrides locales
+├── 📄 .env                        # Variables de entorno (no se versiona)
+├── 📄 .gitignore
+├── 📄 AGENTS.md                   # Instrucciones para agentes IA
+│
+├── 🗂️ API/                        # Backend Node.js/Express 5
+│   ├── src/
+│   │   ├── routes/                # Rutas REST
+│   │   ├── middleware/            # Auth, CORS, rate-limit
+│   │   └── services/             # Lógica de negocio
+│   ├── bd.sql                     # ⚠️ Esquema DB — fuente de verdad
+│   └── Dockerfile
+│
+├── 🗂️ PLATAFORMA/                 # Dashboard admin React/Vite
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── services/
+│   └── Dockerfile
+│
+├── 🗂️ LANDING/                    # Sitio marketing Astro + React
+│   ├── src/
+│   └── Dockerfile
+│
+├── 🗂️ MODELO/                     # Motor ML Python/FastAPI
+│   ├── app/
+│   │   ├── model.py               # KNN + Random Forest híbrido
+│   │   ├── routes.py              # Endpoints FastAPI
+│   │   └── data/                 # Datasets y cache del modelo
+│   └── Dockerfile
+│
+├── 🗂️ MOBILE/                     # App Flutter
+│   ├── lib/
+│   │   ├── core/                  # Constants, config, theme
+│   │   ├── data/                  # Services, repositories
+│   │   ├── presentation/          # Screens, widgets
+│   │   └── l10n/                  # Internacionalización (ES/EN/FR/PT)
+│   ├── android/
+│   └── .github/workflows/         # CI/CD — build y release APK/AAB
+│
+├── 🗂️ nginx/                      # Configuración Nginx
+└── 🗂️ scripts/                    # Scripts de utilidad
 ```
 
-## Convenciones clave
+---
 
-- Prefijo API: todas las rutas van bajo `/api/v2/`.
-- Esquema DB: `API/bd.sql` es la unica fuente de verdad.
-- Express 5: no usar `app.options('*', ...)` (rompe en Express 5).
-- Build PLATAFORMA: `npx vite build` en Docker.
-- Build LANDING: `npm` en Docker (no pnpm).
+## 🚀 Puesta en marcha local
 
-## Ramas
+### Requisitos
 
-- `master`: rama estable e integracion principal.
-- `feat-*`: ramas de feature (ej: `feat-mobile`).
+| Herramienta | Versión mínima |
+|-------------|----------------|
+| Docker Desktop | 24.x |
+| Git | 2.40+ |
+| Node.js *(opcional, dev)* | 22.x |
+| Flutter *(opcional, mobile)* | 3.x |
 
-Flujo recomendado:
-
-1. Crear rama desde `master`.
-2. Desarrollar y validar localmente.
-3. Abrir PR hacia `master`.
-4. Rebase/merge segun politica del equipo.
-
-## Puertos y servicios
-
-| Servicio    | Contenedor         | Puerto |
-|------------|--------------------|--------|
-| API        | smartur-api         | 4000   |
-| PLATAFORMA | smartur-plataforma  | 5173   |
-| LANDING    | smartur-landing     | 4321   |
-| MODELO     | smartur-modelo      | 8000   |
-| postgres   | smartur-postgres    | 5432   |
-| redis      | smartur-redis       | 6379   |
-| grafana    | smartur-grafana     | 4001   |
-
-## Puesta en marcha local
-
-Requisitos:
-
-- Docker Desktop
-- Git
-
-Comandos:
+### Inicio rápido
 
 ```bash
+# 1. Clonar el repositorio
+git clone https://github.com/tinnlaroli/SMARTUR.git
+cd SMARTUR
+
+# 2. Copiar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 3. Levantar todos los servicios
 docker compose up -d
+
+# 4. Ver logs en tiempo real
+docker compose logs -f
 ```
 
-Ver logs:
+### Servicios disponibles
+
+| Servicio | URL local | Descripción |
+|----------|-----------|-------------|
+| 🌐 Landing | http://localhost:4321 | Sitio de marketing |
+| 🖥️ Plataforma | http://localhost:5173 | Dashboard admin |
+| ⚙️ API | http://localhost:4000 | Backend REST |
+| 🤖 Modelo ML | http://localhost:8000 | Motor de recomendaciones |
+| 📊 Grafana | http://localhost:4001 | Monitoreo y métricas |
+
+> **Nota:** El MODELO puede tardar 5-10 minutos en el primer arranque (descarga y entrena el dataset inicial de Kaggle).
+
+### Comandos útiles
 
 ```bash
-docker logs smartur-api
-docker logs smartur-plataforma
-docker logs -f smartur-modelo
+# Ver logs de un servicio específico
+docker logs smartur-api --follow
+docker logs smartur-modelo --follow
+
+# Reconstruir un servicio
+docker compose build api && docker compose up -d api
+
+# Reiniciar con reload de variables de entorno
+docker compose up -d --force-recreate api
+
+# Parar todo
+docker compose down
 ```
 
-## Base de datos
+---
 
-`API/bd.sql` contiene el esquema completo y datos semilla. Cualquier cambio debe aplicarse en:
+## 🔑 Variables de entorno
 
-1. Local
-2. VPS
-3. `API/bd.sql`
+Crea un archivo `.env` en la raíz con las siguientes variables:
 
-Aplicar local:
+```env
+# PostgreSQL
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=tu_password
+POSTGRES_DB=smartur
+
+# API
+JWT_SECRET=tu_jwt_secret_largo
+GOOGLE_CLIENT_ID=tu_google_web_client_id.apps.googleusercontent.com
+
+# Kaggle (para descarga de dataset en MODELO)
+KAGGLE_USERNAME=tu_usuario
+KAGGLE_KEY=tu_api_key
+
+# OpenWeather
+OPENWEATHER_API_KEY=tu_api_key
+
+# URLs internas Docker
+AI_ENGINE_URL=http://modelo:8000
+```
+
+---
+
+## 📡 Endpoints principales
+
+### Autenticación
+```
+POST   /api/v2/auth/login             Iniciar sesión (email + password)
+POST   /api/v2/auth/login/google      Iniciar sesión con Google
+POST   /api/v2/auth/register          Registro de nuevo usuario
+POST   /api/v2/auth/logout            Cerrar sesión
+```
+
+### POIs y Exploración
+```
+GET    /api/v2/pois                   Listado de lugares turísticos
+GET    /api/v2/pois/:id               Detalle de un POI
+GET    /api/v2/pois/nearby            POIs cercanos (lat/lng/radio)
+```
+
+### Recomendaciones ML
+```
+POST   /api/v2/ml/recommend/:userId   Recomendaciones personalizadas
+GET    /api/v2/ml/health              Estado y métricas del modelo
+POST   /api/v2/me/interactions        Registrar interacción implícita
+POST   /api/v2/me/rating              Rating explícito (1-5 estrellas)
+```
+
+### Administración
+```
+GET    /api/v2/users                  Listado de usuarios (admin)
+PATCH  /api/v2/users/:id/role         Cambiar rol de usuario
+GET    /api/v2/reports                Reportes comunitarios
+PATCH  /api/v2/reports/:id/status     Actualizar estado de reporte
+GET    /api/v2/contact-subscriptions  Suscripciones de contacto
+```
+
+---
+
+## 🗄️ Base de datos
+
+`API/bd.sql` es la **única fuente de verdad** del esquema. Cualquier cambio en la BD debe reflejarse aquí.
 
 ```bash
+# Aplicar esquema localmente
 Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d smartur
+
+# Aplicar en VPS
+ssh root@<VPS_IP> "docker exec -i smartur-postgres psql -U postgres -d smartur" < API/bd.sql
 ```
 
-Aplicar en VPS:
+> ⚠️ **Regla:** No crear archivos `.sql` sueltos en el proyecto. Todo va en `API/bd.sql`.
+
+---
+
+## 🤖 Motor ML
+
+El MODELO implementa un sistema híbrido **KNN + Random Forest** para recomendaciones personalizadas:
+
+- **Cold start:** usuarios nuevos reciben POIs populares de su ciudad
+- **Warm start:** modelo entrenado con interacciones implícitas + ratings explícitos
+- **Reentrenamiento:** automático tras N interacciones nuevas
 
 ```bash
-ssh root@2.24.112.25 "docker exec -i smartur-postgres psql -U postgres -d smartur" < API/bd.sql
+# Ver métricas del modelo
+curl http://localhost:8000/metrics
+
+# Forzar reentrenamiento
+curl -X POST http://localhost:8000/train
 ```
 
-## Endpoints principales
+---
 
-- `POST /api/v2/contact` — contacto publico
-- `GET /api/v2/contact-subscriptions` — listado admin
-- `PATCH /api/v2/contact-subscriptions/:id/status` — actualizar estado
-- `DELETE /api/v2/contact-subscriptions/:id` — eliminar
+## 🌿 GitFlow
 
-ML:
+Este repositorio sigue la convención **GitFlow**:
 
-- `POST /api/v2/me/interactions` — eventos implicitos
-- `POST /api/v2/me/rating` — rating explicito
-- `GET /api/v2/recommendations/:userId` — recomendaciones
-- `GET /api/v2/ml/health` — metricas y salud
+```
+main        ← producción estable (protegida)
+develop     ← integración de features
+  ├── feature/nombre-feature
+  ├── feature/otro-feature
+release/vX.Y.Z  ← preparación de release
+hotfix/descripcion  ← correcciones urgentes en producción
+```
 
-## MODELO (ML)
-
-El servicio de ML descarga y entrena en el primer arranque. Puede tardar 5-10 minutos. Si falla la descarga Kaggle, configurar `KAGGLE_USERNAME` y `KAGGLE_KEY` en `.env`.
-
-## Usuarios de prueba
-
-- `turista@smartur.demo` / `Password1a` (rol turista)
-- `martinlaraolivares@gmail.com` / `Password1a` (rol admin)
-
-## Despliegue
-
-Repositorio en VPS: `/opt/SMARTUR`.
-
-Flujo sugerido:
-
-1. Actualizar codigo en VPS.
-2. Aplicar `API/bd.sql` si hay cambios de esquema.
-3. Reconstruir servicios necesarios:
+### Flujo de trabajo
 
 ```bash
-docker compose build <service> && docker compose up -d <service>
+# 1. Crear feature desde develop
+git checkout develop
+git checkout -b feature/mi-feature
+
+# 2. Trabajar y commitear (Conventional Commits)
+git commit -m "feat(api): agregar endpoint de estadísticas"
+
+# 3. Mergear de vuelta a develop via PR
+git push origin feature/mi-feature
+gh pr create --base develop --title "feat: mi feature"
+
+# 4. Release
+git checkout -b release/v2.1.0 develop
+# ... ajustes finales, bump de versión ...
+git checkout main && git merge release/v2.1.0
+git tag v2.1.0
+
+# 5. Hotfix (desde main)
+git checkout -b hotfix/fix-critico main
+git checkout main && git merge hotfix/fix-critico
+git checkout develop && git merge hotfix/fix-critico
 ```
 
-## Soporte y mantenimiento
+### Conventional Commits
 
-- Verificacion de proxies Nginx en PLATAFORMA/LANDING.
-- Monitoreo con Grafana.
-- Validacion diaria de metricas ML.
+| Tipo | Uso |
+|------|-----|
+| `feat` | Nueva funcionalidad |
+| `fix` | Corrección de bug |
+| `docs` | Cambios en documentación |
+| `refactor` | Refactor sin cambio de comportamiento |
+| `chore` | Mantenimiento, dependencias |
+| `ci` | Cambios en CI/CD |
 
-## Licencia
+---
 
-Propietario. Uso interno del equipo SMARTUR.
+## 🖥️ Despliegue en VPS
+
+```bash
+# Conectar al VPS
+ssh root@<VPS_IP>
+
+# Ir al directorio del proyecto
+cd /opt/SMARTUR
+
+# Bajar últimos cambios
+git pull origin main
+
+# Aplicar cambios de BD (si los hay)
+docker exec -i smartur-postgres psql -U postgres -d smartur < API/bd.sql
+
+# Reconstruir y reiniciar servicios modificados
+docker compose build api && docker compose up -d --force-recreate api
+
+# Verificar que todo está corriendo
+docker compose ps
+```
+
+---
+
+## 👤 Usuarios de prueba
+
+| Email | Contraseña | Rol |
+|-------|------------|-----|
+| `turista@smartur.demo` | `Password1a` | Turista |
+| `martinlaraolivares@gmail.com` | `Password1a` | Admin |
+
+---
+
+## 📱 App Móvil (APK)
+
+[![Download APK](https://img.shields.io/badge/Download-APK%20Latest-4F46E5?style=for-the-badge&logo=android&logoColor=white)](https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk)
+
+El APK de producción se construye automáticamente vía GitHub Actions en el repo [`smartur-movil`](https://github.com/tinnlaroli/smartur-movil) cuando se crea un tag `v*`.
+
+---
+
+## 📄 Licencia
+
+**Propietario — Todos los derechos reservados.**  
+© 2025 SMARTUR. Uso exclusivo del equipo de desarrollo.
+
+---
+
+<div align="center">
+
+Desarrollado con ❤️ por el equipo **SMARTUR**
+
+[![GitHub](https://img.shields.io/badge/GitHub-tinnlaroli-181717?style=flat-square&logo=github)](https://github.com/tinnlaroli)
+
+</div>
