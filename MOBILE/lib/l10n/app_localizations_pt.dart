@@ -45,6 +45,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get termsAndConditions => 'Termos e Condições';
 
   @override
+  String get privacyPolicy => 'Política de Privacidade';
+
+  @override
   String get registerAcceptTermsPrefix => 'Aceito os ';
 
   @override
@@ -57,6 +60,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get termsAndConditionsBody =>
       'Última atualização: março de 2025.\n\n1. Objeto\nO SMARTUR é um aplicativo móvel para explorar destinos turísticos, recomendações e recursos de comunidade.\n\n2. Cadastro e conta\nAo criar uma conta, você confirma que as informações são verdadeiras. Você é responsável por manter a confidencialidade da senha e pelas atividades na sua conta.\n\n3. Uso permitido\nVocê se compromete a usar o serviço de forma lícita, sem violar direitos de terceiros ou o funcionamento da plataforma.\n\n4. Conteúdo e propriedade intelectual\nO conteúdo do app (textos, design, marcas) é protegido. Não é permitida a reprodução não autorizada.\n\n5. Dados pessoais\nO tratamento dos seus dados pessoais segue a legislação aplicável. Ao usar o SMARTUR, você aceita as práticas descritas na política de privacidade do serviço.\n\n6. Alterações\nPodemos atualizar estes termos. Mudanças relevantes serão comunicadas por meios razoáveis; o uso continuado após a atualização implica aceitação dos novos termos.\n\n7. Contato\nPara dúvidas sobre estes termos, use os canais de suporte indicados no aplicativo ou no site oficial.';
+
+  @override
+  String get privacyPolicyBody =>
+      'Última atualização: março de 2025.\n\n1. Responsável pelo tratamento\nO SMARTUR é o responsável pelo tratamento dos seus dados pessoais.\n\n2. Dados que coletamos\nColetamos os dados que você fornece ao se cadastrar (nome, e-mail, foto de perfil opcional) e os dados gerados pelo uso do app (preferências de viagem, histórico de recomendações, avaliações de lugares).\n\n3. Finalidade do tratamento\nSeus dados são usados para personalizar recomendações turísticas, melhorar o aplicativo e nos comunicarmos com você sobre o serviço.\n\n4. Base legal\nO tratamento é baseado no seu consentimento explícito ao aceitar estes termos e na execução do contrato de serviço.\n\n5. Retenção de dados\nMantemos seus dados enquanto sua conta estiver ativa. Você pode solicitar a exclusão a qualquer momento em Configurações → Excluir conta.\n\n6. Direitos do usuário\nVocê tem o direito de acessar, retificar, excluir e portar seus dados pessoais. Para exercê-los, entre em contato pelos canais de suporte.\n\n7. Segurança\nAplicamos medidas técnicas e organizacionais para proteger seus dados contra acessos não autorizados ou perdas acidentais.\n\n8. Contato\nPara dúvidas sobre privacidade: smarturutcv@gmail.com';
 
   @override
   String get logout => 'Sair';

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
+import { TermsModal } from '../features/auth/components/TermsModal';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
@@ -31,6 +32,7 @@ const getInitials = (name: string) =>
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
     const navigate = useNavigate();
     const { openModal } = useAuthModal();
     const { t } = useLanguage();
@@ -228,6 +230,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     ))}
                 </nav>
 
+                {/* ── Legal links ── */}
+                {!isCollapsed && (
+                    <div
+                        className="flex justify-center gap-3 px-4 py-2"
+                        style={{ borderTop: '1px solid var(--color-border)' }}
+                    >
+                        <button
+                            onClick={() => setLegalModal('terms')}
+                            className="text-[10px] transition-colors hover:underline"
+                            style={{ color: 'var(--color-text-alt)' }}
+                        >
+                            {t('sidebar.terms')}
+                        </button>
+                        <span style={{ color: 'var(--color-border)' }}>·</span>
+                        <button
+                            onClick={() => setLegalModal('privacy')}
+                            className="text-[10px] transition-colors hover:underline"
+                            style={{ color: 'var(--color-text-alt)' }}
+                        >
+                            {t('sidebar.privacy')}
+                        </button>
+                    </div>
+                )}
+
                 {/* ── Footer ── */}
                 <div
                     className="shrink-0 border-t p-2"
@@ -285,7 +311,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     )}
                 </div>
             </aside>
+
+            {/* Legal modals */}
+            {legalModal && (
+                <TermsModal type={legalModal} onClose={() => setLegalModal(null)} />
+            )}
         </>
-        
+
     );
 }

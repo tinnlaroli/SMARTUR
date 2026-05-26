@@ -7,6 +7,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
+import '../../widgets/privacy_policy_modal.dart';
 import '../auth/welcome_screen.dart';
 import '../main/edit_profile_avatar_screen.dart';
 
@@ -222,6 +223,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: Icon(Icons.chevron_right,
                 color: scheme.onSurfaceVariant),
             onTap: () => showTermsAndConditionsModal(context),
+          ),
+          ListTile(
+            leading: Icon(Icons.privacy_tip_outlined,
+                color: scheme.onSurfaceVariant),
+            title: Text(l10n.privacyPolicy,
+                style: const TextStyle(fontFamily: 'Outfit')),
+            trailing: Icon(Icons.chevron_right,
+                color: scheme.onSurfaceVariant),
+            onTap: () => showPrivacyPolicyModal(context),
           ),
 
           const SizedBox(height: 24),
