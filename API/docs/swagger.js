@@ -429,6 +429,108 @@ const paths = {
             body: communityPostMultipartBody,
         }),
     },
+    '/api/v2/community/posts/{postId}': {
+        delete: op({ tag: 'User Content', summary: 'Eliminar publicación propia', permission: 'Autenticado', auth: true, params: [idParam('postId', 'ID de la publicación')] }),
+    },
+    '/api/v2/community/posts/{postId}/admin': {
+        delete: op({ tag: 'User Content', summary: 'Eliminar publicación (admin)', permission: 'Admin', auth: true, params: [idParam('postId', 'ID de la publicación')] }),
+    },
+    '/api/v2/community/posts/{postId}/report': {
+        post: op({ tag: 'User Content', summary: 'Reportar publicación', permission: 'Autenticado', auth: true, params: [idParam('postId', 'ID de la publicación')], body: jsonBody }),
+    },
+    '/api/v2/community/reports': {
+        get: op({ tag: 'User Content', summary: 'Listar reportes de comunidad', permission: 'Admin', auth: true }),
+    },
+    '/api/v2/community/reports/{reportId}/resolve': {
+        patch: op({ tag: 'User Content', summary: 'Resolver reporte de comunidad', permission: 'Admin', auth: true, params: [idParam('reportId', 'ID del reporte')], body: jsonBody }),
+    },
+
+    // ── Dashboard ──
+    '/api/v2/dashboard/stats': {
+        get: op({ tag: 'Dashboard', summary: 'Estadísticas del dashboard', permission: 'Autenticado', auth: true }),
+    },
+
+    // ── Explore ──
+    '/api/v2/explore/home': {
+        get: op({ tag: 'Explore', summary: 'Feed de inicio (POIs + servicios cercanos)', permission: 'Autenticado', auth: true }),
+    },
+
+    // ── Sesiones ──
+    '/api/v2/me/ping': {
+        get: op({ tag: 'Sessions', summary: 'Verificar token activo', permission: 'Autenticado', auth: true }),
+    },
+    '/api/v2/me/sessions': {
+        get: op({ tag: 'Sessions', summary: 'Listar sesiones del usuario autenticado', permission: 'Autenticado', auth: true }),
+    },
+    '/api/v2/me/sessions/{id}': {
+        delete: op({ tag: 'Sessions', summary: 'Revocar sesión por ID', permission: 'Autenticado', auth: true, params: [idParam('id', 'ID de la sesión')] }),
+    },
+    '/api/v2/users/{id}/sessions': {
+        get: op({ tag: 'Sessions', summary: 'Listar sesiones de un usuario (admin)', permission: 'Admin', auth: true, params: [idParam('id', 'ID del usuario')] }),
+    },
+    '/api/v2/users/{id}/recommendations': {
+        get: op({ tag: 'Sessions', summary: 'Historial de recomendaciones de un usuario (admin)', permission: 'Admin', auth: true, params: [idParam('id', 'ID del usuario')] }),
+    },
+
+    // ── Interactions & Ratings ──
+    '/api/v2/me/interactions': {
+        post: op({ tag: 'Interactions & Ratings', summary: 'Registrar interacciones implícitas (batch)', permission: 'Autenticado', auth: true, body: jsonBody }),
+    },
+    '/api/v2/me/rating': {
+        post: op({ tag: 'Interactions & Ratings', summary: 'Registrar rating explícito (1-5 estrellas)', permission: 'Autenticado', auth: true, body: jsonBody }),
+    },
+    '/api/v2/me/rating/{kind}/{placeId}': {
+        get: op({ tag: 'Interactions & Ratings', summary: 'Obtener rating del usuario para un lugar', permission: 'Autenticado', auth: true, params: [idParam('kind', "Tipo de lugar: 'poi' o 'svc'"), idParam('placeId', 'ID del lugar')] }),
+    },
+
+    // ── ML / Recomendaciones ──
+    '/api/v2/ml/health': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Estado y métricas del motor ML', permission: 'Autenticado', auth: true }),
+    },
+    '/api/v2/ml/model-status': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Estado detallado del modelo entrenado', permission: 'Autenticado', auth: true }),
+    },
+    '/api/v2/ml/train': {
+        post: op({ tag: 'ML / Recommendations', summary: 'Forzar reentrenamiento del modelo', permission: 'Admin', auth: true }),
+    },
+    '/api/v2/ml/recommend/{userId}': {
+        post: op({ tag: 'ML / Recommendations', summary: 'Obtener recomendaciones personalizadas', permission: 'Autenticado', auth: true, params: [idParam('userId', 'ID del usuario')], body: jsonBody }),
+    },
+    '/api/v2/ml/feedback': {
+        post: op({ tag: 'ML / Recommendations', summary: 'Registrar feedback de recomendación (clic/skip)', permission: 'Autenticado', auth: true, body: jsonBody }),
+    },
+    '/api/v2/ml/sessions/me': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Historial de sesiones ML del usuario autenticado', permission: 'Autenticado', auth: true }),
+    },
+    '/api/v2/ml/scheduler-config': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Obtener configuración del scheduler de reentrenamiento', permission: 'Admin', auth: true }),
+        put: op({ tag: 'ML / Recommendations', summary: 'Actualizar configuración del scheduler', permission: 'Admin', auth: true, body: jsonBody }),
+    },
+
+    // ── Subcriteria ──
+    '/api/v2/subcriteria/criterion/{id_criterion}': {
+        get: op({ tag: 'Subcriteria', summary: 'Listar subcriterios de un criterio', permission: 'Autenticado', auth: true, params: [idParam('id_criterion')] }),
+    },
+    '/api/v2/subcriteria': {
+        post: op({ tag: 'Subcriteria', summary: 'Crear subcriterio', permission: 'Admin', auth: true, body: jsonBody }),
+    },
+    '/api/v2/subcriteria/{id_subcriterion}': {
+        patch: op({ tag: 'Subcriteria', summary: 'Actualizar subcriterio', permission: 'Admin', auth: true, params: [idParam('id_subcriterion')], body: jsonBody }),
+        delete: op({ tag: 'Subcriteria', summary: 'Eliminar subcriterio', permission: 'Admin', auth: true, params: [idParam('id_subcriterion')] }),
+    },
+    '/api/v2/subcriteria/criterion/{id_criterion}/batch': {
+        put: op({ tag: 'Subcriteria', summary: 'Reemplazar subcriterios de un criterio (batch)', permission: 'Admin', auth: true, params: [idParam('id_criterion')], body: jsonBody }),
+    },
+
+    // ── Evaluation Templates (rubric) ──
+    '/api/v2/templates/{id_template}/rubric': {
+        get: op({ tag: 'Evaluation Templates', summary: 'Obtener rúbrica completa de plantilla', permission: 'Autenticado', auth: true, params: [idParam('id_template')] }),
+    },
+
+    // ── Service Evaluation (batch) ──
+    '/api/v2/service-evaluation/batch-register': {
+        post: op({ tag: 'Service Evaluation', summary: 'Registro en lote de evaluaciones', permission: 'Admin', auth: true, body: jsonBody }),
+    },
 }
 
 const options = {
@@ -445,11 +547,11 @@ const options = {
         servers: [
             {
                 url: '/',
-                description: 'Mismo host del servidor actual',
+                description: 'Mismo host (desarrollo y producción)',
             },
             {
-                url: 'https://api-smartur.com',
-                description: 'Servidor de producción',
+                url: 'http://2.24.112.25:4000',
+                description: 'VPS — producción',
             },
         ],
         components: {
@@ -624,7 +726,13 @@ const options = {
             { name: 'Tourism Employment', description: 'Empleo turístico' },
             { name: 'Tourism Inputs', description: 'Insumos turísticos' },
             { name: 'Security', description: 'Eventos de seguridad y auditoría' },
-            { name: 'User Content', description: 'Favoritos, visitas e interacciones de comunidad' },
+            { name: 'User Content', description: 'Favoritos, visitas, comunidad y reportes' },
+            { name: 'Dashboard', description: 'Estadísticas y métricas del dashboard admin' },
+            { name: 'Explore', description: 'Feed de inicio y descubrimiento de lugares' },
+            { name: 'Sessions', description: 'Gestión de sesiones activas y tokens JWT' },
+            { name: 'Interactions & Ratings', description: 'Interacciones implícitas y calificaciones de lugares' },
+            { name: 'ML / Recommendations', description: 'Motor de IA: recomendaciones, feedback, estado y scheduler' },
+            { name: 'Subcriteria', description: 'Subcriterios de evaluación' },
         ],
     },
     apis: ['./routes/*.js', './controllers/*.js'],
