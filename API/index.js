@@ -31,7 +31,9 @@ import ContactRouter from './routes/contactRoutes.js';
 import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
 import { runMigrations } from './config/migrations.js';
+import { validateEnv } from './config/env.js';
 dotenv.config();
+validateEnv();
 
 const app = express();
 app.set('trust proxy', 1);
