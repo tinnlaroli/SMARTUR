@@ -17,7 +17,10 @@ Scope prefixes used in commit messages: `api` · `plataforma` · `mobile` · `mo
 - **API** — Validación de variables de entorno al arranque: crash con mensaje claro si faltan vars críticas (`JWT_SECRET`, DB); warnings para vars recomendadas ([`8c21ae7`](../../commit/8c21ae7))
 - **API** — Swagger/OpenAPI completo: ML, sesiones, interacciones, comunidad, subcriteria, dashboard y explore ([`c32e44b`](../../commit/c32e44b))
 - **PLATAFORMA** — Modal de detalle en módulo Perfiles con tres tabs: Perfil, Sesiones activas y Recomendaciones ([`309977b`](../../commit/309977b))
+- **PLATAFORMA** — Links legales "Términos · Privacidad" en el footer del Sidebar; abre `TermsModal` con contenido es/en/fr ([`de4c7cd`](../../commit/de4c7cd))
 - **MOBILE** — SHA-1 del release keystore registrado en `google-services.json`, APK firmado con keystore dedicado ([`6faf960`](../../commit/6faf960))
+- **MOBILE** — Modo offline: `CacheService` (SharedPreferences + TTL 24h), `ExploreService.fetchCitiesWithFallback()` con fallback de hasta 7 días, `OfflineBanner` amber adaptativo ([`79e2c12`](../../commit/79e2c12))
+- **MOBILE** — Política de privacidad: modal `PrivacyPolicyModal` accesible desde Configuración, contenido completo en es/en/fr/pt ([`de4c7cd`](../../commit/de4c7cd))
 
 ### Changed
 - **PLATAFORMA** — Tabs de Sesiones y Recomendaciones movidas del modal de Usuarios al modal de Perfiles ([`f1c6eed`](../../commit/f1c6eed))
