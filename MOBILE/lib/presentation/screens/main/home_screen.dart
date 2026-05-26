@@ -90,6 +90,10 @@ class HomeScreenState extends State<HomeScreen> {
 
   PlaceCategory? _selectedCategory;
   final GlobalKey _categoryFilterButtonKey = GlobalKey();
+
+  // ── Search ──
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   double _categoryFilterReservedWidth = 150; // Fallback mientras se mide.
 
   String? _weatherSummary;
@@ -102,9 +106,19 @@ class HomeScreenState extends State<HomeScreen> {
   String? _greetingName;
 
   List<Place> get _filteredPlaces {
-    final scope = _placesInScope;
-    if (_selectedCategory == null) return scope;
-    return scope.where((p) => p.category == _selectedCategory).toList();
+    var scope = _placesInScope;
+    if (_selectedCategory != null) {
+      scope = scope.where((p) => p.category == _selectedCategory).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      scope = scope.where((p) =>
+        p.name.toLowerCase().contains(q) ||
+        p.shortDescription.toLowerCase().contains(q) ||
+        p.city.toLowerCase().contains(q),
+      ).toList();
+    }
+    return scope;
   }
 
   // ───────────────────────── Lifecycle ─────────────────────────
@@ -133,6 +147,7 @@ class HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _homeScrollController.removeListener(_onHomeScroll);
     _homeScrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -719,6 +734,7 @@ class HomeScreenState extends State<HomeScreen> {
                     _buildHeaderAppBar(),
                     SliverToBoxAdapter(child: _buildExploreIntro()),
                     SliverToBoxAdapter(child: _buildCityFilter()),
+                    SliverToBoxAdapter(child: _buildSearchBar()),
                     ..._buildPlaceShowcaseSlivers(),
                     const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
@@ -863,6 +879,51 @@ class HomeScreenState extends State<HomeScreen> {
 
   Widget _buildExploreIntro() {
     return const SizedBox.shrink();
+  }
+
+  // ── Search bar ──
+
+  Widget _buildSearchBar() {
+    if (!_exploreLoaded || _cities.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v.trim()),
+        style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.onSurface),
+        decoration: InputDecoration(
+          hintText: l10n.searchHint,
+          hintStyle: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.onSurfaceVariant),
+          prefixIcon: Icon(Icons.search_rounded, size: 18, color: scheme.onSurfaceVariant),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.close_rounded, size: 17, color: scheme.onSurfaceVariant),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          filled: true,
+          fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: SmarturStyle.green.withValues(alpha: 0.7), width: 1.5),
+          ),
+        ),
+      ),
+    );
   }
 
   // ── City selector ──
@@ -1311,17 +1372,21 @@ class HomeScreenState extends State<HomeScreen> {
     final places = _filteredPlaces;
 
     if (places.isEmpty) {
+      final emptyMsg = _searchQuery.isNotEmpty
+          ? l10n.searchNoResults(_searchQuery)
+          : l10n.noCategoryPlaces;
       return [
         SliverPadding(
           padding: const EdgeInsets.all(40),
           sliver: SliverToBoxAdapter(
             child: Center(
               child: Text(
-                l10n.noCategoryPlaces,
+                emptyMsg,
                 style: TextStyle(
                   fontFamily: 'Outfit',
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -1797,6 +1862,8 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
           rating: place.rating,
           galleryUrls: place.galleryUrls,
           placeId: place.id,
+          lat: place.lat,
+          lon: place.lon,
         );
       },
     );

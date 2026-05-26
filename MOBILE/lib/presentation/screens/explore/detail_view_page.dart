@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/style_guide.dart';
 import '../../../data/services/user_content_service.dart';
@@ -20,6 +21,10 @@ class DetailViewPage extends StatefulWidget {
   /// Referencia del lugar (`svc_` / `poi_` + id) para favoritos e historial API.
   final String? placeId;
 
+  /// Coordenadas del lugar para abrir en Google Maps.
+  final double? lat;
+  final double? lon;
+
   const DetailViewPage({
     super.key,
     required this.title,
@@ -30,6 +35,8 @@ class DetailViewPage extends StatefulWidget {
     required this.rating,
     required this.galleryUrls,
     this.placeId,
+    this.lat,
+    this.lon,
   });
 
   @override
@@ -312,6 +319,8 @@ class _DetailViewPageState extends State<DetailViewPage>
                       userRating: _kind != null && _pid != null ? _userRating : null,
                       ratingBusy: _ratingBusy,
                       onRate: _kind != null && _pid != null ? _ratePlace : (_) {},
+                      lat: widget.lat,
+                      lon: widget.lon,
                     ),
                   ),
                 ],
@@ -353,6 +362,36 @@ class _GlassCircle extends StatelessWidget {
 
 // ── Bottom content with glass card ──
 
+/// Returns curated gastronomy content for the given city/location.
+String _gastronomyForCity(String locationLine) {
+  final l = locationLine.toLowerCase()
+    .replaceAll('á', 'a').replaceAll('é', 'e')
+    .replaceAll('í', 'i').replaceAll('ó', 'o')
+    .replaceAll('ú', 'u').replaceAll('ñ', 'n');
+  if (l.contains('xalapa')) {
+    return 'Café de altura · Enchiladas xalapeñas · Punche (tamal dulce) · Pan de nata · Caldito de habas · Garnachas con salsa verde.';
+  }
+  if (l.contains('coatepec')) {
+    return 'Café Coatepec (Denominación de Origen) · Gorditas de maíz · Tamales xocoyoles · Pan de yema · Chiles rellenos de queso.';
+  }
+  if (l.contains('cordoba') || l.contains('córdoba')) {
+    return 'Café de Los Portales · Tamales de elote · Chileatole verde · Tostadas de frijol · Memelas con cecina cordobesa.';
+  }
+  if (l.contains('orizaba')) {
+    return 'Café regional · Tostadas orizabeñas con tinga · Chileatole rojo · Enchiladas mineras · Marquesote (postre tradicional).';
+  }
+  if (l.contains('fortin') || l.contains('fortín')) {
+    return 'Café entre flores de naranja · Garnachas rellenas · Tamales de rajas · Agua de Jamaica con flores · Pan artesanal.';
+  }
+  if (l.contains('xico')) {
+    return 'Mole xiqueño (14 ingredientes) · Chiles en nogada · Conservas de guayaba y naranja · Café de altura · Tortas de mole.';
+  }
+  if (l.contains('ixtaczoquitlan') || l.contains('ixtaczoquitlán')) {
+    return 'Café de montaña · Tamales de mole · Quesillo (queso de hebra) · Enfrijoladas · Agua de chilacayote.';
+  }
+  return 'Gastronomía de Altas Montañas: café de altura, tamales veracruzanos, mole regional, gorditas y frutas tropicales de temporada.';
+}
+
 class _BottomContent extends StatelessWidget {
   final String title;
   final String locationLine;
@@ -361,6 +400,8 @@ class _BottomContent extends StatelessWidget {
   final int? userRating;
   final bool ratingBusy;
   final void Function(int) onRate;
+  final double? lat;
+  final double? lon;
 
   const _BottomContent({
     required this.title,
@@ -370,6 +411,8 @@ class _BottomContent extends StatelessWidget {
     required this.userRating,
     required this.ratingBusy,
     required this.onRate,
+    this.lat,
+    this.lon,
   });
 
   @override
@@ -466,8 +509,14 @@ class _BottomContent extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     _TabText(text: subtitle),
-                    _TabText(text: l10n.tabLocationPlaceholder),
-                    _TabText(text: l10n.tabGastronomyPlaceholder),
+                    _LocationTab(
+                      lat: lat,
+                      lon: lon,
+                      locationLine: locationLine,
+                      placeName: title,
+                      l10n: l10n,
+                    ),
+                    _TabText(text: _gastronomyForCity(locationLine)),
                     _RatingTab(
                       userRating: userRating,
                       busy: ratingBusy,
@@ -532,6 +581,114 @@ class _BottomContent extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Location tab — opens Google Maps if coordinates are available ──
+
+class _LocationTab extends StatelessWidget {
+  final double? lat;
+  final double? lon;
+  final String locationLine;
+  final String placeName;
+  final AppLocalizations l10n;
+
+  const _LocationTab({
+    required this.lat,
+    required this.lon,
+    required this.locationLine,
+    required this.placeName,
+    required this.l10n,
+  });
+
+  Future<void> _openMaps() async {
+    final encodedName = Uri.encodeComponent(placeName);
+    final Uri uri;
+    if (lat != null && lon != null) {
+      // Deep-link to the exact coordinates with place name as label
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon&query_place_id=$encodedName');
+    } else {
+      // Fallback: search by place name in the region
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent("$placeName, Veracruz, México")}');
+    }
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      // url_launcher couldn't open — silently degrade (Maps not installed)
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCoords = lat != null && lon != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasCoords)
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined, color: Colors.white54, size: 13),
+                const SizedBox(width: 4),
+                Text(
+                  '${lat!.toStringAsFixed(5)}, ${lon!.toStringAsFixed(5)}',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.55),
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                const Icon(Icons.location_city_outlined, color: Colors.white54, size: 13),
+                const SizedBox(width: 4),
+                Text(
+                  locationLine,
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.55),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _openMaps,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color: SmarturStyle.blue.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: SmarturStyle.blue.withValues(alpha: 0.50),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.map_outlined, size: 15, color: SmarturStyle.blue),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.openInMaps,
+                    style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: SmarturStyle.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

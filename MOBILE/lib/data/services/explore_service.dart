@@ -193,6 +193,8 @@ class ExploreService {
 
   static Place _placeFromPoi(Map<String, dynamic> p, String cityName) {
     final cat = _categoryFromPoiType(p['id_type'] as int?);
+    final lat = p['latitude'] != null ? _toDouble(p['latitude']) : null;
+    final lon = p['longitude'] != null ? _toDouble(p['longitude']) : null;
     return Place(
       id: 'poi_${p['id_point']}',
       name: (p['name'] ?? '') as String,
@@ -204,6 +206,8 @@ class ExploreService {
       description: (p['description'] ?? '') as String,
       locationLine: cityName,
       galleryUrls: const [],
+      lat: lat != 0.0 ? lat : null,
+      lon: lon != 0.0 ? lon : null,
     );
   }
 

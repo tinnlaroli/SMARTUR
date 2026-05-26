@@ -423,26 +423,26 @@ INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
   ('Eco Tours Veracruz', 'Bosque 5', '2288330033', 3, 2);
 
 INSERT INTO tourist_service (name, description, id_company, id_location, service_type, active, image_url) VALUES
-  ('Hotel Mirador Xalapa', 'Habitaciones con vista a la ciudad.', 1, 1, 'hotel', true,
-   'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&w=800'),
-  ('Café Orquídea Coatepec', 'Café de la región y postres artesanales.', 2, 2, 'restaurant', true,
-   'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&w=800'),
-  ('Senderismo Macuiltépetl', 'Salida guiada al parque.', 3, 1, 'tour', true,
-   'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800');
+  ('Hotel Mirador Xalapa', 'Habitaciones con vista panorámica de Xalapa y el Cofre de Perote.', 1, 1, 'hotel', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800'),
+  ('Café Orquídea Coatepec', 'Café de altura 100% arabica de Coatepec con postres artesanales.', 2, 2, 'restaurant', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_Veracruz.jpg?width=800'),
+  ('Senderismo Macuiltépetl', 'Salida guiada al parque ecológico con guía especializado en flora local.', 3, 1, 'tour', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800');
 
 INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
-  ('Parque Macuiltépetl', 'park, viewpoint', '["nature"]', 1, true, true, 19.531240, -96.915890, 1,
-   'Cerro volcánico con miradores panorámicos y senderos naturales en Xalapa.',
-   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.7),
-  ('Museo Interactivo de Xalapa', 'museum, science', '["culture"]', 2, true, false, 19.531240, -96.915890, 1,
-   'Museo con exposiciones interactivas de ciencia y tecnología, ideal para familias.',
-   'https://images.pexels.com/photos/1839919/pexels-photo-1839919.jpeg?auto=compress&w=800', 4.5),
-  ('Cascada de Texolo', 'waterfall', '["nature"]', 1, false, true, 19.451800, -96.959700, 2,
-   'Impresionante cascada de 40 metros en el bosque tropical de Coatepec.',
-   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.8),
-  ('Ex-Hacienda de Toxpan', 'hacienda, history', '["culture"]', 1, true, true, 19.451800, -96.959700, 2,
-   'Hacienda colonial del siglo XIX con jardines y rica historia cafetalera.',
-   'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800', 4.3);
+  ('Parque Macuiltépetl', 'park, viewpoint, hiking', '["nature"]', 1, true, true, 19.539500, -96.920900, 1,
+   'Cerro volcánico con miradores panorámicos y senderos naturales en el corazón de Xalapa. Ideal para caminatas cortas y observación de aves.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800', 4.7),
+  ('Museo de Antropología de Xalapa', 'museum, history, culture', '["culture"]', 2, true, false, 19.527500, -96.936900, 1,
+   'Uno de los museos arqueológicos más importantes de México. Alberga cabezas colosales olmecas, esculturas totonacas y piezas del Clásico mesoamericano.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg?width=800', 4.9),
+  ('Cascada de Texolo', 'waterfall, nature, hiking', '["nature"]', 1, false, true, 19.467600, -96.990700, 2,
+   'Impresionante cascada de 40 metros rodeada de exuberante vegetación tropical a 10 minutos del centro de Xico/Coatepec.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800', 4.8),
+  ('Ex-Hacienda El Lencero', 'hacienda, history, park', '["culture"]', 1, true, true, 19.476100, -96.847500, 2,
+   'Antigua hacienda del siglo XVI con jardines coloniales y lago. Sede del Museo del Mueble Veracruzano.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Hacienda_el_Lencero_Veracruz_Mexico.jpg?width=800', 4.3);
 
 -- bcrypt hash for password: Password1a
 INSERT INTO "user" (name, email, password, role_id, photo_url, avatar_icon_key) VALUES
@@ -470,25 +470,25 @@ INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
   ('Posada Fortín', 'Principal 200', '2731002001', 1, 5);
 
 INSERT INTO tourist_service (name, description, id_company, id_location, service_type, active, image_url) VALUES
-  ('Hotel Altas Montañas', 'Vista al Pico de Orizaba.', 4, 4, 'hotel', true,
-   'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&w=800'),
-  ('El Pico Restaurante', 'Cocina regional y café.', 5, 4, 'restaurant', true,
-   'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&w=800'),
-  ('Tour Pico de Orizaba', 'Excursión a refugio y zona de montaña.', 6, 4, 'tour', true,
-   'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800'),
-  ('Posada Fortín Plaza', 'Hospedaje céntrico en Fortín.', 7, 5, 'hotel', true,
-   'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&w=800');
+  ('Hotel Altas Montañas', 'Hospedaje con vista directa al Pico de Orizaba — el volcán más alto de México.', 4, 4, 'hotel', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_Veracruz_Mexico.jpg?width=800'),
+  ('El Pico Restaurante', 'Cocina veracruzana de altura: chileatole, tostadas orizabeñas y café regional.', 5, 4, 'restaurant', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_centro.jpg?width=800'),
+  ('Tour Pico de Orizaba', 'Excursión guiada a la zona de montaña y refugio Piedra Grande.', 6, 4, 'tour', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Citlaltepetl.jpg?width=800'),
+  ('Posada Fortín Plaza', 'Hospedaje céntrico entre jardines de gardenias y café en Fortín.', 7, 5, 'hotel', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_flores_veracruz.jpg?width=800');
 
 INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
-  ('Pico de Orizaba', 'volcano, mountain', '["nature"]', 1, false, true, 18.849100, -97.105100, 4,
-   'El volcán más alto de México. Destino para alpinismo y naturaleza extrema.',
-   'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800', 4.9),
-  ('Palacio de Hierro Orizaba', 'monument, history', '["culture"]', 1, true, false, 18.849100, -97.105100, 4,
-   'Emblemático edificio art nouveau importado de Bélgica, símbolo de Orizaba.',
-   'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&w=800', 4.6),
-  ('Jardín Botánico Fortín', 'botanical garden', '["nature"]', 1, true, true, 18.901200, -96.998500, 5,
-   'Jardín con más de 3,000 especies de plantas tropicales y orquídeas.',
-   'https://images.pexels.com/photos/1353938/pexels-photo-1353938.jpeg?auto=compress&w=800', 4.5);
+  ('Pico de Orizaba (Citlaltépetl)', 'volcano, mountain, hiking', '["nature", "aventura"]', 1, false, true, 19.030800, -97.268100, 4,
+   'El volcán más alto de México (5,636 m). Imponente cono nevado visible desde toda la región de Altas Montañas. Punto de alpinismo y trekking de alta montaña.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Citlaltepetl.jpg?width=800', 4.9),
+  ('Palacio de Hierro Orizaba', 'monument, history, architecture', '["culture"]', 1, true, false, 18.851700, -97.101400, 4,
+   'Emblemático edificio art nouveau de 1894 importado de Bélgica, símbolo de la ciudad industrial de Orizaba. Una joya arquitectónica única en México.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Palacio_de_Hierro_Orizaba.jpg?width=800', 4.6),
+  ('Jardín Botánico de Fortín', 'botanical garden, park, nature', '["nature"]', 1, true, true, 18.905200, -96.998400, 5,
+   'Extenso jardín con más de 3,000 especies de plantas tropicales, orquídeas y flores. La ciudad de Fortín es mundialmente conocida por sus gardenias y café.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_Flores.jpg?width=800', 4.5);
 
 -- Córdoba: más servicios y puntos (filtros hotel / restaurante / tour / museo / naturaleza)
 INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
@@ -497,26 +497,26 @@ INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
   ('Experiencias Los Portales', 'Portal de Gloria', '2717123458', 3, 3);
 
 INSERT INTO tourist_service (name, description, id_company, id_location, service_type, active, image_url) VALUES
-  ('Hotel Gobernador Córdoba', 'Hospedaje cerca del zócalo y Los Portales.', 8, 3, 'hotel', true,
-   'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&w=800'),
-  ('Restaurante Casa Revilla', 'Alta cocina veracruzana en el centro histórico.', 9, 3, 'restaurant', true,
-   'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&w=800'),
-  ('Tour Ciudad de los 30 Caballeros', 'Recorrido colonial, leyendas y barrio de La Villa.', 10, 3, 'tour', true,
-   'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&w=800');
+  ('Hotel Gobernador Córdoba', 'Hospedaje histórico a pasos del zócalo y Los Portales de Córdoba.', 8, 3, 'hotel', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800'),
+  ('Restaurante Casa Revilla', 'Alta cocina veracruzana con vista a Los Portales: chileatole, tamales y café.', 9, 3, 'restaurant', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Los_portales_de_c%C3%B3rdoba_veracruz.jpg?width=800'),
+  ('Tour Ciudad de los 30 Caballeros', 'Recorrido guiado por el centro histórico colonial, leyendas y barrio de La Villa.', 10, 3, 'tour', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_C%C3%B3rdoba_Veracruz.jpg?width=800');
 
 INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
-  ('Catedral de Córdoba', 'cathedral, religion', '["culture"]', 1, true, false, 18.894200, -96.934700, 3,
-   'Catedral barroca del siglo XVII en el centro histórico de Córdoba.',
-   'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800', 4.5),
-  ('Los Portales de Córdoba', 'zocalo, town square', '["culture", "gastronomy"]', 2, true, true, 18.894200, -96.934700, 3,
-   'Paseo colonial con cafés, tiendas y vida nocturna junto al zócalo.',
-   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.4),
-  ('Parque Ecológico Cerro del Metate', 'park, hiking', '["nature"]', 1, false, true, 18.894200, -96.934700, 3,
-   'Área natural protegida con senderos y vistas al valle de Córdoba.',
-   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.3),
-  ('Municipio de La Villa', 'neighborhood, architecture', '["culture"]', 1, true, true, 18.894200, -96.934700, 3,
-   'Barrio histórico con arquitectura colonial y gastronomía típica cordobesa.',
-   'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800', 4.2);
+  ('Catedral de Córdoba', 'cathedral, religion, history', '["culture"]', 1, true, false, 18.885900, -96.937700, 3,
+   'Catedral neoclásica del siglo XVII frente al zócalo de Córdoba. Una de las más imponentes de Veracruz con retablos dorados y arte colonial.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_C%C3%B3rdoba_Veracruz.jpg?width=800', 4.5),
+  ('Los Portales de Córdoba', 'zocalo, town square, gastronomy', '["culture", "gastronomy"]', 2, true, true, 18.885400, -96.937200, 3,
+   'Icónico paseo porticado colonial con cafeterías, tiendas de artesanías y vida nocturna. Fue aquí donde se firmó el Tratado de Córdoba (1821) que dio la Independencia a México.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Los_portales_de_c%C3%B3rdoba_veracruz.jpg?width=800', 4.4),
+  ('Cerro del Borrego Córdoba', 'park, viewpoint, hiking, outdoor', '["nature"]', 1, true, true, 18.889200, -96.944600, 3,
+   'Área natural en las faldas del cerro con senderos, miradores y zoológico. Ofrece vistas panorámicas al Valle de Córdoba y las cumbres de Altas Montañas.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800', 4.3),
+  ('Barrio de La Villa', 'neighborhood, architecture, history', '["culture"]', 1, true, true, 18.883400, -96.934600, 3,
+   'Barrio histórico colonial con casas del siglo XVIII, gastronomía cordobesa típica e iglesia de La Villa.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800', 4.2);
 
 -- Xico (nueva ciudad): Pueblo Mágico, variedad de tipos para filtros
 INSERT INTO location (name, state, municipality, latitude, longitude) VALUES
@@ -528,26 +528,78 @@ INSERT INTO company (name, address, phone, id_sector, id_location) VALUES
   ('Xico Aventura en la Niebla', 'Carretera a Texolo km 1', '2281234503', 3, 6);
 
 INSERT INTO tourist_service (name, description, id_company, id_location, service_type, active, image_url) VALUES
-  ('Hotel Posada Xico', 'Descanso en el corazón del Pueblo Mágico.', 11, 6, 'hotel', true,
-   'https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&w=800'),
-  ('Fonda Tradicional Xico', 'Mole, chiles en nogada y dulces regionales.', 12, 6, 'restaurant', true,
-   'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&w=800'),
-  ('Tour Cascada de Texolo y miradores', 'Salida guiada desde Xico.', 13, 6, 'tour', true,
-   'https://images.pexels.com/photos/237272/pexels-photo-237272.jpeg?auto=compress&w=800');
+  ('Hotel Posada Xico', 'Posada colonial en el Pueblo Mágico de Xico, entre cafetales y niebla.', 11, 6, 'hotel', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800'),
+  ('Fonda Tradicional Xico', 'Mole xiqueño de 14 ingredientes, chiles en nogada y conservas artesanales.', 12, 6, 'restaurant', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_centro.jpg?width=800'),
+  ('Tour Cascada de Texolo y miradores', 'Caminata guiada a la cascada de niebla con parada en miradores de cafetal.', 13, 6, 'tour', true,
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800');
 
 INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
-  ('Cascada de Texolo (Xico)', 'waterfall', '["nature"]', 1, false, true, 19.421800, -97.010200, 6,
-   'Majestuosa cascada de niebla en el corazón del Pueblo Mágico de Xico.',
-   'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800', 4.9),
-  ('Santuario de María Magdalena', 'sanctuary, religion', '["culture"]', 1, true, false, 19.421800, -97.010200, 6,
-   'Santuario histórico dedicado a la patrona de Xico, con procesiones famosas.',
-   'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800', 4.6),
-  ('Mercado de Xico', 'market, local food', '["gastronomy"]', 1, true, false, 19.421800, -97.010200, 6,
-   'Mercado artesanal con mole xiqueño, conservas y productos locales únicos.',
-   'https://images.pexels.com/photos/1132558/pexels-photo-1132558.jpeg?auto=compress&w=800', 4.7),
-  ('Mirador de la Niebla', 'viewpoint, coffee', '["nature"]', 1, true, true, 19.421800, -97.010200, 6,
-   'Mirador entre niebla y cafetales con vistas al barranco y la cascada de Texolo.',
-   'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800', 4.8);
+  ('Cascada de Texolo', 'waterfall, nature, hiking', '["nature"]', 1, false, true, 19.447900, -97.020800, 6,
+   'Majestuosa cascada doble de niebla de 40 m en pleno Pueblo Mágico de Xico. Rodeada de selva tropical y cafetales. Escenario de la película "Romancing the Stone".',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800', 4.9),
+  ('Parroquia de Santiago Apóstol Xico', 'church, religion, history, architecture', '["culture"]', 1, true, false, 19.421800, -97.010200, 6,
+   'Parroquia colonial del siglo XVI en el centro de Xico. Escenario de la famosa procesión de María Magdalena (julio), una de las fiestas más coloridas de Veracruz.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz_iglesia.jpg?width=800', 4.6),
+  ('Mercado de Artesanías Xico', 'market, local food, gastronomy', '["gastronomy"]', 1, true, false, 19.421600, -97.009800, 6,
+   'Mercado artesanal con mole xiqueño de 14 ingredientes, conservas de guayaba y naranja, café de altura y dulces regionales únicos.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_centro.jpg?width=800', 4.7),
+  ('Mirador Cafetal La Niebla', 'viewpoint, coffee, outdoor, nature', '["nature"]', 1, true, true, 19.430200, -97.015200, 6,
+   'Mirador entre niebla, cafetales y helechos con vistas al barranco y la cascada de Texolo. El mejor punto para fotografiar el paisaje de niebla característico de Xico.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800', 4.8);
+
+-- ============================================
+-- NUEVOS LUGARES: Altas Montañas — expansión de contenido
+-- ============================================
+
+-- Xalapa: más POIs (3 nuevos)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Parque Juárez Xalapa', 'park, viewpoint, outdoor', '["nature"]', 1, true, true, 19.529300, -96.921000, 1,
+   'Parque central de Xalapa con jardines, kiosco y vistas al Pico de Orizaba y Cofre de Perote en días despejados. Corazón de la capital cultural de Veracruz.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Parque_Ju%C3%A1rez_Xalapa.jpg?width=800', 4.5),
+  ('Agora de la Ciudad Xalapa', 'culture, art, music', '["culture"]', 1, true, false, 19.529400, -96.921200, 1,
+   'Espacio cultural multidisciplinario con exposiciones de arte contemporáneo, teatro, conciertos y proyecciones. Sede de la Orquesta Sinfónica de Xalapa.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800', 4.4),
+  ('Jardín Botánico Francisco Javier Clavijero', 'botanical garden, nature, science', '["nature"]', 1, true, true, 19.506200, -96.928300, 1,
+   'Jardín botánico del INIECOL con más de 1,800 especies de plantas, senderos en selva nubosa y colección de bromelias y orquídeas veracruzanas.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Jardin_botanico_Clavijero_Xalapa.jpg?width=800', 4.6);
+
+-- Coatepec: más POIs (2 nuevos)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Jardín Hidalgo Coatepec', 'park, town square, outdoor, gastronomy', '["culture", "gastronomy"]', 1, true, true, 19.452200, -96.962600, 2,
+   'Zócalo del Pueblo Mágico de Coatepec. Rodeado de portales con cafeterías de café de altura. Hermoso kiosco del siglo XIX entre árboles de café en flor.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_Veracruz.jpg?width=800', 4.6),
+  ('Museo del Café Coatepec', 'museum, coffee, gastronomy, history', '["culture", "gastronomy"]', 2, true, false, 19.452500, -96.962800, 2,
+   'Museo interactivo dedicado a la historia del café en Coatepec, región productora de uno de los mejores cafés de México con Denominación de Origen.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_centro.jpg?width=800', 4.4);
+
+-- Orizaba: más POIs (3 nuevos)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Parque Apolinar Castillo Orizaba', 'park, outdoor, zocalo', '["nature"]', 1, true, true, 18.851400, -97.101600, 4,
+   'Parque central de Orizaba con kiosco histórico, fuentes, jardines y esculturas. Punto de reunión de la ciudad industrial entre el Pico de Orizaba y el Pico de San Martín.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_parque.jpg?width=800', 4.3),
+  ('Catedral de San Miguel Orizaba', 'cathedral, religion, history, architecture', '["culture"]', 1, true, false, 18.851900, -97.102000, 4,
+   'Imponente catedral neoclásica del siglo XIX con fachada tallada en cantera y retablos dorados interiores. Una de las más grandes del Estado de Veracruz.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_Orizaba.jpg?width=800', 4.6),
+  ('Cerro del Borrego Orizaba', 'park, viewpoint, hiking, outdoor', '["nature"]', 1, true, true, 18.857800, -97.097100, 4,
+   'Parque natural con teleférico panorámico, zoológico y miradores sobre Orizaba y el Pico. El teleférico ofrece vistas al Citlaltépetl en días despejados.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Cerro_del_borrego_orizaba.jpg?width=800', 4.7);
+
+-- Fortín de las Flores: más POIs (1 nuevo)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Puente de los Suspiros Fortín', 'viewpoint, park, outdoor', '["nature"]', 1, true, true, 18.905400, -96.997200, 5,
+   'Histórico puente de hierro sobre el río Metlac rodeado de vegetación tropical y flores de naranja. Símbolo romántico de Fortín de las Flores.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_flores_veracruz.jpg?width=800', 4.5);
+
+-- Ixtaczoquitlán: POIs (nueva ciudad con contenido, id_location=7)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating) VALUES
+  ('Viaducto del Metlac', 'viewpoint, monument, history, architecture', '["culture", "nature"]', 1, true, false, 18.849000, -97.138000, 7,
+   'Majestuoso puente de arcos del siglo XIX sobre la barranca del río Metlac, construido durante el Segundo Imperio Mexicano. Uno de los más fotografiados de México y visible desde el tren Tequila Express.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Viaducto_Metlac.jpg?width=800', 4.8),
+  ('Cascada Río Metlac', 'waterfall, nature, outdoor', '["nature"]', 1, false, true, 18.847500, -97.137200, 7,
+   'Cascada del río Metlac en el cañón debajo del famoso viaducto. Paisaje de selva tropical con vegetación exuberante y fauna local.',
+   'https://commons.wikimedia.org/wiki/Special:FilePath/Ixtaczoquitlan_veracruz.jpg?width=800', 4.4);
 
 -- Evaluation instrument seed data
 INSERT INTO evaluation_template (name, version, service_type, active, creation_date) VALUES
@@ -645,5 +697,175 @@ VALUES
   ('Atoyac',                  'Veracruz', 'Atoyac',                18.916700, -96.766700),
   ('Xico',                    'Veracruz', 'Xico',                  19.421800, -97.010200)
 ON CONFLICT DO NOTHING;
+
+-- ============================================
+-- MIGRATION: Fix existing POI data (coords + real Wikimedia photos)
+-- Para BD ya inicializada: ejecutar estos UPDATE/INSERT en producción.
+-- ============================================
+
+-- Fix Xalapa POIs
+UPDATE point_of_interest SET
+  latitude = 19.539500, longitude = -96.920900,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800',
+  name = 'Parque Macuiltépetl',
+  description = 'Cerro volcánico con miradores panorámicos y senderos naturales en el corazón de Xalapa. Ideal para caminatas cortas y observación de aves.',
+  categories_raw = 'park, viewpoint, hiking'
+WHERE name LIKE '%Macuiltépetl%' OR name LIKE '%Macuiltepetl%';
+
+UPDATE point_of_interest SET
+  latitude = 19.527500, longitude = -96.936900,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg?width=800',
+  name = 'Museo de Antropología de Xalapa',
+  description = 'Uno de los museos arqueológicos más importantes de México. Alberga cabezas colosales olmecas, esculturas totonacas y piezas del Clásico mesoamericano.',
+  categories_raw = 'museum, history, culture'
+WHERE name LIKE '%Museo Interactivo%' OR name LIKE '%Museo%Xalapa%';
+
+-- Fix Coatepec POIs
+UPDATE point_of_interest SET
+  latitude = 19.467600, longitude = -96.990700,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800',
+  description = 'Impresionante cascada de 40 metros rodeada de exuberante vegetación tropical a 10 minutos del centro de Xico/Coatepec.',
+  categories_raw = 'waterfall, nature, hiking'
+WHERE name = 'Cascada de Texolo' AND id_location = 2;
+
+UPDATE point_of_interest SET
+  latitude = 19.476100, longitude = -96.847500,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Hacienda_el_Lencero_Veracruz_Mexico.jpg?width=800',
+  name = 'Ex-Hacienda El Lencero',
+  description = 'Antigua hacienda del siglo XVI con jardines coloniales y lago. Sede del Museo del Mueble Veracruzano.',
+  categories_raw = 'hacienda, history, park'
+WHERE name LIKE '%Toxpan%' OR name LIKE '%Lencero%';
+
+-- Fix Orizaba POIs
+UPDATE point_of_interest SET
+  latitude = 19.030800, longitude = -97.268100,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Citlaltepetl.jpg?width=800',
+  name = 'Pico de Orizaba (Citlaltépetl)',
+  description = 'El volcán más alto de México (5,636 m). Imponente cono nevado visible desde toda la región de Altas Montañas. Punto de alpinismo y trekking de alta montaña.',
+  categories_raw = 'volcano, mountain, hiking'
+WHERE name LIKE '%Pico de Orizaba%';
+
+UPDATE point_of_interest SET
+  latitude = 18.851700, longitude = -97.101400,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Palacio_de_Hierro_Orizaba.jpg?width=800',
+  description = 'Emblemático edificio art nouveau de 1894 importado de Bélgica, símbolo de la ciudad industrial de Orizaba. Una joya arquitectónica única en México.',
+  categories_raw = 'monument, history, architecture'
+WHERE name LIKE '%Palacio de Hierro%';
+
+-- Fix Fortín POIs
+UPDATE point_of_interest SET
+  latitude = 18.905200, longitude = -96.998400,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_Flores.jpg?width=800',
+  description = 'Extenso jardín con más de 3,000 especies de plantas tropicales, orquídeas y flores. La ciudad de Fortín es mundialmente conocida por sus gardenias y café.',
+  categories_raw = 'botanical garden, park, nature'
+WHERE name LIKE '%Botánico%Fortín%' OR name LIKE '%Botánico Fort%';
+
+-- Fix Córdoba POIs
+UPDATE point_of_interest SET
+  latitude = 18.885900, longitude = -96.937700,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_C%C3%B3rdoba_Veracruz.jpg?width=800',
+  description = 'Catedral neoclásica del siglo XVII frente al zócalo de Córdoba. Una de las más imponentes de Veracruz con retablos dorados y arte colonial.',
+  categories_raw = 'cathedral, religion, history'
+WHERE name LIKE '%Catedral%Córdoba%' OR name LIKE '%Catedral%Cordoba%';
+
+UPDATE point_of_interest SET
+  latitude = 18.885400, longitude = -96.937200,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Los_portales_de_c%C3%B3rdoba_veracruz.jpg?width=800',
+  description = 'Icónico paseo porticado colonial con cafeterías, tiendas y vida nocturna. Aquí se firmó el Tratado de Córdoba (1821) que dio la Independencia a México.'
+WHERE name LIKE '%Portales%Córdoba%' OR name LIKE '%Portales%Cordoba%';
+
+UPDATE point_of_interest SET
+  latitude = 18.889200, longitude = -96.944600,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800',
+  name = 'Cerro del Borrego Córdoba',
+  description = 'Área natural en las faldas del cerro con senderos, miradores y zoológico. Ofrece vistas panorámicas al Valle de Córdoba.',
+  categories_raw = 'park, viewpoint, hiking, outdoor'
+WHERE name LIKE '%Metate%';
+
+UPDATE point_of_interest SET
+  latitude = 18.883400, longitude = -96.934600,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800',
+  name = 'Barrio de La Villa',
+  categories_raw = 'neighborhood, architecture, history'
+WHERE name LIKE '%Villa%' AND id_location = 3;
+
+-- Fix Xico POIs
+UPDATE point_of_interest SET
+  latitude = 19.447900, longitude = -97.020800,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800',
+  name = 'Cascada de Texolo',
+  description = 'Majestuosa cascada doble de niebla de 40 m en pleno Pueblo Mágico de Xico. Rodeada de selva tropical y cafetales. Escenario de la película "Romancing the Stone".',
+  categories_raw = 'waterfall, nature, hiking'
+WHERE name LIKE '%Texolo%' AND id_location = 6;
+
+UPDATE point_of_interest SET
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz_iglesia.jpg?width=800',
+  name = 'Parroquia de Santiago Apóstol Xico',
+  description = 'Parroquia colonial del siglo XVI en el centro de Xico. Escenario de la famosa procesión de María Magdalena (julio), una de las fiestas más coloridas de Veracruz.',
+  categories_raw = 'church, religion, history, architecture'
+WHERE name LIKE '%María Magdalena%' OR name LIKE '%Santuario%' AND id_location = 6;
+
+UPDATE point_of_interest SET
+  latitude = 19.421600, longitude = -97.009800,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_centro.jpg?width=800',
+  name = 'Mercado de Artesanías Xico',
+  description = 'Mercado artesanal con mole xiqueño de 14 ingredientes, conservas de guayaba y naranja, café de altura y dulces regionales únicos.',
+  categories_raw = 'market, local food, gastronomy'
+WHERE name LIKE '%Mercado%Xico%' OR name LIKE '%Mercado%' AND id_location = 6;
+
+UPDATE point_of_interest SET
+  latitude = 19.430200, longitude = -97.015200,
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800',
+  name = 'Mirador Cafetal La Niebla',
+  description = 'Mirador entre niebla, cafetales y helechos con vistas al barranco y la cascada de Texolo. El mejor punto para fotografiar el paisaje de niebla característico de Xico.',
+  categories_raw = 'viewpoint, coffee, outdoor, nature'
+WHERE name LIKE '%Niebla%' AND id_location = 6;
+
+-- Fix tourist_service images (remove Pexels stock)
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800'
+WHERE name LIKE '%Mirador Xalapa%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_Veracruz.jpg?width=800'
+WHERE name LIKE '%Orquídea%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800'
+WHERE name LIKE '%Senderismo Macuiltépetl%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_Veracruz_Mexico.jpg?width=800'
+WHERE name LIKE '%Hotel Altas Montañas%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_centro.jpg?width=800'
+WHERE name LIKE '%Pico Restaurante%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Citlaltepetl.jpg?width=800'
+WHERE name LIKE '%Tour Pico%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_flores_veracruz.jpg?width=800'
+WHERE name LIKE '%Posada Fortín%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800'
+WHERE name LIKE '%Gobernador%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Los_portales_de_c%C3%B3rdoba_veracruz.jpg?width=800'
+WHERE name LIKE '%Casa Revilla%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_C%C3%B3rdoba_Veracruz.jpg?width=800'
+WHERE name LIKE '%30 Caballeros%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800'
+WHERE name LIKE '%Posada Xico%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_centro.jpg?width=800'
+WHERE name LIKE '%Fonda Tradicional%';
+UPDATE tourist_service SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800'
+WHERE name LIKE '%Tour Cascada%';
+
+-- Insert NEW POIs (run on production to add new content)
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating)
+SELECT * FROM (VALUES
+  ('Parque Juárez Xalapa', 'park, viewpoint, outdoor', '["nature"]'::jsonb, 1::smallint, true, true, 19.529300, -96.921000, 1, 'Parque central de Xalapa con jardines, kiosco y vistas al Pico de Orizaba y Cofre de Perote en días despejados. Corazón de la capital cultural de Veracruz.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Parque_Ju%C3%A1rez_Xalapa.jpg?width=800', 4.5),
+  ('Agora de la Ciudad Xalapa', 'culture, art, music', '["culture"]'::jsonb, 1::smallint, true, false, 19.529400, -96.921200, 1, 'Espacio cultural multidisciplinario con exposiciones de arte contemporáneo, teatro, conciertos y proyecciones. Sede de la Orquesta Sinfónica de Xalapa.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800', 4.4),
+  ('Jardín Botánico Clavijero', 'botanical garden, nature, science', '["nature"]'::jsonb, 1::smallint, true, true, 19.506200, -96.928300, 1, 'Jardín botánico del INIECOL con más de 1,800 especies de plantas, senderos en selva nubosa y colección de bromelias y orquídeas veracruzanas.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Jardin_botanico_Clavijero_Xalapa.jpg?width=800', 4.6),
+  ('Jardín Hidalgo Coatepec', 'park, town square, outdoor, gastronomy', '["culture", "gastronomy"]'::jsonb, 1::smallint, true, true, 19.452200, -96.962600, 2, 'Zócalo del Pueblo Mágico de Coatepec. Rodeado de portales con cafeterías de café de altura. Hermoso kiosco del siglo XIX entre árboles de café en flor.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_Veracruz.jpg?width=800', 4.6),
+  ('Museo del Café Coatepec', 'museum, coffee, gastronomy, history', '["culture", "gastronomy"]'::jsonb, 2::smallint, true, false, 19.452500, -96.962800, 2, 'Museo interactivo dedicado a la historia del café en Coatepec, región productora de uno de los mejores cafés de México con Denominación de Origen.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_centro.jpg?width=800', 4.4),
+  ('Parque Apolinar Castillo', 'park, outdoor, zocalo', '["nature"]'::jsonb, 1::smallint, true, true, 18.851400, -97.101600, 4, 'Parque central de Orizaba con kiosco histórico, fuentes y jardines. Punto de encuentro entre el Pico de Orizaba y el centro de la ciudad industrial.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_parque.jpg?width=800', 4.3),
+  ('Catedral de San Miguel Orizaba', 'cathedral, religion, history, architecture', '["culture"]'::jsonb, 1::smallint, true, false, 18.851900, -97.102000, 4, 'Imponente catedral neoclásica del siglo XIX con fachada en cantera y retablos dorados interiores. Una de las más grandes del Estado de Veracruz.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_Orizaba.jpg?width=800', 4.6),
+  ('Cerro del Borrego Orizaba', 'park, viewpoint, hiking, outdoor', '["nature"]'::jsonb, 1::smallint, true, true, 18.857800, -97.097100, 4, 'Parque natural con teleférico panorámico y miradores sobre Orizaba y el Pico de Orizaba. El teleférico ofrece vistas al Citlaltépetl en días despejados.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Cerro_del_borrego_orizaba.jpg?width=800', 4.7),
+  ('Puente de los Suspiros Fortín', 'viewpoint, park, outdoor', '["nature"]'::jsonb, 1::smallint, true, true, 18.905400, -96.997200, 5, 'Histórico puente de hierro sobre el río entre vegetación tropical y flores de naranja. Símbolo romántico de Fortín de las Flores.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Fort%C3%ADn_de_las_flores_veracruz.jpg?width=800', 4.5),
+  ('Viaducto del Metlac', 'viewpoint, monument, history, architecture', '["culture", "nature"]'::jsonb, 1::smallint, true, false, 18.849000, -97.138000, 7, 'Majestuoso puente de arcos del siglo XIX sobre la barranca del Metlac. Uno de los más fotografiados de México, visible desde el tren Tequila Express.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Viaducto_Metlac.jpg?width=800', 4.8),
+  ('Cascada Río Metlac', 'waterfall, nature, outdoor', '["nature"]'::jsonb, 1::smallint, false, true, 18.847500, -97.137200, 7, 'Cascada del río Metlac en el cañón bajo el famoso viaducto. Selva tropical con vegetación exuberante y fauna de la zona montañosa.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Ixtaczoquitlan_veracruz.jpg?width=800', 4.4)
+) AS v(name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, rating)
+WHERE NOT EXISTS (
+  SELECT 1 FROM point_of_interest poi WHERE poi.name = v.name
+);
 
 COMMIT;

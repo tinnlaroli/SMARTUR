@@ -54,6 +54,8 @@ class ExploreController {
                     sustainability: p.sustainability,
                     image_url: p.image_url || null,
                     rating: p.rating != null ? parseFloat(p.rating) : 4.0,
+                    latitude: p.latitude != null ? parseFloat(p.latitude) : null,
+                    longitude: p.longitude != null ? parseFloat(p.longitude) : null,
                 });
             }
 

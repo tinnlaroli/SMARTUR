@@ -25,6 +25,10 @@ class Place {
   final String locationLine;
   final List<String> galleryUrls;
 
+  /// Coordenadas del lugar (pueden ser null si no están en la BD).
+  final double? lat;
+  final double? lon;
+
   const Place({
     required this.id,
     required this.name,
@@ -36,6 +40,8 @@ class Place {
     required this.description,
     required this.locationLine,
     this.galleryUrls = const [],
+    this.lat,
+    this.lon,
   });
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +55,8 @@ class Place {
         'description': description,
         'locationLine': locationLine,
         'galleryUrls': galleryUrls,
+        if (lat != null) 'lat': lat,
+        if (lon != null) 'lon': lon,
       };
 
   factory Place.fromJson(Map<String, dynamic> json) => Place(
@@ -68,6 +76,8 @@ class Place {
                 ?.map((e) => e as String)
                 .toList() ??
             const [],
+        lat: (json['lat'] as num?)?.toDouble(),
+        lon: (json['lon'] as num?)?.toDouble(),
       );
 }
 

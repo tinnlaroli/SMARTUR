@@ -271,6 +271,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 rating: place.rating,
                 galleryUrls: place.galleryUrls,
                 placeId: place.id,
+                lat: place.lat,
+                lon: place.lon,
               ),
             ),
           );
