@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useProfiles } from '../hooks/useProfiles';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
@@ -19,6 +19,7 @@ import type { Profile } from '../types/types';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import ProfileDetailModal from '../components/ProfileDetailModal';
 
 const humanize = (value?: string | null) => {
     if (!value) return null;
@@ -49,6 +50,8 @@ export const ProfilesPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+
+    const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -137,7 +140,12 @@ export const ProfilesPage = () => {
                                                 : humanize(pp);
 
                                         return (
-                                            <DataTableRow key={profile.id} index={i}>
+                                            <DataTableRow
+                                                key={profile.id}
+                                                index={i}
+                                                className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
+                                                onClick={() => setSelectedProfile(profile)}
+                                            >
                                                 <DataTableCell>
                                                     <div className="flex min-w-[240px] items-start gap-3">
                                                         {profile.user?.photo_url ? (
@@ -267,6 +275,12 @@ export const ProfilesPage = () => {
             {profiles.length > 0 && (
                 <Pagination page={page} limit={limit} totalPages={totalPages} setSearchParams={setSearchParams} />
             )}
+
+            <ProfileDetailModal
+                isOpen={selectedProfile !== null}
+                onClose={() => setSelectedProfile(null)}
+                profile={selectedProfile}
+            />
         </div>
     );
 };
