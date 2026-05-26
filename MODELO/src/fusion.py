@@ -246,6 +246,7 @@ def recommend_hybrid(
     biz_cat_lookup  = ref_df.set_index('business_id')['categories'].to_dict()
     all_biz_names   = ref_df.set_index('business_id')['name'].to_dict()
     biz_kind_lookup = ref_df.set_index('business_id')['kind'].to_dict() if 'kind' in ref_df.columns else {}
+    biz_desc_lookup = ref_df.set_index('business_id')['description'].to_dict() if 'description' in ref_df.columns else {}
     local_id_set    = set(local_biz['business_id']) if not local_biz.empty else set()
     matrix_col_set  = set(engine.user_item_matrix_columns) if engine is not None else set()
 
@@ -317,10 +318,13 @@ def recommend_hybrid(
         nombre = all_biz_names.get(biz_id, 'Desconocido')
         kind   = biz_kind_lookup.get(biz_id, 'poi')
         cats   = biz_cat_lookup.get(biz_id, '')
+        desc   = biz_desc_lookup.get(biz_id, '') or ''
 
         recommendations.append({
             'item_id':     str(biz_id),
             'title':       str(nombre),
+            'description': str(desc),
+            'category':    str(cats),
             'score':       float(round(final_score, 3)),
             'pred_cf':     float(round(score_cf, 3)),
             'pred_rf':     float(round(score_rf, 3)),

@@ -147,6 +147,8 @@ app.add_middleware(
 class RecItem(BaseModel):
     item_id: str
     title: str
+    description: str = ''
+    category: str = ''
     score: float
     pred_cf: float
     pred_rf: float

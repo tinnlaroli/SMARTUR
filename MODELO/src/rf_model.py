@@ -137,6 +137,11 @@ class SmarturContextModel:
 
         df['categories'] = df.apply(_join_categories, axis=1)
 
+        # Preserve description from DB (may be None if not fetched)
+        if 'description' not in df.columns:
+            df['description'] = ''
+        df['description'] = df['description'].fillna('')
+
         if 'price_level' not in df.columns:
             df['price_level'] = 2
         if 'is_accessible' not in df.columns:

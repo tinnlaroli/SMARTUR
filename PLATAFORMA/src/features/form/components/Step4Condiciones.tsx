@@ -6,6 +6,7 @@ import { useFormRecommendations } from '../hooks/useFormRecommendations';
 import SmartURLoader from '../../auth/components/SmartURLoader';
 import type { FormContext, RecommendationsResponse, AIRecommendationContext } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useUserPreferences } from '../../../contexts/LanguageContext';
 
 interface Step4Props {
     data: Partial<FormContext>;
@@ -28,18 +29,9 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
     const isSubmittingRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Get user from localStorage (following SMARTUR pattern in TwoFactor.tsx)
-    // Actually, TwoFactor.tsx doesn't save the full user, only the token.
-    // Let's assume for now that we can get the user id if we had an auth context
-    // or just use a placeholder if none exists yet.
-    // The user mentioned response.user.id in TwoFactor.tsx.
+    // Read session from the shared user context — no raw localStorage fallback.
+    const { user } = useUserPreferences();
     const authToken = localStorage.getItem('token');
-
-    // NOTE: This should ideally come from an AuthContext.
-    // Since we don't have it, we'll try to find where user data is stored.
-    // In many of these apps, it might be in localStorage as 'user'.
-    const storedUser = localStorage.getItem('user');
-    const user = storedUser ? JSON.parse(storedUser) : { id: 2 }; // Fallback to id 2 (mentioned by user)
 
     useGSAP(
         () => {
@@ -85,6 +77,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
             pref_food: !!d.pref_food,
             requiere_accesibilidad: accesibilidad === 'si',
             pref_outdoor,
+            has_visited_region: visitado === 'si',
         };
     };
 

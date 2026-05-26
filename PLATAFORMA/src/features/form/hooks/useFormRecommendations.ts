@@ -25,7 +25,10 @@ export function useFormRecommendations() {
             setError(null);
 
             try {
-                const json = await formApi.getRecommendations(params);
+                const json = await formApi.getRecommendations({
+                    ...params,
+                    signal: controller.signal,
+                });
                 setData(json);
                 return json;
             } catch (err: any) {

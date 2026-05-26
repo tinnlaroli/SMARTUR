@@ -58,7 +58,8 @@ def fetch_pois(active_only=True):
     where = 'WHERE is_active = TRUE' if active_only else ''
     query = f'''
         SELECT id, name, categories_raw, categories_mapped,
-               price_level, is_accessible, outdoor, latitude, longitude
+               price_level, is_accessible, outdoor, latitude, longitude,
+               description
         FROM point_of_interest {where}
     '''
     with get_poi_connection() as conn:
@@ -104,7 +105,7 @@ def fetch_tourist_services(active_only=True):
     where = 'WHERE ts.active = TRUE' if active_only else ''
     query = f'''
         SELECT ts.id_service AS id, ts.name, ts.service_type,
-               l.latitude, l.longitude
+               ts.description, l.latitude, l.longitude
         FROM tourist_service ts
         LEFT JOIN location l ON ts.id_location = l.id_location
         {where}

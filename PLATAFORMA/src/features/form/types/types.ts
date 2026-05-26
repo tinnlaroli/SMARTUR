@@ -31,6 +31,8 @@ export interface AIRecommendationContext {
     pref_food: boolean;
     requiere_accesibilidad: boolean;
     pref_outdoor: boolean;
+    /** Si el usuario ya visitó la región antes (mejora la personalización). */
+    has_visited_region?: boolean;
 }
 
 export interface Recommendation {
@@ -57,4 +59,5 @@ export interface GetRecommendationsParams {
     top_n?: number;
     context: AIRecommendationContext;
     token?: string | null;
+    signal?: AbortSignal;
 }
