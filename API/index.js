@@ -110,17 +110,47 @@ app.use('/api/v2', (req, res, next) => {
     next();
 });
 
+// ── Rate limiting ────────────────────────────────────────────────────────────
+
+// 1. Global: 200 req / 15 min por IP — frena abuso general sin molestar uso normal
+const globalApiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Demasiadas peticiones. Intenta de nuevo en 15 minutos.',
+    },
+});
+app.use('/api/v2', globalApiLimiter);
+
+// 2. Escrituras: 30 req / min por IP (POST / PUT / PATCH / DELETE) — evita spam de mutaciones
+const writeLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method),
+    message: {
+        error: 'Demasiadas solicitudes de escritura. Intenta de nuevo en 1 minuto.',
+    },
+});
+app.use('/api/v2', writeLimiter);
+
+// 3. Auth: 5 req / min por IP — anti brute-force en login y 2FA
 const authLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
-        message: 'Demasiados intentos. Intenta de nuevo en 1 minuto.',
+        error: 'Demasiados intentos. Intenta de nuevo en 1 minuto.',
     },
 });
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
