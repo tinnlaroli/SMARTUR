@@ -17,11 +17,26 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
             cd /opt/SMARTUR
-            git fetch origin
-            git checkout main 2>/dev/null || git checkout -b main origin/main
+
+            # Asegura que estamos en main
+            git checkout main 2>/dev/null || true
+
+            # Guarda cambios locales (ej: docker-compose.yml de producción)
+            git stash
+
+            # Baja los últimos cambios
             git pull origin main
+
+            # Restaura los cambios locales de producción
+            git stash pop || true
+
+            # Rebuild solo los servicios de aplicación
             docker compose -f docker-compose.yml up -d --build \
               --no-deps api plataforma landing nginx
+
+            # Limpia imágenes huérfanas
             docker image prune -f
-            echo "Deploy completado: $(date)"
+
+            echo "✓ Deploy completado: $(date)"

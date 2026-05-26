@@ -47,3 +47,7 @@ logs/
 
 # Docker
 *.override.yml
+
+# Modelos ML entrenados (generados en VPS, no se versionan)
+MODELO/src/models/
+MODELO/data/
