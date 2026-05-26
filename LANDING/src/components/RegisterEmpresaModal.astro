@@ -1,0 +1,401 @@
+---
+/**
+ * RegisterEmpresaModal — <dialog> modal para el registro público de empresas turísticas.
+ * Se activa con: document.getElementById('register-empresa-modal').showModal()
+ *
+ * POSTea a: PUBLIC_API_URL/auth/register-empresa
+ * Sectores hardcodeados (espejo de bd.sql seed):
+ *   1 → Hotelería  |  2 → Restaurantes  |  3 → Turismo de naturaleza
+ */
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2';
+---
+
+<dialog
+  id="register-empresa-modal"
+  aria-labelledby="rem-title"
+  class="modal-dialog w-[calc(100vw-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl border"
+  style="background: var(--color-bg); border-color: var(--color-border);"
+>
+  <div class="p-6 sm:p-8">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-1">
+      <div>
+        <span class="rem-badge">Portal B2B</span>
+        <h3 id="rem-title" class="rem-title">Registra tu empresa</h3>
+      </div>
+      <button
+        type="button"
+        id="rem-close"
+        class="ml-4 shrink-0 rounded-xl p-2 transition-colors"
+        style="color: var(--color-text-alt);"
+        aria-label="Cerrar"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <p class="rem-subtitle">Crea tu cuenta de empresa turística. Tu perfil será revisado por el equipo SMARTUR en 24 h.</p>
+
+    <!-- Error -->
+    <div id="rem-error" hidden class="rem-error-box">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span id="rem-error-text"></span>
+    </div>
+
+    <!-- Form -->
+    <form id="rem-form" novalidate class="rem-form">
+
+      <!-- 2 cols: nombre responsable + email -->
+      <div class="rem-row">
+        <div class="rem-field">
+          <label for="rem-name">Tu nombre <span class="req">*</span></label>
+          <input id="rem-name" name="name" type="text" autocomplete="name"
+            placeholder="Ej: María García" required
+            class="rem-input" />
+        </div>
+        <div class="rem-field">
+          <label for="rem-email">Correo electrónico <span class="req">*</span></label>
+          <input id="rem-email" name="email" type="email" autocomplete="email"
+            placeholder="empresa@ejemplo.com" required
+            class="rem-input" />
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="rem-field">
+        <label for="rem-password">Contraseña <span class="req">*</span></label>
+        <input id="rem-password" name="password" type="password" autocomplete="new-password"
+          placeholder="Mínimo 8 caracteres" required minlength="8"
+          class="rem-input" />
+      </div>
+
+      <!-- Nombre empresa -->
+      <div class="rem-field">
+        <label for="rem-company">Nombre de tu empresa <span class="req">*</span></label>
+        <input id="rem-company" name="companyName" type="text"
+          placeholder="Ej: Eco Tours Orizaba" required
+          class="rem-input" />
+      </div>
+
+      <!-- 2 cols: sector + teléfono -->
+      <div class="rem-row">
+        <div class="rem-field">
+          <label for="rem-sector">Sector turístico <span class="req">*</span></label>
+          <select id="rem-sector" name="id_sector" required class="rem-input rem-select">
+            <option value="" disabled selected>Selecciona…</option>
+            <option value="1">Hotelería</option>
+            <option value="2">Restaurantes</option>
+            <option value="3">Turismo de naturaleza</option>
+          </select>
+        </div>
+        <div class="rem-field">
+          <label for="rem-phone">Teléfono</label>
+          <input id="rem-phone" name="phone" type="tel" autocomplete="tel"
+            placeholder="2711234567"
+            class="rem-input" />
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" id="rem-submit" class="rem-btn">
+        <span id="rem-btn-label">Crear cuenta gratuita</span>
+        <svg id="rem-spinner" xmlns="http://www.w3.org/2000/svg" class="rem-spinner hidden size-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+      </button>
+
+      <p class="rem-legal">
+        Al registrarte aceptas los
+        <a href="#" style="color: var(--color-purple);">Términos de uso</a>
+        de SMARTUR.
+      </p>
+    </form>
+
+    <!-- Success state (hidden initially) -->
+    <div id="rem-success" hidden class="rem-success-box">
+      <div class="rem-success-icon" aria-hidden="true">✅</div>
+      <h4 class="rem-success-title">¡Registro exitoso!</h4>
+      <p class="rem-success-text">Tu empresa fue registrada y está en revisión. Recibirás acceso en 24 h.</p>
+      <a id="rem-portal-link" href="#" target="_blank" rel="noopener" class="rem-portal-btn">
+        Entrar a mi portal →
+      </a>
+    </div>
+
+  </div>
+</dialog>
+
+<style>
+  /* ── Dialog reset ── */
+  .modal-dialog {
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .modal-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Header ── */
+  .rem-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-purple);
+    background: rgba(var(--rgb-purple-accent), 0.12);
+    border: 1px solid rgba(var(--rgb-purple-accent), 0.25);
+    border-radius: 100px;
+    padding: 0.2rem 0.65rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .rem-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .rem-subtitle {
+    font-size: 0.8125rem;
+    color: var(--color-text-alt);
+    margin: 0.5rem 0 1.25rem;
+    line-height: 1.6;
+  }
+
+  /* ── Error ── */
+  .rem-error-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(var(--rgb-pink-accent, 236, 72, 153), 0.08);
+    border: 1px solid rgba(var(--rgb-pink-accent, 236, 72, 153), 0.3);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--color-pink);
+    margin-bottom: 1rem;
+  }
+
+  /* ── Form ── */
+  .rem-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .rem-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .rem-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .rem-field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .req { color: var(--color-pink); }
+
+  .rem-input {
+    width: 100%;
+    background: var(--color-bg-alt);
+    border: 1px solid rgba(var(--rgb-text), 0.12);
+    color: var(--color-text);
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.875rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { opacity: 0.5; }
+    &:focus {
+      border-color: rgba(var(--rgb-purple-accent), 0.6);
+      box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1);
+    }
+  }
+
+  .rem-select { appearance: none; cursor: pointer; }
+
+  /* ── Submit button ── */
+  .rem-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--color-purple);
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    padding: 0.85rem 1.5rem;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 0.25rem;
+
+    &:hover { opacity: 0.88; transform: translateY(-1px); }
+    &:active { transform: translateY(0); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  }
+
+  .rem-spinner {
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+
+  /* ── Legal ── */
+  .rem-legal {
+    font-size: 0.7rem;
+    color: var(--color-text-alt);
+    text-align: center;
+    opacity: 0.7;
+    margin-top: -0.25rem;
+  }
+
+  /* ── Success ── */
+  .rem-success-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .rem-success-icon { font-size: 3rem; line-height: 1; }
+
+  .rem-success-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .rem-success-text {
+    font-size: 0.875rem;
+    color: var(--color-text-alt);
+    margin: 0;
+    max-width: 34ch;
+  }
+
+  .rem-portal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--color-purple);
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    padding: 0.75rem 1.75rem;
+    border-radius: 100px;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.88; }
+  }
+</style>
+
+<script define:vars={{ apiUrl }}>
+  const dialog  = document.getElementById('register-empresa-modal');
+  const form    = document.getElementById('rem-form');
+  const errBox  = document.getElementById('rem-error');
+  const errTxt  = document.getElementById('rem-error-text');
+  const success = document.getElementById('rem-success');
+  const submit  = document.getElementById('rem-submit');
+  const btnLbl  = document.getElementById('rem-btn-label');
+  const spinner = document.getElementById('rem-spinner');
+  const link    = document.getElementById('rem-portal-link');
+  const closeBtn= document.getElementById('rem-close');
+
+  const plataformaUrl = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl
+    || window.location.origin;
+
+  function setLoading(on) {
+    submit.disabled = on;
+    spinner.classList.toggle('hidden', !on);
+    btnLbl.textContent = on ? 'Registrando…' : 'Crear cuenta gratuita';
+  }
+
+  function showError(msg) {
+    errTxt.textContent = msg;
+    errBox.hidden = false;
+  }
+
+  function hideError() { errBox.hidden = true; }
+
+  closeBtn?.addEventListener('click', () => dialog.close());
+  dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const data = Object.fromEntries(new FormData(form));
+    if (!data.name || !data.email || !data.password || !data.companyName || !data.id_sector) {
+      showError('Completa todos los campos obligatorios.');
+      return;
+    }
+    if (data.password.length < 8) {
+      showError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiUrl}/auth/register-empresa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          companyName: data.companyName,
+          phone: data.phone || undefined,
+          id_sector: Number(data.id_sector),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        showError(json.message || 'Error al registrar. Intenta de nuevo.');
+        return;
+      }
+      // Success → store token if same origin and show success state
+      try {
+        if (json.token) localStorage.setItem('smartur_token', json.token);
+      } catch (_) {}
+      link.href = plataformaUrl + '/empresa/dashboard';
+      form.hidden = true;
+      success.hidden = false;
+    } catch (_) {
+      showError('Error de conexión. Verifica tu internet e intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>

@@ -239,6 +239,11 @@ class UserController {
         if (req.body.is_active !== undefined) {
           updates.is_active = String(req.body.is_active) === 'true';
         }
+        // Asignar / quitar empresa (solo admin puede cambiar id_company)
+        if (Object.prototype.hasOwnProperty.call(req.body, 'id_company')) {
+          const raw = req.body.id_company;
+          updates.id_company = raw === null || raw === '' ? null : Number(raw);
+        }
       } else if (
         req.body.is_active === false &&
         targetId === req.user.id

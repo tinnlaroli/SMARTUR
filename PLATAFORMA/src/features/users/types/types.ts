@@ -29,6 +29,7 @@ export interface UpdateUserDTO {
     is_active?: boolean;
     photo_url?: string | null;
     image?: File;
+    id_company?: number | null;
 }
 
 export interface UserResponse {

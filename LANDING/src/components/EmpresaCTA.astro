@@ -100,10 +100,12 @@ const t = {
 
 const plataformaUrl =
   import.meta.env.PUBLIC_TOURIST_APP_URL || "http://2.24.112.25";
-const registerUrl = `${plataformaUrl}/register-empresa`;
 ---
 
 <section class="empresa-cta">
+  <!-- data attr lets the modal script know where PLATAFORMA lives -->
+  <div data-plataforma-url={plataformaUrl} hidden aria-hidden="true"></div>
+
   <div class="u-container">
     <div class="inner">
       <!-- Left: text + CTA -->
@@ -114,7 +116,7 @@ const registerUrl = `${plataformaUrl}/register-empresa`;
         </h2>
         <p class="u-text subtitle">{t.subtitle}</p>
 
-        <a href={registerUrl} target="_blank" rel="noopener noreferrer" class="cta-btn">
+        <button type="button" id="open-register-empresa" class="cta-btn">
           {t.cta}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +132,7 @@ const registerUrl = `${plataformaUrl}/register-empresa`;
           >
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
-        </a>
+        </button>
         <p class="cta-note">{t.ctaNote}</p>
       </div>
 
@@ -258,7 +260,8 @@ const registerUrl = `${plataformaUrl}/register-empresa`;
     font-weight: 700;
     padding: 0.9rem 1.75rem;
     border-radius: 100px;
-    text-decoration: none;
+    border: none;
+    cursor: pointer;
     width: fit-content;
     transition:
       opacity 0.2s var(--ease-standard),
@@ -336,3 +339,11 @@ const registerUrl = `${plataformaUrl}/register-empresa`;
     line-height: 1.6;
   }
 </style>
+
+<script>
+  document.getElementById('open-register-empresa')
+    ?.addEventListener('click', () => {
+      (document.getElementById('register-empresa-modal') as HTMLDialogElement)
+        ?.showModal();
+    });
+</script>

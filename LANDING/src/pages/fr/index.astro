@@ -13,6 +13,7 @@ import FlightDivider from "../../components/FlightDivider.astro";
 import ContactForm from "../../components/ContactForm.astro";
 import Statements from "../../components/Statements.astro";
 import EmpresaCTA from "../../components/EmpresaCTA.astro";
+import RegisterEmpresaModal from "../../components/RegisterEmpresaModal.astro";
 import { ui } from "../../i18n/ui";
 
 const lang = "fr";
@@ -240,4 +241,6 @@ const t = ui[lang];
       ]}
     />
   </section>
+
+  <RegisterEmpresaModal />
 </Layout>

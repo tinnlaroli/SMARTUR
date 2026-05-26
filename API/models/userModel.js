@@ -172,6 +172,11 @@ class User {
             values.push(data.birth_date);
         }
 
+        if (Object.prototype.hasOwnProperty.call(data, 'id_company')) {
+            fields.push(`id_company = $${index++}`);
+            values.push(data.id_company); // null clears the link
+        }
+
         if (fields.length === 0) {
             return null;
         }
