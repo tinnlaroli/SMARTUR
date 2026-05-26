@@ -33,6 +33,7 @@ const RECOMMENDED = [
     { key: 'EMAIL_PASS',             hint: 'Contraseña del correo de envío' },
     { key: 'MODELO_URL',             hint: 'URL del microservicio de ML (recomendaciones)' },
     { key: 'FRONTEND_URL',           hint: 'Orígenes permitidos por CORS (coma-separados)' },
+    { key: 'SENTRY_DSN',             hint: 'Error tracking — obtener en sentry.io → Settings → DSN' },
 ];
 
 // ───────────────────────────────────────────────────────────────────────────

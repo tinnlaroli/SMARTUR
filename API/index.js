@@ -32,8 +32,10 @@ import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
 import { runMigrations } from './config/migrations.js';
 import { validateEnv } from './config/env.js';
+import { initSentry, setupSentryErrorHandler } from './config/sentry.js';
 dotenv.config();
 validateEnv();
+initSentry();
 
 const app = express();
 app.set('trust proxy', 1);
@@ -210,6 +212,9 @@ app.use('/api/v2', ContactRouter);
 app.use('/api/v2', InteractionRouter);
 app.use('/api/v2', MLRouter);
 
+
+// Sentry: debe registrarse DESPUÉS de todas las rutas y ANTES del arranque
+setupSentryErrorHandler(app);
 
 const PORT = process.env.PORT || 3000;
 
