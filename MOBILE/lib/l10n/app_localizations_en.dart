@@ -448,6 +448,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createOneDayRoute => 'Create 1-Day Route';
 
   @override
+  String get openInMaps => 'Open in Google Maps';
+
+  @override
+  String locationNoCoords(String city) {
+    return 'Location: $city';
+  }
+
+  @override
+  String get searchHint => 'Search places...';
+
+  @override
+  String searchNoResults(String q) {
+    return 'No results for \"$q\"';
+  }
+
+  @override
   String get tabLocationPlaceholder => 'Map and key points to visit.';
 
   @override

@@ -455,6 +455,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get createOneDayRoute => 'Créer un itinéraire d\'1 jour';
 
   @override
+  String get openInMaps => 'Ouvrir dans Google Maps';
+
+  @override
+  String locationNoCoords(String city) {
+    return 'Lieu : $city';
+  }
+
+  @override
+  String get searchHint => 'Rechercher des lieux...';
+
+  @override
+  String searchNoResults(String q) {
+    return 'Aucun résultat pour \"$q\"';
+  }
+
+  @override
   String get tabLocationPlaceholder => 'Carte et points clés à visiter.';
 
   @override

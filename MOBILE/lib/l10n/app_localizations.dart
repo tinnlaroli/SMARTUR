@@ -924,6 +924,30 @@ abstract class AppLocalizations {
   /// **'Crear Ruta de 1 Día'**
   String get createOneDayRoute;
 
+  /// No description provided for @openInMaps.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir en Google Maps'**
+  String get openInMaps;
+
+  /// No description provided for @locationNoCoords.
+  ///
+  /// In es, this message translates to:
+  /// **'Ubicación: {city}'**
+  String locationNoCoords(String city);
+
+  /// No description provided for @searchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar lugares...'**
+  String get searchHint;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin resultados para \"{q}\"'**
+  String searchNoResults(String q);
+
   /// No description provided for @tabLocationPlaceholder.
   ///
   /// In es, this message translates to:
