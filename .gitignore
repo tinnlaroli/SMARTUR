@@ -41,6 +41,10 @@ Thumbs.db
 .agents/
 skills-lock.json
 
+# Firebase service account keys — NUNCA commitear
+*firebase-adminsdk*.json
+*serviceAccountKey*.json
+
 # Logs
 *.log
 logs/

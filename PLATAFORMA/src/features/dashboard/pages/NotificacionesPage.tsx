@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Bell, Send, Users, Building2, Globe, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import api from '../../../services/api';
+import { api } from '../../../shared/api/axiosClient';
 
 type Target = 'all' | 'user' | 'empresa';
 

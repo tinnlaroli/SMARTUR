@@ -304,6 +304,111 @@ class EmpresaController {
             return res.status(500).json({ message: 'Error del servidor.', error: error.message });
         }
     }
+
+    /**
+     * POST /api/v2/empresa/services
+     * Crea un nuevo servicio turístico para la empresa autenticada.
+     * Solo campos permitidos: name, description, service_type, address, latitude, longitude, id_location.
+     */
+    static async createService(req, res) {
+        const { id_company } = req.user;
+        const { name, description, service_type, address, latitude, longitude, id_location } = req.body;
+
+        if (!name || !service_type) {
+            return res.status(400).json({ message: 'name y service_type son requeridos.' });
+        }
+
+        try {
+            const result = await pool.query(
+                `INSERT INTO tourist_service
+                   (name, description, service_type, address, latitude, longitude,
+                    id_location, id_company, active, registration_date)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,true,NOW())
+                 RETURNING id_service, name, description, service_type, address,
+                           latitude, longitude, id_location, active`,
+                [name, description ?? null, service_type, address ?? null,
+                 latitude ?? null, longitude ?? null, id_location ?? null, id_company]
+            );
+            return res.status(201).json({ service: result.rows[0] });
+        } catch (err) {
+            console.error('[empresa] createService error:', err.message);
+            return res.status(500).json({ message: 'Error al crear el servicio.' });
+        }
+    }
+
+    /**
+     * PATCH /api/v2/empresa/services/:id
+     * Actualiza un servicio propio. Verifica que pertenezca a la empresa del JWT.
+     */
+    static async updateService(req, res) {
+        const { id_company } = req.user;
+        const { id } = req.params;
+        const { name, description, service_type, address, latitude, longitude, active, id_location } = req.body;
+
+        try {
+            // Verificar ownership
+            const check = await pool.query(
+                'SELECT id_service FROM tourist_service WHERE id_service=$1 AND id_company=$2',
+                [id, id_company]
+            );
+            if (check.rowCount === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado o no pertenece a tu empresa.' });
+            }
+
+            const fields = [];
+            const values = [];
+            let idx = 1;
+
+            if (name !== undefined)         { fields.push(`name=$${idx++}`);         values.push(name); }
+            if (description !== undefined)  { fields.push(`description=$${idx++}`);  values.push(description); }
+            if (service_type !== undefined) { fields.push(`service_type=$${idx++}`); values.push(service_type); }
+            if (address !== undefined)      { fields.push(`address=$${idx++}`);      values.push(address); }
+            if (latitude !== undefined)     { fields.push(`latitude=$${idx++}`);     values.push(latitude); }
+            if (longitude !== undefined)    { fields.push(`longitude=$${idx++}`);    values.push(longitude); }
+            if (active !== undefined)       { fields.push(`active=$${idx++}`);       values.push(active); }
+            if (id_location !== undefined)  { fields.push(`id_location=$${idx++}`);  values.push(id_location); }
+
+            if (fields.length === 0) {
+                return res.status(400).json({ message: 'No hay campos para actualizar.' });
+            }
+
+            values.push(id);
+            const result = await pool.query(
+                `UPDATE tourist_service SET ${fields.join(',')}
+                 WHERE id_service=$${idx} RETURNING id_service, name, description,
+                   service_type, address, latitude, longitude, active, id_location`,
+                values
+            );
+            return res.json({ service: result.rows[0] });
+        } catch (err) {
+            console.error('[empresa] updateService error:', err.message);
+            return res.status(500).json({ message: 'Error al actualizar el servicio.' });
+        }
+    }
+
+    /**
+     * DELETE /api/v2/empresa/services/:id
+     * Soft-delete: pone active=false en vez de borrar la fila.
+     */
+    static async deleteService(req, res) {
+        const { id_company } = req.user;
+        const { id } = req.params;
+
+        try {
+            const result = await pool.query(
+                `UPDATE tourist_service SET active=false
+                 WHERE id_service=$1 AND id_company=$2 RETURNING id_service`,
+                [id, id_company]
+            );
+            if (result.rowCount === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado.' });
+            }
+            return res.json({ message: 'Servicio desactivado correctamente.' });
+        } catch (err) {
+            console.error('[empresa] deleteService error:', err.message);
+            return res.status(500).json({ message: 'Error al desactivar el servicio.' });
+        }
+    }
 }
 
 export default EmpresaController;

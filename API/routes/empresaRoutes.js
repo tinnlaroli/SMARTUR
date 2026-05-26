@@ -65,4 +65,40 @@ router.get(
     EmpresaController.getAnalytics,
 );
 
+/**
+ * POST /api/v2/empresa/services
+ * Crea un servicio turístico para la empresa autenticada.
+ */
+router.post(
+    '/empresa/services',
+    verifyToken,
+    requireRole([3]),
+    requireOwnsCompany,
+    EmpresaController.createService,
+);
+
+/**
+ * PATCH /api/v2/empresa/services/:id
+ * Edita un servicio propio (verifica ownership).
+ */
+router.patch(
+    '/empresa/services/:id',
+    verifyToken,
+    requireRole([3]),
+    requireOwnsCompany,
+    EmpresaController.updateService,
+);
+
+/**
+ * DELETE /api/v2/empresa/services/:id
+ * Soft-delete de un servicio propio.
+ */
+router.delete(
+    '/empresa/services/:id',
+    verifyToken,
+    requireRole([3]),
+    requireOwnsCompany,
+    EmpresaController.deleteService,
+);
+
 export default router;

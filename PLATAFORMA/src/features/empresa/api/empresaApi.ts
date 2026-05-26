@@ -22,6 +22,30 @@ export interface EmpresaService {
     active: boolean;
     image_url: string | null;
     id_location: number | null;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+}
+
+export interface ServiceCreatePayload {
+    name: string;
+    description?: string;
+    service_type: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    id_location?: number;
+}
+
+export interface ServiceUpdatePayload {
+    name?: string;
+    description?: string;
+    service_type?: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+    active?: boolean;
+    id_location?: number;
 }
 
 export interface AnalyticsSummary {
@@ -82,6 +106,20 @@ export const empresaApi = {
     getServices: async (): Promise<{ services: EmpresaService[] }> => {
         const { data } = await api.get('/empresa/services');
         return data;
+    },
+
+    createService: async (payload: ServiceCreatePayload): Promise<{ service: EmpresaService }> => {
+        const { data } = await api.post('/empresa/services', payload);
+        return data;
+    },
+
+    updateService: async (id: number, payload: ServiceUpdatePayload): Promise<{ service: EmpresaService }> => {
+        const { data } = await api.patch(`/empresa/services/${id}`, payload);
+        return data;
+    },
+
+    deleteService: async (id: number): Promise<void> => {
+        await api.delete(`/empresa/services/${id}`);
     },
 
     getAnalytics: async (): Promise<AnalyticsResponse> => {

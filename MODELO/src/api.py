@@ -341,6 +341,8 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
                 RecItem(
                     item_id=r.get('item_id', ''),
                     title=r.get('title', ''),
+                    description=r.get('description', ''),
+                    category=r.get('category', ''),
                     score=r.get('score', 0.0),
                     pred_cf=r.get('pred_cf', 0.0),
                     pred_rf=r.get('pred_rf', 0.0),
