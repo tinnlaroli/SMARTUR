@@ -110,13 +110,13 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
 
     if (!isOpen || !profile) return null;
 
-    const userName = profile.user?.name || `Usuario #${profile.user_id}`;
+    const userName = profile.user?.name || m.profiles.userFallback(profile.user_id);
     const userEmail = profile.user?.email || '';
 
     const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-        { id: 'profile',         label: 'Perfil',           icon: <UserCircle className="size-3.5" /> },
-        { id: 'sessions',        label: 'Sesiones',         icon: <Laptop className="size-3.5" /> },
-        { id: 'recommendations', label: 'Recomendaciones',  icon: <Bot className="size-3.5" /> },
+        { id: 'profile',         label: m.profiles.tabProfile,         icon: <UserCircle className="size-3.5" /> },
+        { id: 'sessions',        label: m.profiles.tabSessions,        icon: <Laptop className="size-3.5" /> },
+        { id: 'recommendations', label: m.profiles.tabRecommendations, icon: <Bot className="size-3.5" /> },
     ];
 
     // Profile data helpers
@@ -202,7 +202,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                             {/* Demographics */}
                             {demographicBits.length > 0 && (
                                 <div>
-                                    <SectionLabel icon={<UserIcon className="size-3" />} label="Datos demográficos" />
+                                    <SectionLabel icon={<UserIcon className="size-3" />} label={m.profiles.demographics} />
                                     <p className="text-sm text-zinc-700 dark:text-zinc-300">
                                         {demographicBits.join(' · ')}
                                     </p>
@@ -211,7 +211,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
 
                             {/* Travel type */}
                             <div>
-                                <SectionLabel icon={<Luggage className="size-3" />} label="Tipo de viaje" />
+                                <SectionLabel icon={<Luggage className="size-3" />} label={m.profiles.colTravelType} />
                                 <div className="flex flex-wrap gap-2">
                                     {travelTypeLabel ? (
                                         <Badge text={travelTypeLabel} color="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300" />
@@ -318,7 +318,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                             ) : sessions.length === 0 ? (
                                 <div className="flex flex-col items-center gap-2 py-12 text-zinc-400">
                                     <Laptop className="size-10" />
-                                    <p className="text-sm">Sin sesiones registradas</p>
+                                    <p className="text-sm">{m.profiles.noSessions}</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2">
@@ -334,14 +334,14 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                                             />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                                                    {s.device_hint || 'Dispositivo desconocido'}
+                                                    {s.device_hint || m.profiles.unknownDevice}
                                                 </p>
                                                 <p className="text-xs text-zinc-500">
                                                     {s.ip || '—'} · {formatDate(s.created_at, dateLocale)}
                                                 </p>
                                                 {s.last_seen && (
                                                     <p className="text-xs text-zinc-400">
-                                                        Última actividad: {formatDate(s.last_seen, dateLocale)}
+                                                        {m.profiles.lastActivity} {formatDate(s.last_seen, dateLocale)}
                                                     </p>
                                                 )}
                                             </div>
@@ -355,10 +355,10 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                                                 }`}
                                             >
                                                 {s.revoked
-                                                    ? 'Revocada'
+                                                    ? m.profiles.sessionRevoked
                                                     : new Date(s.expires_at) < new Date()
-                                                    ? 'Expirada'
-                                                    : 'Activa'}
+                                                    ? m.profiles.sessionExpired
+                                                    : m.profiles.sessionActive}
                                             </span>
                                         </div>
                                     ))}
@@ -377,7 +377,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                             ) : recSessions.length === 0 ? (
                                 <div className="flex flex-col items-center gap-2 py-12 text-zinc-400">
                                     <Bot className="size-10" />
-                                    <p className="text-sm">Sin sesiones de recomendación</p>
+                                    <p className="text-sm">{m.profiles.noRecommendations}</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2">
@@ -399,8 +399,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                                                             {formatDate(s.created_at, dateLocale)}
                                                         </p>
                                                         <p className="text-xs text-zinc-500">
-                                                            {total} destinos · {clicked} clic
-                                                            {clicked !== 1 ? 's' : ''}
+                                                            {m.profiles.recoDestinations(total, clicked)}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -432,7 +431,7 @@ const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
                                                                 </span>
                                                                 {f.clicked ? (
                                                                     <span className="rounded-full px-1.5 py-0.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-semibold">
-                                                                        ✓ clic
+                                                                        {m.profiles.clickedLabel}
                                                                     </span>
                                                                 ) : (
                                                                     <span className="rounded-full px-1.5 py-0.5 bg-zinc-100 text-zinc-500 dark:bg-zinc-800 font-semibold">

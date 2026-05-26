@@ -73,6 +73,20 @@ export type DashboardModules = {
         noSpecialRequirements: string;
         restrictionsPrefix: string;
         notAvailable: string;
+        // Detail modal
+        tabProfile: string;
+        tabSessions: string;
+        tabRecommendations: string;
+        demographics: string;
+        noSessions: string;
+        unknownDevice: string;
+        lastActivity: string;
+        sessionActive: string;
+        sessionExpired: string;
+        sessionRevoked: string;
+        noRecommendations: string;
+        recoDestinations: (total: number, clicked: number) => string;
+        clickedLabel: string;
     };
     activities: {
         title: string;
@@ -280,6 +294,19 @@ const es: DashboardModules = {
         noSpecialRequirements: 'Sin requerimientos especiales',
         restrictionsPrefix: 'Restricciones:',
         notAvailable: 'N/D',
+        tabProfile: 'Perfil',
+        tabSessions: 'Sesiones',
+        tabRecommendations: 'Recomendaciones',
+        demographics: 'Datos demográficos',
+        noSessions: 'Sin sesiones registradas',
+        unknownDevice: 'Dispositivo desconocido',
+        lastActivity: 'Última actividad:',
+        sessionActive: 'Activa',
+        sessionExpired: 'Expirada',
+        sessionRevoked: 'Revocada',
+        noRecommendations: 'Sin sesiones de recomendación',
+        recoDestinations: (total, clicked) => `${total} destinos · ${clicked} clic${clicked !== 1 ? 's' : ''}`,
+        clickedLabel: '✓ clic',
     },
     activities: {
         title: 'Actividades turísticas',
@@ -487,6 +514,19 @@ const en: DashboardModules = {
         noSpecialRequirements: 'No special requirements',
         restrictionsPrefix: 'Restrictions:',
         notAvailable: 'N/A',
+        tabProfile: 'Profile',
+        tabSessions: 'Sessions',
+        tabRecommendations: 'Recommendations',
+        demographics: 'Demographics',
+        noSessions: 'No sessions on record',
+        unknownDevice: 'Unknown device',
+        lastActivity: 'Last activity:',
+        sessionActive: 'Active',
+        sessionExpired: 'Expired',
+        sessionRevoked: 'Revoked',
+        noRecommendations: 'No recommendation sessions',
+        recoDestinations: (total, clicked) => `${total} destinations · ${clicked} click${clicked !== 1 ? 's' : ''}`,
+        clickedLabel: '✓ clicked',
     },
     activities: {
         title: 'Tourism activities',
@@ -694,6 +734,19 @@ const fr: DashboardModules = {
         noSpecialRequirements: 'Sans exigences particulières',
         restrictionsPrefix: 'Restrictions :',
         notAvailable: 'N/D',
+        tabProfile: 'Profil',
+        tabSessions: 'Sessions',
+        tabRecommendations: 'Recommandations',
+        demographics: 'Données démographiques',
+        noSessions: 'Aucune session enregistrée',
+        unknownDevice: 'Appareil inconnu',
+        lastActivity: 'Dernière activité :',
+        sessionActive: 'Active',
+        sessionExpired: 'Expirée',
+        sessionRevoked: 'Révoquée',
+        noRecommendations: 'Aucune session de recommandation',
+        recoDestinations: (total, clicked) => `${total} destinations · ${clicked} clic${clicked !== 1 ? 's' : ''}`,
+        clickedLabel: '✓ cliqué',
     },
     activities: {
         title: 'Activités touristiques',
