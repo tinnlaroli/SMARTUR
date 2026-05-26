@@ -41,7 +41,7 @@ services:
       EMAIL_USER: ${EMAIL_USER:-smarturutcv@gmail.com}
       EMAIL_PASS: ${EMAIL_PASS:-lihichglnpzlhddg}
       FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4321
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-77253773974-b412uvcqhrqmchhtdq5rq6tl81hpados.apps.googleusercontent.com}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-1076586296171-q7mr8bdhbsm5rncmfsug58mb9t3gio2j.apps.googleusercontent.com}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dke5fhmpk}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-759781756841837}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-h3Ke76Ry-XlJeHbhBG3SZHdS6I8}
@@ -53,6 +53,9 @@ services:
       SIGHTENGINE_OFFENSIVE_THRESHOLD: ${SIGHTENGINE_OFFENSIVE_THRESHOLD:-0.6}
       SIGHTENGINE_SUBSTANCE_THRESHOLD: ${SIGHTENGINE_SUBSTANCE_THRESHOLD:-0.75}
       FIREBASE_SERVICE_ACCOUNT: ${FIREBASE_SERVICE_ACCOUNT:-}
+      NODE_ENV: ${NODE_ENV:-production}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
     depends_on:
       postgres:
         condition: service_healthy
