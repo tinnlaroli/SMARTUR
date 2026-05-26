@@ -1864,6 +1864,7 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
           placeId: place.id,
           lat: place.lat,
           lon: place.lon,
+          cityPlaces: widget.places,
         );
       },
     );

@@ -101,6 +101,8 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
             const completeAction = () => {
                 if (userRole === 1) {
                     navigate('/dashboard', { replace: true });
+                } else if (userRole === 3) {
+                    navigate('/empresa/dashboard', { replace: true });
                 } else {
                     navigate('/', { replace: true, state: { openForm: true } });
                 }

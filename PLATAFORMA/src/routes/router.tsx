@@ -12,7 +12,6 @@ import Form from '../features/form/pages/Form';
 import { ProtectedRoute } from './ProtectedRoute';
 import { NotFound } from '../features/notfound/NotFound';
 import { ProfilesPage } from '../features/profiles/pages/ProfilesPage';
-import { ActivitiesPage } from '../features/activities/pages/ActivitiesPage';
 import { CertificationsPage } from '../features/certifications/pages/CertificationsPage';
 import { POIPage } from '../features/points-of-interest/pages/POIPage';
 import { StatisticsPage } from '../features/statistics/pages/StatisticsPage';
@@ -23,6 +22,13 @@ import { SettingsPage } from '../features/settings/pages/SettingsPage';
 import { CommunityPage } from '../features/community/pages/CommunityPage';
 import { ContactsPage } from '../features/contacts/pages/ContactsPage';
 import { MLObservabilityPage } from '../features/ml-observability/pages/MLObservabilityPage';
+// Empresa B2B portal
+import { RegisterEmpresaPage } from '../features/empresa/pages/RegisterEmpresaPage';
+import { EmpresaLayout }        from '../features/empresa/pages/EmpresaLayout';
+import { EmpresaDashboardPage } from '../features/empresa/pages/EmpresaDashboardPage';
+import { EmpresaPerfilPage }    from '../features/empresa/pages/EmpresaPerfilPage';
+import { EmpresaServiciosPage } from '../features/empresa/pages/EmpresaServiciosPage';
+import { EmpresaAnalyticsPage } from '../features/empresa/pages/EmpresaAnalyticsPage';
 
 export const router = createBrowserRouter([
     {
@@ -124,6 +130,28 @@ export const router = createBrowserRouter([
                                 path: '/form',
                                 element: <Form />,
                             },
+                        ],
+                    },
+                ],
+            },
+            // ── Registro público de empresa ──────────────────────────
+            {
+                path: '/register-empresa',
+                element: <RegisterEmpresaPage />,
+            },
+            // ── Portal empresa (role_id = 3) ─────────────────────────
+            {
+                element: <ProtectedRoute allowedRoles={[3]} />,
+                children: [
+                    {
+                        path: '/empresa',
+                        element: <EmpresaLayout />,
+                        children: [
+                            { path: 'dashboard', element: <EmpresaDashboardPage /> },
+                            { path: 'perfil',    element: <EmpresaPerfilPage /> },
+                            { path: 'servicios', element: <EmpresaServiciosPage /> },
+                            { path: 'analytics', element: <EmpresaAnalyticsPage /> },
+                            { index: true, element: <Navigate to="dashboard" replace /> },
                         ],
                     },
                 ],

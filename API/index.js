@@ -30,6 +30,8 @@ import SubcriterionRouter from './routes/subcriterionRoutes.js';
 import ContactRouter from './routes/contactRoutes.js';
 import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
+import EmpresaRouter from './routes/empresaRoutes.js';
+import NotificationRouter from './routes/notificationRoutes.js';
 import { runMigrations } from './config/migrations.js';
 import { validateEnv } from './config/env.js';
 import { initSentry, setupSentryErrorHandler } from './config/sentry.js';
@@ -151,6 +153,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
+app.use('/api/v2/auth/register-empresa', authLimiter);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -211,6 +214,8 @@ app.use('/api/v2', SubcriterionRouter);
 app.use('/api/v2', ContactRouter);
 app.use('/api/v2', InteractionRouter);
 app.use('/api/v2', MLRouter);
+app.use('/api/v2', EmpresaRouter);
+app.use('/api/v2', NotificationRouter);
 
 
 // Sentry: debe registrarse DESPUÉS de todas las rutas y ANTES del arranque

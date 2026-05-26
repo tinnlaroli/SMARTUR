@@ -47,7 +47,9 @@ export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
 
         if (!allowedRoles.includes(userRole)) {
             // Redirect to their default page instead of showing unauthorized content
-            return <Navigate to={userRole === 1 ? '/dashboard' : '/form'} replace />;
+            if (userRole === 1) return <Navigate to="/dashboard" replace />;
+            if (userRole === 3) return <Navigate to="/empresa/dashboard" replace />;
+            return <Navigate to="/form" replace />;
         }
     }
 

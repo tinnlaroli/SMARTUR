@@ -868,4 +868,61 @@ WHERE NOT EXISTS (
   SELECT 1 FROM point_of_interest poi WHERE poi.name = v.name
 );
 
+-- ============================================
+-- MIGRATION: Rol empresa + Portal B2B + FCM (ítems 6, 8, 9)
+-- Idempotente: seguro de re-ejecutar en BD existente.
+-- ============================================
+
+-- Nuevo rol 'empresa' (role_id = 3)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM role WHERE name = 'empresa') THEN
+    INSERT INTO role (name) VALUES ('empresa');
+  END IF;
+END
+$$;
+
+-- Vincular usuario a su empresa (para role_id = 3)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'user' AND column_name = 'id_company'
+  ) THEN
+    ALTER TABLE "user" ADD COLUMN id_company INT NULL REFERENCES company(id_company);
+  END IF;
+END
+$$;
+
+-- Estado de verificación y propietario en empresa
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'company' AND column_name = 'status'
+  ) THEN
+    ALTER TABLE company
+      ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      ADD CONSTRAINT company_status_check CHECK (status IN ('pending', 'active', 'suspended'));
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'company' AND column_name = 'owner_user_id'
+  ) THEN
+    ALTER TABLE company ADD COLUMN owner_user_id INT NULL REFERENCES "user"(user_id);
+  END IF;
+END
+$$;
+
+-- Tabla de tokens FCM para Push Notifications
+CREATE TABLE IF NOT EXISTS device_token (
+  id           SERIAL PRIMARY KEY,
+  user_id      INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  token        TEXT NOT NULL,
+  platform     VARCHAR(10) NOT NULL DEFAULT 'android',
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, platform)
+);
+CREATE INDEX IF NOT EXISTS idx_device_token_user ON device_token(user_id);
+
 COMMIT;
