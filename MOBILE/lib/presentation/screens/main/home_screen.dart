@@ -19,6 +19,7 @@ import '../../../data/models/place_model.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_user_avatar.dart';
+import '../../widgets/offline_banner.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
@@ -65,6 +66,10 @@ class HomeScreenState extends State<HomeScreen> {
   List<CityData> _cities = [];
   String? _exploreError;
   bool _exploreLoaded = false;
+
+  // ── Offline mode ──
+  bool _isOffline = false;
+  String? _offlineCacheAge;
 
   // ── Selection state ──
   /// `null` = mostrar lugares de todas las ciudades a la vez.
@@ -433,14 +438,16 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadCitiesFromApi() async {
     try {
-      final apiCities = await _exploreService.fetchCities();
+      final result = await _exploreService.fetchCitiesWithFallback();
       if (!mounted) return;
       setState(() {
         _exploreLoaded = true;
         _exploreError = null;
-        _cities = apiCities;
+        _cities = result.cities;
         _selectedCity = null;
         _selectedCategory = null;
+        _isOffline = result.fromCache;
+        _offlineCacheAge = result.cacheAge;
       });
     } catch (e) {
       if (!mounted) return;
@@ -449,6 +456,8 @@ class HomeScreenState extends State<HomeScreen> {
         _cities = [];
         _selectedCity = null;
         _exploreError = e.toString();
+        _isOffline = false;
+        _offlineCacheAge = null;
       });
     }
   }
@@ -690,23 +699,34 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SmarturBackgroundTop(
-        child: SmarturShimmer(
-          enabled: _isLoadingContent,
-          child: CustomScrollView(
-            controller: _homeScrollController,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
+      body: Column(
+        children: [
+          if (_isOffline)
+            OfflineBanner(
+              cacheAge: _offlineCacheAge,
+              onRetry: _loadCitiesFromApi,
             ),
-            slivers: [
-              _buildHeaderAppBar(),
-              SliverToBoxAdapter(child: _buildExploreIntro()),
-              SliverToBoxAdapter(child: _buildCityFilter()),
-              ..._buildPlaceShowcaseSlivers(),
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
-            ],
+          Expanded(
+            child: SmarturBackgroundTop(
+              child: SmarturShimmer(
+                enabled: _isLoadingContent,
+                child: CustomScrollView(
+                  controller: _homeScrollController,
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  slivers: [
+                    _buildHeaderAppBar(),
+                    SliverToBoxAdapter(child: _buildExploreIntro()),
+                    SliverToBoxAdapter(child: _buildCityFilter()),
+                    ..._buildPlaceShowcaseSlivers(),
+                    const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

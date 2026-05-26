@@ -4,8 +4,11 @@ import '../../core/constants/api_constants.dart';
 import '../models/place_model.dart';
 import 'api_client.dart';
 import 'auth_service.dart';
+import 'cache_service.dart';
 
 class ExploreService {
+  static const _citiesCacheKey = 'explore_cities';
+
   /// tourism_type en BD: 1=Naturaleza, 2=Cultura, 3=Gastronomía
   static PlaceCategory _categoryFromPoiType(int? idType) {
     switch (idType) {
@@ -78,7 +81,48 @@ class ExploreService {
   }
 
   /// Un solo GET: ubicaciones + servicios turísticos + POIs (API `/explore/home`).
-  Future<List<CityData>> fetchCities() async {
+  /// Guarda el resultado en cache. En caso de error de red usa el cache como fallback.
+  ///
+  /// Returns a [CitiesResult] with the data and whether it came from cache.
+  Future<CitiesResult> fetchCitiesWithFallback() async {
+    try {
+      final cities = await _fetchCitiesFromNetwork();
+      // Save to cache on success
+      await CacheService.write(_citiesCacheKey, CityData.listToJson(cities));
+      return CitiesResult(cities: cities, fromCache: false);
+    } on ApiNetworkException {
+      // Try cache — accept up to 7 days stale on network error
+      final entry = await CacheService.readStale(_citiesCacheKey);
+      if (entry != null) {
+        try {
+          final cities = CityData.listFromJson(entry.data);
+          // Restore chipIcon from city name (was not serialized)
+          final restored = cities
+              .map((c) => CityData(
+                    name: c.name,
+                    chipIcon: _iconForCity(c.name),
+                    lat: c.lat,
+                    lon: c.lon,
+                    places: c.places,
+                  ))
+              .toList();
+          return CitiesResult(
+            cities: restored,
+            fromCache: true,
+            cacheAge: entry.ageLabel,
+          );
+        } catch (_) {
+          // Cache corrupt — rethrow original error
+        }
+      }
+      rethrow;
+    }
+  }
+
+  /// Equivalent to old fetchCities() — throws on any error (no fallback).
+  Future<List<CityData>> fetchCities() async => _fetchCitiesFromNetwork();
+
+  Future<List<CityData>> _fetchCitiesFromNetwork() async {
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}${ApiConstants.exploreHome}',
     );
@@ -205,4 +249,21 @@ class ExploreException implements Exception {
   ExploreException(this.message);
   @override
   String toString() => message;
+}
+
+/// Result of [ExploreService.fetchCitiesWithFallback].
+class CitiesResult {
+  final List<CityData> cities;
+
+  /// True when data came from local cache (no network).
+  final bool fromCache;
+
+  /// Human-readable cache age when [fromCache] is true, e.g. "hace 3 h".
+  final String? cacheAge;
+
+  const CitiesResult({
+    required this.cities,
+    required this.fromCache,
+    this.cacheAge,
+  });
 }
