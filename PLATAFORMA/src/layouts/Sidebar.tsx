@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
-    Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit,
+    Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,7 +24,7 @@ const MENU_GROUP_KEYS = [
     { labelKey: 'sidebar.group.mobile',         items: ['community', 'contacts', 'profiles'] },
     { labelKey: 'sidebar.group.certifications', items: ['certifications', 'instruments'] },
     { labelKey: 'sidebar.group.reports',        items: ['stats'] },
-    { labelKey: 'sidebar.group.system',         items: ['ml', 'settings'] },
+    { labelKey: 'sidebar.group.system',         items: ['ml', 'notifications', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -53,6 +53,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,  path: '/dashboard/estadisticas',               roles: [1] },
         { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,   path: '/dashboard/instrumentos',               roles: [1] },
         { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit, path: '/dashboard/ml',                       roles: [1] },
+        { id: 'notifications',  label: t('sidebar.notifications'),  icon: Bell,       path: '/dashboard/notificaciones',             roles: [1] },
         { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,   path: '/dashboard/configuracion',              roles: [1] },
     ];
 

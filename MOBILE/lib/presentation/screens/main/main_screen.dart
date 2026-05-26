@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
+import '../../../data/services/notification_service.dart';
 import 'home_screen.dart';
 import 'diary_screen.dart';
 import 'community_screen.dart';
@@ -36,6 +37,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 420),
       value: 0,
     );
+    // Inicializar FCM después del primer frame para tener acceso al contexto.
+    // NotificationService._initialized evita doble inicialización entre sesiones.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) NotificationService.init(context: context);
+    });
   }
 
   @override

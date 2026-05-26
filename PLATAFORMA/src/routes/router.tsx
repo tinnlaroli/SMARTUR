@@ -22,6 +22,7 @@ import { SettingsPage } from '../features/settings/pages/SettingsPage';
 import { CommunityPage } from '../features/community/pages/CommunityPage';
 import { ContactsPage } from '../features/contacts/pages/ContactsPage';
 import { MLObservabilityPage } from '../features/ml-observability/pages/MLObservabilityPage';
+import { NotificacionesPage } from '../features/dashboard/pages/NotificacionesPage';
 // Empresa B2B portal
 import { RegisterEmpresaPage } from '../features/empresa/pages/RegisterEmpresaPage';
 import { EmpresaLayout }        from '../features/empresa/pages/EmpresaLayout';
@@ -110,6 +111,10 @@ export const router = createBrowserRouter([
                                     {
                                         path: 'ml',
                                         element: <MLObservabilityPage />,
+                                    },
+                                    {
+                                        path: 'notificaciones',
+                                        element: <NotificacionesPage />,
                                     },
                                     {
                                         path: 'configuracion',
