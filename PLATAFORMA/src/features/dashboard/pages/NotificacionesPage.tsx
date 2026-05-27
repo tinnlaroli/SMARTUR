@@ -18,9 +18,9 @@ interface SendResult {
 }
 
 const TARGET_OPTIONS: { value: Target; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { value: 'all',     label: 'Todos los usuarios',     description: 'Turistas + Empresas',       icon: Globe },
-    { value: 'user',    label: 'Solo turistas',           description: 'Usuarios con role_id = 2', icon: Users },
-    { value: 'empresa', label: 'Solo empresas',           description: 'Usuarios con role_id = 3', icon: Building2 },
+    { value: 'all',     label: 'Todos los usuarios',  description: 'Turistas y empresas registradas',  icon: Globe },
+    { value: 'user',    label: 'Solo turistas',        description: 'Usuarios con cuenta de turista',   icon: Users },
+    { value: 'empresa', label: 'Solo empresas',        description: 'Cuentas de empresa registradas',  icon: Building2 },
 ];
 
 export function NotificacionesPage() {
@@ -45,7 +45,7 @@ export function NotificacionesPage() {
 
         try {
             const payload: SendPayload = { title: title.trim(), body: body.trim(), target };
-            const res = await api.post<SendResult>('/api/v2/admin/notifications/send', payload);
+            const res = await api.post<SendResult>('/admin/notifications/send', payload);
             setResult(res.data);
             setTitle('');
             setBody('');
@@ -305,13 +305,11 @@ export function NotificacionesPage() {
 
                         <div
                             className="mt-2 flex items-start gap-2 rounded-xl border p-3 text-xs"
-                            style={{ background: '#f59e0b10', borderColor: '#f59e0b30', color: '#f59e0b' }}
+                            style={{ background: '#10b98110', borderColor: '#10b98130', color: '#10b981' }}
                         >
-                            <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+                            <CheckCircle2 className="size-3.5 mt-0.5 shrink-0" />
                             <span>
-                                Para que FCM funcione en el servidor, la variable de entorno{' '}
-                                <code className="font-mono">FIREBASE_SERVICE_ACCOUNT</code> debe estar
-                                configurada en el VPS con el JSON de la cuenta de servicio en base64.
+                                Solo los usuarios que hayan aceptado notificaciones en la app recibirán el mensaje.
                             </span>
                         </div>
                     </div>
