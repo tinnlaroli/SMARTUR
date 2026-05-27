@@ -449,13 +449,13 @@ export const StatisticsPage = () => {
                                             <Label required>{m.statistics.expType}</Label>
                                             <select name="type" className={inputCls} style={inputStyle} required>
                                                 <option value="">{m.statistics.selectType}</option>
-                                                <option value="Alojamiento">🏨 Alojamiento</option>
-                                                <option value="Gastronomía">🍽️ Gastronomía</option>
-                                                <option value="Transporte">🚌 Transporte</option>
-                                                <option value="Actividades recreativas">🎯 Actividades recreativas</option>
-                                                <option value="Compras y artesanías">🛍️ Compras y artesanías</option>
-                                                <option value="Servicios turísticos">🗺️ Servicios turísticos</option>
-                                                <option value="Otros">📦 Otros</option>
+<option value="Alojamiento">Alojamiento</option>
+<option value="Gastronomía">Gastronomía</option>
+<option value="Transporte">Transporte</option>
+<option value="Actividades recreativas">Actividades recreativas</option>
+<option value="Compras y artesanías">Compras y artesanías</option>
+<option value="Servicios turísticos">Servicios turísticos</option>
+<option value="Otros">Otros</option>
                                             </select>
                                         </div>
 
@@ -610,11 +610,11 @@ export const StatisticsPage = () => {
                                         <div>
                                             <Label required>{m.statistics.inputType}</Label>
                                             <select name="type" className={inputCls} style={inputStyle} required>
-                                                <option value="Energía Eléctrica">⚡ {m.statistics.inputElectric}</option>
-                                                <option value="Agua">💧 {m.statistics.inputWater}</option>
-                                                <option value="Gas - Combustible">🔥 {m.statistics.inputGas}</option>
-                                                <option value="Residuos sólidos">♻️ {m.statistics.inputSolidWaste}</option>
-                                                <option value="Otros insumos">📦 {m.statistics.inputOther}</option>
+<option value="Energía Eléctrica">{m.statistics.inputElectric}</option>
+<option value="Agua">{m.statistics.inputWater}</option>
+<option value="Gas - Combustible">{m.statistics.inputGas}</option>
+<option value="Residuos sólidos">{m.statistics.inputSolidWaste}</option>
+<option value="Otros insumos">{m.statistics.inputOther}</option>
                                             </select>
                                         </div>
 

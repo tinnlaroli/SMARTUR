@@ -116,8 +116,8 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
     <div class="score-label">${totalScoreLabel}</div>
     <div class="score-value">${Number(evaluation.totalScore).toFixed(1)}<span> / 5.0</span></div>
     <div class="score-meta">
-      <div>⏱ ${evaluation.evaluationTime} min</div>
-      <div>👤 Evaluador #${evaluation.evaluatorId}</div>
+<div>${evaluation.evaluationTime} min</div>
+<div>Evaluador #${evaluation.evaluatorId}</div>
     </div>
   </div>
 

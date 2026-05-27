@@ -18,10 +18,10 @@ const LangSwitchWidget: React.FC = () => {
     const { lang, changeLanguage, t } = useLanguage();
     const { theme, toggleTheme } = useUserPreferences();
     const copy = getDashboardText(lang).widgets;
-    const LANGUAGES = useMemo<{ code: LanguageCode; label: string; flag: string }[]>(() => [
-        { code: 'es', label: t('lang.es'), flag: '🇲🇽' },
-        { code: 'en', label: t('lang.en'), flag: '🇺🇸' },
-        { code: 'fr', label: t('lang.fr'), flag: '🇫🇷' },
+    const LANGUAGES = useMemo<{ code: LanguageCode; label: string }[]>(() => [
+        { code: 'es', label: t('lang.es') },
+        { code: 'en', label: t('lang.en') },
+        { code: 'fr', label: t('lang.fr') },
     ], [t]);
 
     return (
@@ -65,7 +65,7 @@ const LangSwitchWidget: React.FC = () => {
 
             {/* Language pills */}
             <div className="flex flex-col flex-1 min-h-0 justify-center gap-2">
-                {LANGUAGES.map(({ code, label, flag }) => {
+                {LANGUAGES.map(({ code, label }) => {
                     const isActive = lang === code;
                     return (
                         <button
@@ -81,7 +81,7 @@ const LangSwitchWidget: React.FC = () => {
                                 color: isActive ? DASHBOARD_COLORS.purple : 'var(--color-text)',
                             }}
                         >
-                            <span className="text-base leading-none">{flag}</span>
+                            <span className="flex size-6 items-center justify-center rounded-lg text-[10px] font-bold uppercase leading-none shrink-0" style={{ background: 'var(--color-bg)', color: 'var(--color-text-alt)' }}>{code}</span>
                             <span className="flex-1 text-[11px] font-semibold">{label}</span>
                             {isActive && (
                                 <span
