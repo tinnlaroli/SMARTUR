@@ -454,6 +454,7 @@ class _SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final recs = _parseRecs();
     final algorithm = session['best_algorithm']?.toString() ?? 'hybrid';
     final dateStr = _formatDate(session['created_at']);
@@ -522,7 +523,7 @@ class _SessionCard extends StatelessWidget {
                   if (latencyMs != null)
                     _InfoChip(
                       icon: Icons.speed_outlined,
-                      label: '${latencyMs}ms',
+                      label: l10n.latencyMs(latencyMs!.toString()),
                       color: scheme.onSurfaceVariant,
                     ),
                 ],
