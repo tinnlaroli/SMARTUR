@@ -34,6 +34,10 @@ class ApiConstants {
   // Session management
   static const String meSessions = '/me/sessions';
 
+  // Auth — refresh / logout
+  static const String authRefresh = '/auth/refresh';
+  static const String authLogout = '/auth/logout';
+
   // Explore
   static const String exploreHome = '/explore/home';
   static const String locations = '/locations';

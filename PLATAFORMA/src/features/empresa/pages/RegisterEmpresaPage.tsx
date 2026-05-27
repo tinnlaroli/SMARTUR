@@ -44,6 +44,7 @@ export function RegisterEmpresaPage() {
                 id_location: form.id_location ? Number(form.id_location) : undefined,
             });
             localStorage.setItem('token', res.token);
+            if (res.refreshToken) localStorage.setItem('refreshToken', res.refreshToken);
             setUser(res.user);
             setDone(true);
             redirectTimerRef.current = setTimeout(() => navigate('/empresa/dashboard', { replace: true }), 1800);

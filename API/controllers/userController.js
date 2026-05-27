@@ -15,6 +15,7 @@ import {
 
 import { OAuth2Client } from "google-auth-library";
 import { recordSession } from "../utils/sessionHelper.js";
+import { generateRefreshToken, storeRefreshToken } from "../utils/refreshTokenHelper.js";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function safeGooglePicture(url) {
@@ -452,12 +453,15 @@ class UserController {
         { expiresIn: "24h" },
       );
 
-      // Fire-and-forget: record device session
+      // Fire-and-forget: record device session + issue refresh token
       recordSession(user.user_id, req);
+      const rawRefresh = generateRefreshToken();
+      await storeRefreshToken(user.user_id, rawRefresh);
       return res.status(200).json({
         status: "success",
         message: "Autenticación exitosa",
         token: token,
+        refreshToken: rawRefresh,
         user: toPublicUser(user),
       });
     } catch (error) {

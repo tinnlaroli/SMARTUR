@@ -943,4 +943,17 @@ CREATE TABLE IF NOT EXISTS device_token (
 );
 CREATE INDEX IF NOT EXISTS idx_device_token_user ON device_token(user_id);
 
+-- ============================================
+-- MIGRATION: Refresh tokens para renovación silenciosa de sesión
+-- ============================================
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id          SERIAL PRIMARY KEY,
+  user_id     INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  token_hash  TEXT NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  revoked     BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_rt_user ON refresh_tokens(user_id);
+
 COMMIT;

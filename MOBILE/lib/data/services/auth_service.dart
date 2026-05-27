@@ -13,6 +13,7 @@ import '../../core/utils/profile_photo_validation.dart';
 class AuthService {
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
+  static const _refreshTokenKey = 'refresh_token';
   static const _biometricKey = 'biometric_enabled';
   static const _biometricDismissedKey = 'biometric_dismissed';
   static const _rememberMeKey = 'remember_me';
@@ -49,6 +50,38 @@ class AuthService {
     return await _storage.read(key: _tokenKey);
   }
 
+  Future<void> saveRefreshToken(String token) async {
+    await _storage.write(key: _refreshTokenKey, value: token);
+  }
+
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: _refreshTokenKey);
+  }
+
+  /// Calls /auth/refresh with the stored refresh token.
+  /// Returns the new access token on success, null on failure.
+  Future<String?> tryRefreshToken() async {
+    final refresh = await _storage.read(key: _refreshTokenKey);
+    if (refresh == null) return null;
+    try {
+      final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.authRefresh}');
+      final response = await http
+          .post(uri,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({'refreshToken': refresh}))
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final newToken = data['token'] as String?;
+        final newRefresh = data['refreshToken'] as String?;
+        if (newToken != null) await saveToken(newToken);
+        if (newRefresh != null) await saveRefreshToken(newRefresh);
+        return newToken;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   Future<bool> hasSession() async {
     final token = await _storage.read(key: _tokenKey);
     if (token == null || token.isEmpty) return false;
@@ -69,9 +102,8 @@ class AuthService {
   }
 
   /// Verifica el token contra el servidor con un ping ligero.
-  /// Retorna [true] si el token es válido o si el servidor no es alcanzable
-  /// (modo offline — no forzar logout en red inestable).
-  /// Retorna [false] solo si el servidor responde explícitamente con 401.
+  /// Si recibe 401 intenta silenciosamente refrescar el token.
+  /// Retorna [false] solo si no hay token válido ni refresh posible.
   Future<bool> validateTokenWithServer() async {
     final token = await _storage.read(key: _tokenKey);
     if (token == null || token.isEmpty) return false;
@@ -84,8 +116,12 @@ class AuthService {
           })
           .timeout(const Duration(seconds: 8));
       if (response.statusCode == 401) {
-        await fullLogout();
-        return false;
+        final newToken = await tryRefreshToken();
+        if (newToken == null) {
+          await fullLogout();
+          return false;
+        }
+        return true;
       }
       return true;
     } catch (_) {
@@ -101,6 +137,7 @@ class AuthService {
     final bool biometricOn = await isBiometricEnabled();
     if (!biometricOn) {
       await _storage.delete(key: _tokenKey);
+      await _storage.delete(key: _refreshTokenKey);
     }
     await _storage.delete(key: _sessionExpiryKey);
     await _storage.delete(key: _userIdKey);
@@ -112,6 +149,7 @@ class AuthService {
 
   Future<void> fullLogout() async {
     await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _refreshTokenKey);
     await _storage.delete(key: _biometricKey);
     await _storage.delete(key: _biometricDismissedKey);
     await _storage.delete(key: _rememberMeKey);
@@ -306,7 +344,9 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final String? token = data['token'];
+      final String? refresh = data['refreshToken'];
       if (token != null) await saveToken(token);
+      if (refresh != null) await saveRefreshToken(refresh);
       await setRememberMe(rememberMe);
       if (data['user'] != null) {
         await saveUserData(data['user'] as Map<String, dynamic>);
@@ -354,7 +394,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final String? token = data['token'];
+        final String? refresh = data['refreshToken'];
         if (token != null) await saveToken(token);
+        if (refresh != null) await saveRefreshToken(refresh);
         await setRememberMe(rememberMe);
         if (data['user'] != null) {
           await saveUserData(data['user'] as Map<String, dynamic>);

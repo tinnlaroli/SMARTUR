@@ -3,6 +3,14 @@ import { sendEmail, sendEmailVerification } from '../utils/mailer.js';
 import { validatePassword, validateRequiredFields } from '../validators/userValidators.js';
 import { logSecurityEvent } from '../services/monitoringService.js';
 import { recordSession } from '../utils/sessionHelper.js';
+import {
+    generateRefreshToken,
+    storeRefreshToken,
+    validateAndRotateRefreshToken,
+    revokeAllUserRefreshTokens,
+} from '../utils/refreshTokenHelper.js';
+import jwt from 'jsonwebtoken';
+import User from '../models/userModel.js';
 
 function getClientIp(req) {
     const forwarded = req.headers['x-forwarded-for'];
@@ -94,14 +102,52 @@ class ServicesController {
             await logSecurityEvent('LOGIN_SUCCESS', email ?? null, ip, 'INFO');
             // Fire-and-forget: record device session
             recordSession(result.data.user.id, req);
+            const rawRefresh = generateRefreshToken();
+            await storeRefreshToken(result.data.user.id, rawRefresh);
             res.json({
                 message: 'Login exitoso',
                 token: result.data.token,
+                refreshToken: rawRefresh,
                 user: result.data.user,
             });
         } catch (error) {
             await logSecurityEvent('MFA_DENIED', req.body?.email ?? null, ip, 'WARN').catch(() => {});
             res.status(500).json({ error: error.message });
+        }
+    }
+
+    static async refreshController(req, res) {
+        try {
+            const { refreshToken } = req.body;
+            const userId = await validateAndRotateRefreshToken(refreshToken);
+            if (!userId) {
+                return res.status(401).json({ message: 'Refresh token inválido o expirado.' });
+            }
+
+            const user = await User.findById(userId);
+            if (!user || !user.is_active) {
+                return res.status(401).json({ message: 'Usuario inactivo.' });
+            }
+
+            const payload = { id: user.user_id, email: user.email, role_id: user.role_id };
+            if (user.role_id === 3 && user.id_company != null) payload.id_company = user.id_company;
+
+            const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+            const newRefresh = generateRefreshToken();
+            await storeRefreshToken(user.user_id, newRefresh);
+
+            return res.json({ token: newAccessToken, refreshToken: newRefresh });
+        } catch (error) {
+            return res.status(500).json({ message: 'Error al renovar sesión.' });
+        }
+    }
+
+    static async logoutController(req, res) {
+        try {
+            await revokeAllUserRefreshTokens(req.user.id);
+            res.json({ ok: true });
+        } catch {
+            res.status(500).json({ message: 'Error al cerrar sesión.' });
         }
     }
 }

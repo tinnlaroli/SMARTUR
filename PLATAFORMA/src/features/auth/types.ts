@@ -9,6 +9,7 @@ export interface LoginResponse {
     userId: number;
     email: string;
     token?: string;
+    refreshToken?: string;
     user?: {
         id: number;
         name: string;
@@ -25,6 +26,7 @@ export interface TwoFactorPayload {
 export interface TwoFactorResponse {
     message: string;
     token: string;
+    refreshToken?: string;
     user: {
         id: number;
         name: string;

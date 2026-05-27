@@ -38,24 +38,78 @@ api.interceptors.request.use(
     (error) => Promise.reject(error),
 );
 
+// Flag para evitar bucle infinito si el refresh también falla
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
+
+function clearSessionAndRedirect() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    emitUserStorageSync();
+    window.location.href = '/';
+}
+
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            const isAuthRoute =
-                error.config.url?.includes('/login') ||
-                error.config.url?.includes('/register') ||
-                error.config.url?.includes('/forgot') ||
-                error.config.url?.includes('/reset') ||
-                error.config.url?.includes('/two-factor');
+    async (error) => {
+        const originalRequest = error.config;
 
-            if (!isAuthRoute) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                emitUserStorageSync();
-                window.location.href = '/';
+        const isAuthRoute =
+            originalRequest?.url?.includes('/login') ||
+            originalRequest?.url?.includes('/register') ||
+            originalRequest?.url?.includes('/forgot') ||
+            originalRequest?.url?.includes('/reset') ||
+            originalRequest?.url?.includes('/two-factor') ||
+            originalRequest?.url?.includes('/auth/refresh');
+
+        if (error.response?.status === 401 && !isAuthRoute && !originalRequest._retried) {
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            if (!refreshToken) {
+                clearSessionAndRedirect();
+                return Promise.reject(error);
+            }
+
+            if (isRefreshing) {
+                // Encola la petición hasta que el refresh termine
+                return new Promise((resolve) => {
+                    refreshQueue.push((newToken) => {
+                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                        resolve(api(originalRequest));
+                    });
+                });
+            }
+
+            originalRequest._retried = true;
+            isRefreshing = true;
+
+            try {
+                const { data } = await axios.post(
+                    `${resolveApiBaseUrl()}/auth/refresh`,
+                    { refreshToken },
+                );
+                const newToken: string = data.token;
+                const newRefresh: string = data.refreshToken;
+
+                localStorage.setItem('token', newToken);
+                localStorage.setItem('refreshToken', newRefresh);
+
+                // Descola peticiones en espera
+                refreshQueue.forEach((cb) => cb(newToken));
+                refreshQueue = [];
+
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                return api(originalRequest);
+            } catch {
+                refreshQueue = [];
+                clearSessionAndRedirect();
+                return Promise.reject(error);
+            } finally {
+                isRefreshing = false;
             }
         }
+
         return Promise.reject(error);
     },
 );

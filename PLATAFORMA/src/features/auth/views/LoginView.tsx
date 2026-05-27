@@ -55,6 +55,7 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
 
             if (response.token && response.user) {
                 localStorage.setItem('token', response.token);
+                if (response.refreshToken) localStorage.setItem('refreshToken', response.refreshToken);
                 setUser(response.user);
                 localStorage.removeItem('v1:token');
                 localStorage.removeItem('v1:user');

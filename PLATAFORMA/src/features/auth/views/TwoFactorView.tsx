@@ -89,6 +89,7 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
             const { token: jwt } = response;
 
             localStorage.setItem('token', jwt);
+            if (response.refreshToken) localStorage.setItem('refreshToken', response.refreshToken);
             setUser(response.user);
             localStorage.removeItem('v1:token');
             localStorage.removeItem('v1:user');
