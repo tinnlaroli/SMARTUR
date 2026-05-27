@@ -22,28 +22,21 @@ export interface EmpresaService {
     active: boolean;
     image_url: string | null;
     id_location: number | null;
-    address: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    id_company?: number;
 }
 
 export interface ServiceCreatePayload {
     name: string;
     description?: string;
     service_type: string;
-    address?: string;
-    latitude?: number;
-    longitude?: number;
     id_location?: number;
+    active?: boolean;
 }
 
 export interface ServiceUpdatePayload {
     name?: string;
     description?: string;
     service_type?: string;
-    address?: string;
-    latitude?: number;
-    longitude?: number;
     active?: boolean;
     id_location?: number;
 }

@@ -168,7 +168,7 @@ interface TermsModalProps {
 }
 
 export function TermsModal({ type, onClose }: TermsModalProps) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const safeLang = lang in TITLES ? lang : 'es';
     const title = TITLES[safeLang][type];
     const body = type === 'terms' ? TERMS_TEXT[safeLang] : PRIVACY_TEXT[safeLang];
@@ -188,7 +188,7 @@ export function TermsModal({ type, onClose }: TermsModalProps) {
                     <button
                         onClick={onClose}
                         className="rounded-lg p-1.5 text-[var(--color-text-alt)] transition-colors hover:bg-[rgba(var(--rgb-text),0.06)] hover:text-[var(--color-text)]"
-                        aria-label="Cerrar"
+                        aria-label={t('auth.terms.closeAriaLabel')}
                     >
                         <X className="size-4" />
                     </button>

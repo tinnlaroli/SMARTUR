@@ -47,8 +47,8 @@ export const UserPage = () => {
     const handleDeleteSelected = async () => {
         const ok = await confirm({
             title: m.common.confirmDeleteUsers(selectedUsers.length),
-            message: m.common.confirmDeleteUsersMsg?.(selectedUsers.length) ?? `Se eliminarán ${selectedUsers.length} usuario(s) de forma permanente.`,
-            confirmLabel: 'Eliminar',
+            message: m.common.confirmDeleteUsersMsg(selectedUsers.length),
+            confirmLabel: m.common.delete,
             variant: 'danger',
         });
         if (!ok) return;
@@ -73,8 +73,8 @@ export const UserPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Users className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.users }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de usuarios</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Administra las cuentas registradas en la plataforma. Puedes crear, editar, activar o desactivar usuarios y asignar roles de acceso.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.users.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.users.bannerDescription}</p>
                 </div>
             </div>
 

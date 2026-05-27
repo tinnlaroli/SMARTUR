@@ -1070,8 +1070,11 @@ const fr: DashboardModalsLocale = {
     },
 };
 
+const pt = es;
+
 export const dashboardModalsByLang: Record<LanguageCode, DashboardModalsLocale> = {
     es,
     en,
     fr,
+    pt,
 };

@@ -344,5 +344,19 @@
   "activeSessions": "Sessões ativas",
   "activeSessionsSubtitle": "Gerencie seus dispositivos conectados",
   "sessionRevokeSuccess": "Sessão encerrada com sucesso",
-  "sessionRevokeError": "Não foi possível encerrar a sessão. Tente novamente."
+  "sessionRevokeError": "Não foi possível encerrar a sessão. Tente novamente.",
+
+  "noSessionsRegistered": "Nenhuma sessão registrada",
+  "defaultDevice": "Dispositivo",
+  "sessionRevokeTooltip": "Encerrar sessão",
+  "sessionCreatedSince": "Desde",
+
+  "recoGuidedTours": "Tours guiados",
+  "recoNeedHotel": "Preciso de hotel",
+  "recoFoodOptions": "Opções de comida",
+  "recoAccessible": "Acessível",
+  "recoOutdoor": "Ao ar livre",
+
+  "latencyMs": "{ms} ms",
+  "@latencyMs": { "placeholders": { "ms": {} } }
 }

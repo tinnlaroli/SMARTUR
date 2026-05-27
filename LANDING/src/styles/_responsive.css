@@ -1,0 +1,31 @@
+/* Shared responsive safety net — all landing pages (es/en/fr/pt) */
+
+@media (--mq-phone) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  /* Sections using Tailwind .container instead of .u-container */
+  .tech-section .container,
+  .cta-minimal .container {
+    padding-left: var(--container-offset);
+    padding-right: var(--container-offset);
+    max-width: 100%;
+  }
+}
+
+/* Touch devices: avoid hover-only layout shifts */
+@media (hover: none) and (pointer: coarse) {
+  .plan:hover,
+  .testimonial-card:hover,
+  .feature-card:hover,
+  .video-container:hover,
+  .ec-cta-btn:hover,
+  .bridge-action:hover {
+    transform: none;
+  }
+}

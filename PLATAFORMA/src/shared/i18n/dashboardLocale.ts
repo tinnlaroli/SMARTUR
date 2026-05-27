@@ -1338,4 +1338,6 @@ const fr: DashboardLocale = {
 
 const DASHBOARD_TEXT: Record<LanguageCode, DashboardLocale> = { es, en, fr };
 
+DASHBOARD_TEXT.pt = DASHBOARD_TEXT.es;
+
 export const getDashboardText = (lang: LanguageCode) => DASHBOARD_TEXT[lang] ?? DASHBOARD_TEXT.es;

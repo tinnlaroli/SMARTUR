@@ -1,14 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Activity, Loader2 } from 'lucide-react';
 import { companyServices } from '../../companies/api/companyApi';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import type { Company } from '../../companies/types/types';
 import type { CreateActivityDTO } from '../types/types';
-
-const IMPACT_OPTIONS = [
-    { label: 'Bajo', value: 'bajo' },
-    { label: 'Medio', value: 'medio' },
-    { label: 'Alto', value: 'alto' },
-];
 
 const selectClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 cursor-pointer disabled:opacity-50';
@@ -19,6 +14,12 @@ interface Props {
 }
 
 export default function CreateActivityModal({ onClose, onSubmit }: Props) {
+    const { t } = useLanguage();
+    const impactOptions = useMemo(() => [
+        { label: t('activity.modal.impactLow'), value: 'bajo' },
+        { label: t('activity.modal.impactMed'), value: 'medio' },
+        { label: t('activity.modal.impactHigh'), value: 'alto' },
+    ], [t]);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loadingCompanies, setLoadingCompanies] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -41,9 +42,9 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!idCompany) { setError('Selecciona una empresa.'); return; }
+        if (!idCompany) { setError(t('activity.modal.errorSelectCompany')); return; }
         const val = parseFloat(productionValue);
-        if (isNaN(val) || val < 0) { setError('Ingresa un valor de producción válido.'); return; }
+        if (isNaN(val) || val < 0) { setError(t('activity.modal.errorProductionValue')); return; }
         setSubmitting(true);
         const ok = await onSubmit({ id_company: idCompany, production_value: val, environmental_impact: envImpact, social_impact: socialImpact });
         setSubmitting(false);
@@ -56,7 +57,7 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
                 <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--color-border)' }}>
                     <h2 className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--color-text)' }}>
                         <Activity className="size-4" style={{ color: 'var(--color-green)' }} />
-                        Nueva actividad
+                        {t('activity.modal.title')}
                     </h2>
                     <button type="button" onClick={onClose} className="rounded-lg p-1.5 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800" style={{ color: 'var(--color-text-alt)' }}>
                         <X className="size-4" />
@@ -65,10 +66,10 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
 
                 <form onSubmit={handleSubmit} className="space-y-4 p-5">
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Empresa</label>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.modal.company')}</label>
                         {loadingCompanies ? (
                             <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                <Loader2 className="size-4 animate-spin" /> Cargando empresas…
+                                <Loader2 className="size-4 animate-spin" /> {t('activity.modal.loadingCompanies')}
                             </div>
                         ) : (
                             <select
@@ -85,14 +86,14 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
                     </div>
 
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Valor de producción</label>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.modal.productionValue')}</label>
                         <input
                             type="number"
                             min="0"
                             step="0.01"
                             value={productionValue}
                             onChange={(e) => setProductionValue(e.target.value)}
-                            placeholder="Ej: 15000"
+                            placeholder={t('activity.modal.productionPlaceholder')}
                             className={selectClass}
                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                         />
@@ -100,25 +101,25 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Impacto ambiental</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.modal.envImpact')}</label>
                             <select
                                 value={envImpact}
                                 onChange={(e) => setEnvImpact(e.target.value)}
                                 className={selectClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Impacto social</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.modal.socialImpact')}</label>
                             <select
                                 value={socialImpact}
                                 onChange={(e) => setSocialImpact(e.target.value)}
                                 className={selectClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                         </div>
                     </div>
@@ -127,11 +128,11 @@ export default function CreateActivityModal({ onClose, onSubmit }: Props) {
 
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
-                            Cancelar
+                            {t('activity.modal.cancel')}
                         </button>
                         <button type="submit" disabled={submitting || loadingCompanies} className="flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ background: 'var(--color-green)' }}>
                             {submitting && <Loader2 className="size-4 animate-spin" />}
-                            Guardar
+                            {t('activity.modal.save')}
                         </button>
                     </div>
                 </form>

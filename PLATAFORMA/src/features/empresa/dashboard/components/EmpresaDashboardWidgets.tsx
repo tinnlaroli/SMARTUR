@@ -30,6 +30,7 @@ import {
     type EmpresaTopServiceItem,
     type EmpresaTrendPoint,
 } from '../utils/empresaDashboard';
+import { useLanguage } from '../../../../contexts/LanguageContext';
 
 const cardSurface = {
     background: 'var(--color-bg)',
@@ -216,10 +217,12 @@ export const EmpresaEngagementTrendCard = ({
     summary: string;
     insights: Array<{ label: string; value: string }>;
     density: EmpresaDensityMode;
-}) => (
-    <PanelCard density={density} title="Tendencia de engagement" subtitle={summary} icon={BarChart3}>
+}) => {
+    const { t } = useLanguage();
+    return (
+    <PanelCard density={density} title={t('empresa.dashboard.engagementTrendTitle')} subtitle={summary} icon={BarChart3}>
         {data.length === 0 ? (
-            <EmptyState message="Aun no hay interacciones para construir la grafica." />
+            <EmptyState message={t('empresa.dashboard.engagementTrendEmpty')} />
         ) : (
             <div className="flex h-full min-h-0 flex-col gap-4">
                 <div className="grid shrink-0 gap-2 lg:grid-cols-2">
@@ -288,7 +291,8 @@ export const EmpresaEngagementTrendCard = ({
             </div>
         )}
     </PanelCard>
-);
+    );
+};
 
 export const EmpresaTopServicesCard = ({
     services,
@@ -298,10 +302,12 @@ export const EmpresaTopServicesCard = ({
     services: EmpresaTopServiceItem[];
     summary: string;
     density: EmpresaDensityMode;
-}) => (
-    <PanelCard density={density} title="Top servicios" subtitle={summary} icon={Star}>
+}) => {
+    const { t } = useLanguage();
+    return (
+    <PanelCard density={density} title={t('empresa.dashboard.topServicesTitle')} subtitle={summary} icon={Star}>
         {services.length === 0 ? (
-            <EmptyState message="Cuando exista engagement, el ranking aparecera aqui." />
+            <EmptyState message={t('empresa.dashboard.topServicesEmpty')} />
         ) : (
             <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
                 {services.slice(0, density === 'compact' ? 3 : 4).map((service, index) => {
@@ -336,7 +342,7 @@ export const EmpresaTopServicesCard = ({
                                                 {service.name}
                                             </p>
                                             <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                                {service.visits} visitas · {service.favorites} favoritos
+                                                {t('empresa.dashboard.topServiceVisits', { visits: service.visits, favorites: service.favorites })}
                                             </p>
                                         </div>
                                         <div className="text-right">
@@ -344,7 +350,7 @@ export const EmpresaTopServicesCard = ({
                                                 {service.rating?.toFixed(1) ?? '—'}
                                             </p>
                                             <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
-                                                {service.recomendaciones} rec.
+                                                {t('empresa.dashboard.topServiceRecs', { recs: service.recomendaciones })}
                                             </p>
                                         </div>
                                     </div>
@@ -365,7 +371,8 @@ export const EmpresaTopServicesCard = ({
             </div>
         )}
     </PanelCard>
-);
+    );
+};
 
 export const EmpresaProfileCard = ({
     profile,
@@ -373,21 +380,23 @@ export const EmpresaProfileCard = ({
 }: {
     profile: EmpresaProfile;
     density: EmpresaDensityMode;
-}) => (
+}) => {
+    const { t } = useLanguage();
+    return (
     <PanelCard
         density={density}
-        title="Datos de la empresa"
+        title={t('empresa.dashboard.profileTitle')}
         subtitle={`${profile.sector_name}${profile.location_name ? ` · ${profile.location_name}` : ''}`}
         icon={Building2}
     >
         <dl className="grid grid-cols-1 gap-3 text-sm">
             {[
-                ['Nombre', profile.name],
-                ['Sector', profile.sector_name],
-                ['Municipio', profile.location_name ?? '—'],
-                ['Telefono', profile.phone ?? '—'],
-                ['Direccion', profile.address ?? '—'],
-                ['Registro', new Date(profile.registration_date).toLocaleDateString('es-MX')],
+                [t('empresa.dashboard.profileName'), profile.name],
+                [t('empresa.dashboard.profileSector'), profile.sector_name],
+                [t('empresa.dashboard.profileMunicipality'), profile.location_name ?? '—'],
+                [t('empresa.dashboard.profilePhone'), profile.phone ?? '—'],
+                [t('empresa.dashboard.profileAddress'), profile.address ?? '—'],
+                [t('empresa.dashboard.profileRegistration'), new Date(profile.registration_date).toLocaleDateString('es-MX')],
             ].map(([label, value]) => (
                 <div
                     key={label}
@@ -404,20 +413,23 @@ export const EmpresaProfileCard = ({
             ))}
         </dl>
     </PanelCard>
-);
+    );
+};
 
-export const EmpresaQuickActionsCard = ({ density }: { density: EmpresaDensityMode }) => (
+export const EmpresaQuickActionsCard = ({ density }: { density: EmpresaDensityMode }) => {
+    const { t } = useLanguage();
+    return (
     <PanelCard
         density={density}
-        title="Accesos rapidos"
-        subtitle="Gestiona servicios, analytics y perfil desde un solo lugar."
+        title={t('empresa.dashboard.quickActionsTitle')}
+        subtitle={t('empresa.dashboard.quickActionsSubtitle')}
         icon={Gauge}
     >
         <div className="grid gap-3 sm:grid-cols-3">
             {[
-                { label: 'Ver mis servicios', to: '/empresa/servicios', color: DASHBOARD_COLORS.orange },
-                { label: 'Analytics completo', to: '/empresa/analytics', color: DASHBOARD_COLORS.cyan },
-                { label: 'Editar perfil', to: '/empresa/perfil', color: DASHBOARD_COLORS.purple },
+                { label: t('empresa.dashboard.quickActionServices'), to: '/empresa/servicios', color: DASHBOARD_COLORS.orange },
+                { label: t('empresa.dashboard.quickActionAnalytics'), to: '/empresa/analytics', color: DASHBOARD_COLORS.cyan },
+                { label: t('empresa.dashboard.quickActionProfile'), to: '/empresa/perfil', color: DASHBOARD_COLORS.purple },
             ].map((action) => (
                 <Link
                     key={action.to}
@@ -436,7 +448,8 @@ export const EmpresaQuickActionsCard = ({ density }: { density: EmpresaDensityMo
             ))}
         </div>
     </PanelCard>
-);
+    );
+};
 
 export const EmpresaQualityScoreCard = ({
     score,
@@ -446,10 +459,12 @@ export const EmpresaQualityScoreCard = ({
     score: number | null;
     summary: string;
     density: EmpresaDensityMode;
-}) => (
-    <PanelCard density={density} title="Evaluacion SMARTUR" subtitle={summary} icon={Award}>
+}) => {
+    const { t } = useLanguage();
+    return (
+    <PanelCard density={density} title={t('empresa.dashboard.qualityTitle')} subtitle={summary} icon={Award}>
         {score == null ? (
-            <EmptyState message="El equipo SMARTUR aun no ha asignado una evaluacion de calidad." />
+            <EmptyState message={t('empresa.dashboard.qualityEmpty')} />
         ) : (
             <div className="flex h-full flex-col justify-center gap-4">
                 <div className="flex items-end justify-between">
@@ -466,7 +481,7 @@ export const EmpresaQualityScoreCard = ({
                             color: DASHBOARD_COLORS.orange,
                         }}
                     >
-                        Calidad
+                        {t('empresa.dashboard.qualityBadge')}
                     </span>
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full" style={{ background: 'var(--color-bg-alt)' }}>
@@ -481,9 +496,12 @@ export const EmpresaQualityScoreCard = ({
             </div>
         )}
     </PanelCard>
-);
+    );
+};
 
-export const EmpresaStatusBanner = ({ message }: { message: string }) => (
+export const EmpresaStatusBanner = ({ message }: { message: string }) => {
+    const { t } = useLanguage();
+    return (
     <div
         className="flex h-full items-start gap-3 rounded-[28px] border p-5 sy-fade-up"
         style={{
@@ -494,13 +512,14 @@ export const EmpresaStatusBanner = ({ message }: { message: string }) => (
         <AlertCircle className="mt-0.5 size-5 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />
         <div>
             <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
-                Estado de la empresa
+                {t('empresa.dashboard.statusTitle')}
             </p>
             <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                 {message}
             </p>
         </div>
     </div>
-);
+    );
+};
 
 export type { EmpresaDashboardViewModel };

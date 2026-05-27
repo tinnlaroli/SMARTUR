@@ -25,19 +25,14 @@ import type { SortState } from '../../../components/ui/DataTable';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import Pagination from '../../users/components/Pagination';
 import type { ContactStatus, ContactSubscription } from '../types/types';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 const LIMIT = 20;
 
-function formatDate(iso: string) {
-    return new Intl.DateTimeFormat('es-MX', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso));
+function formatDate(iso: string, locale: string) {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso));
 }
-
-const SOURCE_LABEL: Record<string, string> = {
-    landing_b2b: 'Landing B2B',
-    landing_turista: 'Landing Turista',
-    plataforma_contact: 'Plataforma',
-    dashboard: 'Dashboard',
-};
 
 const REASON_COLOR: Record<string, string> = {
     download: 'rgba(239,68,68,0.12)',
@@ -66,14 +61,9 @@ const STATUS_STYLE: Record<ContactStatus, { bg: string; color: string }> = {
     dismissed:   { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' },
 };
 
-const STATUS_LABEL: Record<ContactStatus, string> = {
-    pending: 'Pendiente',
-    in_progress: 'En atención',
-    done: 'Resuelto',
-    dismissed: 'Descartado',
-};
-
 export const ContactsPage = () => {
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.contacts, [lang]);
     const { subscriptions, isLoading, totalPages, totalRecords, fetchSubscriptions, updateStatus, deleteSubscription } = useContacts();
     const [searchParams, setSearchParams] = useSearchParams();
     const toast = useToast();
@@ -106,7 +96,7 @@ export const ContactsPage = () => {
                 setDetailContact((prev) => prev ? { ...prev, status } : prev);
             }
         } catch {
-            toast.error('Error', 'No se pudo actualizar el estado.');
+            toast.error(copy.statusUpdateErrorTitle, copy.statusUpdateErrorBody);
         } finally {
             setUpdatingId(null);
         }
@@ -114,15 +104,15 @@ export const ContactsPage = () => {
 
     const handleDeleteSelected = async () => {
         const ok = await confirm({
-            title: `Eliminar ${selectedIds.length} contacto(s)`,
-            message: 'Esta acción es permanente y no se puede deshacer.',
-            confirmLabel: 'Eliminar',
+            title: getDashboardText(lang).modules.common.confirmDeleteContacts(selectedIds.length),
+            message: getDashboardText(lang).modules.common.confirmDeleteContactsMsg(selectedIds.length),
+            confirmLabel: getDashboardText(lang).modules.common.delete,
             variant: 'danger',
         });
         if (!ok) return;
         await Promise.all(selectedIds.map((id) => deleteSubscription(id)));
         setSelectedIds([]);
-        toast.success('Contactos eliminados', `${selectedIds.length} contacto(s) eliminados.`);
+        toast.success(copy.deleteSuccessTitle, copy.deleteSuccessBody(selectedIds.length));
     };
 
     return (
@@ -132,14 +122,14 @@ export const ContactsPage = () => {
             <div className="flex shrink-0 items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        Contactos & Suscripciones
+                        {copy.title}
                     </h1>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Mensajes capturados desde los formularios de contacto
+                        {copy.subtitle}
                     </p>
                 </div>
                 <span className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
-                    {totalRecords} registros
+                    {copy.recordsLabel(totalRecords)}
                 </span>
             </div>
 
@@ -147,10 +137,9 @@ export const ContactsPage = () => {
             <div className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Mail className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.contacts }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>¿Qué son los contactos?</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{copy.bannerTitle}</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Mensajes enviados por visitantes y empresas a través de los formularios de contacto de la plataforma y la landing page.
-                        Haz clic en el correo o el mensaje para ver los detalles y cambiar el estado de atención.
+                        {copy.bannerDescription}
                     </p>
                 </div>
             </div>
@@ -171,7 +160,7 @@ export const ContactsPage = () => {
                 {subscriptions.length === 0 && !isLoading ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-3">
                         <Globe className="size-10" style={{ color: 'var(--color-border)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>Sin contactos todavía</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>{copy.emptyTitle}</p>
                     </div>
                 ) : (
                     <DataTableScroll>
@@ -182,15 +171,15 @@ export const ContactsPage = () => {
                                         <input type="checkbox" checked={allSelected} onChange={toggleAll} className={TABLE_CHECKBOX_CLASS} />
                                     </DataTableHeadCell>
                                     <SortableHeadCell sortKey="email" sort={sort} onSort={handleSort}>
-                                        <span className="flex items-center gap-1.5"><Mail className="size-3.5" />Correo</span>
+                                        <span className="flex items-center gap-1.5"><Mail className="size-3.5" />{copy.tableEmail}</span>
                                     </SortableHeadCell>
-                                    <SortableHeadCell sortKey="reason" sort={sort} onSort={handleSort}>Motivo</SortableHeadCell>
-                                    <DataTableHeadCell>Mensaje</DataTableHeadCell>
+                                    <SortableHeadCell sortKey="reason" sort={sort} onSort={handleSort}>{copy.tableReason}</SortableHeadCell>
+                                    <DataTableHeadCell>{copy.tableMessage}</DataTableHeadCell>
                                     <SortableHeadCell sortKey="source" sort={sort} onSort={handleSort}>
-                                        <span className="flex items-center gap-1.5"><Globe className="size-3.5" />Fuente</span>
+                                        <span className="flex items-center gap-1.5"><Globe className="size-3.5" />{copy.tableSource}</span>
                                     </SortableHeadCell>
-                                    <SortableHeadCell sortKey="status" sort={sort} onSort={handleSort}>Estado</SortableHeadCell>
-                                    <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort}>Fecha</SortableHeadCell>
+                                    <SortableHeadCell sortKey="status" sort={sort} onSort={handleSort}>{copy.tableStatus}</SortableHeadCell>
+                                    <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort}>{copy.tableDate}</SortableHeadCell>
                                 </tr>
                             </DataTableHead>
                             <DataTableBody>
@@ -200,6 +189,8 @@ export const ContactsPage = () => {
                                     displayData.map((sub, i) => {
                                         const reasonKey = sub.reason ?? '';
                                         const statusStyle = STATUS_STYLE[sub.status] ?? STATUS_STYLE.pending;
+                                        const sourceLabel = copy.sourceLabels[sub.source] ?? sub.source;
+                                        const reasonLabel = copy.reasonLabels[reasonKey] ?? sub.reason;
 
                                         return (
                                             <DataTableRow
@@ -228,7 +219,7 @@ export const ContactsPage = () => {
                                                                 color: REASON_TEXT[reasonKey] ?? '#6b7280',
                                                             }}
                                                         >
-                                                            {sub.reason}
+                                                            {reasonLabel}
                                                         </span>
                                                     ) : (
                                                         <span className="text-xs opacity-40" style={{ color: 'var(--color-text-alt)' }}>—</span>
@@ -245,7 +236,7 @@ export const ContactsPage = () => {
                                                 </DataTableCell>
                                                 <DataTableCell>
                                                     <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
-                                                        {SOURCE_LABEL[sub.source] ?? sub.source}
+                                                        {sourceLabel}
                                                     </span>
                                                 </DataTableCell>
                                                 <DataTableCell onClick={(e) => e.stopPropagation()}>
@@ -256,14 +247,14 @@ export const ContactsPage = () => {
                                                         className="rounded-full border-0 py-0.5 pl-2.5 pr-6 text-xs font-medium outline-none transition-opacity disabled:opacity-50 cursor-pointer appearance-none"
                                                         style={{ background: statusStyle.bg, color: statusStyle.color }}
                                                     >
-                                                        {(Object.entries(STATUS_LABEL) as [ContactStatus, string][]).map(([val, label]) => (
+                                                        {(Object.entries(copy.statusLabels) as [ContactStatus, string][]).map(([val, label]) => (
                                                             <option key={val} value={val}>{label}</option>
                                                         ))}
                                                     </select>
                                                 </DataTableCell>
                                                 <DataTableCell>
                                                     <span className="text-xs whitespace-nowrap" style={{ color: 'var(--color-text-alt)' }}>
-                                                        {formatDate(sub.created_at)}
+                                                        {formatDate(sub.created_at, getDashboardText(lang).locale)}
                                                     </span>
                                                 </DataTableCell>
                                             </DataTableRow>

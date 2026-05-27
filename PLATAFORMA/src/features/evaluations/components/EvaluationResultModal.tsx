@@ -34,7 +34,7 @@ function modalReducer(state: ModalState, action: ModalAction): ModalState {
 }
 
 const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId }) => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const res = useMemo(() => getDashboardText(lang).modules.modals.evaluations.result, [lang]);
     const [{ evaluation, isLoading }, dispatch] = useReducer(modalReducer, {
         evaluation: null,
@@ -68,11 +68,20 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
     const handlePrint = useCallback(() => {
         if (!evaluation) return;
 
+        const totalScoreLabel = t('evaluation.totalScore');
+        const evaluatedCriteria = t('evaluation.evaluatedCriteria');
+        const noSpecificObs = t('evaluation.noSpecificObs');
+        const generalObservations = t('evaluation.generalObservations');
+        const noGeneralObs = t('evaluation.noGeneralObs');
+        const generatedBy = t('evaluation.generatedBy');
+        const dateLocale = lang === 'es' ? 'es-MX' : lang === 'fr' ? 'fr-FR' : 'en-US';
+        const dateStr = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
         const printContent = `<!DOCTYPE html>
-<html lang="es">
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8">
-  <title>Evaluación #${evaluationId} — SMARTUR</title>
+  <title>${t('evaluation.totalScore')} #${evaluationId} — SMARTUR</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; color: #18181b; padding: 2.5rem; max-width: 680px; margin: 0 auto; }
@@ -104,7 +113,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
   </div>
 
   <div class="score-card">
-    <div class="score-label">Puntuación Total</div>
+    <div class="score-label">${totalScoreLabel}</div>
     <div class="score-value">${Number(evaluation.totalScore).toFixed(1)}<span> / 5.0</span></div>
     <div class="score-meta">
       <div>⏱ ${evaluation.evaluationTime} min</div>
@@ -113,23 +122,23 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
   </div>
 
   ${evaluation.details && evaluation.details.length > 0 ? `
-  <div class="section-title">Criterios evaluados</div>
+  <div class="section-title">${evaluatedCriteria}</div>
   ${evaluation.details.map((d: any) => `
     <div class="criterion">
       <div class="criterion-header">
         <span class="criterion-name">${d.criterion_name}</span>
         <span class="criterion-score">${d.assigned_score} / 4</span>
       </div>
-      <div class="criterion-obs">"${d.observations || 'Sin observaciones específicas'}"</div>
+      <div class="criterion-obs">"${d.observations || noSpecificObs}"</div>
     </div>
   `).join('')}
   ` : ''}
 
-  <div class="section-title" style="margin-top:1.25rem">Observaciones generales</div>
-  <div class="general-obs">"${evaluation.generalObservations || 'No se registraron observaciones generales.'}"</div>
+  <div class="section-title" style="margin-top:1.25rem">${generalObservations}</div>
+  <div class="general-obs">"${evaluation.generalObservations || noGeneralObs}"</div>
 
   <div class="footer">
-    Generado por SMARTUR · ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+    ${generatedBy} · ${dateStr}
   </div>
 </body>
 </html>`;
@@ -141,7 +150,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
         win.focus();
         // Small delay so styles render before print dialog
         setTimeout(() => win.print(), 400);
-    }, [evaluation, evaluationId]);
+    }, [evaluation, evaluationId, t, lang]);
 
     if (!isOpen) return null;
 

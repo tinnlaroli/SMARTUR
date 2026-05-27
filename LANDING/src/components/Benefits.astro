@@ -44,67 +44,35 @@ const chips =
     ],
   }[lang] ?? ["Random Forest", "Collaborative Filtering"];
 
-const howTitle =
-  { es: "Cómo funciona", en: "How it works", fr: "Comment ça marche" }[lang] ??
-  "How it works";
+const howTitle = t["benefits.howTitle"];
 
-const howSteps =
-  {
-    es: [
-      {
-        title: "Contexto",
-        text: "Señales como ubicación, temporada, presupuesto e intención de viaje.",
-      },
-      {
-        title: "Candidatos",
-        text: "Generamos opciones relevantes con filtrado colaborativo + reglas de negocio.",
-      },
-      {
-        title: "Re-ranking",
-        text: "Random Forest prioriza lo más útil para ese usuario, en ese momento.",
-      },
-      {
-        title: "Entrega",
-        text: "Recomendaciones con precisión, diversidad y protección de datos.",
-      },
-    ],
-    en: [
-      {
-        title: "Context",
-        text: "Signals like location, season, budget, and travel intent.",
-      },
-      {
-        title: "Candidates",
-        text: "We generate relevant options with collaborative filtering + business rules.",
-      },
-      {
-        title: "Re-ranking",
-        text: "Random Forest prioritizes what’s most useful, right now.",
-      },
-      {
-        title: "Delivery",
-        text: "Recommendations with precision, diversity, and data protection.",
-      },
-    ],
-    fr: [
-      {
-        title: "Contexte",
-        text: "Signaux comme localisation, saison, budget et intention de voyage.",
-      },
-      {
-        title: "Candidats",
-        text: "Options pertinentes via filtrage collaboratif + règles métier.",
-      },
-      {
-        title: "Re-classement",
-        text: "Random Forest priorise ce qui est le plus utile maintenant.",
-      },
-      {
-        title: "Livraison",
-        text: "Recommandations précises, diversité maîtrisée, données protégées.",
-      },
-    ],
-  }[lang] ?? [];
+const stepsData = {
+  es: [
+    "Señales como ubicación, temporada, presupuesto e intención de viaje.",
+    "Generamos opciones relevantes con filtrado colaborativo + reglas de negocio.",
+    "Random Forest prioriza lo más útil para ese usuario, en ese momento.",
+    "Recomendaciones con precisión, diversidad y protección de datos.",
+  ],
+  en: [
+    "Signals like location, season, budget, and travel intent.",
+    "We generate relevant options with collaborative filtering + business rules.",
+    "Random Forest prioritizes what's most useful, right now.",
+    "Recommendations with precision, diversity, and data protection.",
+  ],
+  fr: [
+    "Signaux comme localisation, saison, budget et intention de voyage.",
+    "Options pertinentes via filtrage collaboratif + règles métier.",
+    "Random Forest priorise ce qui est le plus utile maintenant.",
+    "Recommandations précises, diversité maîtrisée, données protégées.",
+  ],
+}[lang] ?? [];
+
+const howSteps = [
+  { title: t["benefits.step1"], text: stepsData[0] },
+  { title: t["benefits.step2"], text: stepsData[1] },
+  { title: t["benefits.step3"], text: stepsData[2] },
+  { title: t["benefits.step4"], text: stepsData[3] },
+];
 
 const uiCopy =
   {

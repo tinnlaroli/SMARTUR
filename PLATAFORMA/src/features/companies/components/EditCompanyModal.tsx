@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function EditCompanyModal({ onClose, onSubmit, company }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<UpdateCompanyDTO>({
         name: company.name,
@@ -24,8 +24,8 @@ export default function EditCompanyModal({ onClose, onSubmit, company }: Props) 
 
     const validate = () => {
         const e: Record<string, string> = {};
-        if (!formData.name?.trim()) e.name = 'El nombre es obligatorio.';
-        if (formData.phone && !/^[+\d\s\-()]{7,}$/.test(formData.phone)) e.phone = 'Ingresa un teléfono válido.';
+        if (!formData.name?.trim()) e.name = t('validation.nameRequired');
+        if (formData.phone && !/^[+\d\s\-()]{7,}$/.test(formData.phone)) e.phone = t('validation.phoneValid');
         return e;
     };
 

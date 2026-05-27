@@ -55,7 +55,7 @@ const ImpactBadge = ({
 };
 
 export const ActivitiesPage = () => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
     const { activities, isLoading, totalPages, createActivity, updateActivity, deleteActivity } = useActivities();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -88,9 +88,9 @@ export const ActivitiesPage = () => {
 
     const handleDeleteSelected = async () => {
         const ok = await confirm({
-            title: `Eliminar ${selectedIds.length} actividad(es)`,
-            message: 'Esta acción es permanente y no se puede deshacer.',
-            confirmLabel: 'Eliminar',
+            title: m.common.confirmDeleteActivities(selectedIds.length),
+            message: m.common.confirmDeleteActivitiesMsg(selectedIds.length),
+            confirmLabel: m.common.delete,
             variant: 'danger',
         });
         if (!ok) return;
@@ -120,8 +120,8 @@ export const ActivitiesPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Activity className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.activities }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Actividades</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registro de actividades y experiencias disponibles en la región. Se asocian a servicios y POIs para enriquecer las rutas personalizadas generadas por la IA.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.activities.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.activities.bannerDescription}</p>
                 </div>
             </div>
 
@@ -140,7 +140,7 @@ export const ActivitiesPage = () => {
                         style={{ background: MODULE_COLORS.activities }}
                     >
                         <Plus className="size-4" />
-                        Nueva actividad
+                        {t('activity.newButton')}
                     </button>
                 </div>
             </div>

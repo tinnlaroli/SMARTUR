@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function EditTouristServiceModal({ onClose, onSubmit, service }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<UpdateTouristServiceDTO>({
         name: service.name,
@@ -28,7 +28,7 @@ export default function EditTouristServiceModal({ onClose, onSubmit, service }: 
 
     const validate = () => {
         const e: Record<string, string> = {};
-        if (!formData.name?.trim()) e.name = 'El nombre es obligatorio.';
+        if (!formData.name?.trim()) e.name = t('validation.nameRequired');
         return e;
     };
 

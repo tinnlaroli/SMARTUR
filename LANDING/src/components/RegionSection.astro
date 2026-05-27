@@ -2,8 +2,11 @@
 import Button from "./Button.astro";
 import type { Link } from "../types";
 import laRegionVideo from "../assets/video/laRegion.mp4";
+import { useTranslations, defaultLang } from "../i18n/utils";
+import { ui } from "../i18n/ui";
 
 interface Props {
+  lang?: keyof typeof ui;
   id?: string;
   title: string;
   text: string;
@@ -13,13 +16,17 @@ interface Props {
 }
 
 const {
+  lang = defaultLang,
   id,
   title,
   text,
   cta,
-  tags = ["Cultura", "Naturaleza", "Tradiciones"],
-  videoLabel = "Video explorando la riqueza de Las Altas Montañas de Veracruz",
+  tags,
+  videoLabel,
 } = Astro.props;
+
+const t = useTranslations(lang);
+const resolvedTags = tags ?? [t("region.defaultTag1"), t("region.defaultTag2"), t("region.defaultTag3")];
 ---
 
 <sy-region class="region" id={id || "region"}>
@@ -64,14 +71,14 @@ const {
               <path d="M14 8h1"></path><path d="M14 12h1"></path><path d="M14 16h1"></path>
               <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
             </svg>
-            <span>{tags[0]}</span>
+            <span>{resolvedTags[0]}</span>
           </div>
           <div class="tag">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22c4.97 0 9-2.69 9-6v-3c0-3.31-4.03-6-9-6s-9 2.69-9 6v3c0 3.31 4.03 6 9 6z"></path>
               <path d="M12 13c4.97 0 9-2.69 9-6s-4.03-6-9-6-9 2.69-9 6 4.03 6 9 6z"></path>
             </svg>
-            <span>{tags[1]}</span>
+            <span>{resolvedTags[1]}</span>
           </div>
           <div class="tag">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -79,7 +86,7 @@ const {
               <path d="M2 17l10 5 10-5"></path>
               <path d="M2 12l10 5 10-5"></path>
             </svg>
-            <span>{tags[2]}</span>
+            <span>{resolvedTags[2]}</span>
           </div>
         </div>
 
@@ -101,13 +108,13 @@ const {
           playsinline
           muted
           loop
-          aria-label={videoLabel}
+          aria-label={videoLabel || t("region.videoLabel")}
         >
-          Tu navegador no soporta el elemento de video.
+          {t("region.videoUnsupported")}
         </video>
 
         <!-- Custom Play Button -->
-        <button class="play-overlay" aria-label="Play video">
+        <button class="play-overlay" aria-label={t("region.playAriaLabel")}>
           <div class="play-ring">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>

@@ -1,14 +1,18 @@
 ---
 import type { Link } from "../types";
 import Button from "./Button.astro";
+import { useTranslations, defaultLang } from "../i18n/utils";
+import { ui } from "../i18n/ui";
 
 interface Props {
+  lang?: keyof typeof ui;
   title: string;
   subtitle?: string;
   cta?: Link;
 }
 
-const { title, subtitle, cta } = Astro.props;
+const { lang = defaultLang, title, subtitle, cta } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <div class="sy-hero-home" id="hero-section">
@@ -31,7 +35,7 @@ const { title, subtitle, cta } = Astro.props;
                 {...cta}
                 arrow
                 class="cta"
-                ariaLabel="Descubrir más sobre SMARTUR"
+                ariaLabel={t("hero.scrollDownAriaLabel")}
               />
               <div class="cta-shimmer" />
             </div>
@@ -130,7 +134,11 @@ const { title, subtitle, cta } = Astro.props;
     }
 
     @media (--mq-phone) {
-      --fs: 3rem;
+      --fs: 2.75rem;
+    }
+
+    @media (--mq-phone-sm) {
+      --fs: 2.25rem;
     }
   }
 

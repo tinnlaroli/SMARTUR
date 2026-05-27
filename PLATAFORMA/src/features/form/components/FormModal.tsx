@@ -8,6 +8,7 @@ import { RecommendationsResult } from './RecommendationsResult';
 import { X } from 'lucide-react';
 import type { FormContext, RecommendationsResponse } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface FormModalProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
     const [showRecommendations, setShowRecommendations] = useState(false);
     const [recommendationsData, setRecommendationsData] = useState<RecommendationsResponse | null>(null);
     const { theme } = useTheme();
+    const { t } = useLanguage();
     const scrollRef = useRef<HTMLDivElement>(null);
     const isDark = theme === 'dark';
 
@@ -72,7 +74,7 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
             {/* Backdrop */}
             <button
                 type="button"
-                aria-label="Cerrar modal"
+                aria-label={t('form.modal.closeLabel')}
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 cursor-default"
                 onClick={onClose}
             />

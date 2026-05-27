@@ -38,7 +38,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
 };
 
 export const TouristServicePage = () => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
     const {
         services, isLoading, error, totalPages,
@@ -67,9 +67,9 @@ export const TouristServicePage = () => {
 
     const handleDeleteSelected = async () => {
         const ok = await confirm({
-            title: `Eliminar ${selectedServices.length} servicio(s)`,
-            message: 'Esta acción es permanente y no se puede deshacer.',
-            confirmLabel: 'Eliminar',
+            title: t('touristService.confirmDelete.title', { count: selectedServices.length }),
+            message: t('common.irreversibleAction'),
+            confirmLabel: t('common.delete'),
             variant: 'danger',
         });
         if (!ok) return;
@@ -98,8 +98,8 @@ export const TouristServicePage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Wrench className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.services }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Servicios turísticos</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los servicios son las ofertas concretas de cada compañía: hoteles, restaurantes, tours y más. Son los elementos que el turista puede explorar y evaluar en la app.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('touristService.pageTitle')}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{t('touristService.pageDescription')}</p>
                 </div>
             </div>
 

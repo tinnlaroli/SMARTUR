@@ -25,6 +25,7 @@ import {
     DataTableShell,
 } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 function KpiCard({
     label, value, icon: Icon, color,
@@ -55,6 +56,7 @@ function KpiCard({
 }
 
 export function EmpresaAnalyticsPage() {
+    const { t } = useLanguage();
     const [data, setData] = useState<AnalyticsResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export function EmpresaAnalyticsPage() {
     useEffect(() => {
         empresaApi.getAnalytics()
             .then(setData)
-            .catch(() => setError('Error al cargar analytics.'))
+            .catch(() => setError(t('empresa.analytics.errorLoading')))
             .finally(() => setLoading(false));
     }, []);
 
@@ -81,10 +83,10 @@ export function EmpresaAnalyticsPage() {
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             <div className="shrink-0">
                 <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                    Analytics
+                    {t('empresa.analytics.title')}
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                    Monitorea recomendaciones, favoritos, visitas y calidad percibida de tus servicios.
+                    {t('empresa.analytics.description')}
                 </p>
             </div>
 
@@ -95,10 +97,10 @@ export function EmpresaAnalyticsPage() {
                 <Activity className="mt-0.5 size-5 shrink-0" style={{ color: MODULE_COLORS.services }} />
                 <div>
                     <p className="mb-0.5 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                        Rendimiento de servicios
+                        {t('empresa.analytics.badgeTitle')}
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Estos indicadores reflejan el interes real de los turistas y te ayudan a priorizar mejoras.
+                        {t('empresa.analytics.badgeDescription')}
                     </p>
                 </div>
             </div>
@@ -117,10 +119,10 @@ export function EmpresaAnalyticsPage() {
 
             {!loading && !error && summary && (
                 <div className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-4">
-                    <KpiCard label="Recomendaciones ML" value={summary.total_recomendaciones} icon={TrendingUp} color="#9CCC44" />
-                    <KpiCard label="Favoritos" value={summary.total_favoritos} icon={Star} color="#FF7D1F" />
-                    <KpiCard label="Visitas" value={summary.total_visitas} icon={BarChart3} color="#4DB9CA" />
-                    <KpiCard label="Rating promedio" value={avgRating} icon={Award} color="var(--color-purple)" />
+                    <KpiCard label={t('empresa.analytics.recomendaciones')} value={summary.total_recomendaciones} icon={TrendingUp} color="#9CCC44" />
+                    <KpiCard label={t('empresa.analytics.favoritos')} value={summary.total_favoritos} icon={Star} color="#FF7D1F" />
+                    <KpiCard label={t('empresa.analytics.visitas')} value={summary.total_visitas} icon={BarChart3} color="#4DB9CA" />
+                    <KpiCard label={t('empresa.analytics.ratingPromedio')} value={avgRating} icon={Award} color="var(--color-purple)" />
                 </div>
             )}
 
@@ -144,10 +146,10 @@ export function EmpresaAnalyticsPage() {
                     </div>
                     <div>
                         <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            Sin datos de engagement por ahora
+                            {t('empresa.analytics.noDataTitle')}
                         </p>
                         <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                            Cuando los turistas interactuen con tus servicios, aqui veras su rendimiento.
+                            {t('empresa.analytics.noDataDescription')}
                         </p>
                     </div>
                 </div>
@@ -161,7 +163,7 @@ export function EmpresaAnalyticsPage() {
                             style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                         >
                             <p className="mb-4 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Interacciones - ultimos 30 dias
+                                {t('empresa.analytics.interactions30d')}
                             </p>
                             {timeline30d.length > 0 ? (
                                 <ResponsiveContainer width="100%" height={220}>
@@ -199,7 +201,7 @@ export function EmpresaAnalyticsPage() {
                                 </ResponsiveContainer>
                             ) : (
                                 <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                    Aun no hay actividad para graficar.
+                                    {t('empresa.analytics.noActivityChart')}
                                 </p>
                             )}
                         </div>
@@ -207,19 +209,19 @@ export function EmpresaAnalyticsPage() {
                         <DataTableShell className="h-full">
                             {topServicios.length === 0 ? (
                                 <div className="flex h-full items-center justify-center p-6 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                    No hay servicios con engagement registrado.
+                                    {t('empresa.analytics.noEngagementServices')}
                                 </div>
                             ) : (
                                 <DataTableScroll>
                                     <DataTable>
                                         <DataTableHead>
                                             <tr>
-                                                <DataTableHeadCell className="w-14">#</DataTableHeadCell>
-                                                <DataTableHeadCell>Servicio</DataTableHeadCell>
-                                                <DataTableHeadCell className="w-28">Favoritos</DataTableHeadCell>
-                                                <DataTableHeadCell className="w-24">Visitas</DataTableHeadCell>
-                                                <DataTableHeadCell className="w-24">Rating</DataTableHeadCell>
-                                                <DataTableHeadCell className="w-36">Recomendaciones</DataTableHeadCell>
+                                                <DataTableHeadCell className="w-14">{t('empresa.analytics.tableNum')}</DataTableHeadCell>
+                                                <DataTableHeadCell>{t('empresa.analytics.tableServicio')}</DataTableHeadCell>
+                                                <DataTableHeadCell className="w-28">{t('empresa.analytics.tableFavoritos')}</DataTableHeadCell>
+                                                <DataTableHeadCell className="w-24">{t('empresa.analytics.tableVisitas')}</DataTableHeadCell>
+                                                <DataTableHeadCell className="w-24">{t('empresa.analytics.tableRating')}</DataTableHeadCell>
+                                                <DataTableHeadCell className="w-36">{t('empresa.analytics.tableRecomendaciones')}</DataTableHeadCell>
                                             </tr>
                                         </DataTableHead>
                                         <DataTableBody>
@@ -263,17 +265,17 @@ export function EmpresaAnalyticsPage() {
                             style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                         >
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Resumen ejecutivo
+                                {t('empresa.analytics.executiveSummary')}
                             </p>
                             <div className="mt-4 space-y-3 text-sm" style={{ color: 'var(--color-text-alt)' }}>
                                 <p>
-                                    Total de interacciones en 30 dias:{' '}
+                                    {t('empresa.analytics.interactions30d')}{' '}
                                     <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
                                         {interactionTotal}
                                     </span>
                                 </p>
                                 <p>
-                                    Servicios activos:{' '}
+                                    {t('empresa.analytics.activeServices')}{' '}
                                     <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
                                         {summary?.total_servicios_activos ?? 0}
                                     </span>
@@ -289,7 +291,7 @@ export function EmpresaAnalyticsPage() {
                                 <div className="mb-3 flex items-center justify-between">
                                     <p className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                                         <Award size={15} style={{ color: MODULE_COLORS.services }} />
-                                        Evaluacion de calidad SMARTUR
+                                        {t('empresa.analytics.qualityTitle')}
                                     </p>
                                     <span className="font-bold" style={{ color: MODULE_COLORS.services }}>
                                         {evalScore}/100
@@ -310,7 +312,7 @@ export function EmpresaAnalyticsPage() {
                                 className="rounded-2xl border p-5 text-sm"
                                 style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                             >
-                                Aun no hay score de calidad disponible para tu empresa.
+                                {t('empresa.analytics.noQualityScore')}
                             </div>
                         )}
                     </div>

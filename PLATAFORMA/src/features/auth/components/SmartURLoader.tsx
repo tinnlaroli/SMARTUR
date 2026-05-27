@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import * as flubber from "flubber";
 import smarturLogo from "../../../assets/landing/logo.png";
 import "./SmartURLoader.css";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 interface SmartURLoaderProps {
   onFinished?: () => void;
@@ -223,6 +224,7 @@ const PRECALCULATED_PLANES = [
  *   isReady    → Señal externa para terminar la carga.
  * ═══════════════════════════════════════════════════════════════════════════ */
 export default function SmartURLoader({ onFinished, isReady = false }: SmartURLoaderProps = {}) {
+  const { t } = useLanguage();
   // Referencias DOM para animaciones GSAP
   const containerRef = useRef<HTMLDivElement>(null); // Contenedor principal (overlay)
   const percentRef = useRef<HTMLDivElement>(null); // Elemento del porcentaje de carga
@@ -470,7 +472,7 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
           ref={svgRef}
           viewBox="0 0 169.42 218.53"
           className="smartur-loader-svg"
-          aria-label="Cargando SMARTUR"
+          aria-label={t('auth.loader.ariaLabel')}
         >
           <g>
             {PIN_PATHS.map((p, i) => (

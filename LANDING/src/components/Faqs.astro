@@ -149,12 +149,26 @@ const { title, subtitle, mobileTitle, items } = Astro.props;
     text-align: center;
     margin-bottom: 0.1em;
 
+    span:first-child {
+      @media (--mq-phone) {
+        display: none;
+      }
+    }
+
     span:last-child {
       display: none;
+
+      @media (--mq-phone) {
+        display: inline;
+      }
     }
 
     @media (--mq-phone) {
-      --fs: 2.5rem;
+      --fs: 2rem;
+    }
+
+    @media (--mq-phone-sm) {
+      --fs: 1.75rem;
     }
   }
 
@@ -196,6 +210,10 @@ const { title, subtitle, mobileTitle, items } = Astro.props;
     white-space: preserve-breaks;
     padding-left: calc(1rem + 0.75rem);
     color: var(--color-text-alt);
+
+    @media (--mq-phone) {
+      padding-left: 0;
+    }
   }
 
   h3 {
@@ -210,7 +228,8 @@ const { title, subtitle, mobileTitle, items } = Astro.props;
   }
 
   .toggle {
-    padding: 0;
+    padding: 0.75rem 0;
+    min-height: 44px;
     cursor: pointer;
     display: flex;
     justify-content: flex-end;
@@ -221,6 +240,7 @@ const { title, subtitle, mobileTitle, items } = Astro.props;
     text-align: left;
     gap: 1rem;
     flex-direction: row-reverse;
+    -webkit-tap-highlight-color: transparent;
 
     > span:last-child {
       display: flex;

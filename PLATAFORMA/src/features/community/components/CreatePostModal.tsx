@@ -4,6 +4,7 @@ import { touristServiceApi } from '../../tourist-services/api/touristServiceApi'
 import { poiApi } from '../../points-of-interest/api/poiApi';
 import type { TouristService } from '../../tourist-services/types/types';
 import type { POI } from '../../points-of-interest/types/types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface Props {
     onClose: () => void;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function CreatePostModal({ onClose, onSubmit }: Props) {
+    const { t } = useLanguage();
     const [caption, setCaption] = useState('');
     const [placeKind, setPlaceKind] = useState<'svc' | 'poi'>('svc');
     const [placeId, setPlaceId] = useState('');
@@ -79,7 +81,7 @@ export default function CreatePostModal({ onClose, onSubmit }: Props) {
                             onChange={(e) => setCaption(e.target.value)}
                             maxLength={2000}
                             rows={3}
-                            placeholder="Escribe algo sobre este lugar..."
+                            placeholder={t('community.createPost.placeholder')}
                             className="w-full rounded-xl border px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                             style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                         />
@@ -111,7 +113,7 @@ export default function CreatePostModal({ onClose, onSubmit }: Props) {
                                 style={{ borderColor: 'var(--color-border)' }}
                             >
                                 <ImagePlus className="size-6" style={{ color: 'var(--color-text-alt)' }} />
-                                <span className="text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>Seleccionar imagen</span>
+                                <span className="text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>{t('community.createPost.selectImage')}</span>
                             </button>
                         )}
                     </div>

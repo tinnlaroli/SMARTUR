@@ -492,11 +492,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             child: Wrap(
               spacing: 8, runSpacing: 8,
               children: [
-                _ToggleChip(icon: Icons.map_outlined,            label: 'Tours guiados',     value: _wantsTours,        onChanged: (v) => setState(() => _wantsTours = v)),
-                _ToggleChip(icon: Icons.hotel_outlined,          label: 'Necesito hotel',    value: _needsHotel,        onChanged: (v) => setState(() => _needsHotel = v)),
-                _ToggleChip(icon: Icons.restaurant_menu_outlined,label: 'Opciones de comida',value: _prefFood,          onChanged: (v) => setState(() => _prefFood = v)),
-                _ToggleChip(icon: Icons.accessible_outlined,     label: 'Accesible',         value: _reqAccesibilidad,  onChanged: (v) => setState(() => _reqAccesibilidad = v)),
-                _ToggleChip(icon: Icons.nature_outlined,         label: 'Al aire libre',     value: _prefOutdoor,       onChanged: (v) => setState(() => _prefOutdoor = v)),
+                _ToggleChip(icon: Icons.map_outlined,            label: AppLocalizations.of(context)!.recoGuidedTours,  value: _wantsTours,        onChanged: (v) => setState(() => _wantsTours = v)),
+                _ToggleChip(icon: Icons.hotel_outlined,          label: AppLocalizations.of(context)!.recoNeedHotel,    value: _needsHotel,        onChanged: (v) => setState(() => _needsHotel = v)),
+                _ToggleChip(icon: Icons.restaurant_menu_outlined,label: AppLocalizations.of(context)!.recoFoodOptions,  value: _prefFood,          onChanged: (v) => setState(() => _prefFood = v)),
+                _ToggleChip(icon: Icons.accessible_outlined,     label: AppLocalizations.of(context)!.recoAccessible,   value: _reqAccesibilidad,  onChanged: (v) => setState(() => _reqAccesibilidad = v)),
+                _ToggleChip(icon: Icons.nature_outlined,         label: AppLocalizations.of(context)!.recoOutdoor,      value: _prefOutdoor,       onChanged: (v) => setState(() => _prefOutdoor = v)),
               ],
             ),
           ),

@@ -1,6 +1,6 @@
 ---
 interface Props {
-  lang?: "es" | "en" | "fr";
+  lang?: "es" | "en" | "fr" | "pt";
 }
 
 const { lang = "es" } = Astro.props;
@@ -93,6 +93,36 @@ const t = {
         icon: "check",
         title: "Inscription rapide",
         desc: "Créez votre compte et ajoutez vos services en quelques minutes. Révision sous 24h.",
+      },
+    ],
+  },
+  pt: {
+    badge: "Portal B2B",
+    title: "É uma empresa turística?",
+    subtitle:
+      "Registre seu negócio na SMARTUR e alcance milhares de turistas que visitam as Altas Montanhas de Veracruz.",
+    cta: "Registre seu negócio grátis",
+    ctaNote: "Sem custo durante o período de lançamento",
+    features: [
+      {
+        icon: "chart",
+        title: "Painel de analytics",
+        desc: "Métricas de favoritos, visitas e avaliações dos seus serviços em tempo real.",
+      },
+      {
+        icon: "mobile",
+        title: "Visibilidade no app",
+        desc: "Seus serviços aparecem nas recomendações de IA do app SMARTUR para iOS e Android.",
+      },
+      {
+        icon: "bell",
+        title: "Notificações push",
+        desc: "A equipe SMARTUR pode comunicar novidades diretamente aos turistas interessados em você.",
+      },
+      {
+        icon: "check",
+        title: "Registro imediato",
+        desc: "Crie sua conta e adicione seus serviços em minutos. Revisão pela equipe em 24h.",
       },
     ],
   },

@@ -27,7 +27,7 @@ const inputCls = (hasError = false) =>
     }`;
 
 export default function EditUserModal({ user, onClose, onSubmit }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
 
     const [formData, setFormData] = useState({
@@ -56,8 +56,8 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
     const validate = () => {
         const e: Record<string, string> = {};
         if (!formData.name.trim()) e.name = mod.users.namePlaceholderShort + ' es obligatorio.';
-        else if (/\d/.test(formData.name)) e.name = 'El nombre no debe contener números.';
-        if (formData.password && formData.password.length < 8) e.password = 'Mínimo 8 caracteres.';
+        else if (/\d/.test(formData.name)) e.name = t('validation.nameNoNumbers');
+        if (formData.password && formData.password.length < 8) e.password = t('validation.passwordMinLength');
         if (formData.role_id === 3 && !formData.id_company) e.id_company = mod.users.companySelect;
         return e;
     };

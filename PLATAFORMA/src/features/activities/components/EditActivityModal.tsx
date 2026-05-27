@@ -1,14 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Activity, Loader2 } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { companyServices } from '../../companies/api/companyApi';
 import type { Company } from '../../companies/types/types';
 import type { Activity as ActivityType, UpdateActivityDTO } from '../types/types';
-
-const IMPACT_OPTIONS = [
-    { label: 'Bajo', value: 'bajo' },
-    { label: 'Medio', value: 'medio' },
-    { label: 'Alto', value: 'alto' },
-];
 
 const selectClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 cursor-pointer disabled:opacity-50';
@@ -20,6 +15,12 @@ interface Props {
 }
 
 export default function EditActivityModal({ activity, onClose, onSubmit }: Props) {
+    const { t } = useLanguage();
+    const impactOptions = useMemo(() => [
+        { label: t('activity.modal.impactLow'), value: 'bajo' },
+        { label: t('activity.modal.impactMed'), value: 'medio' },
+        { label: t('activity.modal.impactHigh'), value: 'alto' },
+    ], [t]);
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loadingCompanies, setLoadingCompanies] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -46,7 +47,7 @@ export default function EditActivityModal({ activity, onClose, onSubmit }: Props
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const val = parseFloat(productionValue);
-        if (isNaN(val) || val < 0) { setError('Ingresa un valor de producción válido.'); return; }
+        if (isNaN(val) || val < 0) { setError(t('validation.productionValueValid')); return; }
         setSubmitting(true);
         const ok = await onSubmit(activity.id, { production_value: val, environmental_impact: envImpact, social_impact: socialImpact });
         setSubmitting(false);
@@ -68,7 +69,7 @@ export default function EditActivityModal({ activity, onClose, onSubmit }: Props
 
                 <form onSubmit={handleSubmit} className="space-y-4 p-5">
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Empresa</label>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.edit.company')}</label>
                         <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)', background: 'var(--color-bg-alt)' }}>
                             {loadingCompanies ? `Empresa #${activity.company}` : getCompanyName()}
                         </div>
@@ -89,25 +90,25 @@ export default function EditActivityModal({ activity, onClose, onSubmit }: Props
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Impacto ambiental</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.edit.envImpact')}</label>
                             <select
                                 value={envImpact}
                                 onChange={(e) => setEnvImpact(e.target.value)}
                                 className={selectClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Impacto social</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('activity.edit.socialImpact')}</label>
                             <select
                                 value={socialImpact}
                                 onChange={(e) => setSocialImpact(e.target.value)}
                                 className={selectClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                         </div>
                     </div>
@@ -116,11 +117,11 @@ export default function EditActivityModal({ activity, onClose, onSubmit }: Props
 
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
-                            Cancelar
+                            {t('activity.modal.cancel')}
                         </button>
                         <button type="submit" disabled={submitting} className="flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white disabled:opacity-50" style={{ background: 'var(--color-green)' }}>
                             {submitting && <Loader2 className="size-4 animate-spin" />}
-                            Guardar cambios
+                            {t('activity.modal.save')}
                         </button>
                     </div>
                 </form>

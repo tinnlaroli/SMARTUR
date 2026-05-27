@@ -37,12 +37,20 @@ const linksMap = {
     { title: t("nav.contact"), url: "#contact" },
   ],
   fr: [
-    { title: t("nav.home"), url: "#home" }, // "home" is fine for now, or "accueil"
+    { title: t("nav.home"), url: "#home" },
     { title: t("nav.destination"), url: "#region" },
     { title: t("nav.technology"), url: "#technology" },
-    { title: t("nav.about"), url: "#about" }, // "about" is fine or "apropos"
+    { title: t("nav.about"), url: "#about" },
     { title: t("nav.pricing"), url: "#pricing" },
     { title: t("nav.contact"), url: "#contact" },
+  ],
+  pt: [
+    { title: t("nav.home"), url: "#inicio" },
+    { title: t("nav.destination"), url: "#region" },
+    { title: t("nav.technology"), url: "#tecnologia" },
+    { title: t("nav.about"), url: "#nosso" },
+    { title: t("nav.pricing"), url: "#pricing" },
+    { title: t("nav.contact"), url: "#contato" },
   ],
 };
 
@@ -84,6 +92,17 @@ const seoMetadata = {
       "Plateforme d'IA pour des recommandations touristiques personnalisées dans la région des Hautes Montagnes, Veracruz",
     locale: "fr_FR",
   },
+  pt: {
+    title: "SMARTUR - Turismo Inteligente nas Altas Montanhas",
+    description:
+      "SMARTUR: Plataforma de recomendação turística inteligente para MiPyMEs nas Altas Montanhas de Veracruz. Usamos IA para potencializar o turismo regional com recomendações personalizadas.",
+    keywords:
+      "Turismo Veracruz, SMARTUR, IA Turística, Altas Montanhas, Recomendações Personalizadas, MiPyMEs Turísticas, Inteligência Artificial, Turismo Regional, Machine Learning, Veracruz México",
+    ogTitle: "SMARTUR - Turismo Inteligente nas Altas Montanhas de Veracruz",
+    ogDescription:
+      "Plataforma de IA para recomendações turísticas personalizadas na região das Altas Montanhas, Veracruz",
+    locale: "pt_BR",
+  },
 };
 
 const seo = seoMetadata[currentLang];
@@ -120,11 +139,11 @@ const seo = seoMetadata[currentLang];
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="SMARTUR - Turismo Inteligente en Veracruz"
+      content={t("layout.twitterCardTitle")}
     />
     <meta
       name="twitter:description"
-      content="Plataforma de IA para recomendaciones turísticas personalizadas en Las Altas Montañas"
+      content={t("layout.twitterCardDesc")}
     />
 
     <!-- Structured Data -->
@@ -141,12 +160,12 @@ const seo = seoMetadata[currentLang];
           "addressRegion": "Veracruz",
           "addressCountry": "MX"
         },
-        "award": "Galardón Turístico Mi Veracruz 2024"
+        "award": "{t("layout.award")}"
       }
     </script>
   </head>
-  <body class="is-loading" data-tab-away={t("tab.away")}>
-    <PageLoader />
+  <body class="is-loading" data-tab-away={t("tab.away")} data-tab-away-fallback={t("layout.tabAwayFallback")}>
+    <PageLoader label={t("loader.ariaLabel")} />
     <a href="#main" class="skip-link">{t("accessibility.skip-to-content")}</a>
     <Header
       logoUrl="/"
@@ -162,6 +181,7 @@ const seo = seoMetadata[currentLang];
           <slot />
         </main>
         <Footer
+          lang={currentLang}
           logoUrl="/"
           logoAlt="SMARTUR"
           links={links}
@@ -232,6 +252,12 @@ const seo = seoMetadata[currentLang];
     min-height: 100%;
     padding-bottom: 10rem; /* space so fixed footer does not cover content */
   }
+
+  @media (--mq-phone) {
+    body.native-scroll #smooth-content {
+      padding-bottom: 6rem;
+    }
+  }
 </style>
 
 <script>
@@ -241,7 +267,7 @@ const seo = seoMetadata[currentLang];
   (() => {
     const originalTitle = document.title;
     const tabAwayMessage =
-      document.body.dataset.tabAway || "¿A dónde fuiste?  Regresa a SMARTUR";
+      document.body.dataset.tabAway || document.body.dataset.tabAwayFallback;
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {

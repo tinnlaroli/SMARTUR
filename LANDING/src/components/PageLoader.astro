@@ -1,6 +1,12 @@
 ---
 import SmartURLoader from "./SmartURLoader.jsx";
+
+interface Props {
+  label?: string;
+}
+
+const { label } = Astro.props;
 ---
 
 <!-- Wrapper Astro que monta el nuevo loader React -->
-<SmartURLoader client:load />
+<SmartURLoader client:load label={label} />

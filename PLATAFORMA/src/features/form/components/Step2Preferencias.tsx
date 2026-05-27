@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ChevronRight, ChevronLeft, Mountain, Footprints, Utensils, Landmark, Home, Cloud, Sun, Trees, Zap, Building } from 'lucide-react';
 import type { FormContext } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Step2Props {
     data: Partial<FormContext>;
@@ -12,32 +14,12 @@ interface Step2Props {
     onChange: (newData: Partial<FormContext>) => void;
 }
 
-const tiposTurismoList = [
-    { label: 'Naturaleza', value: 'naturaleza', icon: Mountain },
-    { label: 'Aventura', value: 'aventura', icon: Footprints },
-    { label: 'Gastronómico', value: 'gastronomico', icon: Utensils },
-    { label: 'Cultural', value: 'cultural', icon: Landmark },
-    { label: 'Rural', value: 'rural', icon: Home },
-];
-
-const actividadLevels = [
-    { label: 'Muy relajado', value: 1, icon: Cloud },
-    { label: 'Relajado', value: 2, icon: Sun },
-    { label: 'Moderado', value: 3, icon: Trees },
-    { label: 'Activo', value: 4, icon: Zap },
-    { label: 'Muy activo', value: 5, icon: Zap },
-];
-
-const lugarOptions = [
-    { label: 'Aire libre', value: 'aire', icon: Sun },
-    { label: 'Cerrado', value: 'cerrado', icon: Building },
-    { label: 'Indiferente', value: 'indiferente', icon: Trees },
-];
-
 export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onBack, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.form, [lang]);
 
     useGSAP(
         () => {
@@ -58,6 +40,28 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
     const [actividad_level, setActividad] = useState<number>(data.actividad_level ?? 0);
     const [preferencia_lugar, setPreferenciaLugar] = useState<string>(data.preferencia_lugar || '');
 
+    const tiposTurismoList = useMemo(() => [
+        { label: copy.step2.tourismTypes.nature, value: 'naturaleza', icon: Mountain },
+        { label: copy.step2.tourismTypes.adventure, value: 'aventura', icon: Footprints },
+        { label: copy.step2.tourismTypes.gastronomy, value: 'gastronomico', icon: Utensils },
+        { label: copy.step2.tourismTypes.cultural, value: 'cultural', icon: Landmark },
+        { label: copy.step2.tourismTypes.rural, value: 'rural', icon: Home },
+    ], [copy]);
+
+    const actividadLevels = useMemo(() => [
+        { label: copy.step2.activityLevels.veryRelaxed, value: 1, icon: Cloud },
+        { label: copy.step2.activityLevels.relaxed, value: 2, icon: Sun },
+        { label: copy.step2.activityLevels.moderate, value: 3, icon: Trees },
+        { label: copy.step2.activityLevels.active, value: 4, icon: Zap },
+        { label: copy.step2.activityLevels.veryActive, value: 5, icon: Zap },
+    ], [copy]);
+
+    const lugarOptions = useMemo(() => [
+        { label: copy.step2.placePreferences.outdoor, value: 'aire', icon: Sun },
+        { label: copy.step2.placePreferences.indoor, value: 'cerrado', icon: Building },
+        { label: copy.step2.placePreferences.indifferent, value: 'indiferente', icon: Trees },
+    ], [copy]);
+
     const toggleTipo = (v: string) => {
         setTipos((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
     };
@@ -77,13 +81,13 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className={`mb-2 text-3xl font-bold ${isDark ? 'text-white' : 'text-zinc-900'}`}>Preferencias</h2>
-                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Selecciona tus intereses para personalizar las recomendaciones</p>
+                <h2 className={`mb-2 text-3xl font-bold ${isDark ? 'text-white' : 'text-zinc-900'}`}>{copy.step2.title}</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>{copy.step2.subtitle}</p>
             </div>
 
             <div className="form-section mb-8">
                 <label className={`mb-4 flex items-center gap-1 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                    Tipos de turismo
+                    {copy.step2.tourismTypesLabel}
                     <span className="text-pink-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -111,8 +115,8 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
 
             <div className="form-section mb-8">
                 <label className={`mb-4 flex items-center gap-1.5 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                    Nivel de actividad
-                    <span className="text-xs font-normal text-zinc-400">(opcional)</span>
+                    {copy.step2.activityLevelLabel}
+                    <span className="text-xs font-normal text-zinc-400">{copy.step2.optional}</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
                     {actividadLevels.map((level) => (
@@ -139,8 +143,8 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
 
             <div className="form-section mb-10">
                 <label className={`mb-4 flex items-center gap-1.5 text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                    Preferencia de lugar
-                    <span className="text-xs font-normal text-zinc-400">(opcional)</span>
+                    {copy.step2.placePreferenceLabel}
+                    <span className="text-xs font-normal text-zinc-400">{copy.step2.optional}</span>
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                     {lugarOptions.map((lugar) => (
@@ -175,14 +179,14 @@ export const Step2Preferencias: React.FC<Step2Props> = ({ data = {}, onNext, onB
                     }`}
                 >
                     <ChevronLeft className="size-5" />
-                    <span>Atrás</span>
+                    <span>{copy.step2.back}</span>
                 </button>
                 <button
                     onClick={handleNext}
                     disabled={!tiposTurismo.length}
                     className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <span>Continuar</span>
+                    <span>{copy.step2.next}</span>
                     <ChevronRight className="size-5" />
                 </button>
             </div>

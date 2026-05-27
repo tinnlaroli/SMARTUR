@@ -1,7 +1,9 @@
 import type { PaginationProps } from '../types/types';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProps) {
+    const { t } = useLanguage();
     const goToPage = (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return;
 
@@ -56,7 +58,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                     onClick={() => goToPage(1)}
                     disabled={page <= 1}
                     className={`p-1.5 rounded-md transition-colors ${page <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400'}`}
-                    title="Primera página"
+                    title={t('pagination.firstPage')}
                 >
                     <ChevronsLeft size={16} strokeWidth={1.5} />
                 </button>
@@ -65,7 +67,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                     onClick={() => goToPage(page - 1)}
                     disabled={page <= 1}
                     className={`p-1.5 rounded-md transition-colors ${page <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400'}`}
-                    title="Página anterior"
+                    title={t('pagination.previousPage')}
                 >
                     <ChevronLeft size={16} strokeWidth={1.5} />
                 </button>
@@ -87,7 +89,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                                 key={p}
                                 onClick={() => goToPage(p)}
                                 className={`min-w-[32px] h-8 px-2 rounded-md text-sm transition-all duration-200 ${p === page ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 font-medium border border-violet-200 dark:border-violet-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-300'}`}
-                                title={`Ir a página ${p}`}
+                                title={`${t('pagination.goToPage')}${p}`}
                             >
                                 {p}
                             </button>
@@ -99,7 +101,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                     onClick={() => goToPage(page + 1)}
                     disabled={page >= totalPages}
                     className={`p-1.5 rounded-md transition-colors ${page >= totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400'}`}
-                    title="Página siguiente"
+                    title={t('pagination.nextPage')}
                 >
                     <ChevronRight size={16} strokeWidth={1.5} />
                 </button>
@@ -108,7 +110,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                     onClick={() => goToPage(totalPages)}
                     disabled={page >= totalPages}
                     className={`p-1.5 rounded-md transition-colors ${page >= totalPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400'}`}
-                    title="Última página"
+                    title={t('pagination.lastPage')}
                 >
                     <ChevronsRight size={16} strokeWidth={1.5} />
                 </button>
@@ -116,7 +118,7 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
 
             <div className="flex items-center gap-4 text-xs justify-end">
                 <div className="flex items-center gap-2">
-                    <span className="text-zinc-500 dark:text-zinc-500">Mostrar</span>
+                    <span className="text-zinc-500 dark:text-zinc-500">{t('pagination.show')}</span>
                     <select
                         value={limit}
                         onChange={(e) => changeLimit(Number(e.target.value))}
@@ -129,14 +131,14 @@ function Pagination({ page, totalPages, limit, setSearchParams }: PaginationProp
                         <option value={25}>25</option>
                         <option value={50}>50</option>
                     </select>
-                    <span className="text-zinc-500 dark:text-zinc-500">por página</span>
+                    <span className="text-zinc-500 dark:text-zinc-500">{t('pagination.perPage')}</span>
                 </div>
 
                 <div className="text-zinc-500 dark:text-zinc-500">
                     <span className="font-medium text-zinc-700 dark:text-zinc-300">
                         {(page - 1) * limit + 1} - {Math.min(page * limit, totalPages * limit)}
                     </span>{' '}
-                    de{' '}
+                    {t('pagination.of')}{' '}
                     <span className="font-medium text-zinc-700 dark:text-zinc-300">
                         {totalPages * limit}
                     </span>

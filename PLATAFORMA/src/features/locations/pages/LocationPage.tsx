@@ -61,8 +61,8 @@ export const LocationPage = () => {
     const handleDeleteSelected = async () => {
         const ok = await confirm({
             title: m.common.confirmDeleteLocations(selectedLocations.length),
-            message: `Se eliminarán ${selectedLocations.length} ubicación(es) de forma permanente.`,
-            confirmLabel: 'Eliminar',
+            message: m.common.confirmDeleteLocationsMsg(selectedLocations.length),
+            confirmLabel: m.common.delete,
             variant: 'danger',
         });
         if (!ok) return;
@@ -87,8 +87,8 @@ export const LocationPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <MapPin className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.locations }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Ubicaciones</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Define los municipios y zonas geográficas de la región. Las ubicaciones agrupan los servicios y POIs para que el motor de recomendaciones los contextualice correctamente.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.locations.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.locations.bannerDescription}</p>
                 </div>
             </div>
 

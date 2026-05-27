@@ -1,15 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Globe2, Moon, Sun } from 'lucide-react';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { DASHBOARD_COLORS } from '../utils/dashboard';
 import type { LanguageCode } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
-
-const LANGUAGES: { code: LanguageCode; label: string; flag: string }[] = [
-    { code: 'es', label: 'Español', flag: '🇲🇽' },
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷' },
-];
 
 const cardSurface = {
     background: 'var(--color-bg)',
@@ -21,9 +15,14 @@ const cardSurface = {
  * Intended as a colSpan=1, rowSpan=1 (200px) compact utility card.
  */
 const LangSwitchWidget: React.FC = () => {
-    const { lang, changeLanguage } = useLanguage();
+    const { lang, changeLanguage, t } = useLanguage();
     const { theme, toggleTheme } = useUserPreferences();
     const copy = getDashboardText(lang).widgets;
+    const LANGUAGES = useMemo<{ code: LanguageCode; label: string; flag: string }[]>(() => [
+        { code: 'es', label: t('lang.es'), flag: '🇲🇽' },
+        { code: 'en', label: t('lang.en'), flag: '🇺🇸' },
+        { code: 'fr', label: t('lang.fr'), flag: '🇫🇷' },
+    ], [t]);
 
     return (
         <section

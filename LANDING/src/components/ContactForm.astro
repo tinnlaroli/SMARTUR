@@ -75,7 +75,7 @@ const REASONS = [
 <dialog
   id="contact-dialog"
   aria-labelledby="dialog-title"
-  class="rounded-2xl p-0 w-[calc(100vw-2rem)] max-w-lg shadow-2xl border"
+  class="rounded-2xl p-0 w-[min(100%,calc(100%-2rem))] max-w-lg shadow-2xl border"
   style="background: var(--color-bg); border-color: var(--color-border);"
 >
   <div class="p-6 sm:p-8">
@@ -89,7 +89,7 @@ const REASONS = [
         id="dialog-close"
         class="ml-4 shrink-0 rounded-lg p-1 transition-opacity opacity-50 hover:opacity-100"
         style="color: var(--color-text-alt);"
-        aria-label="Cerrar"
+        aria-label={t["contact.form.closeAria"]}
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -169,6 +169,7 @@ const REASONS = [
   messageShort:   t["contact.form.messageShort"],
   sending:        t["contact.form.sending"],
   submitLabel:    t["contact.modal.submit"],
+  serverError:    t["contact.form.serverError"],
 }}>
   const observer = new IntersectionObserver(
     (entries) => {
@@ -244,7 +245,7 @@ const REASONS = [
       emailStep.setAttribute("hidden", "");
       successDiv.removeAttribute("hidden");
     } catch {
-      showError("No se pudo enviar. Intenta de nuevo.");
+      showError(serverError);
     } finally {
       modalSubmit.disabled = false;
       modalSubmit.textContent = submitLabel;
@@ -271,5 +272,36 @@ const REASONS = [
   .reveal-fade-up.is-visible {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  @media (--mq-phone) {
+    .cta-minimal {
+      padding-top: 3rem !important;
+      padding-bottom: 3rem !important;
+    }
+
+    .cta-minimal .container {
+      padding-left: var(--container-offset);
+      padding-right: var(--container-offset);
+    }
+
+    .cta-minimal h2 {
+      font-size: clamp(1.75rem, 8vw, 2.25rem) !important;
+    }
+
+    #contact-email-step {
+      flex-direction: column;
+      max-width: 100%;
+    }
+
+    #contact-email-step :global(.btn) {
+      width: 100%;
+    }
+
+    #contact-dialog {
+      width: min(32rem, calc(100% - 1.5rem));
+      max-height: calc(100dvh - 1.5rem);
+      overflow-y: auto;
+    }
   }
 </style>

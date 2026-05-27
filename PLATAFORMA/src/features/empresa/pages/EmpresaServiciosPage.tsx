@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useReducer, useState } from 'react';
+import axios from 'axios';
 import { Wrench, Plus, Loader2, X, AlertCircle } from 'lucide-react';
 import {
     empresaApi,
@@ -15,70 +16,90 @@ import Pagination from '../../users/components/Pagination';
 import EmpresaServiceTable from '../components/EmpresaServiceTable';
 import { useEmpresaServices } from '../hooks/useEmpresaServices';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { useToast } from '../../../shared/context/ToastContext';
+import { EMPRESA_SERVICE_TYPE_OPTIONS } from '../utils/serviceTypes';
 
-// ── Service type options ────────────────────────────────────────────────────
-const SERVICE_TYPES = [
-    'Restaurante',
-    'Hotel',
-    'Ecoturismo',
-    'Aventura',
-    'Cultural',
-    'Artesanías',
-    'Transporte',
-    'Guía Turístico',
-    'Spa / Bienestar',
-    'Entretenimiento',
-    'Otro',
-];
-
-// ── Modal de creación / edición ─────────────────────────────────────────────
 interface ServiceModalProps {
     initial?: EmpresaService | null;
+    defaultLocationId?: number | null;
     onClose: () => void;
     onSaved: (svc: EmpresaService) => void;
 }
 
-function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
+function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceModalProps) {
+    const toast = useToast();
+    const { t } = useLanguage();
     const isEdit = !!initial;
-    const [form, setForm] = useState<ServiceCreatePayload>({
+    const [form, setForm] = useState({
         name: initial?.name ?? '',
         description: initial?.description ?? '',
-        service_type: initial?.service_type ?? '',
-        address: initial?.address ?? '',
+        service_type: initial?.service_type ?? 'tour',
+        active: initial?.active ?? true,
     });
+    const typeOptions = useMemo(() => {
+        const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((option) => option.value);
+        if (form.service_type && !known.includes(form.service_type)) {
+            return [{ value: form.service_type, label: form.service_type }, ...EMPRESA_SERVICE_TYPE_OPTIONS];
+        }
+        return EMPRESA_SERVICE_TYPE_OPTIONS;
+    }, [form.service_type]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
     ) => {
-        setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setForm((f) => ({
+            ...f,
+            [name]: name === 'active' ? value === 'true' : value,
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.name.trim() || !form.service_type) {
-            setError('Nombre y tipo de servicio son obligatorios.');
+            setError(t('validation.serviceNameTypeRequired'));
             return;
         }
+        if (!isEdit && !defaultLocationId) {
+            setError(t('empresa.servicios.modal.errorNoLocation'));
+            return;
+        }
+
         setSaving(true);
         setError(null);
         try {
             const payload = {
-                ...form,
                 name: form.name.trim(),
                 description: form.description?.trim() || undefined,
-                address: form.address?.trim() || undefined,
+                service_type: form.service_type,
             };
+
             if (isEdit && initial) {
-                const { service } = await empresaApi.updateService(initial.id_service, payload as ServiceUpdatePayload);
+                const { service } = await empresaApi.updateService(initial.id_service, {
+                    ...payload,
+                    active: form.active,
+                } as ServiceUpdatePayload);
+                toast.success(t('empresa.servicios.toast.updated'));
                 onSaved(service);
             } else {
-                const { service } = await empresaApi.createService(payload);
+                const { service } = await empresaApi.createService({
+                    ...payload,
+                    id_location: defaultLocationId ?? undefined,
+                    active: form.active,
+                } as ServiceCreatePayload);
+                toast.success(t('empresa.servicios.toast.created'));
                 onSaved(service);
             }
-        } catch {
-            setError('Error al guardar el servicio. Intenta de nuevo.');
+        } catch (err) {
+            const message = axios.isAxiosError(err)
+                ? (err.response?.data as { message?: string } | undefined)?.message
+                    ?? 'Error al guardar el servicio.'
+                : 'Error al guardar el servicio.';
+            setError(message);
+            toast.error(message);
         } finally {
             setSaving(false);
         }
@@ -101,7 +122,7 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <h2 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {isEdit ? 'Editar servicio' : 'Nuevo servicio'}
+                        {isEdit ? t('empresa.servicios.modal.editTitle') : t('empresa.servicios.modal.createTitle')}
                     </h2>
                     <button
                         type="button"
@@ -117,14 +138,14 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                     {/* Nombre */}
                     <div className="space-y-1.5">
                         <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Nombre <span style={{ color: 'var(--color-pink)' }}>*</span>
+                            {t('empresa.servicios.modal.name')} <span style={{ color: 'var(--color-pink)' }}>*</span>
                         </label>
                         <input
                             name="name"
                             value={form.name}
                             onChange={handleChange}
                             maxLength={120}
-                            placeholder="Ej: Restaurante El Mirador"
+                            placeholder={t('empresa.servicios.modal.namePlaceholder')}
                             className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
                             style={{
                                 background: 'var(--color-bg-alt)',
@@ -137,7 +158,7 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                     {/* Tipo */}
                     <div className="space-y-1.5">
                         <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Tipo de servicio <span style={{ color: 'var(--color-pink)' }}>*</span>
+                            {t('empresa.servicios.modal.serviceType')} <span style={{ color: 'var(--color-pink)' }}>*</span>
                         </label>
                         <select
                             name="service_type"
@@ -150,17 +171,39 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                                 color: form.service_type ? 'var(--color-text)' : 'var(--color-text-alt)',
                             }}
                         >
-                            <option value="">Selecciona un tipo…</option>
-                            {SERVICE_TYPES.map((t) => (
-                                <option key={t} value={t}>{t}</option>
+                            <option value="">{t('empresa.servicios.modal.selectType')}</option>
+                            {typeOptions.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
                         </select>
                     </div>
 
+                    {isEdit && (
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                                {t('empresa.servicios.modal.status')}
+                            </label>
+                            <select
+                                name="active"
+                                value={form.active ? 'true' : 'false'}
+                                onChange={handleChange}
+                                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none appearance-none"
+                                style={{
+                                    background: 'var(--color-bg-alt)',
+                                    borderColor: 'var(--color-border)',
+                                    color: 'var(--color-text)',
+                                }}
+                            >
+                                <option value="true">{t('empresa.servicios.modal.active')}</option>
+                                <option value="false">{t('empresa.servicios.modal.inactive')}</option>
+                            </select>
+                        </div>
+                    )}
+
                     {/* Descripción */}
                     <div className="space-y-1.5">
                         <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Descripción
+                            {t('empresa.servicios.modal.description')}
                         </label>
                         <textarea
                             name="description"
@@ -170,26 +213,6 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                             maxLength={400}
                             placeholder="Describe brevemente tu servicio…"
                             className="w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text)',
-                            }}
-                        />
-                    </div>
-
-                    {/* Dirección */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Dirección
-                        </label>
-                        <input
-                            name="address"
-                            value={form.address ?? ''}
-                            onChange={handleChange}
-                            maxLength={200}
-                            placeholder="Ej: Av. Oriente 5, Orizaba, Ver."
-                            className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
                             style={{
                                 background: 'var(--color-bg-alt)',
                                 borderColor: 'var(--color-border)',
@@ -224,7 +247,7 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                                 color: 'var(--color-text-alt)',
                             }}
                         >
-                            Cancelar
+                            {t('empresa.servicios.modal.cancel')}
                         </button>
                         <button
                             type="submit"
@@ -233,7 +256,7 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
                             style={{ background: 'var(--color-purple)' }}
                         >
                             {saving && <Loader2 size={14} className="animate-spin" />}
-                            {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear servicio'}
+                            {saving ? t('empresa.servicios.modal.saving') : isEdit ? t('empresa.servicios.modal.saveChanges') : t('empresa.servicios.modal.createService')}
                         </button>
                     </div>
                 </form>
@@ -266,6 +289,8 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
 
 // ── Página principal ────────────────────────────────────────────────────────
 export function EmpresaServiciosPage() {
+    const toast = useToast();
+    const { t } = useLanguage();
     const {
         services,
         setServices,
@@ -276,7 +301,10 @@ export function EmpresaServiciosPage() {
         search: urlSearch,
         setSearch: setUrlSearch,
         setSearchParams,
+        fetchServices,
     } = useEmpresaServices();
+
+    const [companyLocationId, setCompanyLocationId] = useState<number | null>(null);
 
     const [selectedServices, setSelectedServices] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState(urlSearch);
@@ -285,6 +313,12 @@ export function EmpresaServiciosPage() {
         editTarget: null,
     });
     const { confirm, modal: confirmModal } = useConfirm();
+
+    useEffect(() => {
+        empresaApi.getProfile()
+            .then(({ company }) => setCompanyLocationId(company.id_location))
+            .catch(() => setCompanyLocationId(null));
+    }, []);
 
     useEffect(() => {
         if (urlSearch !== searchTerm) setSearchTerm(urlSearch);
@@ -301,7 +335,7 @@ export function EmpresaServiciosPage() {
     const filteredServices = useMemo(() => {
         if (!normalizedSearch) return services;
         return services.filter((svc) =>
-            [svc.name, svc.service_type ?? '', svc.description ?? '', svc.address ?? '']
+            [svc.name, svc.service_type ?? '', svc.description ?? '']
                 .join(' ')
                 .toLowerCase()
                 .includes(normalizedSearch),
@@ -346,6 +380,7 @@ export function EmpresaServiciosPage() {
         });
         dispatchModal({ type: 'CLOSE_CREATE' });
         dispatchModal({ type: 'CLOSE_EDIT' });
+        void fetchServices();
     };
 
     const handleDeleteSelected = async () => {
@@ -355,22 +390,22 @@ export function EmpresaServiciosPage() {
         if (targets.length === 0) return;
 
         const ok = await confirm({
-            title: `Desactivar ${targets.length} servicio(s)`,
-            message: 'Los turistas dejarán de ver estos servicios en la app hasta que los reactives.',
-            confirmLabel: 'Desactivar',
+            title: t('empresa.servicios.deleteConfirm.title', { count: targets.length }),
+            message: t('empresa.servicios.deleteConfirm.message'),
+            confirmLabel: t('empresa.servicios.deleteConfirm.confirmLabel'),
             variant: 'danger',
         });
         if (!ok) return;
 
         for (const svc of targets) {
-            await empresaApi.deleteService(svc.id_service);
+            try {
+                await empresaApi.deleteService(svc.id_service);
+            } catch {
+                toast.error(t('empresa.servicios.toast.deleteError', { name: svc.name }));
+            }
         }
 
-        setServices((prev) =>
-            prev.map((s) =>
-                selectedServices.includes(s.id_service) ? { ...s, active: false } : s,
-            ),
-        );
+        await fetchServices();
         setSelectedServices([]);
     };
 
@@ -381,10 +416,10 @@ export function EmpresaServiciosPage() {
 
                 <div className="shrink-0">
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        Mis servicios
+                        {t('empresa.servicios.title')}
                     </h1>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Administra los servicios turísticos que ofrece tu empresa en SMARTUR.
+                        {t('empresa.servicios.description')}
                     </p>
                 </div>
 
@@ -395,11 +430,10 @@ export function EmpresaServiciosPage() {
                     <Wrench className="mt-0.5 size-5 shrink-0" style={{ color: MODULE_COLORS.services }} />
                     <div>
                         <p className="mb-0.5 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            Servicios turísticos
+                            {t('empresa.servicios.badgeTitle')}
                         </p>
                         <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            Publica y actualiza las ofertas de tu empresa. Los turistas podrán descubrirlas,
-                            guardarlas y generar interacciones que alimentan tu panel de analytics.
+                            {t('empresa.servicios.badgeDescription')}
                         </p>
                     </div>
                 </div>
@@ -413,13 +447,13 @@ export function EmpresaServiciosPage() {
                             if (id) openEditById(id);
                         }}
                         onClear={() => setSelectedServices([])}
-                        deleteLabel="Desactivar"
+                        deleteLabel={t('empresa.servicios.deleteLabel')}
                     />
                     <div className="ml-auto flex items-center gap-2">
                         <SearchInput
                             value={searchTerm}
                             onChange={setSearchTerm}
-                            placeholder="Buscar por nombre, tipo o dirección..."
+                            placeholder={t('empresa.servicios.searchPlaceholder')}
                         />
                         <button
                             type="button"
@@ -428,7 +462,7 @@ export function EmpresaServiciosPage() {
                             style={{ background: MODULE_COLORS.services }}
                         >
                             <Plus className="size-4" />
-                            Nuevo servicio
+                            {t('empresa.servicios.newService')}
                         </button>
                     </div>
                 </div>
@@ -458,7 +492,7 @@ export function EmpresaServiciosPage() {
                             selectedServices={selectedServices}
                             onToggle={toggleService}
                             onViewDetail={openEditById}
-                            serviceTypes={SERVICE_TYPES}
+                            serviceTypes={EMPRESA_SERVICE_TYPE_OPTIONS.map((option) => option.value)}
                         />
                     )}
                 </div>
@@ -478,6 +512,7 @@ export function EmpresaServiciosPage() {
 
             {modalState.isCreateOpen && (
                 <ServiceModal
+                    defaultLocationId={companyLocationId}
                     onClose={() => dispatchModal({ type: 'CLOSE_CREATE' })}
                     onSaved={handleSaved}
                 />

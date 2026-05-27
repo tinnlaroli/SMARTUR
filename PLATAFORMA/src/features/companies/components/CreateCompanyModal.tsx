@@ -18,7 +18,7 @@ const selectClass =
     'w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 focus:ring-2 focus:ring-violet-500 outline-none transition-all cursor-pointer disabled:opacity-50';
 
 export default function CreateCompanyModal({ onClose, onSubmit }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<CreateCompanyDTO>({
         name: '',
@@ -34,7 +34,7 @@ export default function CreateCompanyModal({ onClose, onSubmit }: Props) {
 
     const validate = () => {
         const e: Record<string, string> = {};
-        if (!formData.name.trim()) e.name = 'El nombre es obligatorio.';
+        if (!formData.name.trim()) e.name = t('validation.nameRequired');
         if (formData.phone && !/^[+\d\s\-()]{7,}$/.test(formData.phone)) e.phone = 'Ingresa un teléfono válido.';
         return e;
     };

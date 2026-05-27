@@ -25,6 +25,12 @@ export const NotFound = () => {
             back: 'Retour',
             home: "Aller à l'accueil",
         },
+        pt: {
+            title: 'Esta página não existe',
+            sub: 'O destino que procura não está no nosso mapa. O URL pode ter mudado ou sido removido.',
+            back: 'Voltar',
+            home: 'Ir para o início',
+        },
     } as const;
 
     const t = copy[lang as keyof typeof copy] ?? copy.es;

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { EmpresaService } from '../api/empresaApi';
+import { getEmpresaServiceTypeLabel } from '../utils/serviceTypes';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import {
     DataTable,
     DataTableBody,
@@ -34,6 +36,7 @@ export default function EmpresaServiceTable({
     onViewDetail,
     serviceTypes,
 }: EmpresaServiceTableProps) {
+    const { t } = useLanguage();
     const [sort, setSort] = useState<SortState | null>(null);
     const [typeFilter, setTypeFilter] = useState('');
     const handleSort = (key: string) => setSort((prev) => nextSort(prev, key));
@@ -74,23 +77,23 @@ export default function EmpresaServiceTable({
                                 />
                             </DataTableHeadCell>
                             <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>
-                                Nombre
+                                {t('tableHeader.name')}
                             </SortableHeadCell>
-                            <DataTableHeadCell className="min-w-[220px]">Descripción</DataTableHeadCell>
+                            <DataTableHeadCell className="min-w-[220px]">{t('tableHeader.description')}</DataTableHeadCell>
                             <DataTableHeadCell className="w-36">
                                 <div className="flex items-center gap-2">
-                                    <span>Tipo</span>
+                                    <span>{t('tableHeader.type')}</span>
                                     <DataTableHeaderSelect value={typeFilter} onChange={setTypeFilter}>
-                                        <option value="">Todos</option>
+                                        <option value="">{t('filter.all')}</option>
                                         {serviceTypes.map((type) => (
                                             <option key={type} value={type}>
-                                                {type}
+                                                {getEmpresaServiceTypeLabel(type)}
                                             </option>
                                         ))}
                                     </DataTableHeaderSelect>
                                 </div>
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">{t('tableHeader.status')}</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
@@ -121,13 +124,13 @@ export default function EmpresaServiceTable({
                                 </DataTableCell>
                                 <DataTableCell className="w-36">
                                     <TableBadge
-                                        text={service.service_type || '—'}
+                                        text={getEmpresaServiceTypeLabel(service.service_type)}
                                         color={TABLE_BADGE_COLORS.sky}
                                     />
                                 </DataTableCell>
                                 <DataTableCell className="w-32">
                                     <TableBadge
-                                        text={service.active ? 'Activo' : 'Inactivo'}
+                                        text={service.active ? t('status.active') : t('status.inactive')}
                                         color={service.active ? TABLE_BADGE_COLORS.emerald : TABLE_BADGE_COLORS.rose}
                                     />
                                 </DataTableCell>

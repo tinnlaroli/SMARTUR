@@ -146,7 +146,7 @@ export function EmpresaLayout() {
     const navigate = useNavigate();
     const { openModal } = useAuthModal();
     const { theme, toggleTheme } = useTheme();
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const copy = getDashboardText(lang);
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
 
@@ -177,14 +177,14 @@ export function EmpresaLayout() {
     };
 
     const currentLabel = pathname.startsWith('/empresa/servicios')
-        ? 'Mis servicios'
+        ? t('empresa.layout.misServicios')
         : pathname.startsWith('/empresa/analytics')
-          ? 'Analytics'
+          ? t('empresa.layout.analytics')
           : pathname.startsWith('/empresa/configuracion')
-            ? 'Configuracion'
+            ? t('empresa.layout.configuracion')
           : pathname.startsWith('/empresa/perfil')
-            ? 'Perfil'
-            : 'Inicio';
+            ? t('empresa.layout.perfil')
+            : t('empresa.layout.inicio');
 
     return (
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
@@ -199,7 +199,7 @@ export function EmpresaLayout() {
                     }}
                 >
                     <nav className="flex items-center gap-1 text-sm min-w-0">
-                        <span style={{ color: 'var(--color-text-alt)' }}>Portal Empresa</span>
+                        <span style={{ color: 'var(--color-text-alt)' }}>{t('empresa.layout.portalEmpresa')}</span>
                         <ChevronRight className="size-3.5" style={{ color: 'var(--color-text-alt)' }} />
                         <span className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
                             {currentLabel}
@@ -266,17 +266,17 @@ export function EmpresaLayout() {
                             </div>
                             <div className="leading-tight">
                                 <p className="text-sm font-semibold leading-none" style={{ color: 'var(--color-text)' }}>
-                                    {user?.name || 'Empresa'}
+                                    {user?.name || t('empresa.layout.fallbackEmpresa')}
                                 </p>
                                 <p className="mt-0.5 text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                                    Empresa
+                                    {t('empresa.layout.roleEmpresa')}
                                 </p>
                             </div>
                         </div>
 
                         <button
                             onClick={handleLogout}
-                            title="Cerrar sesión"
+                            title={t('empresa.layout.logout')}
                             className="rounded-xl p-2 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20"
                         >
                             <LogOut className="size-4" style={{ color: 'var(--color-pink)' }} />
@@ -295,13 +295,13 @@ export function EmpresaLayout() {
                         type="button"
                         onClick={() => setSidebarOpen(true)}
                         className="-ml-1 rounded-xl p-2 nav-item-idle"
-                        aria-label="Abrir menú"
+                        aria-label={t('empresa.layout.openMenu')}
                     >
                         <Menu className="size-5" />
                     </button>
 
                     <span className="ml-3 text-base font-bold" style={{ color: 'var(--color-purple)' }}>
-                        Smartur Empresa
+                        {t('empresa.layout.mobileTitle')}
                     </span>
 
                     <div className="ml-auto flex items-center gap-2">

@@ -11,7 +11,7 @@ export default defineConfig({
   scopedStyleStrategy: "where",
   i18n: {
     defaultLocale: "es",
-    locales: ["es", "en", "fr"],
+    locales: ["es", "en", "fr", "pt"],
     routing: {
       prefixDefaultLocale: false,
     },

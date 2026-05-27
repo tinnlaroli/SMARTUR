@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function EditLocationModal({ onClose, onSubmit, location }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<UpdateLocationDTO>({
         name: location.name,
@@ -26,8 +26,8 @@ export default function EditLocationModal({ onClose, onSubmit, location }: Props
 
     const validate = () => {
         const e: Record<string, string> = {};
-        if (!formData.name?.trim()) e.name = 'El nombre es obligatorio.';
-        if (!formData.state?.trim()) e.state = 'El estado es obligatorio.';
+        if (!formData.name?.trim()) e.name = t('validation.nameRequired');
+        if (!formData.state?.trim()) e.state = t('validation.stateRequired');
         return e;
     };
 

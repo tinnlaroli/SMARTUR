@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ChevronRight, ChevronLeft, User, Heart, Users, Users2, Bed, Car, Utensils, Route } from 'lucide-react';
 import type { FormContext } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Step3Props {
     data: Partial<FormContext>;
@@ -12,24 +14,12 @@ interface Step3Props {
     onChange: (newData: Partial<FormContext>) => void;
 }
 
-const companyOptions = [
-    { label: 'Solo', value: 'solo', icon: User },
-    { label: 'Pareja', value: 'pareja', icon: Heart },
-    { label: 'Familia', value: 'familia', icon: Users },
-    { label: 'Amigos', value: 'amigos', icon: Users2 },
-];
-
-const servicesList = [
-    { label: 'Hospedaje', value: 'hospedaje', icon: Bed },
-    { label: 'Transporte', value: 'transporte', icon: Car },
-    { label: 'Alimentos', value: 'alimentos', icon: Utensils },
-    { label: 'Tours', value: 'tours', icon: Route },
-];
-
 export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.form, [lang]);
 
     useGSAP(
         () => {
@@ -48,6 +38,20 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
 
     const [group_type, setGroupType] = useState<string>(data.group_type || '');
     const [services, setServices] = useState<string[]>(data.services || []);
+
+    const companyOptions = useMemo(() => [
+        { label: copy.step3.groupOptions.solo, value: 'solo', icon: User },
+        { label: copy.step3.groupOptions.couple, value: 'pareja', icon: Heart },
+        { label: copy.step3.groupOptions.family, value: 'familia', icon: Users },
+        { label: copy.step3.groupOptions.friends, value: 'amigos', icon: Users2 },
+    ], [copy]);
+
+    const servicesList = useMemo(() => [
+        { label: copy.step3.serviceOptions.lodging, value: 'hospedaje', icon: Bed },
+        { label: copy.step3.serviceOptions.transport, value: 'transporte', icon: Car },
+        { label: copy.step3.serviceOptions.food, value: 'alimentos', icon: Utensils },
+        { label: copy.step3.serviceOptions.tours, value: 'tours', icon: Route },
+    ], [copy]);
 
     const toggleService = (v: string) => {
         setServices((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
@@ -78,12 +82,12 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>Contexto del Viaje</h2>
-                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Cuéntanos sobre tu compañía y servicios preferidos</p>
+                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>{copy.step3.title}</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>{copy.step3.subtitle}</p>
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Viajas con</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step3.groupLabel}</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {companyOptions.map((c) => (
                         <button
@@ -104,7 +108,7 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
             </div>
 
             <div className="form-section mb-10">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Servicios que quieres incluir</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step3.servicesLabel}</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {servicesList.map((s) => (
                         <button
@@ -132,14 +136,14 @@ export const Step3Contexto: React.FC<Step3Props> = ({ data = {}, onNext, onBack,
                     className={`flex items-center gap-2 rounded-xl border px-6 py-3 font-semibold transition-all active:scale-95 ${backBtn}`}
                 >
                     <ChevronLeft className="size-5" />
-                    <span>Atrás</span>
+                    <span>{copy.step3.back}</span>
                 </button>
                 <button
                     onClick={handleNext}
                     disabled={!group_type}
                     className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <span>Continuar</span>
+                    <span>{copy.step3.next}</span>
                     <ChevronRight className="size-5" />
                 </button>
             </div>

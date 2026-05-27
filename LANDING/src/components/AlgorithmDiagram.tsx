@@ -4,13 +4,14 @@ import clsx from "clsx";
 
 type Props = {
   className?: string;
+  label?: string;
 };
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
 }
 
-export default function AlgorithmDiagram({ className }: Props) {
+export default function AlgorithmDiagram({ className, label }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const { scrollYProgress } = useScroll({
@@ -45,7 +46,7 @@ export default function AlgorithmDiagram({ className }: Props) {
       ref={ref}
       className={clsx("sy-algo-diagram", className)}
       role="img"
-      aria-label="Diagrama del pipeline de recomendaciones: contexto, candidatos, filtrado colaborativo, re-ranking con Random Forest y entrega de recomendación."
+      aria-label={label || "Diagrama del pipeline de recomendaciones"}
     >
       <svg
         viewBox="0 0 920 340"

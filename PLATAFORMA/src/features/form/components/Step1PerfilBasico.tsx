@@ -1,54 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ChevronRight, Wallet, DollarSign, Star, Clock, Calendar, CalendarRange, Briefcase } from 'lucide-react';
 import type { FormContext } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Step1Props {
     data: Partial<FormContext>;
     onNext: () => void;
     onChange: (newData: Partial<FormContext>) => void;
 }
-
-const edadOptions = [
-    { label: '18-24', value: '18-24' },
-    { label: '25-34', value: '25-34' },
-    { label: '35-44', value: '35-44' },
-    { label: '45-54', value: '45-54' },
-    { label: '55+',   value: '55+' },
-];
-
-const presupuestoOptions = [
-    {
-        label: 'Económico',
-        value: 'bajo',
-        range: '< $700/día',
-        icon: Wallet,
-        daily: 500,
-    },
-    {
-        label: 'Moderado',
-        value: 'medio',
-        range: '$700 - $2,000/día',
-        icon: DollarSign,
-        daily: 1200,
-    },
-    {
-        label: 'Premium',
-        value: 'alto',
-        range: '> $2,000/día',
-        icon: Star,
-        daily: 3000,
-    },
-];
-
-const duracionOptions = [
-    { label: '1-2 días', value: '1-2', icon: Clock },
-    { label: '3-5 días', value: '3-5', icon: Calendar },
-    { label: '6-10 días', value: '6-10', icon: CalendarRange },
-    { label: '10+ días', value: '10+', icon: Briefcase },
-];
 
 const edadRangeToApprox = (range: string) => {
     if (!range) return null;
@@ -70,6 +33,8 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.form, [lang]);
 
     useGSAP(
         () => {
@@ -89,6 +54,45 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
     const [edad_range, setEdadRange] = useState(data.edad_range || '');
     const [presupuesto_bucket, setPresupuestoBucket] = useState(data.presupuesto_bucket || '');
     const [duracion_dias_range, setDuracionDiasRange] = useState(data.duracion_dias_range || '');
+
+    const edadOptions = useMemo(() => [
+        { label: copy.step1.ageRange.ages_18_24, value: '18-24' },
+        { label: copy.step1.ageRange.ages_25_34, value: '25-34' },
+        { label: copy.step1.ageRange.ages_35_44, value: '35-44' },
+        { label: copy.step1.ageRange.ages_45_54, value: '45-54' },
+        { label: copy.step1.ageRange.ages_55_plus, value: '55+' },
+    ], [copy]);
+
+    const presupuestoOptions = useMemo(() => [
+        {
+            label: copy.step1.budgetOptions.economic,
+            value: 'bajo',
+            range: copy.step1.budgetOptions.economicRange,
+            icon: Wallet,
+            daily: 500,
+        },
+        {
+            label: copy.step1.budgetOptions.moderate,
+            value: 'medio',
+            range: copy.step1.budgetOptions.moderateRange,
+            icon: DollarSign,
+            daily: 1200,
+        },
+        {
+            label: copy.step1.budgetOptions.premium,
+            value: 'alto',
+            range: copy.step1.budgetOptions.premiumRange,
+            icon: Star,
+            daily: 3000,
+        },
+    ], [copy]);
+
+    const duracionOptions = useMemo(() => [
+        { label: copy.step1.durationOptions.days_1_2, value: '1-2', icon: Clock },
+        { label: copy.step1.durationOptions.days_3_5, value: '3-5', icon: Calendar },
+        { label: copy.step1.durationOptions.days_6_10, value: '6-10', icon: CalendarRange },
+        { label: copy.step1.durationOptions.days_10_plus, value: '10+', icon: Briefcase },
+    ], [copy]);
 
     const handleNext = () => {
         if (!edad_range || !presupuesto_bucket || !duracion_dias_range) return;
@@ -117,12 +121,12 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>¿Qué te interesa?</h2>
-                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Selecciona tus preferencias de viaje</p>
+                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>{copy.step1.title}</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>{copy.step1.subtitle}</p>
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Rango de edad</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step1.ageRange.label}</label>
                 <div className="grid grid-cols-5 gap-2">
                     {edadOptions.map((o) => (
                         <button
@@ -140,7 +144,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Presupuesto diario</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step1.budgetLabel}</label>
                 <div className="grid grid-cols-3 gap-4">
                     {presupuestoOptions.map((o) => (
                         <button
@@ -164,7 +168,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
             </div>
 
             <div className="form-section mb-10">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>Duración del viaje</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step1.durationLabel}</label>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     {duracionOptions.map((o) => (
                         <button
@@ -192,7 +196,7 @@ export const Step1PerfilBasico: React.FC<Step1Props> = ({ data = {}, onNext, onC
                     disabled={!(edad_range && presupuesto_bucket && duracion_dias_range)}
                     className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <span>Continuar</span>
+                    <span>{copy.step1.cta}</span>
                     <ChevronRight className="size-5" />
                 </button>
             </div>

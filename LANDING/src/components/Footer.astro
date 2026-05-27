@@ -1,8 +1,11 @@
 ---
 import logoImage from "../assets/imgs/logo_costado.png";
 import type { Link } from "../types";
+import { useTranslations, defaultLang } from "../i18n/utils";
+import { ui } from "../i18n/ui";
 
 interface Props {
+  lang?: keyof typeof ui;
   logoUrl: string;
   logoAlt: string;
   links: Link[];
@@ -19,20 +22,23 @@ interface Props {
 }
 
 const {
+  lang = defaultLang,
   logoUrl,
   logoAlt,
   links,
   slogan,
   description,
-  quickLinksTitle = "Accesos Rápidos",
-  contactTitle = "Contacto",
-  socialTitle = "Síguenos",
-  mobileAppTitle = "App Móvil",
-  mobileAppDownload = "Descargar APK",
-  mobileAppVersion = "Última versión",
+  quickLinksTitle,
+  contactTitle,
+  socialTitle,
+  mobileAppTitle,
+  mobileAppDownload,
+  mobileAppVersion,
   copyright,
   address,
 } = Astro.props;
+
+const t = useTranslations(lang);
 
 let latestVersion = "v1.0.0";
 try {
@@ -71,7 +77,7 @@ try {
 
           <!-- Quick Links -->
           <div class="footer-column">
-            <h3 class="column-title">{quickLinksTitle}</h3>
+            <h3 class="column-title">{quickLinksTitle || t("footer.quicklinks")}</h3>
             <ul>
               {links.map((l) => (
                 <li><a href={l.url}>{l.title}</a></li>
@@ -81,7 +87,7 @@ try {
 
           <!-- Contact -->
           <div class="footer-column">
-            <h3 class="column-title">{contactTitle}</h3>
+            <h3 class="column-title">{contactTitle || t("footer.contact")}</h3>
             <ul class="contact-list">
               <li>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -110,7 +116,7 @@ try {
 
           <!-- Social -->
           <div class="footer-column">
-            <h3 class="column-title">{socialTitle}</h3>
+            <h3 class="column-title">{socialTitle || t("footer.social")}</h3>
             <ul class="social-list">
               <li>
                 <a
@@ -132,9 +138,9 @@ try {
 
           <!-- App Download -->
           <div class="footer-column">
-            <h3 class="column-title">{mobileAppTitle}</h3>
+            <h3 class="column-title">{mobileAppTitle || t("footer.mobileApp")}</h3>
             <div class="app-download">
-              <span class="version-tag">{mobileAppVersion}: {latestVersion}</span>
+              <span class="version-tag">{mobileAppVersion || t("footer.mobileApp.version")}: {latestVersion}</span>
               <a
                 href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
                 class="download-button"
@@ -144,7 +150,7 @@ try {
                   <polyline points="7 10 12 15 17 10"/>
                   <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                {mobileAppDownload}
+                {mobileAppDownload || t("footer.mobileApp.download")}
               </a>
             </div>
           </div>
@@ -184,12 +190,12 @@ try {
     margin-right: auto;
     padding: 4rem 4rem 2rem;
 
-    @media (max-width: 1024px) {
+    @media (--mq-tablet) {
       padding: 3rem 2.5rem 2rem;
     }
 
-    @media (max-width: 640px) {
-      padding: 2.5rem 1.5rem 1.5rem;
+    @media (--mq-phone) {
+      padding: 2.5rem var(--container-offset) 1.5rem;
     }
   }
 
@@ -200,7 +206,7 @@ try {
     gap: 3rem;
     margin-bottom: 3.5rem;
 
-    @media (max-width: 1024px) {
+    @media (--mq-tablet) {
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
@@ -216,6 +222,10 @@ try {
   .logo {
     display: block;
     width: 11rem;
+
+    @media (--mq-phone) {
+      width: 9rem;
+    }
   }
 
   .logo img {
@@ -247,13 +257,13 @@ try {
     row-gap: 2.5rem;
     column-gap: 1.5rem;
 
-    @media (max-width: 1024px) {
+    @media (--mq-tablet) {
       grid-template-columns: repeat(2, 1fr);
       row-gap: 2rem;
       column-gap: 2rem;
     }
 
-    @media (max-width: 640px) {
+    @media (--mq-phone) {
       grid-template-columns: 1fr;
       row-gap: 1.75rem;
     }
@@ -415,6 +425,13 @@ try {
     padding-top: 1.5rem;
     border-top: 1px solid rgba(var(--rgb-text), 0.08);
     margin: 0;
+    line-height: 1.5;
+    padding-left: var(--container-offset);
+    padding-right: var(--container-offset);
+
+    @media (--mq-phone) {
+      font-size: 0.6875rem;
+    }
   }
 </style>
 

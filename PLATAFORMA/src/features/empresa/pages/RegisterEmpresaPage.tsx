@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building2, User, Mail, Lock, Phone, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
 import { empresaApi } from '../api/empresaApi';
-import { useUserPreferences } from '../../../contexts/LanguageContext';
+import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 
 export function RegisterEmpresaPage() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const { setUser } = useUserPreferences();
 
     const [form, setForm] = useState({
@@ -48,7 +49,7 @@ export function RegisterEmpresaPage() {
             redirectTimerRef.current = setTimeout(() => navigate('/empresa/dashboard', { replace: true }), 1800);
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })
-                ?.response?.data?.message ?? 'Error al registrar empresa.';
+                ?.response?.data?.message ?? t('empresa.register.errorGeneric');
             setError(msg);
         } finally {
             setLoading(false);
@@ -66,9 +67,9 @@ export function RegisterEmpresaPage() {
                         </div>
                         <span className="text-2xl font-bold text-white tracking-tight">SMARTUR</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Registra tu empresa</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">{t('empresa.register.title')}</h1>
                     <p className="text-zinc-400 text-sm">
-                        Únete a la plataforma de turismo de Altas Montañas, Veracruz
+                        {t('empresa.register.description')}
                     </p>
                 </div>
 
@@ -79,9 +80,9 @@ export function RegisterEmpresaPage() {
                     {done ? (
                         <div className="flex flex-col items-center py-8 gap-4">
                             <CheckCircle2 className="text-green-400" size={48} />
-                            <p className="text-white font-semibold text-lg">¡Empresa registrada!</p>
+                            <p className="text-white font-semibold text-lg">{t('empresa.register.success')}</p>
                             <p className="text-zinc-400 text-sm text-center">
-                                Tu cuenta está pendiente de verificación. Redirigiendo…
+                                {t('empresa.register.pendingVerification')}
                             </p>
                         </div>
                     ) : (
@@ -89,7 +90,7 @@ export function RegisterEmpresaPage() {
                             {/* Datos de empresa */}
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    Empresa
+                                    {t('empresa.register.company')}
                                 </label>
                                 <div className="relative">
                                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
@@ -98,7 +99,7 @@ export function RegisterEmpresaPage() {
                                         value={form.companyName}
                                         onChange={handleChange}
                                         required
-                                        placeholder="Nombre de la empresa"
+                                        placeholder={t('empresa.register.companyName')}
                                         className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 text-sm"
                                     />
                                 </div>
@@ -106,35 +107,35 @@ export function RegisterEmpresaPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Sector</label>
+                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t('empresa.register.sector')}</label>
                                     <select
                                         name="id_sector"
                                         value={form.id_sector}
                                         onChange={handleChange}
                                         className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-orange-500 text-sm"
                                     >
-                                        <option value="1">Hotelería</option>
-                                        <option value="2">Restaurantes</option>
-                                        <option value="3">Aventura</option>
-                                        <option value="4">Cultura</option>
-                                        <option value="5">Transporte</option>
+                                        <option value="1">{t('empresa.register.hoteleria')}</option>
+                                        <option value="2">{t('empresa.register.restaurantes')}</option>
+                                        <option value="3">{t('empresa.register.aventura')}</option>
+                                        <option value="4">{t('empresa.register.cultura')}</option>
+                                        <option value="5">{t('empresa.register.transporte')}</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Municipio</label>
+                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{t('empresa.register.municipality')}</label>
                                     <select
                                         name="id_location"
                                         value={form.id_location}
                                         onChange={handleChange}
                                         className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-orange-500 text-sm"
                                     >
-                                        <option value="1">Xalapa</option>
-                                        <option value="2">Coatepec</option>
-                                        <option value="3">Córdoba</option>
-                                        <option value="4">Orizaba</option>
-                                        <option value="5">Fortín</option>
-                                        <option value="6">Xico</option>
-                                        <option value="7">Ixtaczoquitlán</option>
+                                        <option value="1">{t('empresa.register.xalapa')}</option>
+                                        <option value="2">{t('empresa.register.coatepec')}</option>
+                                        <option value="3">{t('empresa.register.cordoba')}</option>
+                                        <option value="4">{t('empresa.register.orizaba')}</option>
+                                        <option value="5">{t('empresa.register.fortin')}</option>
+                                        <option value="6">{t('empresa.register.xico')}</option>
+                                        <option value="7">{t('empresa.register.ixtaczoquitlan')}</option>
                                     </select>
                                 </div>
                             </div>
@@ -145,7 +146,7 @@ export function RegisterEmpresaPage() {
                                     name="phone"
                                     value={form.phone}
                                     onChange={handleChange}
-                                    placeholder="Teléfono (opcional)"
+                                    placeholder={t('empresa.register.phone')}
                                     className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 text-sm"
                                 />
                             </div>
@@ -155,7 +156,7 @@ export function RegisterEmpresaPage() {
                             {/* Datos de usuario */}
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    Representante
+                                    {t('empresa.register.representative')}
                                 </label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
@@ -164,7 +165,7 @@ export function RegisterEmpresaPage() {
                                         value={form.name}
                                         onChange={handleChange}
                                         required
-                                        placeholder="Nombre completo"
+                                        placeholder={t('empresa.register.fullName')}
                                         className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 text-sm"
                                     />
                                 </div>
@@ -178,7 +179,7 @@ export function RegisterEmpresaPage() {
                                     value={form.email}
                                     onChange={handleChange}
                                     required
-                                    placeholder="Correo electrónico"
+                                    placeholder={t('empresa.register.email')}
                                     className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 text-sm"
                                 />
                             </div>
@@ -191,7 +192,7 @@ export function RegisterEmpresaPage() {
                                     value={form.password}
                                     onChange={handleChange}
                                     required
-                                    placeholder="Contraseña (mín. 8 caracteres)"
+                                    placeholder={t('empresa.register.password')}
                                     className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 text-sm"
                                 />
                             </div>
@@ -208,16 +209,16 @@ export function RegisterEmpresaPage() {
                                 className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
                             >
                                 {loading ? (
-                                    <><Loader2 className="animate-spin" size={18} /> Registrando…</>
+                                    <><Loader2 className="animate-spin" size={18} /> {t('empresa.register.registering')}</>
                                 ) : (
-                                    <><Building2 size={18} /> Registrar empresa</>
+                                    <><Building2 size={18} /> {t('empresa.register.registerBtn')}</>
                                 )}
                             </button>
 
                             <p className="text-center text-zinc-500 text-sm">
-                                ¿Ya tienes cuenta?{' '}
+                                {t('empresa.register.alreadyAccount')}{' '}
                                 <Link to="/" className="text-orange-400 hover:text-orange-300 font-medium">
-                                    Inicia sesión
+                                    {t('empresa.register.login')}
                                 </Link>
                             </p>
                         </>
@@ -226,7 +227,7 @@ export function RegisterEmpresaPage() {
 
                 <p className="text-center text-zinc-600 text-xs mt-6">
                     <MapPin size={12} className="inline mr-1" />
-                    SMARTUR — Altas Montañas, Veracruz
+                    {t('empresa.register.subtitle')}
                 </p>
             </div>
         </div>

@@ -74,7 +74,7 @@ type UserPreferencesContextValue = {
     toggleTheme: () => void;
     lang: LanguageCode;
     changeLanguage: (code: string) => void;
-    t: (key: string) => string;
+    t: (key: string, params?: Record<string, string | number | null | undefined>) => string;
     isReady: boolean;
 };
 
@@ -142,7 +142,15 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         if (code in languages) setLangState(code as LanguageCode);
     }, []);
 
-    const t = useCallback((key: string) => ui[lang]?.[key] ?? key, [lang]);
+    const t = useCallback((key: string, params?: Record<string, string | number | null | undefined>) => {
+        let value = ui[lang]?.[key] ?? key;
+        if (params) {
+            for (const [k, v] of Object.entries(params)) {
+                value = value.replace(`{${k}}`, String(v ?? ''));
+            }
+        }
+        return value;
+    }, [lang]);
 
     const value = useMemo<UserPreferencesContextValue>(
         () => ({

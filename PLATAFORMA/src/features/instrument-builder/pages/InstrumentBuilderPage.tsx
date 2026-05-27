@@ -8,7 +8,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 export const InstrumentBuilderPage = () => {
     const navigate = useNavigate();
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
     const [templates, setTemplates] = useState<InstrumentTemplate[]>([]);
     const [loading, setLoading] = useState(true);
@@ -100,8 +100,8 @@ export const InstrumentBuilderPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 mb-2" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <FileText className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Instrumentos de evaluación</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Crea y edita las rúbricas que se usan para evaluar la calidad de los servicios turísticos. Define criterios, pesos y niveles de calificación para cada tipo de servicio.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('instrumentBuilder.bannerTitle')}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{t('instrumentBuilder.bannerDescription')}</p>
                 </div>
             </div>
 
@@ -222,7 +222,7 @@ export const InstrumentBuilderPage = () => {
                                     type="text"
                                     value={newTemplate.name}
                                     onChange={(e) => setNewTemplate((prev) => ({ ...prev, name: e.target.value }))}
-                                    placeholder="Ej: Evaluación Hotelera 2024"
+                                    placeholder={t('instrumentBuilder.namePh')}
                                     className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                                 />
                             </div>
@@ -243,12 +243,12 @@ export const InstrumentBuilderPage = () => {
                                     className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                                 >
                                     <option value="">{m.instruments.selectPlaceholder}</option>
-                                    <option value="Hotel">Hotel</option>
-                                    <option value="Restaurante">Restaurante</option>
-                                    <option value="Tour">Tour</option>
-                                    <option value="Spa">Spa</option>
-                                    <option value="Transporte">Transporte</option>
-                                    <option value="Otro">Otro</option>
+                                    <option value="Hotel">{t('instrumentBuilder.serviceType.hotel')}</option>
+                                    <option value="Restaurante">{t('instrumentBuilder.serviceType.restaurant')}</option>
+                                    <option value="Tour">{t('instrumentBuilder.serviceType.tour')}</option>
+                                    <option value="Spa">{t('instrumentBuilder.serviceType.spa')}</option>
+                                    <option value="Transporte">{t('instrumentBuilder.serviceType.transport')}</option>
+                                    <option value="Otro">{t('instrumentBuilder.serviceType.other')}</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-2">

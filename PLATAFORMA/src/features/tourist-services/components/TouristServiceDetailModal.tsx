@@ -32,7 +32,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
     serviceId,
     updateService,
 }) => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const serviceTypeLabel = (t: string) =>
         (mod.touristServices.serviceTypeLabels as Record<string, string>)[t] ?? t;
@@ -233,7 +233,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                                 <button
                                     onClick={() => hasTemplates && setIsEvaluationOpen(true)}
                                     disabled={hasTemplates === false}
-                                    title={hasTemplates === false ? 'Sin instrumentos disponibles para este tipo de servicio' : 'Evaluar servicio'}
+                                    title={hasTemplates === false ? t('touristService.noInstruments') : t('touristService.evaluateService')}
                                     className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 active:scale-[0.98] ${
                                         hasTemplates === false
                                             ? 'bg-zinc-300 dark:bg-zinc-700 cursor-not-allowed opacity-60'
@@ -241,7 +241,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                                     }`}
                                 >
                                     <ClipboardCheck className="size-4" />
-                                    <span>Evaluar</span>
+                                    <span>{t('touristService.evaluate')}</span>
                                 </button>
 
                                 <button

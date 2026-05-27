@@ -21,7 +21,7 @@ const { texts, direction, class: className = "" } = Astro.props;
     display: block;
     position: relative;
     overflow: hidden;
-    width: 100vw;
+    width: 100%;
     max-width: 100%;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
@@ -72,6 +72,19 @@ const { texts, direction, class: className = "" } = Astro.props;
     &:nth-child(odd) {
       -webkit-text-fill-color: unset;
       color: var(--color-purple);
+    }
+
+    @media (--mq-tablet) {
+      --fs: 3rem;
+    }
+
+    @media (--mq-phone) {
+      --fs: 2.25rem;
+      -webkit-text-stroke-width: 1.5px;
+    }
+
+    @media (--mq-phone-sm) {
+      --fs: 1.75rem;
     }
   }
 </style>

@@ -51,25 +51,25 @@ export default function Form() {
                 </div>
                 
                 <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight">
-                    Personaliza tu <span className="text-violet-400">Experiencia</span>
+                    {t('form.page.titlePrefix')} <span className="text-violet-400">{t('form.page.titleHighlight')}</span>
                 </h1>
                 
                 <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mx-auto">
-                    Completa nuestro formulario inteligente para recibir recomendaciones turísticas adaptadas perfectamente a tus gustos.
+                    {t('form.page.subtitle')}
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
                     <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex flex-col items-center gap-2">
                         <LayoutGrid className="size-5 text-violet-400" />
-                        <span className="text-sm font-medium text-zinc-300 italic">IA Adaptativa</span>
+                        <span className="text-sm font-medium text-zinc-300 italic">{t('form.page.badge1')}</span>
                     </div>
                     <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex flex-col items-center gap-2">
                         <Info className="size-5 text-blue-400" />
-                        <span className="text-sm font-medium text-zinc-300 italic">4 Simples Pasos</span>
+                        <span className="text-sm font-medium text-zinc-300 italic">{t('form.page.badge2')}</span>
                     </div>
                     <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex flex-col items-center gap-2">
                         <ClipboardList className="size-5 text-emerald-400" />
-                        <span className="text-sm font-medium text-zinc-300 italic">Resultados al instante</span>
+                        <span className="text-sm font-medium text-zinc-300 italic">{t('form.page.badge3')}</span>
                     </div>
                 </div>
 
@@ -79,7 +79,7 @@ export default function Form() {
                         className="group relative px-12 py-4 bg-violet-600 font-semibold text-white rounded-2xl shadow-xl shadow-violet-500/25 transition-all hover:bg-violet-500 hover:scale-105 active:scale-95 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-2 justify-center">
-                            ¡Comenzar Formulario!
+                            {t('form.page.cta')}
                             <div className="size-2 rounded-full bg-white animate-ping" />
                         </span>
                     </button>

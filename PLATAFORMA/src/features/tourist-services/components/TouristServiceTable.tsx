@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { TouristService } from '../types/types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import {
     DataTable,
     DataTableBody,
@@ -40,6 +41,7 @@ export default function TouristServiceTable({
     onToggle,
     onViewDetail,
 }: Props) {
+    const { t } = useLanguage();
     const [sort, setSort] = useState<SortState | null>(null);
     const [typeFilter, setTypeFilter] = useState('');
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
@@ -70,20 +72,20 @@ export default function TouristServiceTable({
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
-                            <DataTableHeadCell className="min-w-[220px]">Descripción</DataTableHeadCell>
+                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>{t('tableHeader.name')}</SortableHeadCell>
+                            <DataTableHeadCell className="min-w-[220px]">{t('tableHeader.description')}</DataTableHeadCell>
                             <DataTableHeadCell className="w-36">
                                 <div className="flex items-center gap-2">
-                                    <span>Tipo</span>
+                                    <span>{t('tableHeader.type')}</span>
                                     <DataTableHeaderSelect value={typeFilter} onChange={setTypeFilter}>
-                                        <option value="">Todos</option>
+                                        <option value="">{t('filter.all')}</option>
                                         {Object.entries(SERVICE_TYPE_LABELS).map(([id, label]) => (
                                             <option key={id} value={id}>{label}</option>
                                         ))}
                                     </DataTableHeaderSelect>
                                 </div>
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-32">Estado</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">{t('tableHeader.status')}</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
@@ -115,7 +117,7 @@ export default function TouristServiceTable({
                                 </DataTableCell>
                                 <DataTableCell className="w-32">
                                     <TableBadge
-                                        text={service.active ? 'Activo' : 'Inactivo'}
+                                        text={service.active ? t('status.active') : t('status.inactive')}
                                         color={service.active ? TABLE_BADGE_COLORS.emerald : TABLE_BADGE_COLORS.rose}
                                     />
                                 </DataTableCell>

@@ -1,7 +1,7 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { useTranslations } from "../i18n/utils";
-const t = useTranslations("es");
+import Layout from "../../layouts/Layout.astro";
+import { useTranslations } from "../../i18n/utils";
+const t = useTranslations("en");
 ---
 
 <Layout title={t("404.title")}>
@@ -19,7 +19,6 @@ const t = useTranslations("es");
       font-family: 'Inter', sans-serif;
     "
   >
-    <!-- Número grande -->
     <p
       style="
         font-size: clamp(6rem, 20vw, 12rem);
@@ -36,7 +35,6 @@ const t = useTranslations("es");
       404
     </p>
 
-    <!-- Icono pin -->
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom:1.25rem">
       <path
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
@@ -76,7 +74,7 @@ const t = useTranslations("es");
     </p>
 
     <a
-      href="/"
+      href="/en"
       style="
         display: inline-flex;
         align-items: center;

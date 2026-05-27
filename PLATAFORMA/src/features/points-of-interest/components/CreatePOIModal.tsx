@@ -1,15 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, Star, Loader2, Leaf } from 'lucide-react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import type { CreatePOIDTO } from '../types/types';
-
-const POI_TYPES = [
-    { label: 'Natural', value: 1 },
-    { label: 'Cultural', value: 2 },
-    { label: 'Histórico', value: 3 },
-    { label: 'Recreativo', value: 4 },
-];
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -20,6 +14,13 @@ interface Props {
 }
 
 export default function CreatePOIModal({ onClose, onSubmit }: Props) {
+    const { t } = useLanguage();
+    const poiTypes = useMemo(() => [
+        { label: t('poi.type.natural'), value: 1 },
+        { label: t('poi.type.cultural'), value: 2 },
+        { label: t('poi.type.historic'), value: 3 },
+        { label: t('poi.type.recreational'), value: 4 },
+    ], [t]);
     const [locations, setLocations] = useState<Location[]>([]);
     const [loadingLocations, setLoadingLocations] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -43,8 +44,8 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name.trim()) { setError('El nombre es obligatorio.'); return; }
-        if (!idLocation) { setError('Selecciona una ubicación.'); return; }
+        if (!name.trim()) { setError(t('validation.nameRequired')); return; }
+        if (!idLocation) { setError(t('validation.locationRequired')); return; }
         setSubmitting(true);
         const ok = await onSubmit({ name: name.trim(), description: description.trim() || undefined, id_type: idType, id_location: idLocation, sustainability });
         setSubmitting(false);
@@ -71,19 +72,19 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Ej: Cascada Las Ánimas"
+                            placeholder={t('poi.namePh')}
                             className={inputClass}
                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                         />
                     </div>
 
                     <div>
-                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Descripción</label>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.description')}</label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={3}
-                            placeholder="Describe el punto de interés…"
+                            placeholder={t('poi.descriptionPh')}
                             className={inputClass}
                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', resize: 'none' }}
                         />
@@ -91,18 +92,18 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Tipo</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.type')}</label>
                             <select
                                 value={idType}
                                 onChange={(e) => setIdType(Number(e.target.value))}
                                 className={inputClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {POI_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                {poiTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Ubicación</label>
+                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.location')}</label>
                             {loadingLocations ? (
                                 <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
                                     <Loader2 className="size-3.5 animate-spin" /> Cargando…
@@ -129,7 +130,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                         />
                         <Leaf className="size-4 text-emerald-500" />
                         <div>
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Sostenible</p>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{t('poi.sustainable')}</p>
                             <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Marca si el POI cumple criterios de sostenibilidad</p>
                         </div>
                     </label>

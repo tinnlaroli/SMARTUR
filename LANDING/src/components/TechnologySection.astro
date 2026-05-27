@@ -509,4 +509,38 @@ const BENEFITS = [
   .ease-spring {
     transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+
+  @media (--mq-phone) {
+    .section-title {
+      font-size: clamp(1.75rem, 8vw, 2.25rem);
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+    }
+
+    .feature-card {
+      padding: 1.5rem;
+    }
+
+    .stats-container {
+      gap: 0.5rem;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .stat-number {
+      font-size: 1.75rem !important;
+    }
+
+    .stat-suffix {
+      font-size: 1rem !important;
+    }
+
+    .stat-label {
+      font-size: 0.625rem !important;
+      line-height: 1.3;
+    }
+  }
 </style>

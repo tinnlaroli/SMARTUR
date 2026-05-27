@@ -18,9 +18,9 @@ interface MenuItem {
     end?: boolean;
 }
 
-const MENU_GROUPS = [
-    { label: 'Principal', items: ['home'] },
-    { label: 'Gestión', items: ['services', 'analytics', 'profile', 'settings'] },
+const MENU_GROUPS: { groupKey: string; items: string[] }[] = [
+    { groupKey: 'sidebar.group.principal', items: ['home'] },
+    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'profile', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -42,10 +42,9 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'settings', label: 'Configuración', icon: Settings, path: '/empresa/configuracion' },
     ];
 
-    const itemMap = Object.fromEntries(allItems.map((i) => [i.id, i]));
     const filteredGroups = MENU_GROUPS.map((g) => ({
-        label: g.label,
-        items: g.items.map((id) => itemMap[id]).filter(Boolean),
+        groupKey: g.groupKey,
+        items: g.items.map((id) => allItems.find((i) => i.id === id)).filter(Boolean) as MenuItem[],
     })).filter((g) => g.items.length > 0);
 
     const handleLogout = () => {
@@ -105,7 +104,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                             >
                                 <img src="/smartur.png" alt="Smartur" className="h-20 w-auto object-contain" />
                                 <span className="text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                                    Empresa
+                                    {t('empresa.sidebar.badge')}
                                 </span>
                             </motion.div>
                         )}
@@ -132,7 +131,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
 
                 <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
                     {filteredGroups.map((group, gi) => (
-                        <div key={group.label} className={gi > 0 ? 'mt-4' : ''}>
+                        <div key={group.groupKey} className={gi > 0 ? 'mt-4' : ''}>
                             <AnimatePresence>
                                 {!isCollapsed && (
                                     <motion.p
@@ -143,7 +142,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                                         className="mb-1 px-4 text-[10px] font-bold uppercase tracking-widest"
                                         style={{ color: 'var(--color-text-alt)' }}
                                     >
-                                        {group.label}
+                                        {t(group.groupKey)}
                                     </motion.p>
                                 )}
                             </AnimatePresence>
@@ -161,7 +160,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                                             onClick={onClose}
                                             end={item.end}
                                             id={`sidebar-item-${item.id}`}
-                                            title={isCollapsed ? item.label : ''}
+                                            title={isCollapsed ? t('empresa.sidebar.' + item.id) : ''}
                                             className={({ isActive }) =>
                                                 `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
                                                     isCollapsed ? 'justify-center' : ''
@@ -180,7 +179,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                                                             isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
                                                         }`}
                                                     >
-                                                        {item.label}
+                                                        {t('empresa.sidebar.' + item.id)}
                                                     </span>
                                                     {isActive && !isCollapsed && (
                                                         <motion.span
@@ -266,7 +265,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                                     {user?.name || t('sidebar.user')}
                                 </p>
                                 <p className="truncate text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                                    Empresa
+                                    {t('empresa.sidebar.badge')}
                                 </p>
                             </div>
                             <button

@@ -32,7 +32,7 @@ import EditPOIModal from '../components/EditPOIModal';
 import type { POI } from '../types/types';
 
 export const POIPage = () => {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
     const { points, isLoading, totalPages, createPoint, updatePoint, deletePoint } = usePOI();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -59,9 +59,9 @@ export const POIPage = () => {
 
     const handleDeleteSelected = async () => {
         const ok = await confirm({
-            title: `Eliminar ${selectedIds.length} punto(s) de interés`,
-            message: 'Esta acción es permanente y no se puede deshacer.',
-            confirmLabel: 'Eliminar',
+            title: t('poi.confirmDelete.title', { count: selectedIds.length }),
+            message: t('common.irreversibleAction'),
+            confirmLabel: t('common.delete'),
             variant: 'danger',
         });
         if (!ok) return;
@@ -91,8 +91,8 @@ export const POIPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Star className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.poi }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Puntos de Interés</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los POIs son atracciones naturales, culturales o históricas que no pertenecen a una empresa. Los turistas los descubren, guardan como favoritos y generan interacciones que alimentan el motor de recomendaciones.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('poi.pageTitle')}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{t('poi.pageDescription')}</p>
                 </div>
             </div>
 
@@ -111,7 +111,7 @@ export const POIPage = () => {
                         style={{ background: MODULE_COLORS.poi }}
                     >
                         <Plus className="size-4" />
-                        Nuevo POI
+                        {t('poi.newButton')}
                     </button>
                 </div>
             </div>
@@ -147,9 +147,9 @@ export const POIPage = () => {
                                                 {m.poi.colSustainable}
                                             </span>
                                             <DataTableHeaderSelect value={sustainableFilter} onChange={setSustainableFilter}>
-                                                <option value="">Todos</option>
-                                                <option value="true">Sostenibles</option>
-                                                <option value="false">Estándar</option>
+                                                <option value="">{t('filter.all')}</option>
+                                                <option value="true">{t('filter.sustainable')}</option>
+                                                <option value="false">{t('filter.standard')}</option>
                                             </DataTableHeaderSelect>
                                         </div>
                                     </DataTableHeadCell>

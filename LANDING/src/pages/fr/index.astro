@@ -23,6 +23,7 @@ const t = ui[lang];
 <Layout title={t["nav.home"]}>
   <section id="home">
     <HeroHome
+      lang="fr"
       title={t["hero.title"]}
       subtitle={t["hero.subtitle"]}
       cta={{
@@ -242,5 +243,5 @@ const t = ui[lang];
     />
   </section>
 
-  <RegisterEmpresaModal />
+  <RegisterEmpresaModal lang={lang} />
 </Layout>

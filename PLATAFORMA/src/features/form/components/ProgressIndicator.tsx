@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, Trees, Users, Accessibility, Check } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface ProgressIndicatorProps {
     currentStep: number;
@@ -10,6 +11,7 @@ interface ProgressIndicatorProps {
 
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ currentStep, totalSteps, isStep4Loading = false }) => {
     const { theme } = useTheme();
+    const { t } = useLanguage();
     const isDark = theme === 'dark';
     const steps = [
         { name: 'Perfil', icon: User },
@@ -21,7 +23,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ currentSte
     const progressPercentage = isStep4Loading ? 100 : Math.round((currentStep / totalSteps) * 100);
 
     return (
-        <div className="mb-10 w-full" aria-label="Progreso del formulario" role="progressbar">
+        <div className="mb-10 w-full" aria-label={t('form.progress.ariaLabel')} role="progressbar">
             {/* Progress Bar */}
             <div className="mb-8 flex items-center gap-4">
                 <div className={`h-3 flex-1 overflow-hidden rounded-full ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>

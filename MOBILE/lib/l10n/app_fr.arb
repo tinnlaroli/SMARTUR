@@ -344,5 +344,19 @@
   "activeSessions": "Sessions actives",
   "activeSessionsSubtitle": "Gérez vos appareils connectés",
   "sessionRevokeSuccess": "Session fermée avec succès",
-  "sessionRevokeError": "Impossible de fermer la session. Veuillez réessayer."
+  "sessionRevokeError": "Impossible de fermer la session. Veuillez réessayer.",
+
+  "noSessionsRegistered": "Aucune session enregistrée",
+  "defaultDevice": "Appareil",
+  "sessionRevokeTooltip": "Fermer la session",
+  "sessionCreatedSince": "Depuis",
+
+  "recoGuidedTours": "Visites guidées",
+  "recoNeedHotel": "Besoin d'hôtel",
+  "recoFoodOptions": "Options alimentaires",
+  "recoAccessible": "Accessible",
+  "recoOutdoor": "Plein air",
+
+  "latencyMs": "{ms} ms",
+  "@latencyMs": { "placeholders": { "ms": {} } }
 }

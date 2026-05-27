@@ -211,4 +211,49 @@ const t = ui[lang];
   :global([data-theme="dark"]) .bridge-action:hover .action-arrow-tourist {
     background-color: #475569; /* slate-600 */
   }
+
+  @media (--mq-phone) {
+    .bridge-action {
+      padding: 1rem 1.125rem;
+      border-radius: 1.25rem;
+    }
+
+    .bridge-action :global(.flex) {
+      gap: 0.75rem;
+    }
+
+    .bridge-action :global(.icon-box),
+    .bridge-action :global(.icon-box-tourist) {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .bridge-action :global(.icon-box svg),
+    .bridge-action :global(.icon-box-tourist svg) {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .bridge-label,
+    .bridge-label-tourist {
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+
+    .bridge-action :global(.grid) {
+      grid-template-rows: 1fr !important;
+    }
+
+    .bridge-desc {
+      font-size: 0.8125rem;
+      line-height: 1.4;
+    }
+
+    .action-arrow,
+    .action-arrow-tourist {
+      width: 2.25rem;
+      height: 2.25rem;
+      flex-shrink: 0;
+    }
+  }
 </style>

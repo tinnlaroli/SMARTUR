@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useCommunity } from '../hooks/useCommunity';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { MessageSquare, ImageIcon, Trash2, Store, Star, Plus, Flag, CheckCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
@@ -12,13 +13,6 @@ import type { PostReport } from '../types/types';
 const LIMIT = 20;
 
 type Tab = 'posts' | 'reports';
-
-const REASON_LABELS: Record<string, string> = {
-    spam: 'Spam',
-    inappropriate: 'Inapropiado',
-    false_info: 'Info falsa',
-    hateful: 'Contenido odioso',
-};
 
 function formatDate(iso: string) {
     return new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
@@ -42,6 +36,15 @@ export const CommunityPage = () => {
         reports, reportsLoading, totalReports, fetchReports, resolveReport,
     } = useCommunity();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useLanguage();
+
+    const REASON_LABELS: Record<string, string> = {
+        spam: t('community.reasonSpam'),
+        inappropriate: t('community.reasonInappropriate'),
+        false_info: t('community.reasonFalseInfo'),
+        hateful: t('community.reasonHateful'),
+    };
+
     const toast = useToast();
     const { confirm, modal: confirmModal } = useConfirm();
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -58,9 +61,9 @@ export const CommunityPage = () => {
         setResolvingId(report.id);
         try {
             await resolveReport(report.id);
-            toast.success('Reporte resuelto', 'El reporte fue marcado como resuelto.');
+            toast.success(t('community.toast.resolveSuccess'), t('community.toast.resolveSuccessMsg'));
         } catch {
-            toast.error('Error', 'No se pudo resolver el reporte.');
+            toast.error(t('common.error'), t('community.toast.resolveError'));
         } finally {
             setResolvingId(null);
         }
@@ -68,9 +71,9 @@ export const CommunityPage = () => {
 
     const handleDeleteReported = async (report: PostReport) => {
         const ok = await confirm({
-            title: 'Eliminar publicación reportada',
-            message: `¿Eliminar la publicación de "${report.author_name}" (reportada por ${report.reporter_name} como "${REASON_LABELS[report.reason] ?? report.reason}")? Esta acción es permanente.`,
-            confirmLabel: 'Eliminar',
+            title: t('community.deleteReportedTitle'),
+            message: t('community.confirmDelete.title', { author: report.author_name }),
+            confirmLabel: t('common.delete'),
             variant: 'danger',
         });
         if (!ok) return;
@@ -78,9 +81,9 @@ export const CommunityPage = () => {
         try {
             await deletePost(report.post_id);
             await resolveReport(report.id);
-            toast.success('Publicación eliminada', 'La publicación fue eliminada y el reporte resuelto.');
+            toast.success(t('community.toast.deleteReportedSuccess'), t('community.toast.deleteReportedSuccessMsg'));
         } catch {
-            toast.error('Error', 'No se pudo eliminar la publicación.');
+            toast.error(t('common.error'), t('community.toast.deleteReportedError'));
         } finally {
             setDeletingId(null);
         }
@@ -88,18 +91,18 @@ export const CommunityPage = () => {
 
     const handleDelete = async (id: number, caption: string) => {
         const ok = await confirm({
-            title: 'Eliminar publicación',
+            title: t('community.deleteConfirmTitle'),
             message: `¿Eliminar "${caption.slice(0, 50) || '(sin texto)'}"? Esta acción es permanente.`,
-            confirmLabel: 'Eliminar',
+            confirmLabel: t('common.delete'),
             variant: 'danger',
         });
         if (!ok) return;
         setDeletingId(id);
         try {
             await deletePost(id);
-            toast.success('Publicación eliminada', 'La publicación fue eliminada correctamente.');
+            toast.success(t('community.toast.deleteSuccess'), t('community.toast.deleteSuccessMsg'));
         } catch {
-            toast.error('Error', 'No se pudo eliminar la publicación.');
+            toast.error(t('common.error'), t('community.toast.deleteReportedError'));
         } finally {
             setDeletingId(null);
         }
@@ -112,10 +115,10 @@ export const CommunityPage = () => {
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                        Comunidad Mobile
+                        {t('community.title')}
                     </h1>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Publicaciones creadas por usuarios desde la app móvil
+                        {t('community.description')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -138,7 +141,7 @@ export const CommunityPage = () => {
                     style={activeTab === 'posts' ? { background: MODULE_COLORS.community, color: 'white' } : { color: 'var(--color-text-alt)' }}
                 >
                     <MessageSquare className="size-4" />
-                    Publicaciones
+                    {t('community.tabPosts')}
                 </button>
                 <button
                     onClick={() => setActiveTab('reports')}
@@ -146,7 +149,7 @@ export const CommunityPage = () => {
                     style={activeTab === 'reports' ? { background: '#ef4444', color: 'white' } : { color: 'var(--color-text-alt)' }}
                 >
                     <Flag className="size-4" />
-                    Reportes
+                    {t('community.tabReports')}
                     {totalReports > 0 && (
                         <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: activeTab === 'reports' ? 'rgba(255,255,255,0.25)' : 'rgba(239,68,68,0.15)', color: activeTab === 'reports' ? 'white' : '#ef4444' }}>
                             {totalReports}
@@ -161,10 +164,9 @@ export const CommunityPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.community }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>¿Qué son las publicaciones de comunidad?</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('community.infoBannerTitle')}</p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Los usuarios de la app móvil pueden publicar fotos y comentarios sobre los lugares que visitan (POIs y servicios turísticos).
-                        Desde aquí puedes moderar y eliminar contenido inapropiado.
+                        {t('community.infoBannerDescription')}
                     </p>
                 </div>
             </div>
@@ -177,7 +179,7 @@ export const CommunityPage = () => {
                     style={{ background: MODULE_COLORS.community }}
                 >
                     <Plus className="size-4" />
-                    Nueva publicación
+                    {t('community.newPost')}
                 </button>
             </div>
 
@@ -191,8 +193,8 @@ export const CommunityPage = () => {
             ) : posts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-24 rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
                     <MessageSquare className="size-12" style={{ color: 'var(--color-border)' }} />
-                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>No hay publicaciones todavía</p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Las publicaciones de la app móvil aparecerán aquí</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>{t('community.noPosts')}</p>
+                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{t('community.noPostsHint')}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -220,7 +222,7 @@ export const CommunityPage = () => {
                                     <AuthorAvatar author={post.author} />
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                            {post.author.name || 'Usuario anónimo'}
+                                            {post.author.name || t('community.authorAnonymous')}
                                         </p>
                                         <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{formatDate(post.created_at)}</p>
                                     </div>
@@ -250,7 +252,7 @@ export const CommunityPage = () => {
                                             color: post.place_kind === 'svc' ? 'var(--color-purple)' : 'var(--color-pink)',
                                         }}
                                     >
-                                        {post.place_kind === 'svc' ? 'Servicio' : 'POI'}
+                                        {post.place_kind === 'svc' ? t('community.badgeService') : t('community.badgePOI')}
                                     </span>
                                 </div>
 
@@ -262,7 +264,7 @@ export const CommunityPage = () => {
                                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                                 >
                                     <Trash2 className="size-3.5" />
-                                    {deletingId === post.id ? 'Eliminando...' : 'Eliminar publicación'}
+                                    {deletingId === post.id ? t('community.deleting') : t('community.deletePost')}
                                 </button>
                             </div>
                         </article>
@@ -284,10 +286,10 @@ export const CommunityPage = () => {
                     onSubmit={async (fd) => {
                         const ok = await createPost(fd);
                         if (ok) {
-                            toast.success('Publicación creada', 'La publicación ya es visible en la app móvil.');
+                            toast.success(t('community.toast.postCreated'), t('community.toast.postCreatedMsg'));
                             fetchPosts(page, LIMIT);
                         } else {
-                            toast.error('Error', 'No se pudo crear la publicación.');
+                            toast.error(t('common.error'), t('community.toast.postCreateError'));
                         }
                         return ok;
                     }}
@@ -302,9 +304,9 @@ export const CommunityPage = () => {
                     <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                         <Flag className="size-5 mt-0.5 shrink-0 text-red-500" />
                         <div>
-                            <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Reportes de publicaciones</p>
+                            <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('community.reportsBannerTitle')}</p>
                             <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                Publicaciones marcadas por usuarios como inapropiadas. Puedes resolver el reporte sin eliminar, o eliminar la publicación.
+                                {t('community.reportsBannerDescription')}
                             </p>
                         </div>
                     </div>
@@ -318,8 +320,8 @@ export const CommunityPage = () => {
                     ) : reports.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
                             <CheckCircle className="size-12 text-emerald-500" />
-                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>Sin reportes pendientes</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Todos los reportes han sido revisados</p>
+                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>{t('community.noReports')}</p>
+                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{t('community.noReportsHint')}</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
@@ -361,7 +363,7 @@ export const CommunityPage = () => {
                                             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                                         >
                                             <CheckCircle className="size-3.5" />
-                                            {resolvingId === report.id ? 'Resolviendo...' : 'Resolver'}
+                                            {resolvingId === report.id ? t('community.resolving') : t('community.resolve')}
                                         </button>
                                         <button
                                             onClick={() => handleDeleteReported(report)}
@@ -370,7 +372,7 @@ export const CommunityPage = () => {
                                             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                                         >
                                             <Trash2 className="size-3.5" />
-                                            {deletingId === report.post_id ? 'Eliminando...' : 'Eliminar post'}
+                                            {deletingId === report.post_id ? t('community.deleting') : t('community.deleteReport')}
                                         </button>
                                     </div>
                                 </div>

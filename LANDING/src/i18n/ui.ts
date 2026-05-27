@@ -2,6 +2,7 @@ export const languages = {
   es: "Español",
   en: "English",
   fr: "Français",
+  pt: "Português",
 };
 
 export const defaultLang = "es";
@@ -322,6 +323,8 @@ export const ui = {
     "contact.form.sending": "Enviando...",
     "contact.form.reasonRequired": "Selecciona el motivo de tu consulta.",
     "contact.form.messageShort": "Escribe al menos 10 caracteres.",
+    "contact.form.serverError": "No se pudo enviar. Intenta de nuevo.",
+    "contact.form.closeAria": "Cerrar",
     "contact.modal.title": "Cuéntanos más",
     "contact.modal.subtitle": "Tu mensaje llegará directamente a nuestro equipo.",
     "contact.modal.messagePlaceholder": "Describe tu consulta con detalle…",
@@ -335,6 +338,93 @@ export const ui = {
     "contact.reason.evaluation": "Solicitar evaluación de mi servicio",
     "contact.reason.suggestion": "Sugerencia o comentario",
     "contact.reason.other": "Otro motivo",
+
+    // 404
+    "404.title": "404 — Página no encontrada | SMARTUR",
+    "404.heading": "Esta página no existe",
+    "404.message": "El destino que buscas no está en nuestro mapa. Quizás la URL cambió o fue eliminada.",
+    "404.backHome": "Volver al inicio",
+
+    // Register
+    "register.title": "Registra tu empresa",
+    "register.description": "Crea tu cuenta turística — revisión en 24 h.",
+    "register.yourName": "Tu nombre",
+    "register.email": "Correo electrónico",
+    "register.emailPlaceholder": "empresa@ejemplo.com",
+    "register.password": "Contraseña",
+    "register.passwordPlaceholder": "Mínimo 8 caracteres",
+    "register.confirmPassword": "Confirmar contraseña",
+    "register.confirmPlaceholder": "Repite tu contraseña",
+    "register.businessName": "Nombre de tu empresa",
+    "register.companyPlaceholder": "Ej: Eco Tours Orizaba",
+    "register.tourismSector": "Sector turístico",
+    "register.selectPlaceholder": "Selecciona…",
+    "register.sectorHoteleria": "Hotelería",
+    "register.sectorRestaurantes": "Restaurantes",
+    "register.sectorNaturaleza": "Turismo de naturaleza",
+    "register.phone": "Teléfono",
+    "register.phonePlaceholder": "2711234567",
+    "register.submit": "Crear cuenta gratuita",
+    "register.sending": "Registrando…",
+    "register.acceptTerms": "Al registrarte aceptas los",
+    "register.termsOfUse": "Términos de uso",
+    "register.successTitle": "¡Registro exitoso!",
+    "register.successMessage": "Tu empresa fue registrada y está en revisión. Recibirás acceso en 24 h.",
+    "register.portalLink": "Entrar a mi portal",
+    "register.closeAriaLabel": "Cerrar",
+    "register.showPasswordAriaLabel": "Mostrar contraseña",
+    "register.errorNameRequired": "Ingresa tu nombre completo.",
+    "register.errorEmailInvalid": "Correo electrónico no válido.",
+    "register.errorPasswordMin": "Mínimo 8 caracteres.",
+    "register.errorPasswordFormat": "Debe incluir mayúscula, minúscula y número.",
+    "register.errorPasswordMismatch": "Las contraseñas no coinciden.",
+    "register.errorCompanyRequired": "Ingresa el nombre de tu empresa.",
+    "register.errorSectorRequired": "Selecciona un sector.",
+    "register.errorGeneric": "Error al registrar. Intenta de nuevo.",
+    "register.errorConnection": "Error de conexión. Verifica tu internet e intenta de nuevo.",
+
+    // Hero
+    "hero.scrollDownAriaLabel": "Descubrir más sobre SMARTUR",
+
+    // Benefits
+    "benefits.ariaLabel": "Beneficios",
+    "benefits.modelsAriaLabel": "Modelos y principios",
+    "benefits.howTitle": "Cómo funciona",
+    "benefits.step1": "Contexto",
+    "benefits.step2": "Candidatos",
+    "benefits.step3": "Re-ranking",
+    "benefits.step4": "Entrega",
+
+    // ContactForm
+    "contactForm.closeAriaLabel": "Cerrar",
+    "contactForm.errorMessage": "No se pudo enviar. Intenta de nuevo.",
+
+    // Loader
+    "loader.ariaLabel": "Cargando SMARTUR",
+
+    // Region
+    "region.defaultTag1": "Cultura",
+    "region.defaultTag2": "Naturaleza",
+    "region.defaultTag3": "Tradiciones",
+    "region.videoLabel": "Video explorando la riqueza de Las Altas Montañas de Veracruz",
+    "region.videoUnsupported": "Tu navegador no soporta el elemento de video.",
+    "region.playAriaLabel": "Play video",
+    "region.badgeLabel": "Las Altas Montañas",
+
+    // Layout
+    "layout.twitterCardTitle": "SMARTUR - Turismo Inteligente en Veracruz",
+    "layout.twitterCardDesc": "Plataforma de IA para recomendaciones turísticas personalizadas en Las Altas Montañas",
+    "layout.award": "Galardón Turístico Mi Veracruz 2024",
+    "layout.tabAwayFallback": "¿A dónde fuiste? Regresa a SMARTUR",
+
+    // Algorithm
+    "algorithm.diagramAriaLabel": "Diagrama del pipeline de recomendaciones: contexto, candidatos, filtrado colaborativo, re-ranking con Random Forest y entrega de recomendación.",
+
+    // Segmentation
+    "segmentation.businessTitle": "Para MiPyMEs",
+    "segmentation.businessText": "Registra tu negocio turístico y accede a recomendaciones inteligentes que conectan a viajeros con tus servicios.",
+    "segmentation.travelerTitle": "Para Viajeros",
+    "segmentation.travelerText": "Descubre experiencias auténticas en Las Altas Montañas con recomendaciones personalizadas por IA.",
   },
   en: {
     // Accessibility
@@ -650,6 +740,8 @@ export const ui = {
     "contact.form.sending": "Sending...",
     "contact.form.reasonRequired": "Please select a contact reason.",
     "contact.form.messageShort": "Write at least 10 characters.",
+    "contact.form.serverError": "Could not send. Please try again.",
+    "contact.form.closeAria": "Close",
     "contact.modal.title": "Tell us more",
     "contact.modal.subtitle": "Your message will go directly to our team.",
     "contact.modal.messagePlaceholder": "Describe your inquiry in detail…",
@@ -663,6 +755,93 @@ export const ui = {
     "contact.reason.evaluation": "Request an evaluation of my service",
     "contact.reason.suggestion": "Suggestion or comment",
     "contact.reason.other": "Other reason",
+
+    // 404
+    "404.title": "404 — Page not found | SMARTUR",
+    "404.heading": "This page doesn't exist",
+    "404.message": "The destination you're looking for isn't on our map. Maybe the URL changed or was removed.",
+    "404.backHome": "Back to home",
+
+    // Register
+    "register.title": "Register your company",
+    "register.description": "Create your tourism account — review within 24h.",
+    "register.yourName": "Your name",
+    "register.email": "Email address",
+    "register.emailPlaceholder": "company@example.com",
+    "register.password": "Password",
+    "register.passwordPlaceholder": "Minimum 8 characters",
+    "register.confirmPassword": "Confirm password",
+    "register.confirmPlaceholder": "Repeat your password",
+    "register.businessName": "Company name",
+    "register.companyPlaceholder": "E.g. Eco Tours Orizaba",
+    "register.tourismSector": "Tourism sector",
+    "register.selectPlaceholder": "Select…",
+    "register.sectorHoteleria": "Hotels",
+    "register.sectorRestaurantes": "Restaurants",
+    "register.sectorNaturaleza": "Nature tourism",
+    "register.phone": "Phone",
+    "register.phonePlaceholder": "2711234567",
+    "register.submit": "Create free account",
+    "register.sending": "Registering…",
+    "register.acceptTerms": "By registering you accept the",
+    "register.termsOfUse": "Terms of Use",
+    "register.successTitle": "Registration successful!",
+    "register.successMessage": "Your company has been registered and is under review. You will receive access within 24h.",
+    "register.portalLink": "Go to my portal",
+    "register.closeAriaLabel": "Close",
+    "register.showPasswordAriaLabel": "Show password",
+    "register.errorNameRequired": "Enter your full name.",
+    "register.errorEmailInvalid": "Invalid email address.",
+    "register.errorPasswordMin": "Minimum 8 characters.",
+    "register.errorPasswordFormat": "Must include uppercase, lowercase, and number.",
+    "register.errorPasswordMismatch": "Passwords do not match.",
+    "register.errorCompanyRequired": "Enter your company name.",
+    "register.errorSectorRequired": "Select a sector.",
+    "register.errorGeneric": "Registration error. Try again.",
+    "register.errorConnection": "Connection error. Check your internet and try again.",
+
+    // Hero
+    "hero.scrollDownAriaLabel": "Discover more about SMARTUR",
+
+    // Benefits
+    "benefits.ariaLabel": "Benefits",
+    "benefits.modelsAriaLabel": "Models and principles",
+    "benefits.howTitle": "How it works",
+    "benefits.step1": "Context",
+    "benefits.step2": "Candidates",
+    "benefits.step3": "Re-ranking",
+    "benefits.step4": "Delivery",
+
+    // ContactForm
+    "contactForm.closeAriaLabel": "Close",
+    "contactForm.errorMessage": "Could not send. Try again.",
+
+    // Loader
+    "loader.ariaLabel": "Loading SMARTUR",
+
+    // Region
+    "region.defaultTag1": "Culture",
+    "region.defaultTag2": "Nature",
+    "region.defaultTag3": "Traditions",
+    "region.videoLabel": "Video exploring the richness of the High Mountains of Veracruz",
+    "region.videoUnsupported": "Your browser does not support the video element.",
+    "region.playAriaLabel": "Play video",
+    "region.badgeLabel": "The High Mountains",
+
+    // Layout
+    "layout.twitterCardTitle": "SMARTUR - Smart Tourism in Veracruz",
+    "layout.twitterCardDesc": "AI platform for personalized tourism recommendations in the High Mountains",
+    "layout.award": "Mi Veracruz Tourism Award 2024",
+    "layout.tabAwayFallback": "Where did you go? Come back to SMARTUR",
+
+    // Algorithm
+    "algorithm.diagramAriaLabel": "Recommendation pipeline diagram: context, candidates, collaborative filtering, re-ranking with Random Forest, and recommendation delivery.",
+
+    // Segmentation
+    "segmentation.businessTitle": "For SMEs",
+    "segmentation.businessText": "Register your tourism business and access intelligent recommendations that connect travelers with your services.",
+    "segmentation.travelerTitle": "For Travelers",
+    "segmentation.travelerText": "Discover authentic experiences in the High Mountains with AI-powered personalized recommendations.",
   },
   fr: {
     // Accessibility
@@ -946,6 +1125,8 @@ export const ui = {
     "contact.form.sending": "Envoi en cours...",
     "contact.form.reasonRequired": "Veuillez sélectionner un motif de contact.",
     "contact.form.messageShort": "Rédigez au moins 10 caractères.",
+    "contact.form.serverError": "Impossible d'envoyer. Réessayez.",
+    "contact.form.closeAria": "Fermer",
     "contact.modal.title": "Dites-nous en plus",
     "contact.modal.subtitle": "Votre message ira directement à notre équipe.",
     "contact.modal.messagePlaceholder": "Décrivez votre demande en détail…",
@@ -978,5 +1159,510 @@ export const ui = {
     "faq5.question": "Comment puis-je intégrer mon entreprise à SMARTUR ?",
     "faq5.answer":
       "Contactez-nous via le formulaire sur notre page. Notre équipe vous guidera dans le processus d'inscription et de configuration de votre profil d'entreprise.",
+
+    // 404
+    "404.title": "404 — Page non trouvée | SMARTUR",
+    "404.heading": "Cette page n'existe pas",
+    "404.message": "La destination que vous cherchez n'est pas sur notre carte. Peut-être que l'URL a changé ou a été supprimée.",
+    "404.backHome": "Retour à l'accueil",
+
+    // Register
+    "register.title": "Inscrivez votre entreprise",
+    "register.description": "Créez votre compte touristique — révision sous 24h.",
+    "register.yourName": "Votre nom",
+    "register.email": "Adresse e-mail",
+    "register.emailPlaceholder": "entreprise@exemple.com",
+    "register.password": "Mot de passe",
+    "register.passwordPlaceholder": "Minimum 8 caractères",
+    "register.confirmPassword": "Confirmer le mot de passe",
+    "register.confirmPlaceholder": "Répétez votre mot de passe",
+    "register.businessName": "Nom de l'entreprise",
+    "register.companyPlaceholder": "Ex: Eco Tours Orizaba",
+    "register.tourismSector": "Secteur touristique",
+    "register.selectPlaceholder": "Sélectionnez…",
+    "register.sectorHoteleria": "Hôtellerie",
+    "register.sectorRestaurantes": "Restaurants",
+    "register.sectorNaturaleza": "Tourisme nature",
+    "register.phone": "Téléphone",
+    "register.phonePlaceholder": "2711234567",
+    "register.submit": "Créer un compte gratuit",
+    "register.sending": "Inscription…",
+    "register.acceptTerms": "En vous inscrivant, vous acceptez les",
+    "register.termsOfUse": "Conditions d'utilisation",
+    "register.successTitle": "Inscription réussie !",
+    "register.successMessage": "Votre entreprise a été enregistrée et est en cours de révision. Vous recevrez l'accès sous 24h.",
+    "register.portalLink": "Accéder à mon portail",
+    "register.closeAriaLabel": "Fermer",
+    "register.showPasswordAriaLabel": "Afficher le mot de passe",
+    "register.errorNameRequired": "Entrez votre nom complet.",
+    "register.errorEmailInvalid": "Adresse e-mail invalide.",
+    "register.errorPasswordMin": "Minimum 8 caractères.",
+    "register.errorPasswordFormat": "Doit inclure majuscule, minuscule et chiffre.",
+    "register.errorPasswordMismatch": "Les mots de passe ne correspondent pas.",
+    "register.errorCompanyRequired": "Entrez le nom de votre entreprise.",
+    "register.errorSectorRequired": "Sélectionnez un secteur.",
+    "register.errorGeneric": "Erreur lors de l'inscription. Réessayez.",
+    "register.errorConnection": "Erreur de connexion. Vérifiez votre connexion internet et réessayez.",
+
+    // Hero
+    "hero.scrollDownAriaLabel": "En savoir plus sur SMARTUR",
+
+    // Benefits
+    "benefits.ariaLabel": "Bénéfices",
+    "benefits.modelsAriaLabel": "Modèles et principes",
+    "benefits.howTitle": "Comment ça marche",
+    "benefits.step1": "Contexte",
+    "benefits.step2": "Candidats",
+    "benefits.step3": "Re-classement",
+    "benefits.step4": "Livraison",
+
+    // ContactForm
+    "contactForm.closeAriaLabel": "Fermer",
+    "contactForm.errorMessage": "Impossible d'envoyer. Réessayez.",
+
+    // Loader
+    "loader.ariaLabel": "Chargement de SMARTUR",
+
+    // Region
+    "region.defaultTag1": "Culture",
+    "region.defaultTag2": "Nature",
+    "region.defaultTag3": "Traditions",
+    "region.videoLabel": "Vidéo explorant la richesse des Hautes Montagnes de Veracruz",
+    "region.videoUnsupported": "Votre navigateur ne supporte pas l'élément vidéo.",
+    "region.playAriaLabel": "Lire la vidéo",
+    "region.badgeLabel": "Les Hautes Montagnes",
+
+    // Layout
+    "layout.twitterCardTitle": "SMARTUR - Tourisme Intelligent à Veracruz",
+    "layout.twitterCardDesc": "Plateforme d'IA pour des recommandations touristiques personnalisées dans les Hautes Montagnes",
+    "layout.award": "Prix Touristique Mi Veracruz 2024",
+    "layout.tabAwayFallback": "Où êtes-vous allé(e) ? Revenez sur SMARTUR",
+
+    // Algorithm
+    "algorithm.diagramAriaLabel": "Diagramme du pipeline de recommandations : contexte, candidats, filtrage collaboratif, re-classement avec Random Forest et remise de la recommandation.",
+
+    // Segmentation
+    "segmentation.businessTitle": "Pour les PME",
+    "segmentation.businessText": "Inscrivez votre entreprise touristique et accédez à des recommandations intelligentes qui connectent les voyageurs à vos services.",
+    "segmentation.travelerTitle": "Pour les Voyageurs",
+    "segmentation.travelerText": "Découvrez des expériences authentiques dans les Hautes Montagnes avec des recommandations personnalisées par IA.",
+  },
+  pt: {
+    // Accessibility
+    "accessibility.skip-to-content": "Saltar ao conteúdo",
+    "accessibility.toggleMenu": "Alternar menu móvel",
+
+    // Navigation
+    "nav.home": "Início",
+    "nav.about": "Nós",
+    "nav.technology": "Benefícios",
+    "nav.destination": "Destino",
+    "nav.pricing": "Preços",
+    "nav.contact": "Contato",
+
+    // Branding
+    "header.logo.alt":
+      "Logotipo da SMARTUR - Plataforma de Turismo Inteligente com IA",
+
+    // Buttons
+    "button.get-started": "Começar",
+    "button.learn-more": "Saber Mais",
+    "button.login": "Sou turista",
+    "button.discover": "Descobrir SMARTUR",
+    "button.know-more": "Conheça Mais",
+    "button.view-plans": "Ver Planos",
+    "button.contact": "Contatar",
+
+    // Hero
+    "hero.title":
+      'IA que <span style="color: var(--color-purple)">guia,</span><br><span style="color: var(--color-cyan)">turismo</span> que une.',
+    "hero.subtitle":
+      "SMARTUR conecta turistas com experiências autênticas através de IA, impulsionando as MiPyMEs de Veracruz em sua transformação digital.",
+    "hero.cta": "Seja Parte da SMARTUR",
+
+    // About
+    "about.title":
+      'Quem <span style="color: var(--color-pink)">Somos</span>',
+    "about.subtitle":
+      'Inovação <span style="color: var(--color-purple)">tecnológica</span> a serviço do <span style="color: var(--color-cyan)">turismo</span> regional',
+    "about.sectionLabel": "Nossa História",
+    "about.award":
+      'Galardão <span style="color: var(--color-green)">Turístico</span> Mi Veracruz',
+    "about.awardBadge": "Galardoado",
+    "about.mission.title": "Missão",
+    "about.mission.text":
+      "Impulsionar uma plataforma inteligente que conecte viajantes com experiências locais autênticas e personalizadas mediante o uso de inteligência artificial. Promovemos o consumo responsável e o fortalecimento da economia regional, oferecendo informação clara, acessível e alinhada aos interesses do usuário.",
+    "about.vision.title": "Visão",
+    "about.vision.text":
+      "Consolidar-nos como a plataforma digital líder em recomendações turísticas na região das Altas Montanhas. Buscamos ser referência em inovação tecnológica e sustentabilidade, gerando um impacto social positivo através de um modelo de turismo inclusivo, moderno e ético.",
+    "about.values.title": "Valores",
+    "about.values.text":
+      "<strong>Ética e Honestidade:</strong> Agimos com transparência e confiabilidade.<br/><strong>Empatia e Inclusão:</strong> Projetamos para todos com respeito e equidade.<br/><strong>Responsabilidade:</strong> Comprometidos com o desenvolvimento local sustentável.<br/><strong>Segurança e Imparcialidade:</strong> Garantimos confiança em cada recomendação.",
+    "about.description":
+      "Galardoados com o 'Galardão Turístico Mi Veracruz 2024', a SMARTUR utiliza algoritmos avançados de Machine Learning para oferecer recomendações personalizadas que beneficiam tanto viajantes quanto negócios locais.",
+    "about.stat1.number": "100",
+    "about.stat1.suffix": "+",
+    "about.stat1.label": "MiPyMEs Registradas",
+    "about.stat2.number": "50",
+    "about.stat2.suffix": " mil+",
+    "about.stat2.label": "Recomendações IA",
+    "about.stat3.number": "15",
+    "about.stat3.suffix": "+",
+    "about.stat3.label": "Municípios Cobertos",
+
+    // Introducing
+    "introducing.title":
+      'Transformando o <span style="color: var(--color-cyan)">turismo</span> regional com <span style="color: var(--color-purple)">tecnologia</span> e <span style="color: var(--color-pink)">inovação</span>',
+    "introducing.text":
+      "A SMARTUR nasce do manual de procedimentos galardoado 'Galardão Turístico Mi Veracruz 2024'. Nossa missão é empoderar as MiPyMEs turísticas das Altas Montanhas mediante inteligência artificial, oferecendo recomendações personalizadas que conectam viajantes com experiências autênticas e fortalecem a economia local.",
+
+    // Region
+    "region.title":
+      'As <span style="color: var(--color-green)">Altas Montanhas</span> de Veracruz',
+    "region.text":
+      "Uma região rica em cultura, natureza e tradições. De povoados mágicos a paisagens montanhosas impressionantes, as Altas Montanhas oferecem experiências turísticas únicas que a SMARTUR ajuda a descobrir e promover.",
+
+    // Technology
+    "tech.title":
+      '<span style="color: var(--color-purple)">Tecnologia</span> que impulsiona o <span style="color: var(--color-cyan)">turismo</span>',
+    "tech.text":
+      "A SMARTUR utiliza algoritmos de Machine Learning para analisar preferências, comportamentos e contextos, gerando recomendações turísticas personalizadas que beneficiam tanto viajantes quanto negócios locais.",
+    "tech.feature1.title": "Recomendações Personalizadas",
+    "tech.feature1.desc":
+      "Algoritmos de IA que aprendem com as preferências de cada usuário para sugerir experiências únicas e relevantes.",
+    "tech.feature2.title": "Apoio a MiPyMEs",
+    "tech.feature2.desc":
+      "Visibilidade e promoção para pequenos e médios negócios turísticos da região.",
+    "tech.feature3.title": "Dados Seguros",
+    "tech.feature3.desc":
+      "Proteção de informação com padrões de segurança e privacidade de classe mundial.",
+    "tech.card1.title": "Seu DNA Viajante",
+    "tech.card1.desc":
+      "Você não é um turista qualquer. Nossa IA analisa seus gostos específicos para projetar uma rota que parece feita à mão.",
+    "tech.card2.title": "Tesouros Escondidos",
+    "tech.card2.desc":
+      "Conectamos com o coração das Altas Montanhas. Descubra MiPyMEs locais e cantos secretos que os buscadores genéricos ignoram.",
+    "tech.card3.title": "Bússola Inteligente",
+    "tech.card3.desc":
+      "Machine Learning que prediz sua próxima parada favorita, desde um café na neblina até trilhas inexploradas.",
+    "tech.card4.title": "Legado Galardoado",
+    "tech.card4.desc":
+      "Tecnologia premiada com o Galardão Turístico Mi Veracruz, unindo a inovação com a essência da nossa terra.",
+
+    // Technology - Partner Benefits
+    "tech.partner.title":
+      "Impulsione seu negócio com <span class='highlight-text'>inteligência</span>",
+    "tech.partner.intro":
+      "Ferramentas estratégicas projetadas para crescer no mercado turístico atual.",
+    "tech.partner.cta": "Ver Planos e Tarifas",
+    "tech.partner.feature1.title": "Atração de Clientes Filtrados",
+    "tech.partner.feature1.desc":
+      "O negócio receberá turistas que já estão interessados em sua oferta específica.",
+    "tech.partner.feature2.title": "Relatórios de Demanda Regional",
+    "tech.partner.feature2.desc":
+      "O que os turistas estão buscando nas Altas Montanhas para que você saiba o que vender mais.",
+    "tech.partner.feature3.title": "Posicionamento de Marca Local",
+    "tech.partner.feature3.desc":
+      "Como a SMARTUR faz você se destacar frente às grandes redes internacionais.",
+    "tech.partner.feature4.title": "Continuidade de Negócio",
+    "tech.partner.feature4.desc":
+      "Garantia de que sua vitrine digital estará sempre ativa e vendendo.",
+
+    // Timeline
+    "timeline.title":
+      'Nosso <span style="color: var(--color-orange)">caminho</span>',
+    "timeline.step1.title": "Galardão Turístico Mi Veracruz 2024",
+    "timeline.step1.text":
+      "A SMARTUR nasce do manual de procedimentos galardoado, reconhecido por sua inovação na promoção do turismo regional.",
+    "timeline.step2.title": "Desenvolvimento de algoritmos de IA",
+    "timeline.step2.text":
+      "Criação de um sistema de recomendações inteligente baseado em Machine Learning, projetado especificamente para o contexto turístico das Altas Montanhas.",
+    "timeline.step3.title": "Implementação regional",
+    "timeline.step3.text":
+      "Implantação da plataforma em colaboração com hotéis, restaurantes e comércios locais, gerando impacto real na economia turística.",
+    "timeline.step4.title": "Impulso Universitário UTCV",
+    "timeline.step4.text":
+      "Iniciativa desenvolvida na Universidade Tecnológica do Centro de Veracruz, integrando talento estudantil e tecnologia para o desenvolvimento regional.",
+
+    // Statements
+    "statement1.title": "Inovação",
+    "statement1.text":
+      "Utilizamos inteligência artificial e tecnologia de ponta para revolucionar a forma como o turismo é descoberto e vivenciado nas Altas Montanhas.",
+    "statement2.title": "Identidade Regional",
+    "statement2.text":
+      "Celebramos e promovemos a riqueza cultural, natural e gastronômica única de Veracruz, conectando viajantes com experiências autênticas.",
+    "statement3.title": "Sustentabilidade Tecnológica",
+    "statement3.text":
+      "Empoderamos as MiPyMEs locais com ferramentas digitais acessíveis que fortalecem sua competitividade e crescimento sustentável.",
+
+    // Pricing
+    "pricing.title":
+      'Planos <span style="color: var(--color-pink)">SMARTUR</span>',
+    "pricing.subtitle": "Soluções para MiPyMEs turísticas",
+    "pricing.discount": "-20%",
+    "pricing.basic.title": "Básico",
+    "pricing.basic.desc": "Para pequenos negócios",
+    "pricing.basic.price": "$249",
+    "pricing.basic.duration": "mês",
+    "pricing.basic.feature1": "Perfil de negócio básico",
+    "pricing.basic.feature2": "Até 10 fotos",
+    "pricing.basic.feature3": "Recomendações IA",
+    "pricing.basic.feature4": "Suporte por email",
+    "pricing.basic.feature5": "Análise avançada",
+    "pricing.basic.feature6": "Promoções destacadas",
+    "pricing.mipyme.title": "MiPyME",
+    "pricing.mipyme.price": "$999",
+    "pricing.mipyme.duration": "mês",
+    "pricing.mipyme.feature1": "Perfil de negócio completo",
+    "pricing.mipyme.feature2": "Fotos ilimitadas",
+    "pricing.mipyme.feature3": "Recomendações IA prioritárias",
+    "pricing.mipyme.feature4": "Suporte prioritário",
+    "pricing.mipyme.feature5": "Análise e métricas",
+    "pricing.mipyme.feature6": "Promoções destacadas",
+    "pricing.enterprise.title": "Enterprise",
+    "pricing.enterprise.desc": "Para empresas em crescimento",
+    "pricing.enterprise.price": "$499",
+    "pricing.enterprise.duration": "mês",
+    "pricing.enterprise.feature1": "Tudo em MiPyME, mais:",
+    "pricing.enterprise.feature2": "Múltiplas localizações",
+    "pricing.enterprise.feature3": "API personalizada",
+    "pricing.enterprise.feature4": "Gerente de conta dedicado",
+    "pricing.enterprise.feature5": "Integração com sistemas",
+    "pricing.enterprise.feature6": "Relatórios personalizados",
+
+    // User Segmentation
+    "segmentation.title":
+      'Faça parte do <span style="color: var(--color-purple)">catálogo</span>',
+    "region.cta": "Descubra a região",
+    "segmentation.business.title": "Registrar meu negócio",
+    "segmentation.business.desc": "Para MiPyMEs",
+    "segmentation.business.text":
+      "Registre seu negócio turístico e acesse recomendações inteligentes que conectam viajantes aos seus serviços.",
+    "segmentation.tourist.title": "Sou turista",
+    "segmentation.tourist.desc": "Para Viajantes",
+    "segmentation.tourist.text":
+      "Descubra experiências autênticas nas Altas Montanhas com recomendações personalizadas por IA.",
+
+    // Benefits
+    "benefits.title":
+      'Por que <span style="color: var(--color-green)">nos escolher?</span>',
+    "benefits.subtitle":
+      'Benefícios de pertencer à <span style="color: var(--color-cyan)">SMARTUR</span>',
+    "benefits.improvements.title":
+      'Melhorias claras com <span style="color: var(--color-purple)">IA</span>',
+
+    // Video Section
+    "video.title":
+      'Seja parte da <span style="color: var(--color-orange)">riqueza</span> da nossa <span style="color: var(--color-green)">região</span>',
+    "video.description":
+      "Descubra a beleza natural e cultural das Altas Montanhas de Veracruz",
+
+    // Testimonials
+    "testimonials.title":
+      'Depoimentos: O que dizem os <span style="color: var(--color-pink)">serviços associados</span>?',
+    "testimonials.item1.name": "Cha Ji-Hun",
+    "testimonials.item1.role": "Proprietário",
+    "testimonials.item1.business": "Café Las Montañas",
+    "testimonials.item1.content":
+      "Desde que nos juntamos à SMARTUR, nossas reservas aumentaram 45%. A plataforma nos conecta com turistas que realmente valorizam a experiência autêntica que oferecemos.",
+    "testimonials.item2.name": "María González",
+    "testimonials.item2.role": "Gerente",
+    "testimonials.item2.business": "Hotel Vista Hermosa",
+    "testimonials.item2.content":
+      "As recomendações de IA são incríveis. Recebemos exatamente o tipo de hóspedes que procuram o que oferecemos. O dashboard de análise nos ajuda a tomar melhores decisões.",
+    "testimonials.item3.name": "Roberto Sánchez",
+    "testimonials.item3.role": "Guia Turístico",
+    "testimonials.item3.business": "Aventuras Veracruz",
+    "testimonials.item3.content":
+      "A SMARTUR transformou meu negócio. Agora posso me concentrar em oferecer experiências memoráveis enquanto a plataforma cuida de me conectar com os viajantes certos.",
+
+    // New Pricing Plans
+    "pricing.new.title":
+      'Soluções projetadas para cada <span style="color: var(--color-purple)">ator</span> do ecossistema <span style="color: var(--color-cyan)">turístico</span>',
+    "pricing.new.subtitle": "Planos flexíveis que se adaptam às suas necessidades",
+    "pricing.toggle.monthly": "Mensal",
+    "pricing.toggle.annual": "Anual",
+    "pricing.emprendedor.title": "Empreendedor",
+    "pricing.emprendedor.desc": "Para pequenos negócios",
+    "pricing.emprendedor.price": "$00",
+    "pricing.emprendedor.duration": "mês",
+    "pricing.emprendedor.feature1": "Segmentação de audiência",
+    "pricing.emprendedor.feature2": "Enfoque turismo focal",
+    "pricing.emprendedor.feature3": "Recomendações IA básicas",
+    "pricing.emprendedor.feature4": "Suporte por email",
+    "pricing.emprendedor.cta": "Registrar meu negócio",
+    "pricing.destino.title": "Destino",
+    "pricing.destino.desc": "Para organizações e governos",
+    "pricing.destino.price": "$00",
+    "pricing.destino.duration": "mês",
+    "pricing.destino.feature1": "Tudo em Empreendedor, mais:",
+    "pricing.destino.feature2": "Relatórios avançados",
+    "pricing.destino.feature3": "Dashboard para tomada de decisões",
+    "pricing.destino.feature4": "Análise preditiva",
+    "pricing.destino.feature5": "Suporte prioritário",
+    "pricing.destino.cta": "Agendar demonstração",
+
+    // Marquee
+    "marquee.text1": "Turismo Inteligente",
+    "marquee.text2": "Inovação Regional",
+    "marquee.text3": "IA para MiPyMEs",
+    "marquee.text4": "As Altas Montanhas",
+
+    // FAQs
+    "faqs.title": "Perguntas Frequentes",
+    "faqs.subtitle": "Respostas às suas dúvidas sobre a SMARTUR",
+    "faq1.question": "O que é a SMARTUR?",
+    "faq1.answer":
+      "A SMARTUR é uma plataforma de recomendação turística inteligente que utiliza IA para conectar viajantes com experiências autênticas nas Altas Montanhas de Veracruz, enquanto apoia as MiPyMEs locais.",
+    "faq2.question": "Como funciona o sistema de recomendações?",
+    "faq2.answer":
+      "Utilizamos algoritmos de Machine Learning que analisam preferências, comportamentos e contextos para gerar sugestões personalizadas de hotéis, restaurantes e atividades turísticas.",
+    "faq3.question": "É gratuito para os negócios locais?",
+    "faq3.answer":
+      "A SMARTUR oferece planos acessíveis projetados especificamente para MiPyMEs, com opções que se adaptam a diferentes necessidades e orçamentos.",
+    "faq4.question": "Meus dados estão seguros?",
+    "faq4.answer":
+      "Sim. Implementamos padrões de segurança e privacidade de classe mundial para proteger todas as informações de usuários e negócios.",
+    "faq5.question": "Como posso integrar meu negócio à SMARTUR?",
+    "faq5.answer":
+      "Entre em contato conosco através do formulário em nossa página. Nossa equipe o guiará no processo de registro e configuração do seu perfil empresarial.",
+
+    // Footer
+    "footer.slogan": "IA que guia, turismo que une",
+    "footer.description":
+      "Plataforma de turismo inteligente que conecta viajantes com experiências autênticas nas Altas Montanhas de Veracruz.",
+    "footer.quicklinks": "Links Rápidos",
+    "footer.contact": "Contato",
+    "footer.social": "Siga-nos",
+    "footer.mobileApp": "App Móvel",
+    "footer.mobileApp.download": "Baixar APK",
+    "footer.mobileApp.version": "Última versão",
+    "footer.location": "Altas Montanhas, Veracruz",
+    "footer.copyright": "Todos os direitos reservados.",
+    "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
+
+    // Tab visibility
+    "tab.away": "Onde você foi? Volte para a SMARTUR",
+
+    // ActionBridge
+    "action.tourist.label": "Sou Turista",
+    "action.tourist.description": "Ir para o App Web",
+    "action.business.label": "Tenho um negócio",
+    "action.business.description": "Ver Planos e Preços",
+
+    // Contact CTA (Minimal)
+    "contact.cta.label": "Contate-nos",
+    "contact.cta.title": "Solicite uma avaliação",
+    "contact.cta.text":
+      "Descubra como nossa tecnologia pode transformar seu destino ou negócio. Deixe seu email e entraremos em contato para uma consultoria personalizada.",
+    "contact.cta.emailPlaceholder": "seu email",
+    "contact.cta.submit": "Enviar",
+    "contact.cta.continue": "Continuar",
+    "contact.form.success": "Obrigado. Entraremos em contato em breve.",
+    "contact.form.sending": "Enviando...",
+    "contact.form.reasonRequired": "Selecione o motivo da sua consulta.",
+    "contact.form.messageShort": "Escreva pelo menos 10 caracteres.",
+    "contact.form.serverError": "Não foi possível enviar. Tente novamente.",
+    "contact.form.closeAria": "Fechar",
+    "contact.modal.title": "Conte-nos mais",
+    "contact.modal.subtitle": "Sua mensagem chegará diretamente à nossa equipe.",
+    "contact.modal.messagePlaceholder": "Descreva sua consulta com detalhes…",
+    "contact.modal.submit": "Enviar mensagem",
+    "contact.modal.cancel": "Cancelar",
+    "contact.reason.placeholder": "Selecione o motivo…",
+    "contact.reason.download": "Tenho problemas ao baixar o aplicativo",
+    "contact.reason.join": "Quero me juntar como serviço turístico",
+    "contact.reason.tourist": "Sou um turista interessado na região",
+    "contact.reason.pricing": "Informação sobre preços e planos",
+    "contact.reason.evaluation": "Solicitar avaliação do meu serviço",
+    "contact.reason.suggestion": "Sugestão ou comentário",
+    "contact.reason.other": "Outro motivo",
+
+    // 404
+    "404.title": "404 — Página não encontrada | SMARTUR",
+    "404.heading": "Esta página não existe",
+    "404.message": "O destino que você procura não está em nosso mapa. Talvez a URL mudou ou foi removida.",
+    "404.backHome": "Voltar ao início",
+
+    // Register
+    "register.title": "Registre sua empresa",
+    "register.description": "Crie sua conta turística — revisão em 24h.",
+    "register.yourName": "Seu nome",
+    "register.email": "Endereço de e-mail",
+    "register.emailPlaceholder": "empresa@exemplo.com",
+    "register.password": "Senha",
+    "register.passwordPlaceholder": "Mínimo 8 caracteres",
+    "register.confirmPassword": "Confirmar senha",
+    "register.confirmPlaceholder": "Repita sua senha",
+    "register.businessName": "Nome da empresa",
+    "register.companyPlaceholder": "Ex: Eco Tours Orizaba",
+    "register.tourismSector": "Setor turístico",
+    "register.selectPlaceholder": "Selecione…",
+    "register.sectorHoteleria": "Hotelaria",
+    "register.sectorRestaurantes": "Restaurantes",
+    "register.sectorNaturaleza": "Turismo de natureza",
+    "register.phone": "Telefone",
+    "register.phonePlaceholder": "2711234567",
+    "register.submit": "Criar conta gratuita",
+    "register.sending": "Registrando…",
+    "register.acceptTerms": "Ao se registrar, você aceita os",
+    "register.termsOfUse": "Termos de Uso",
+    "register.successTitle": "Registro bem-sucedido!",
+    "register.successMessage": "Sua empresa foi registrada e está em revisão. Você receberá acesso em 24h.",
+    "register.portalLink": "Entrar no meu portal",
+    "register.closeAriaLabel": "Fechar",
+    "register.showPasswordAriaLabel": "Mostrar senha",
+    "register.errorNameRequired": "Informe seu nome completo.",
+    "register.errorEmailInvalid": "Endereço de e-mail inválido.",
+    "register.errorPasswordMin": "Mínimo 8 caracteres.",
+    "register.errorPasswordFormat": "Deve incluir maiúscula, minúscula e número.",
+    "register.errorPasswordMismatch": "As senhas não coincidem.",
+    "register.errorCompanyRequired": "Informe o nome da sua empresa.",
+    "register.errorSectorRequired": "Selecione um setor.",
+    "register.errorGeneric": "Erro ao registrar. Tente novamente.",
+    "register.errorConnection": "Erro de conexão. Verifique sua internet e tente novamente.",
+
+    // Hero
+    "hero.scrollDownAriaLabel": "Descobrir mais sobre a SMARTUR",
+
+    // Benefits
+    "benefits.ariaLabel": "Benefícios",
+    "benefits.modelsAriaLabel": "Modelos e princípios",
+    "benefits.howTitle": "Como funciona",
+    "benefits.step1": "Contexto",
+    "benefits.step2": "Candidatos",
+    "benefits.step3": "Re-ranking",
+    "benefits.step4": "Entrega",
+
+    // ContactForm
+    "contactForm.closeAriaLabel": "Fechar",
+    "contactForm.errorMessage": "Não foi possível enviar. Tente novamente.",
+
+    // Loader
+    "loader.ariaLabel": "Carregando SMARTUR",
+
+    // Region
+    "region.defaultTag1": "Cultura",
+    "region.defaultTag2": "Natureza",
+    "region.defaultTag3": "Tradições",
+    "region.videoLabel": "Vídeo explorando a riqueza das Altas Montanhas de Veracruz",
+    "region.videoUnsupported": "Seu navegador não suporta o elemento de vídeo.",
+    "region.playAriaLabel": "Reproduzir vídeo",
+    "region.badgeLabel": "As Altas Montanhas",
+
+    // Layout
+    "layout.twitterCardTitle": "SMARTUR - Turismo Inteligente em Veracruz",
+    "layout.twitterCardDesc": "Plataforma de IA para recomendações turísticas personalizadas nas Altas Montanhas",
+    "layout.award": "Galardão Turístico Mi Veracruz 2024",
+    "layout.tabAwayFallback": "Onde você foi? Volte para a SMARTUR",
+
+    // Algorithm
+    "algorithm.diagramAriaLabel": "Diagrama do pipeline de recomendações: contexto, candidatos, filtragem colaborativa, re-ranking com Random Forest e entrega da recomendação.",
+
+    // Segmentation
+    "segmentation.businessTitle": "Para MiPyMEs",
+    "segmentation.businessText": "Registre seu negócio turístico e acesse recomendações inteligentes que conectam viajantes aos seus serviços.",
+    "segmentation.travelerTitle": "Para Viajantes",
+    "segmentation.travelerText": "Descubra experiências autênticas nas Altas Montanhas com recomendações personalizadas por IA.",
   },
 } as const;

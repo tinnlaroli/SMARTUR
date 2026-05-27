@@ -25,30 +25,11 @@ interface HistoryEntry {
     status:       'ok' | 'partial' | 'error';
 }
 
-// ── Constants ────────────────────────────────────────────────────────────────
-
-const TARGET_OPTIONS: {
-    value:       Target;
-    label:       string;
-    description: string;
-    icon:        React.ComponentType<{ className?: string }>;
-}[] = [
-    { value: 'all',     label: 'Todos los usuarios', description: 'Turistas y empresas registradas', icon: Globe     },
-    { value: 'user',    label: 'Solo turistas',       description: 'Usuarios con cuenta de turista',  icon: Users     },
-    { value: 'empresa', label: 'Solo empresas',       description: 'Cuentas de empresa registradas', icon: Building2 },
-];
-
-const TARGET_LABEL: Record<Target, string> = {
-    all:     'Todos',
-    user:    'Turistas',
-    empresa: 'Empresas',
-};
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, justNowText = 'hace un momento'): string {
     const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60)  return 'hace un momento';
+    if (diff < 60)  return justNowText;
     if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
     return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 }
@@ -62,8 +43,7 @@ function entryStatus(s: number, f: number): HistoryEntry['status'] {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function NotificacionesPage() {
-    const { locale } = useLanguage();
-    const _ = locale;
+    const { t } = useLanguage();
 
     const [title,   setTitle]   = useState('');
     const [body,    setBody]    = useState('');
@@ -73,9 +53,26 @@ export function NotificacionesPage() {
     const [history, setHistory] = useState<HistoryEntry[]>([]);
     let nextId = 0;
 
+    const TARGET_OPTIONS: {
+        value:       Target;
+        label:       string;
+        description: string;
+        icon:        React.ComponentType<{ className?: string }>;
+    }[] = [
+        { value: 'all',     label: t('notifications.allUsers'), description: t('notifications.touristsAndCompanies'), icon: Globe     },
+        { value: 'user',    label: t('notifications.onlyTourists'),       description: t('notifications.touristDesc'),  icon: Users     },
+        { value: 'empresa', label: t('notifications.onlyCompanies'),       description: t('notifications.companyDesc'), icon: Building2 },
+    ];
+
+    const TARGET_LABEL: Record<Target, string> = {
+        all:     t('filter.all'),
+        user:    t('notifications.tourists'),
+        empresa: t('notifications.companies'),
+    };
+
     const handleSend = async () => {
         if (!title.trim() || !body.trim()) {
-            setError('El título y el mensaje son obligatorios.');
+            setError(t('notifications.requiredFields'));
             return;
         }
         setLoading(true);
@@ -106,8 +103,8 @@ export function NotificacionesPage() {
         } catch (err: unknown) {
             const msg =
                 err && typeof err === 'object' && 'response' in err
-                    ? ((err as { response?: { data?: { message?: string } } }).response?.data?.message ?? 'Error al enviar.')
-                    : 'Error al enviar.';
+                    ? ((err as { response?: { data?: { message?: string } } }).response?.data?.message ?? t('notifications.sendError'))
+                    : t('notifications.sendError');
             setError(msg);
         } finally {
             setLoading(false);
@@ -127,10 +124,10 @@ export function NotificacionesPage() {
                 </div>
                 <div>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                        Notificaciones Push
+                        {t('notifications.title')}
                     </h1>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Envía notificaciones FCM a usuarios de la app SMARTUR
+                        {t('notifications.description')}
                     </p>
                 </div>
             </div>
@@ -144,20 +141,20 @@ export function NotificacionesPage() {
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
                         <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                            Redactar mensaje
+                            {t('notifications.composeTitle')}
                         </h2>
 
                         {/* Título */}
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                                Título <span style={{ color: 'var(--color-pink)' }}>*</span>
+                                {t('notifications.titleLabel')} <span style={{ color: 'var(--color-pink)' }}>*</span>
                             </label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 maxLength={60}
-                                placeholder="Ej: ¡Nueva ruta disponible en Orizaba!"
+                                placeholder={t('notifications.titlePh')}
                                 className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
                                 style={{
                                     background:   'var(--color-bg-alt)',
@@ -173,14 +170,14 @@ export function NotificacionesPage() {
                         {/* Cuerpo */}
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                                Mensaje <span style={{ color: 'var(--color-pink)' }}>*</span>
+                                {t('notifications.messageLabel')} <span style={{ color: 'var(--color-pink)' }}>*</span>
                             </label>
                             <textarea
                                 value={body}
                                 onChange={(e) => setBody(e.target.value)}
                                 rows={4}
                                 maxLength={200}
-                                placeholder="Ej: Descubre los nuevos lugares registrados esta semana…"
+                                placeholder={t('notifications.messagePh')}
                                 className="w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
                                 style={{
                                     background:  'var(--color-bg-alt)',
@@ -196,7 +193,7 @@ export function NotificacionesPage() {
                         {/* Destinatarios */}
                         <div className="space-y-2">
                             <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                                Destinatarios
+                                {t('notifications.recipientsLabel')}
                             </label>
                             <div className="grid grid-cols-1 gap-2">
                                 {TARGET_OPTIONS.map((opt) => {
@@ -250,8 +247,8 @@ export function NotificacionesPage() {
                             style={{ background: 'var(--color-purple)' }}
                         >
                             {loading
-                                ? <><Loader2 className="size-4 animate-spin" /> Enviando…</>
-                                : <><Send className="size-4" /> Enviar notificación</>}
+                                ? <><Loader2 className="size-4 animate-spin" /> {t('notifications.sending')}</>
+                                : <><Send className="size-4" /> {t('notifications.send')}</>}
                         </button>
 
                         {/* Error */}
@@ -281,7 +278,7 @@ export function NotificacionesPage() {
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
                         <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                            Vista previa
+                            {t('notifications.preview')}
                         </h2>
                         <div
                             className="rounded-2xl border p-4 space-y-1.5"
@@ -296,15 +293,15 @@ export function NotificacionesPage() {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                                        {title || 'Título de la notificación'}
+                                        {title || t('notifications.previewTitle')}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                        SMARTUR · ahora
+                                        SMARTUR · {t('notifications.now')}
                                     </p>
                                 </div>
                             </div>
                             <p className="text-xs pl-9 line-clamp-2" style={{ color: 'var(--color-text-alt)' }}>
-                                {body || 'Aquí aparecerá el cuerpo de tu mensaje…'}
+                                {body || t('notifications.previewBody')}
                             </p>
                         </div>
                     </div>
@@ -326,7 +323,7 @@ export function NotificacionesPage() {
                         <div className="flex items-center gap-2">
                             <Clock className="size-4" style={{ color: 'var(--color-text-alt)' }} />
                             <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                                Historial
+                                {t('notifications.history')}
                             </h2>
                             {history.length > 0 && (
                                 <span
@@ -345,7 +342,7 @@ export function NotificacionesPage() {
                                 style={{ color: 'var(--color-text-alt)' }}
                             >
                                 <Trash2 className="size-3" />
-                                Limpiar
+                                {t('notifications.clear')}
                             </button>
                         )}
                     </div>
@@ -355,8 +352,8 @@ export function NotificacionesPage() {
                         {history.length === 0 ? (
                             <div className="flex flex-col items-center justify-center gap-3 p-10 text-center" style={{ color: 'var(--color-text-alt)' }}>
                                 <Bell className="size-8 opacity-20" />
-                                <p className="text-sm">Las notificaciones enviadas aparecerán aquí</p>
-                                <p className="text-xs opacity-60">El historial se mantiene durante esta sesión</p>
+                                <p className="text-sm">{t('notifications.historyEmpty')}</p>
+                                <p className="text-xs opacity-60">{t('notifications.historyHint')}</p>
                             </div>
                         ) : (
                             <ul className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
@@ -390,7 +387,7 @@ export function NotificacionesPage() {
                                                     </p>
                                                 </div>
                                                 <span className="text-[10px] shrink-0" style={{ color: 'var(--color-text-alt)' }}>
-                                                    {timeAgo(entry.sentAt)}
+                                                    {timeAgo(entry.sentAt, t('notifications.justNow'))}
                                                 </span>
                                             </div>
 
@@ -403,7 +400,7 @@ export function NotificacionesPage() {
                                                             <span>{TARGET_LABEL[entry.target]}</span>
                                                         </div>
                                                         <span style={{ color: statusColor }} className="font-semibold">
-                                                            {entry.successCount}/{total} entregadas
+                                                            {entry.successCount}/{total} {t('notifications.delivered')}
                                                         </span>
                                                     </div>
                                                     {/* Progress bar */}
@@ -421,7 +418,7 @@ export function NotificacionesPage() {
                                                     </div>
                                                     {entry.failureCount > 0 && (
                                                         <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                                                            {entry.failureCount} dispositivo{entry.failureCount !== 1 ? 's' : ''} no alcanzado{entry.failureCount !== 1 ? 's' : ''}
+                                                            {entry.failureCount} {entry.failureCount !== 1 ? t('notifications.devicesNotReached') : t('notifications.deviceNotReached')}
                                                         </p>
                                                     )}
                                                 </div>
@@ -439,7 +436,7 @@ export function NotificacionesPage() {
                         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                     >
                         <CheckCircle2 className="size-3 shrink-0" style={{ color: '#10b981' }} />
-                        <span>Solo usuarios con permisos de notificación activos reciben el mensaje</span>
+                        <span>{t('notifications.footerNote')}</span>
                     </div>
                 </div>{/* fin historial */}
 

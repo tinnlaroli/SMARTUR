@@ -54,7 +54,7 @@ export const InstrumentEditorPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const toast = useToast();
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const ie = useMemo(() => getDashboardText(lang).modules.modals.instrumentEditor, [lang]);
     const evalStepsUi = useMemo(
         () =>
@@ -77,6 +77,12 @@ export const InstrumentEditorPage = () => {
         [ie],
     );
     const fieldTypeLabelMap = useMemo(() => new Map(fieldTypesUi.map((ft) => [ft.value, ft.label])), [fieldTypesUi]);
+
+    const LEVEL_KEYS = ['instrumentEditor.levelDeficient', 'instrumentEditor.levelRegular', 'instrumentEditor.levelGood', 'instrumentEditor.levelVeryGood', 'instrumentEditor.levelExcellent'] as const;
+    const translatedScaleLevels = useMemo(() =>
+        DEFAULT_SCALE_LEVELS.map((l) => ({ ...l, description: t(LEVEL_KEYS[l.order_index]) })),
+        [t],
+    );
 
     const [rubric, setRubric] = useState<FullRubric | null>(null);
     const [criteria, setCriteria] = useState<Criterion[]>([]);
@@ -156,7 +162,7 @@ export const InstrumentEditorPage = () => {
             active: true,
             field_type: 'scale',
             is_required: true,
-            levels: DEFAULT_SCALE_LEVELS.map((l) => ({ ...l })),
+            levels: translatedScaleLevels.map((l) => ({ ...l })),
         };
         setCriteria([...criteria, newCriterion]);
     };
@@ -578,7 +584,7 @@ export const InstrumentEditorPage = () => {
                                                         const updates: Partial<Criterion> = { field_type: newType };
                                                         if (LEVELS_FIELD_TYPES.has(newType) && (!c.levels || c.levels.length === 0)) {
                                                             updates.levels = newType === 'scale'
-                                                                ? DEFAULT_SCALE_LEVELS.map((l) => ({ ...l }))
+                                                                ? translatedScaleLevels.map((l) => ({ ...l }))
                                                                 : [{ id_subcriterion: 0, id_criterion: 0, description: '', score: 0, order_index: 0 }];
                                                         }
                                                         updateCriterion(i, updates);

@@ -71,8 +71,15 @@ const { items } = Astro.props;
     flex-direction: column;
 
     @media (--mq-phone) {
-      min-height: 320px;
-      padding: 0 1.5rem; /* Ensure padding doesn't push flexbox off absolute center */
+      height: auto;
+      min-height: 70dvh;
+      padding: 3rem var(--container-offset);
+    }
+
+    @media (--mq-phone-sm) {
+      min-height: 60dvh;
+      padding-top: 2.5rem;
+      padding-bottom: 2.5rem;
     }
 
     &:nth-child(2) {

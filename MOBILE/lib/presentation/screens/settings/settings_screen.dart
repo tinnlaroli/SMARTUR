@@ -651,7 +651,7 @@ class _SessionsSheetState extends State<_SessionsSheet> {
                             Icon(Icons.devices_outlined,
                                 size: 48, color: scheme.onSurface.withValues(alpha: 0.25)),
                             const SizedBox(height: 12),
-                            Text('Sin sesiones registradas',
+                            Text(AppLocalizations.of(context)!.noSessionsRegistered,
                                 style: TextStyle(
                                     fontFamily: 'Outfit',
                                     color: scheme.onSurface.withValues(alpha: 0.45))),
@@ -664,7 +664,7 @@ class _SessionsSheetState extends State<_SessionsSheet> {
                         itemCount: _sessions.length,
                         itemBuilder: (_, i) {
                           final s = _sessions[i];
-                          final device = s['device_hint'] as String? ?? 'Dispositivo';
+                          final device = s['device_hint'] as String? ?? AppLocalizations.of(context)!.defaultDevice;
                           final ip = s['ip'] as String? ?? '';
                           final created = _formatDate(s['created_at'] as String?);
                           final isPhone = device.toLowerCase().contains('android') ||
@@ -686,7 +686,7 @@ class _SessionsSheetState extends State<_SessionsSheet> {
                                 style: const TextStyle(
                                     fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
                             subtitle: Text(
-                              '${ip.isNotEmpty ? '$ip · ' : ''}Desde $created',
+                              '${ip.isNotEmpty ? '$ip · ' : ''}${AppLocalizations.of(context)!.sessionCreatedSince} $created',
                               style: TextStyle(
                                   fontFamily: 'Outfit', fontSize: 11,
                                   color: scheme.onSurfaceVariant),
@@ -694,7 +694,7 @@ class _SessionsSheetState extends State<_SessionsSheet> {
                             trailing: IconButton(
                               icon: const Icon(Icons.close_rounded,
                                   color: SmarturStyle.pink, size: 20),
-                              tooltip: 'Cerrar sesión',
+                              tooltip: AppLocalizations.of(context)!.sessionRevokeTooltip,
                               onPressed: () => _revoke(s['id'] as int),
                             ),
                           );

@@ -344,5 +344,19 @@
   "activeSessions": "Sesiones activas",
   "activeSessionsSubtitle": "Administra tus dispositivos conectados",
   "sessionRevokeSuccess": "Sesión cerrada correctamente",
-  "sessionRevokeError": "No se pudo cerrar la sesión. Inténtalo de nuevo."
+  "sessionRevokeError": "No se pudo cerrar la sesión. Inténtalo de nuevo.",
+
+  "noSessionsRegistered": "Sin sesiones registradas",
+  "defaultDevice": "Dispositivo",
+  "sessionRevokeTooltip": "Cerrar sesión",
+  "sessionCreatedSince": "Desde",
+
+  "recoGuidedTours": "Tours guiados",
+  "recoNeedHotel": "Necesito hotel",
+  "recoFoodOptions": "Opciones de comida",
+  "recoAccessible": "Accesible",
+  "recoOutdoor": "Al aire libre",
+
+  "latencyMs": "{ms} ms",
+  "@latencyMs": { "placeholders": { "ms": {} } }
 }

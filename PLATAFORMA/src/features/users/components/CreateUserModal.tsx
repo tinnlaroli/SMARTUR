@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function CreateUserModal({ onClose, onSubmit }: Props) {
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<CreateUserDTO>({
         name: '',
@@ -23,12 +23,12 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
-        if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio.';
-        else if (/\d/.test(formData.name)) newErrors.name = 'El nombre no debe contener números.';
-        if (!formData.email.trim()) newErrors.email = 'El correo es obligatorio.';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Ingresa un correo válido.';
-        if (!formData.password) newErrors.password = 'La contraseña es obligatoria.';
-        else if (formData.password.length < 8) newErrors.password = 'Mínimo 8 caracteres.';
+        if (!formData.name.trim()) newErrors.name = t('validation.nameRequired');
+        else if (/\d/.test(formData.name)) newErrors.name = t('validation.nameNoNumbers');
+        if (!formData.email.trim()) newErrors.email = t('validation.emailRequired');
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('validation.emailValid');
+        if (!formData.password) newErrors.password = t('validation.passwordRequired');
+        else if (formData.password.length < 8) newErrors.password = t('validation.passwordMinLength');
         return newErrors;
     };
 

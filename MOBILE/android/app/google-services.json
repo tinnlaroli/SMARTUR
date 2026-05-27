@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "1076586296171-mjrj2cn0gfuotadae4sitd94bgq3h1rv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app_smartur",
+            "certificate_hash": "764063ad57de5fc87cb6b0625068cbbf92ea497d"
+          }
+        },
+        {
           "client_id": "1076586296171-q7mr8bdhbsm5rncmfsug58mb9t3gio2j.apps.googleusercontent.com",
           "client_type": 3
         }

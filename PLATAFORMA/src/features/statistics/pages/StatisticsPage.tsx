@@ -143,14 +143,14 @@ const SearchSelect = ({
                                 autoFocus
                                 className="w-full bg-transparent text-sm outline-none"
                                 style={{ color: 'var(--color-text)' }}
-                                placeholder="Buscar por nombre o correo…"
+                                placeholder={t('statistics.searchPlaceholder')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
                         <div className="max-h-52 overflow-y-auto">
                             {filtered.length === 0 ? (
-                                <p className="px-4 py-3 text-sm" style={{ color: 'var(--color-text-alt)' }}>Sin resultados</p>
+                                <p className="px-4 py-3 text-sm" style={{ color: 'var(--color-text-alt)' }}>{t('statistics.noResults')}</p>
                             ) : (
                                 filtered.map((o) => (
                                     <button
@@ -235,7 +235,7 @@ export const StatisticsPage = () => {
     } = useStatistics();
 
     const [activeTab, setActiveTab] = useState<TabKey>('expenditure');
-    const { lang } = useLanguage();
+    const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
 
     // ── Reference data ────────────────────────────────────────────────────
@@ -426,7 +426,7 @@ export const StatisticsPage = () => {
                                     >
                                         {/* Turista */}
                                         <div>
-                                            <Label required>Turista</Label>
+                                            <Label required>{t('statistics.touristLabel')}</Label>
                                             <SearchSelect
                                                 placeholder="Buscar turista…"
                                                 options={tourists}
@@ -438,7 +438,7 @@ export const StatisticsPage = () => {
                                             />
                                             {tourists.length === 0 && !loadingTourists && (
                                                 <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                                    Sin perfiles registrados aún
+                                                    {m.statistics.noProfiles}
                                                 </p>
                                             )}
                                         </div>
@@ -447,7 +447,7 @@ export const StatisticsPage = () => {
                                         <div>
                                             <Label required>{m.statistics.expType}</Label>
                                             <select name="type" className={inputCls} style={inputStyle} required>
-                                                <option value="">Seleccionar tipo…</option>
+                                                <option value="">{m.statistics.selectType}</option>
                                                 <option value="Alojamiento">🏨 Alojamiento</option>
                                                 <option value="Gastronomía">🍽️ Gastronomía</option>
                                                 <option value="Transporte">🚌 Transporte</option>
@@ -473,11 +473,11 @@ export const StatisticsPage = () => {
                                             <Label required>{m.statistics.destination}</Label>
                                             {loadingLocations ? (
                                                 <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                    <Loader2 className="size-4 animate-spin" /> Cargando ubicaciones…
+                                                    <Loader2 className="size-4 animate-spin" /> {m.statistics.loadingLocations}
                                                 </div>
                                             ) : (
                                                 <select name="destination" className={inputCls} style={inputStyle} required>
-                                                    <option value="">Seleccionar destino…</option>
+                                                    <option value="">{m.statistics.selectDestination}</option>
                                                     {locations.map((loc) => (
                                                         <option key={loc.id} value={loc.name}>
                                                             {loc.name}{loc.municipality ? ` — ${loc.municipality}` : ''}
@@ -490,7 +490,7 @@ export const StatisticsPage = () => {
                                         <button type="submit" disabled={isLoading || !selTourist}
                                             className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnSaveExpense}
+                                            {isLoading ? <><SmartURSpinner size={18} /> {m.statistics.saving}</> : m.statistics.btnSaveExpense}
                                         </button>
                                     </form>
                                 )}
@@ -515,14 +515,14 @@ export const StatisticsPage = () => {
                                         className="space-y-3"
                                     >
                                         <div>
-                                            <Label required>Empresa</Label>
+                                            <Label required>{m.statistics.company}</Label>
                                             {loadingCompanies ? (
                                                 <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                    <Loader2 className="size-4 animate-spin" /> Cargando…
+                                                    <Loader2 className="size-4 animate-spin" /> {m.statistics.loadingCompanies}
                                                 </div>
                                             ) : (
                                                 <select name="company_id" className={inputCls} style={inputStyle} required>
-                                                    <option value="">Seleccionar empresa…</option>
+                                                    <option value="">{m.statistics.selectCompany}</option>
                                                     {companies.map((c) => (
                                                         <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
@@ -567,7 +567,7 @@ export const StatisticsPage = () => {
                                         <button type="submit" disabled={isLoading}
                                             className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnRegisterEmployee}
+                                            {isLoading ? <><SmartURSpinner size={18} /> {m.statistics.saving}</> : m.statistics.btnRegisterEmployee}
                                         </button>
                                     </form>
                                 )}
@@ -591,14 +591,14 @@ export const StatisticsPage = () => {
                                         className="space-y-3"
                                     >
                                         <div>
-                                            <Label required>Empresa</Label>
+                                            <Label required>{m.statistics.company}</Label>
                                             {loadingCompanies ? (
                                                 <div className="mt-1.5 flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                                    <Loader2 className="size-4 animate-spin" /> Cargando…
+                                                    <Loader2 className="size-4 animate-spin" /> {m.statistics.loadingCompanies}
                                                 </div>
                                             ) : (
                                                 <select name="company_id" className={inputCls} style={inputStyle} required>
-                                                    <option value="">Seleccionar empresa…</option>
+                                                    <option value="">{m.statistics.selectCompany}</option>
                                                     {companies.map((c) => (
                                                         <option key={c.id} value={c.id}>{c.name}</option>
                                                     ))}
@@ -612,8 +612,8 @@ export const StatisticsPage = () => {
                                                 <option value="Energía Eléctrica">⚡ {m.statistics.inputElectric}</option>
                                                 <option value="Agua">💧 {m.statistics.inputWater}</option>
                                                 <option value="Gas - Combustible">🔥 {m.statistics.inputGas}</option>
-                                                <option value="Residuos sólidos">♻️ Residuos sólidos</option>
-                                                <option value="Otros insumos">📦 Otros insumos</option>
+                                                <option value="Residuos sólidos">♻️ {m.statistics.inputSolidWaste}</option>
+                                                <option value="Otros insumos">📦 {m.statistics.inputOther}</option>
                                             </select>
                                         </div>
 
@@ -624,7 +624,7 @@ export const StatisticsPage = () => {
                                                     className={inputCls} style={inputStyle} required />
                                             </div>
                                             <div>
-                                                <Label required>CO₂ (kg)</Label>
+                                                <Label required>{m.statistics.co2kg}</Label>
                                                 <input name="carbon" type="number" min="0" step="0.001" placeholder="0.000"
                                                     className={inputCls} style={inputStyle} required />
                                             </div>
@@ -642,7 +642,7 @@ export const StatisticsPage = () => {
                                         <button type="submit" disabled={isLoading}
                                             className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                             style={{ background: activeTabData.color }}>
-                                            {isLoading ? <><SmartURSpinner size={18} /> Guardando…</> : m.statistics.btnSaveIndicators}
+                                            {isLoading ? <><SmartURSpinner size={18} /> {m.statistics.saving}</> : m.statistics.btnSaveIndicators}
                                         </button>
                                     </form>
                                 )}
@@ -655,14 +655,14 @@ export const StatisticsPage = () => {
                                 {activeTab === 'expenditure' && (
                                     <>
                                         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                                            <KpiCard label="Registros" value={expenditures.length} color="var(--color-purple)" icon={BarChart3} />
-                                            <KpiCard label="Monto total" value={mxn(totalExpAmount)} color="var(--color-purple)" icon={DollarSign} />
-                                            <KpiCard label="Promedio / registro" value={mxn(avgExpAmount)} color="var(--color-purple)" icon={TrendingUp} />
-                                            <KpiCard label="Tipo más frecuente" value={mostCommonExpType} color="var(--color-purple)" icon={BarChart3} />
+                                            <KpiCard label={m.statistics.kpiRecords} value={expenditures.length} color="var(--color-purple)" icon={BarChart3} />
+                                            <KpiCard label={m.statistics.kpiTotalAmount} value={mxn(totalExpAmount)} color="var(--color-purple)" icon={DollarSign} />
+                                            <KpiCard label={m.statistics.kpiAvgPerRecord} value={mxn(avgExpAmount)} color="var(--color-purple)" icon={TrendingUp} />
+                                            <KpiCard label={m.statistics.kpiMostFrequentType} value={mostCommonExpType} color="var(--color-purple)" icon={BarChart3} />
                                         </div>
 
                                         <DataTable
-                                            headers={['Turista', 'Tipo de gasto', 'Monto', 'Destino', 'Fecha']}
+                                            headers={[m.statistics.tableTourist, m.statistics.tableExpType, m.statistics.tableAmount, m.statistics.tableDestination, m.statistics.tableDate]}
                                             loading={loadingExpenditures}
                                             empty={expenditures.length === 0}
                                             colSpan={5}
@@ -704,14 +704,14 @@ export const StatisticsPage = () => {
                                 {activeTab === 'employment' && (
                                     <>
                                         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                                            <KpiCard label="Empleos registrados" value={employments.length} color="var(--color-cyan)" icon={Users} />
-                                            <KpiCard label="Salario promedio" value={mxn(avgSalary)} color="var(--color-cyan)" icon={DollarSign} />
-                                            <KpiCard label="Nómina total" value={mxn(totalSalary)} color="var(--color-cyan)" icon={TrendingUp} />
-                                            <KpiCard label="Tiempo completo" value={`${fullTimeCount} / ${employments.length}`} color="var(--color-cyan)" icon={Briefcase} sub={employments.length ? `${Math.round((fullTimeCount / employments.length) * 100)}%` : ''} />
+                                            <KpiCard label={m.statistics.kpiRegisteredJobs} value={employments.length} color="var(--color-cyan)" icon={Users} />
+                                            <KpiCard label={m.statistics.kpiAvgSalary} value={mxn(avgSalary)} color="var(--color-cyan)" icon={DollarSign} />
+                                            <KpiCard label={m.statistics.kpiTotalPayroll} value={mxn(totalSalary)} color="var(--color-cyan)" icon={TrendingUp} />
+                                            <KpiCard label={m.statistics.kpiFullTime} value={`${fullTimeCount} / ${employments.length}`} color="var(--color-cyan)" icon={Briefcase} sub={employments.length ? `${Math.round((fullTimeCount / employments.length) * 100)}%` : ''} />
                                         </div>
 
                                         <DataTable
-                                            headers={['Empresa', 'Puesto', 'Contrato', 'Género', 'Salario']}
+                                            headers={[m.statistics.tableCompany, m.statistics.tablePosition, m.statistics.tableContract, m.statistics.tableGender, m.statistics.tableSalary]}
                                             loading={loadingEmployments}
                                             empty={employments.length === 0}
                                             colSpan={5}
@@ -741,14 +741,14 @@ export const StatisticsPage = () => {
                                 {activeTab === 'input' && (
                                     <>
                                         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                                            <KpiCard label="Registros" value={inputs.length} color="var(--color-green)" icon={BarChart3} />
-                                            <KpiCard label="CO₂ total (kg)" value={totalCO2.toFixed(2)} color="var(--color-green)" icon={Leaf} />
-                                            <KpiCard label="Costo total" value={mxn(totalCost)} color="var(--color-green)" icon={DollarSign} />
-                                            <KpiCard label="Insumo frecuente" value={mostCommonInput} color="var(--color-green)" icon={Zap} />
+                                            <KpiCard label={m.statistics.kpiRecords} value={inputs.length} color="var(--color-green)" icon={BarChart3} />
+                                            <KpiCard label={m.statistics.kpiTotalCO2} value={totalCO2.toFixed(2)} color="var(--color-green)" icon={Leaf} />
+                                            <KpiCard label={m.statistics.kpiTotalCost} value={mxn(totalCost)} color="var(--color-green)" icon={DollarSign} />
+                                            <KpiCard label={m.statistics.kpiFrequentInput} value={mostCommonInput} color="var(--color-green)" icon={Zap} />
                                         </div>
 
                                         <DataTable
-                                            headers={['Empresa', 'Insumo', 'Consumo', 'CO₂ (kg)', 'Costo']}
+                                            headers={[m.statistics.tableCompany, m.statistics.tableInput, m.statistics.tableConsumption, m.statistics.tableCO2, m.statistics.tableCost]}
                                             loading={loadingInputs}
                                             empty={inputs.length === 0}
                                             colSpan={5}

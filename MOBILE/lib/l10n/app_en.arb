@@ -344,5 +344,19 @@
   "activeSessions": "Active sessions",
   "activeSessionsSubtitle": "Manage your connected devices",
   "sessionRevokeSuccess": "Session closed successfully",
-  "sessionRevokeError": "Could not close the session. Please try again."
+  "sessionRevokeError": "Could not close the session. Please try again.",
+
+  "noSessionsRegistered": "No sessions registered",
+  "defaultDevice": "Device",
+  "sessionRevokeTooltip": "Close session",
+  "sessionCreatedSince": "Since",
+
+  "recoGuidedTours": "Guided tours",
+  "recoNeedHotel": "Need hotel",
+  "recoFoodOptions": "Food options",
+  "recoAccessible": "Accessible",
+  "recoOutdoor": "Outdoor",
+
+  "latencyMs": "{ms} ms",
+  "@latencyMs": { "placeholders": { "ms": {} } }
 }

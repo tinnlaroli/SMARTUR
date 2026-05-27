@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ArrowLeft, Check, MapPin, CheckCircle2, XCircle, RotateCw } from 'lucide-react';
@@ -6,7 +6,8 @@ import { useFormRecommendations } from '../hooks/useFormRecommendations';
 import SmartURLoader from '../../auth/components/SmartURLoader';
 import type { FormContext, RecommendationsResponse, AIRecommendationContext } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useUserPreferences } from '../../../contexts/LanguageContext';
+import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
 interface Step4Props {
     data: Partial<FormContext>;
@@ -19,6 +20,8 @@ interface Step4Props {
 export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onChange, onLoadingChange, onShowRecommendations }) => {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.form, [lang]);
     const [accesibilidad, setAccesibilidad] = useState<string>(data.accesibilidad || 'no');
     const [detalleAcc, setDetalleAcc] = useState<string>(data.detalleAcc || '');
     const [visitado, setVisitado] = useState<string>(data.visitado || 'no');
@@ -92,7 +95,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
         });
 
         if (!user || !user.id) {
-            alert('Debes iniciar sesión.');
+            alert(copy.step4.loginRequired);
             isSubmittingRef.current = false;
             return;
         }
@@ -113,7 +116,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                 setPendingResult(result);
                 setIsReady(true);
             } else if (result) {
-                throw new Error('No se encontraron recomendaciones.');
+                throw new Error(copy.step4.noRecommendations);
             }
         } catch (err) {
             console.error('[Step4] Error al obtener recomendaciones:', err);
@@ -136,8 +139,8 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
             <div className="flex min-h-[400px] flex-col items-center justify-center">
                 <SmartURLoader isReady={isReady} onFinished={handleLoaderFinished} />
                 <div className="mt-8 text-center text-white">
-                    <h3 className="mb-4 text-2xl font-semibold">Analizando tus preferencias…</h3>
-                    <p className="text-zinc-400">Generando recomendaciones personalizadas para tu próximo viaje</p>
+                    <h3 className="mb-4 text-2xl font-semibold">{copy.step4.loadingTitle}</h3>
+                    <p className="text-zinc-400">{copy.step4.loadingSubtitle}</p>
                 </div>
             </div>
         );
@@ -149,7 +152,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                 <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-red-500/10">
                     <XCircle className="size-8 text-red-500" />
                 </div>
-                <h3 className="mb-2 text-2xl font-semibold text-white">Error al generar recomendaciones</h3>
+                <h3 className="mb-2 text-2xl font-semibold text-white">{copy.step4.errorTitle}</h3>
                 <p className="mb-8 max-w-md text-zinc-400">{apiError}</p>
                 <button
                     onClick={() => {
@@ -159,20 +162,20 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                     className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white"
                 >
                     <RotateCw className="size-5" />
-                    <span>Reintentar</span>
+                    <span>{copy.step4.retry}</span>
                 </button>
             </div>
         );
     }
 
     const accesibilidadOptions = [
-        { label: 'Sí', value: 'si', icon: CheckCircle2 },
-        { label: 'No', value: 'no', icon: XCircle },
+        { label: copy.step4.yes, value: 'si', icon: CheckCircle2 },
+        { label: copy.step4.no, value: 'no', icon: XCircle },
     ];
 
     const visitadoOptions = [
-        { label: 'Sí', value: 'si', icon: MapPin },
-        { label: 'No', value: 'no', icon: MapPin },
+        { label: copy.step4.yes, value: 'si', icon: MapPin },
+        { label: copy.step4.no, value: 'no', icon: MapPin },
     ];
 
     const unselectedBtn = isDark
@@ -182,12 +185,12 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
     return (
         <div className="step-content px-4 py-6" ref={containerRef}>
             <div className="step-header mb-8 text-center">
-                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>Condiciones Especiales</h2>
-                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Ayúdanos a personalizar aún más tu experiencia</p>
+                <h2 className={`mb-2 text-3xl font-semibold ${isDark ? 'text-white' : 'text-zinc-900'}`}>{copy.step4.title}</h2>
+                <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>{copy.step4.subtitle}</p>
             </div>
 
             <div className="form-section mb-8">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>¿Necesitas accesibilidad?</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step4.accessibilityLabel}</label>
                 <div className="grid grid-cols-2 gap-4">
                     {accesibilidadOptions.map((o) => (
                         <button
@@ -212,7 +215,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                         <textarea
                             value={detalleAcc}
                             onChange={(e) => setDetalleAcc(e.target.value)}
-                            placeholder="Describe tu requerimiento de accesibilidad…"
+                            placeholder={copy.step4.accessibilityPlaceholder}
                             rows={4}
                             className={`w-full rounded-xl border p-4 transition-all outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 ${
                                 isDark ? 'border-zinc-800 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-900'
@@ -223,7 +226,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
             </div>
 
             <div className="form-section mb-10">
-                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>¿Has visitado la región antes?</label>
+                <label className={`mb-4 block text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{copy.step4.visitedLabel}</label>
                 <div className="grid grid-cols-2 gap-4">
                     {visitadoOptions.map((o) => (
                         <button
@@ -250,14 +253,14 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                     className={`flex items-center gap-2 rounded-xl border px-6 py-3 font-semibold transition-all active:scale-95 disabled:opacity-50 ${unselectedBtn}`}
                 >
                     <ArrowLeft className="size-5" />
-                    <span>Atrás</span>
+                    <span>{copy.step4.back}</span>
                 </button>
                 <button
                     onClick={handleFinish}
                     disabled={loading}
                     className="flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95 disabled:opacity-50"
                 >
-                    <span>Finalizar</span>
+                    <span>{copy.step4.finish}</span>
                     <Check className="size-5" />
                 </button>
             </div>

@@ -1,8 +1,11 @@
 ---
 import type { Link } from "../types";
 import Button from "./Button.astro";
+import { useTranslations, defaultLang } from "../i18n/utils";
+import { ui } from "../i18n/ui";
 
 interface Props {
+  lang?: keyof typeof ui;
   title: string;
   businessCta: Link;
   touristCta: Link;
@@ -12,43 +15,37 @@ interface Props {
   touristDescription?: string;
 }
 
-const {
-  title,
-  businessCta,
-  touristCta,
-  businessSubtitle = "Para MiPyMEs",
-  businessDescription = "Registra tu negocio turístico y accede a recomendaciones inteligentes que conectan a viajeros con tus servicios.",
-  touristSubtitle = "Para Viajeros",
-  touristDescription = "Descubre experiencias auténticas en Las Altas Montañas con recomendaciones personalizadas por IA.",
-} = Astro.props;
+const { lang = defaultLang, title, businessCta, touristCta, businessSubtitle, businessDescription, touristSubtitle, touristDescription } = Astro.props;
+
+const t = useTranslations(lang);
 ---
 
-<section class="user-segmentation">
-  <div class="u-container">
-    <h2 class="u-heading title sy-kinetic-heading" data-sy-reveal="" set:html={title} />
-
-    <div class="cards-wrapper">
-      <div class="segmentation-card" data-sy-reveal="fade">
-        <div class="card-icon business-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-        </div>
-        <h3 class="u-text card-title">{businessSubtitle}</h3>
-        <p class="u-text card-description">
-          {businessDescription}
-        </p>
+  <section class="user-segmentation">
+    <div class="u-container">
+      <h2 class="u-heading title sy-kinetic-heading" data-sy-reveal="" set:html={title} />
+  
+        <div class="cards-wrapper">
+          <div class="segmentation-card" data-sy-reveal="fade">
+            <div class="card-icon business-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <h3 class="u-text card-title">{businessSubtitle || t("segmentation.businessTitle")}</h3>
+            <p class="u-text card-description">
+              {businessDescription || t("segmentation.businessText")}
+            </p>
         <Button {...businessCta} arrow class="card-cta" />
       </div>
 
@@ -70,10 +67,10 @@ const {
             <path d="M2 12h20"></path>
           </svg>
         </div>
-        <h3 class="u-text card-title">{touristSubtitle}</h3>
-        <p class="u-text card-description">
-          {touristDescription}
-        </p>
+            <h3 class="u-text card-title">{touristSubtitle || t("segmentation.travelerTitle")}</h3>
+            <p class="u-text card-description">
+              {touristDescription || t("segmentation.travelerText")}
+            </p>
         <Button {...touristCta} arrow class="card-cta" />
       </div>
     </div>

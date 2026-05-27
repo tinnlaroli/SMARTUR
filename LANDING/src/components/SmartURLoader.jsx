@@ -261,7 +261,7 @@ const PRECALCULATED_PLANES = [
  *   onFinished → Callback que se ejecuta al terminar toda la secuencia.
  *                Típicamente se usa para ocultar el overlay del loader.
  * ═══════════════════════════════════════════════════════════════════════════ */
-export default function SmartURLoader({ onFinished } = {}) {
+export default function SmartURLoader({ label, onFinished } = {}) {
   // Referencias DOM para animaciones GSAP
   const containerRef = useRef(null); // Contenedor principal (overlay)
   const percentRef = useRef(null); // Elemento del porcentaje de carga
@@ -597,7 +597,7 @@ export default function SmartURLoader({ onFinished } = {}) {
           ref={svgRef}
           viewBox="0 0 169.42 218.53"
           className="smartur-loader-svg"
-          aria-label="Cargando SMARTUR"
+          aria-label={label || "Cargando SMARTUR"}
         >
           <g>
             {/* Capa inferior: 7 piezas del marcador de mapa (pin shell) */}

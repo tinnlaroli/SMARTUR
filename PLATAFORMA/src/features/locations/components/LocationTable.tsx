@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { Location } from '../types/types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import {
     DataTable,
     DataTableBody,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export default function LocationTable({ locations, selectedLocations, onToggle, onViewDetail }: Props) {
+    const { t } = useLanguage();
     const [sort, setSort] = useState<SortState | null>(null);
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
     const displayData = useMemo(() => sortRows(locations, sort), [locations, sort]);
@@ -56,11 +58,11 @@ export default function LocationTable({ locations, selectedLocations, onToggle, 
                                     className={TABLE_CHECKBOX_CLASS}
                                 />
                             </DataTableHeadCell>
-                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>Nombre</SortableHeadCell>
-                            <SortableHeadCell sortKey="state" sort={sort} onSort={handleSort} className="w-40">Estado</SortableHeadCell>
-                            <SortableHeadCell sortKey="municipality" sort={sort} onSort={handleSort} className="w-44">Municipio</SortableHeadCell>
-                            <DataTableHeadCell className="w-32">Latitud</DataTableHeadCell>
-                            <DataTableHeadCell className="w-32">Longitud</DataTableHeadCell>
+                            <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>{t('tableHeader.name')}</SortableHeadCell>
+                            <SortableHeadCell sortKey="state" sort={sort} onSort={handleSort} className="w-40">{t('tableHeader.status')}</SortableHeadCell>
+                            <SortableHeadCell sortKey="municipality" sort={sort} onSort={handleSort} className="w-44">{t('tableHeader.municipality')}</SortableHeadCell>
+                            <DataTableHeadCell className="w-32">{t('tableHeader.latitude')}</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">{t('tableHeader.longitude')}</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>

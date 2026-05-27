@@ -70,8 +70,8 @@ export const ProfilesPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <UserCircle className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.profiles }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Perfiles de viajero</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Los perfiles agrupan preferencias de viaje recopiladas mediante el formulario inteligente. Se usan para personalizar las recomendaciones del motor de IA.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.profiles.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.profiles.bannerDescription}</p>
                 </div>
             </div>
 

@@ -3,6 +3,7 @@
 @import "./utils.css";
 @import "./reveals.css";
 @import "./scroll-kinetic.css";
+@import "./_responsive.css";
 
 @tailwind base;
 @tailwind components;
@@ -63,4 +64,17 @@ a {
 
 button {
   color: currentcolor;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (--mq-phone) {
+  dialog {
+    max-width: calc(100% - 1.5rem);
+  }
 }

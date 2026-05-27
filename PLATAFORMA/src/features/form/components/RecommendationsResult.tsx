@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin, Star, Share2, Download, ArrowRight, X, LocateFixed } from 'lucide-react';
 import smarturLogo from '../../../assets/landing/logo_costado.png';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import { Map as InteractiveMap, MapControls, MapMarker, MapPopup, type MapRef } from '../../landing/components/ui/Map';
@@ -204,6 +206,8 @@ const fetchAllLocations = async () => {
 export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ recommendations, onClose }) => {
     const toast = useToast();
     const { theme } = useTheme();
+    const { lang } = useLanguage();
+    const copy = useMemo(() => getDashboardText(lang).modules.form.results, [lang]);
     const isDark = theme === 'dark';
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -219,12 +223,12 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
 
     const formattedRecommendations = useMemo(() => {
         return topFive.map((rec, index) => {
-            const title = rec.title || 'Destino Turistico';
+            const title = rec.title || copy.recommendationFallback;
             const score = Number.isFinite(rec.score) ? rec.score.toFixed(3) : '0.000';
-            const kind = rec.kind === 'svc' ? 'Servicio Turistico' : 'Punto de Interes';
+            const kind = rec.kind === 'svc' ? copy.shareServiceLabel : copy.sharePoiLabel;
             return `${index + 1}. ${title} (${kind}) - ${score}`;
         });
-    }, [topFive]);
+    }, [topFive, copy]);
 
     const resolvedRecommendations = useMemo<ResolvedRecommendation[]>(() => {
         const serviceById = new Map(catalog.services.map((service) => [String(service.id), service]));
@@ -598,17 +602,17 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                     title: 'Recomendaciones SMARTUR',
                     text,
                 });
-                toast.success('Compartido', 'Se envio el resumen de recomendaciones');
+                toast.success(copy.shareSuccessTitle, copy.shareSuccessBody);
                 return;
             }
             if (navigator.clipboard?.writeText) {
                 await navigator.clipboard.writeText(text);
-                toast.success('Copiado', 'Se copio el resumen al portapapeles');
+                toast.success(copy.copySuccessTitle, copy.copySuccessBody);
                 return;
             }
-            toast.warning('No disponible', 'Tu navegador no permite compartir ni copiar');
+            toast.warning(copy.shareUnavailableTitle, copy.shareUnavailableBody);
         } catch (error) {
-            toast.error('No se pudo compartir', 'Intenta nuevamente o descarga el archivo');
+            toast.error(copy.shareErrorTitle, copy.shareErrorBody);
         }
     };
 
@@ -622,19 +626,19 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                         </div>
                         <div className="space-y-2">
                             <div>
-                                <h2 className="text-lg sm:text-2xl font-semibold text-zinc-950 dark:text-white">Tus recomendaciones</h2>
-                                <p className="hidden sm:block text-sm text-zinc-500 dark:text-zinc-400">Explora el mapa y selecciona cada lugar desde la lista lateral.</p>
+                                <h2 className="text-lg sm:text-2xl font-semibold text-zinc-950 dark:text-white">{copy.headerTitle}</h2>
+                                <p className="hidden sm:block text-sm text-zinc-500 dark:text-zinc-400">{copy.headerSubtitle}</p>
                             </div>
                             <div className="hidden sm:flex flex-wrap items-center gap-2">
                                 <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                                    {topFive.length} lugares recomendados
+                                    {copy.recommendedPlacesBadge(topFive.length)}
                                 </span>
                                 <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-[11px] font-semibold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-                                    {locatedRecommendations.length} con ubicacion en mapa
+                                    {copy.locatedPlacesBadge(locatedRecommendations.length, topFive.length)}
                                 </span>
                                 {selectedRecommendation && (
                                     <span className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-semibold text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300">
-                                        Seleccion actual: {selectedRecommendation.title || 'Destino Turistico'}
+                                        {copy.selectedBadge(selectedRecommendation.title || copy.popupTitleFallback)}
                                     </span>
                                 )}
                             </div>
@@ -653,7 +657,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                         <div className="flex flex-col gap-3 lg:min-h-0">
                             <div className="hidden lg:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                    Selecciona un card para centrarlo en el mapa. Al pasar el cursor, el punto correspondiente se ilumina.
+                                    {copy.mapHint}
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <button
@@ -662,7 +666,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                         className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                                     >
                                         <LocateFixed className="size-4" />
-                                        <span>Ver todos</span>
+                                        <span>{copy.mapReset}</span>
                                     </button>
                                 </div>
                             </div>
@@ -740,13 +744,13 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                                         style={{ background: recommendation.accentColor, color: recommendation.accentColor }}
                                                                     />
                                                                     <span className={`text-sm font-bold ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
-                                                                        {recommendation.title || 'Destino Turistico'}
+                                                                        {recommendation.title || copy.popupTitleFallback}
                                                                     </span>
                                                                 </div>
                                                                 <div className={`flex items-center gap-2 text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                                                                     <span>{recommendation.kindLabel}</span>
                                                                     <span>•</span>
-                                                                    <span>Score {recommendation.scoreLabel}</span>
+                                                                    <span>{copy.popupScoreLabel(recommendation.scoreLabel)}</span>
                                                                 </div>
                                                             </div>
                                                         </MapPopup>
@@ -758,7 +762,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
 
                                     <div className="hidden lg:block absolute left-6 top-6 z-10 min-w-[220px] rounded-2xl p-5 mapcn-panel">
                                         <p className={`mb-1 text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-zinc-500' : 'text-slate-600'}`}>
-                                            Visualizacion
+                                            {copy.mapPanelTitle}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-2">
                                             <span
@@ -766,7 +770,9 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                     isDark ? 'border-white/10 bg-zinc-900/70 text-zinc-300' : 'border-black/10 bg-white/80 text-slate-700'
                                                 }`}
                                             >
-                                                {catalogState === 'loading' ? 'Ubicando puntos...' : `${locatedRecommendations.length}/${topFive.length} visibles`}
+                                                {catalogState === 'loading'
+                                                    ? copy.mapPanelLoading
+                                                    : copy.mapPanelStats(locatedRecommendations.length, topFive.length)}
                                             </span>
                                             {activeRecommendation && (
                                                 <span
@@ -774,27 +780,27 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                         isDark ? 'border-white/10 bg-zinc-900/70 text-zinc-300' : 'border-black/10 bg-white/80 text-slate-700'
                                                     }`}
                                                 >
-                                                    Foco: #{activeRecommendation.rank}
+                                                    {copy.mapPanelFocus(activeRecommendation.rank)}
                                                 </span>
                                             )}
                                         </div>
                                         <p className={`mt-3 text-xs leading-relaxed ${isDark ? 'text-zinc-300' : 'text-slate-600'}`}>
                                             {activeRecommendation?.title
-                                                ? `Actualmente enfocado: ${activeRecommendation.title}.`
-                                                : 'Explora los puntos y usa la lista lateral para comparar recomendaciones.'}
+                                                ? copy.mapPanelActive(activeRecommendation.title)
+                                                : copy.mapPanelEmpty}
                                         </p>
                                     </div>
 
                                     <div className="hidden lg:block absolute bottom-6 right-6 z-10 max-w-[280px] rounded-xl px-4 py-3 text-left mapcn-panel">
                                         <p className={`mb-1 text-[10px] font-black uppercase tracking-[0.18em] ${isDark ? 'text-zinc-500' : 'text-slate-600'}`}>
-                                            Estado del mapa
+                                            {copy.mapStatusTitle}
                                         </p>
                                         <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-300' : 'text-slate-600'}`}>
                                             {catalogState === 'loading'
-                                                ? 'Buscando las ubicaciones de los lugares recomendados...'
+                                                ? copy.mapStatusLoading
                                                 : catalogState === 'error'
-                                                  ? 'No fue posible ubicar todos los lugares, pero la lista sigue disponible.'
-                                                  : 'El estilo del mapa cambia automaticamente entre modo claro y oscuro.'}
+                                                  ? copy.mapStatusError
+                                                  : copy.mapStatusReady}
                                         </p>
                                     </div>
                                 </div>
@@ -803,8 +809,8 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
 
                         <div className="flex flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-50 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 lg:h-full lg:min-h-0">
                             <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-                                <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">Lugares recomendados</h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400">Esta seccion tiene su propio scroll para que el mapa permanezca siempre visible.</p>
+                                <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">{copy.listTitle}</h3>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400">{copy.listSubtitle}</p>
                             </div>
 
                             <div className="space-y-4 overflow-y-auto overscroll-contain p-4 md:p-5 lg:flex-1 lg:min-h-0">
@@ -839,7 +845,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                     {recommendation.image_url ? (
                                                         <img
                                                             src={recommendation.image_url}
-                                                            alt={recommendation.title || 'Imagen del lugar'}
+                                                            alt={recommendation.title || copy.imageAlt}
                                                             className="absolute inset-0 h-full w-full object-cover"
                                                             loading="lazy"
                                                         />
@@ -863,11 +869,11 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                                     style={{ background: recommendation.accentColor, color: recommendation.accentColor }}
                                                                 />
                                                                 <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-                                                                    Recomendacion #{recommendation.rank}
+                                                                    {copy.recommendationLabel(recommendation.rank)}
                                                                 </span>
                                                             </div>
                                                             <h4 className="line-clamp-2 text-lg font-semibold text-zinc-950 transition-colors group-hover:text-violet-600 dark:text-zinc-100 dark:group-hover:text-violet-300">
-                                                                {recommendation.title || 'Destino Turistico'}
+                                                                {recommendation.title || copy.recommendationFallback}
                                                             </h4>
                                                         </div>
                                                         <div className="flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
@@ -887,23 +893,23 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                                                                     : 'border-zinc-200 bg-zinc-100 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400'
                                                             }`}
                                                         >
-                                                            {recommendation.hasLocation ? 'Visible en mapa' : 'Sin punto disponible'}
+                                                            {recommendation.hasLocation ? copy.mapVisible : copy.mapUnavailable}
                                                         </span>
                                                     </div>
 
                                                     <p className="line-clamp-3 text-sm text-zinc-600 dark:text-zinc-400">
-                                                        {recommendation.description || 'Una experiencia unica te espera en este destino seleccionado por SMARTUR.'}
+                                                        {recommendation.description || copy.descriptionFallback}
                                                     </p>
 
                                                     <div className="mt-4 flex items-center justify-between gap-3 text-xs">
                                                         <div className="flex min-w-0 items-center gap-2 text-zinc-500 dark:text-zinc-400">
                                                             <MapPin className="h-3.5 w-3.5 shrink-0" />
                                                             <span className="truncate">
-                                                                {recommendation.locationLabel || 'No se encontro una ubicacion exacta en el catalogo'}
+                                                                {recommendation.locationLabel || copy.locationFallback}
                                                             </span>
                                                         </div>
                                                         <span className="font-semibold text-violet-600 dark:text-violet-300">
-                                                            {isSelected ? 'Seleccionado' : isActive ? 'En foco' : 'Ver en mapa'}
+                                                            {isSelected ? copy.selectedLabel : isActive ? copy.focusLabel : copy.viewOnMapLabel}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -923,21 +929,21 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
                             className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-zinc-900 transition-all hover:bg-zinc-100 active:scale-95 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                         >
                             <Download className="size-4 sm:size-5" />
-                            <span>Descargar</span>
+                            <span>{copy.download}</span>
                         </button>
                         <button
                             onClick={handleShare}
                             className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-violet-700 transition-all hover:bg-violet-100 active:scale-95 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/15"
                         >
                             <Share2 className="size-4 sm:size-5" />
-                            <span>Compartir</span>
+                            <span>{copy.share}</span>
                         </button>
                     </div>
                     <button
                         onClick={onClose}
                         className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 sm:px-10 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:bg-violet-500 active:scale-95"
                     >
-                        <span>Finalizar</span>
+                        <span>{copy.finish}</span>
                         <ArrowRight className="size-5" />
                     </button>
                 </div>
