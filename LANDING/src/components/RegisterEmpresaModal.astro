@@ -190,6 +190,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
 </dialog>
 
 <style>
+  /* Garantiza que [hidden] nunca sea sobreescrito por display:flex/grid de las clases */
+  [hidden] { display: none !important; }
+
   /* ── Dialog base ───────────────────────── */
   .rem-dialog {
     width: calc(100vw - 2rem);
