@@ -1,38 +1,77 @@
 import { useState } from 'react';
-import { Bell, Send, Users, Building2, Globe, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import {
+    Bell, Send, Users, Building2, Globe,
+    CheckCircle2, AlertCircle, Loader2,
+    Clock, Trash2, WifiOff,
+} from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { api } from '../../../shared/api/axiosClient';
 
+// ── Types ────────────────────────────────────────────────────────────────────
+
 type Target = 'all' | 'user' | 'empresa';
 
-interface SendPayload {
-    title: string;
-    body: string;
-    target: Target;
-}
+interface SendPayload  { title: string; body: string; target: Target; }
+interface SendResult   { message: string; successCount: number; failureCount: number; }
 
-interface SendResult {
-    message: string;
+interface HistoryEntry {
+    id:           number;
+    sentAt:       Date;
+    title:        string;
+    body:         string;
+    target:       Target;
     successCount: number;
     failureCount: number;
+    status:       'ok' | 'partial' | 'error';
 }
 
-const TARGET_OPTIONS: { value: Target; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { value: 'all',     label: 'Todos los usuarios',  description: 'Turistas y empresas registradas',  icon: Globe },
-    { value: 'user',    label: 'Solo turistas',        description: 'Usuarios con cuenta de turista',   icon: Users },
-    { value: 'empresa', label: 'Solo empresas',        description: 'Cuentas de empresa registradas',  icon: Building2 },
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const TARGET_OPTIONS: {
+    value:       Target;
+    label:       string;
+    description: string;
+    icon:        React.ComponentType<{ className?: string }>;
+}[] = [
+    { value: 'all',     label: 'Todos los usuarios', description: 'Turistas y empresas registradas', icon: Globe     },
+    { value: 'user',    label: 'Solo turistas',       description: 'Usuarios con cuenta de turista',  icon: Users     },
+    { value: 'empresa', label: 'Solo empresas',       description: 'Cuentas de empresa registradas', icon: Building2 },
 ];
+
+const TARGET_LABEL: Record<Target, string> = {
+    all:     'Todos',
+    user:    'Turistas',
+    empresa: 'Empresas',
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function timeAgo(date: Date): string {
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60)  return 'hace un momento';
+    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+    return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+function entryStatus(s: number, f: number): HistoryEntry['status'] {
+    if (f === 0) return 'ok';
+    if (s === 0) return 'error';
+    return 'partial';
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export function NotificacionesPage() {
     const { locale } = useLanguage();
-    const [title, setTitle]   = useState('');
-    const [body, setBody]     = useState('');
-    const [target, setTarget] = useState<Target>('all');
-    const [loading, setLoading]   = useState(false);
-    const [result, setResult]     = useState<SendResult | null>(null);
-    const [error, setError]       = useState<string | null>(null);
+    const _ = locale;
 
-    const _ = locale; // suppress unused-var lint
+    const [title,   setTitle]   = useState('');
+    const [body,    setBody]    = useState('');
+    const [target,  setTarget]  = useState<Target>('all');
+    const [loading, setLoading] = useState(false);
+    const [error,   setError]   = useState<string | null>(null);
+    const [history, setHistory] = useState<HistoryEntry[]>([]);
+    let nextId = 0;
 
     const handleSend = async () => {
         if (!title.trim() || !body.trim()) {
@@ -40,13 +79,28 @@ export function NotificacionesPage() {
             return;
         }
         setLoading(true);
-        setResult(null);
         setError(null);
 
+        const sentTitle  = title.trim();
+        const sentBody   = body.trim();
+        const sentTarget = target;
+
         try {
-            const payload: SendPayload = { title: title.trim(), body: body.trim(), target };
+            const payload: SendPayload = { title: sentTitle, body: sentBody, target: sentTarget };
             const res = await api.post<SendResult>('/admin/notifications/send', payload);
-            setResult(res.data);
+            const { successCount, failureCount } = res.data;
+
+            setHistory(prev => [{
+                id:    Date.now() + nextId++,
+                sentAt: new Date(),
+                title:  sentTitle,
+                body:   sentBody,
+                target: sentTarget,
+                successCount,
+                failureCount,
+                status: entryStatus(successCount, failureCount),
+            }, ...prev].slice(0, 50));
+
             setTitle('');
             setBody('');
         } catch (err: unknown) {
@@ -62,11 +116,12 @@ export function NotificacionesPage() {
 
     return (
         <div className="space-y-6 p-6">
-            {/* ── Header ── */}
+
+            {/* ── Header ─────────────────────────────────────────────────── */}
             <div className="flex items-center gap-3">
                 <div
                     className="flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: 'var(--color-purple)1a' }}
+                    style={{ background: 'color-mix(in srgb, var(--color-purple) 15%, transparent)' }}
                 >
                     <Bell className="size-5" style={{ color: 'var(--color-purple)' }} />
                 </div>
@@ -81,179 +136,152 @@ export function NotificacionesPage() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                {/* ── Formulario ── */}
-                <div
-                    className="rounded-2xl border p-6 space-y-5"
-                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                >
-                    <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                        Redactar mensaje
-                    </h2>
 
-                    {/* Título */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Título <span style={{ color: 'var(--color-pink)' }}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            maxLength={60}
-                            placeholder="Ej: ¡Nueva ruta disponible en Orizaba!"
-                            className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text)',
-                            }}
-                        />
-                        <p className="text-right text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                            {title.length}/60
-                        </p>
-                    </div>
-
-                    {/* Cuerpo */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Mensaje <span style={{ color: 'var(--color-pink)' }}>*</span>
-                        </label>
-                        <textarea
-                            value={body}
-                            onChange={(e) => setBody(e.target.value)}
-                            rows={4}
-                            maxLength={200}
-                            placeholder="Ej: Descubre los nuevos lugares registrados esta semana en la región de las Altas Montañas…"
-                            className="w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text)',
-                            }}
-                        />
-                        <p className="text-right text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                            {body.length}/200
-                        </p>
-                    </div>
-
-                    {/* Destinatarios */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            Destinatarios
-                        </label>
-                        <div className="grid grid-cols-1 gap-2">
-                            {TARGET_OPTIONS.map((opt) => {
-                                const Icon = opt.icon;
-                                const isSelected = target === opt.value;
-                                return (
-                                    <button
-                                        key={opt.value}
-                                        type="button"
-                                        onClick={() => setTarget(opt.value)}
-                                        className="flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all"
-                                        style={{
-                                            background: isSelected ? 'var(--color-purple)14' : 'var(--color-bg-alt)',
-                                            borderColor: isSelected ? 'var(--color-purple)' : 'var(--color-border)',
-                                            color: 'var(--color-text)',
-                                        }}
-                                    >
-                                        <Icon
-                                            className="size-4 shrink-0"
-                                            style={{ color: isSelected ? 'var(--color-purple)' : 'var(--color-text-alt)' }}
-                                        />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-medium">{opt.label}</p>
-                                            <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                                                {opt.description}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className="size-4 shrink-0 rounded-full border-2 flex items-center justify-center"
-                                            style={{
-                                                borderColor: isSelected ? 'var(--color-purple)' : 'var(--color-border)',
-                                                background: isSelected ? 'var(--color-purple)' : 'transparent',
-                                            }}
-                                        >
-                                            {isSelected && <div className="size-1.5 rounded-full bg-white" />}
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Botón enviar */}
-                    <button
-                        type="button"
-                        onClick={handleSend}
-                        disabled={loading || !title.trim() || !body.trim()}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ background: 'var(--color-purple)' }}
-                    >
-                        {loading ? (
-                            <><Loader2 className="size-4 animate-spin" /> Enviando…</>
-                        ) : (
-                            <><Send className="size-4" /> Enviar notificación</>
-                        )}
-                    </button>
-
-                    {/* Feedback */}
-                    {error && (
-                        <div
-                            className="flex items-start gap-2 rounded-xl border p-3 text-sm"
-                            style={{ background: 'var(--color-pink)10', borderColor: 'var(--color-pink)40', color: 'var(--color-pink)' }}
-                        >
-                            <AlertCircle className="size-4 mt-0.5 shrink-0" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    {result && (
-                        <div
-                            className="rounded-xl border p-4 space-y-2"
-                            style={{ background: '#10b98114', borderColor: '#10b98140' }}
-                        >
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 className="size-4 shrink-0" style={{ color: '#10b981' }} />
-                                <span className="text-sm font-semibold" style={{ color: '#10b981' }}>
-                                    Notificación enviada
-                                </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                <div>
-                                    <span className="font-semibold text-lg" style={{ color: '#10b981' }}>
-                                        {result.successCount}
-                                    </span>
-                                    <span className="ml-1">enviados</span>
-                                </div>
-                                {result.failureCount > 0 && (
-                                    <div>
-                                        <span className="font-semibold text-lg" style={{ color: 'var(--color-pink)' }}>
-                                            {result.failureCount}
-                                        </span>
-                                        <span className="ml-1">fallidos</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* ── Panel de info / preview ── */}
+                {/* ── Columna izquierda: formulario ───────────────────────── */}
                 <div className="space-y-4">
-                    {/* Preview */}
                     <div
-                        className="rounded-2xl border p-6 space-y-3"
+                        className="rounded-2xl border p-6 space-y-5"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
                         <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
+                            Redactar mensaje
+                        </h2>
+
+                        {/* Título */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                                Título <span style={{ color: 'var(--color-pink)' }}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                maxLength={60}
+                                placeholder="Ej: ¡Nueva ruta disponible en Orizaba!"
+                                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
+                                style={{
+                                    background:   'var(--color-bg-alt)',
+                                    borderColor:  'var(--color-border)',
+                                    color:        'var(--color-text)',
+                                }}
+                            />
+                            <p className="text-right text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                {title.length}/60
+                            </p>
+                        </div>
+
+                        {/* Cuerpo */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                                Mensaje <span style={{ color: 'var(--color-pink)' }}>*</span>
+                            </label>
+                            <textarea
+                                value={body}
+                                onChange={(e) => setBody(e.target.value)}
+                                rows={4}
+                                maxLength={200}
+                                placeholder="Ej: Descubre los nuevos lugares registrados esta semana…"
+                                className="w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:ring-2"
+                                style={{
+                                    background:  'var(--color-bg-alt)',
+                                    borderColor: 'var(--color-border)',
+                                    color:       'var(--color-text)',
+                                }}
+                            />
+                            <p className="text-right text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                {body.length}/200
+                            </p>
+                        </div>
+
+                        {/* Destinatarios */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                                Destinatarios
+                            </label>
+                            <div className="grid grid-cols-1 gap-2">
+                                {TARGET_OPTIONS.map((opt) => {
+                                    const Icon       = opt.icon;
+                                    const isSelected = target === opt.value;
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => setTarget(opt.value)}
+                                            className="flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all"
+                                            style={{
+                                                background:  isSelected
+                                                    ? 'color-mix(in srgb, var(--color-purple) 8%, transparent)'
+                                                    : 'var(--color-bg-alt)',
+                                                borderColor: isSelected ? 'var(--color-purple)' : 'var(--color-border)',
+                                                color:       'var(--color-text)',
+                                            }}
+                                        >
+                                            <Icon
+                                                className="size-4 shrink-0"
+                                                style={{ color: isSelected ? 'var(--color-purple)' : 'var(--color-text-alt)' }}
+                                            />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-medium">{opt.label}</p>
+                                                <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                                    {opt.description}
+                                                </p>
+                                            </div>
+                                            <div
+                                                className="size-4 shrink-0 rounded-full border-2 flex items-center justify-center"
+                                                style={{
+                                                    borderColor: isSelected ? 'var(--color-purple)' : 'var(--color-border)',
+                                                    background:  isSelected ? 'var(--color-purple)'  : 'transparent',
+                                                }}
+                                            >
+                                                {isSelected && <div className="size-1.5 rounded-full bg-white" />}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Botón */}
+                        <button
+                            type="button"
+                            onClick={handleSend}
+                            disabled={loading || !title.trim() || !body.trim()}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: 'var(--color-purple)' }}
+                        >
+                            {loading
+                                ? <><Loader2 className="size-4 animate-spin" /> Enviando…</>
+                                : <><Send className="size-4" /> Enviar notificación</>}
+                        </button>
+
+                        {/* Error */}
+                        {error && (
+                            <div
+                                className="flex items-start gap-2 rounded-xl border p-3 text-sm"
+                                style={{
+                                    background:  'color-mix(in srgb, var(--color-pink) 8%, transparent)',
+                                    borderColor: 'color-mix(in srgb, var(--color-pink) 30%, transparent)',
+                                    color:       'var(--color-pink)',
+                                }}
+                            >
+                                <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Vista previa */}
+                    <div
+                        className="rounded-2xl border p-5 space-y-3"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    >
+                        <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
                             Vista previa
                         </h2>
                         <div
                             className="rounded-2xl border p-4 space-y-1.5"
                             style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
                         >
-                            {/* Notification bar mockup */}
                             <div className="flex items-center gap-2">
                                 <div
                                     className="flex size-7 items-center justify-center rounded-lg shrink-0"
@@ -275,45 +303,142 @@ export function NotificacionesPage() {
                             </p>
                         </div>
                     </div>
+                </div>
 
-                    {/* Info / advertencia */}
+                {/* ── Columna derecha: historial ───────────────────────────── */}
+                <div
+                    className="rounded-2xl border flex flex-col"
+                    style={{
+                        background:  'var(--color-bg)',
+                        borderColor: 'var(--color-border)',
+                        minHeight:   '400px',
+                    }}
+                >
+                    {/* Cabecera historial */}
                     <div
-                        className="rounded-2xl border p-6 space-y-3"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                        className="flex items-center justify-between px-6 py-4 border-b"
+                        style={{ borderColor: 'var(--color-border)' }}
                     >
-                        <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                            Cómo funciona
-                        </h2>
-                        <ul className="space-y-3 text-sm" style={{ color: 'var(--color-text)' }}>
-                            {[
-                                { step: '1', text: 'La notificación se envía a todos los dispositivos registrados del grupo seleccionado.' },
-                                { step: '2', text: 'Los tokens FCM se obtienen de la tabla device_token de la base de datos.' },
-                                { step: '3', text: 'Si un token es inválido, se registra como fallo pero no detiene el envío masivo.' },
-                                { step: '4', text: 'Los usuarios deben haber iniciado sesión al menos una vez desde la app y haber aceptado los permisos de notificación.' },
-                            ].map((item) => (
-                                <li key={item.step} className="flex items-start gap-3">
-                                    <span
-                                        className="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                                        style={{ background: 'var(--color-purple)' }}
-                                    >
-                                        {item.step}
-                                    </span>
-                                    <span style={{ color: 'var(--color-text-alt)' }}>{item.text}</span>
-                                </li>
-                            ))}
-                        </ul>
-
-                        <div
-                            className="mt-2 flex items-start gap-2 rounded-xl border p-3 text-xs"
-                            style={{ background: '#10b98110', borderColor: '#10b98130', color: '#10b981' }}
-                        >
-                            <CheckCircle2 className="size-3.5 mt-0.5 shrink-0" />
-                            <span>
-                                Solo los usuarios que hayan aceptado notificaciones en la app recibirán el mensaje.
-                            </span>
+                        <div className="flex items-center gap-2">
+                            <Clock className="size-4" style={{ color: 'var(--color-text-alt)' }} />
+                            <h2 className="text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
+                                Historial
+                            </h2>
+                            {history.length > 0 && (
+                                <span
+                                    className="flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                    style={{ background: 'var(--color-purple)' }}
+                                >
+                                    {history.length}
+                                </span>
+                            )}
                         </div>
+                        {history.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setHistory([])}
+                                className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-colors hover:opacity-70"
+                                style={{ color: 'var(--color-text-alt)' }}
+                            >
+                                <Trash2 className="size-3" />
+                                Limpiar
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Lista */}
+                    <div className="flex-1 overflow-y-auto">
+                        {history.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-3 p-10 text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                <Bell className="size-8 opacity-20" />
+                                <p className="text-sm">Las notificaciones enviadas aparecerán aquí</p>
+                                <p className="text-xs opacity-60">El historial se mantiene durante esta sesión</p>
+                            </div>
+                        ) : (
+                            <ul className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+                                {history.map((entry) => {
+                                    const total       = entry.successCount + entry.failureCount;
+                                    const deliveryPct = total > 0 ? Math.round((entry.successCount / total) * 100) : 0;
+                                    const TargetIcon  = TARGET_OPTIONS.find(o => o.value === entry.target)?.icon ?? Globe;
+
+                                    const statusColor =
+                                        entry.status === 'ok'      ? '#10b981' :
+                                        entry.status === 'partial'  ? '#f59e0b' : 'var(--color-pink)';
+
+                                    const StatusIcon =
+                                        entry.status === 'ok'     ? CheckCircle2 :
+                                        entry.status === 'partial' ? AlertCircle  : WifiOff;
+
+                                    return (
+                                        <li key={entry.id} className="px-6 py-4 space-y-2.5">
+                                            {/* Fila superior: ícono estado + título + hora */}
+                                            <div className="flex items-start gap-2.5">
+                                                <StatusIcon
+                                                    className="size-4 mt-0.5 shrink-0"
+                                                    style={{ color: statusColor }}
+                                                />
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-medium leading-snug truncate" style={{ color: 'var(--color-text)' }}>
+                                                        {entry.title}
+                                                    </p>
+                                                    <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                                        {entry.body}
+                                                    </p>
+                                                </div>
+                                                <span className="text-[10px] shrink-0" style={{ color: 'var(--color-text-alt)' }}>
+                                                    {timeAgo(entry.sentAt)}
+                                                </span>
+                                            </div>
+
+                                            {/* Barra de entrega */}
+                                            {total > 0 && (
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                                        <div className="flex items-center gap-1">
+                                                            <TargetIcon className="size-3" />
+                                                            <span>{TARGET_LABEL[entry.target]}</span>
+                                                        </div>
+                                                        <span style={{ color: statusColor }} className="font-semibold">
+                                                            {entry.successCount}/{total} entregadas
+                                                        </span>
+                                                    </div>
+                                                    {/* Progress bar */}
+                                                    <div
+                                                        className="h-1.5 w-full rounded-full overflow-hidden"
+                                                        style={{ background: 'var(--color-border)' }}
+                                                    >
+                                                        <div
+                                                            className="h-full rounded-full transition-all duration-500"
+                                                            style={{
+                                                                width:      `${deliveryPct}%`,
+                                                                background: statusColor,
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    {entry.failureCount > 0 && (
+                                                        <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                                            {entry.failureCount} dispositivo{entry.failureCount !== 1 ? 's' : ''} no alcanzado{entry.failureCount !== 1 ? 's' : ''}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* Footer con nota */}
+                    <div
+                        className="px-6 py-3 border-t flex items-center gap-2 text-[10px]"
+                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                    >
+                        <CheckCircle2 className="size-3 shrink-0" style={{ color: '#10b981' }} />
+                        <span>Solo usuarios con permisos de notificación activos reciben el mensaje</span>
                     </div>
                 </div>
+
             </div>
         </div>
     );
