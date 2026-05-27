@@ -186,7 +186,10 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
             description: `Ajustez la ${kw('langue')}, le thème visuel, les alertes et les détails du compte. ${dim('Les modifications sont enregistrées automatiquement dans ce navigateur.')}`,
         },
     ],
-};
+} as unknown as Record<LanguageCode, StepText[]>;
+
+// Português usa español como fallback hasta tener traducción completa
+STEPS_BY_LANG.pt = STEPS_BY_LANG.es;
 
 /** Sidebar element IDs — must match the data-id attributes on SidebarItem */
 const STEP_ELEMENTS: (string | undefined)[] = [
@@ -359,7 +362,6 @@ export function useDashboardTour(
                 prevBtnText: lang === 'fr' ? '← Précédent' : lang === 'en' ? '← Back' : '← Atrás',
                 doneBtnText: lang === 'fr' ? 'Terminé' : lang === 'en' ? 'Done' : 'Listo',
                 progressText: '{{current}} / {{total}}',
-                allowHTML: true,
                 smoothScroll: true,
                 steps,
                 onHighlightStarted: (_el, _step, opts) => {

@@ -30,7 +30,7 @@ export default function CreatePostModal({ onClose, onSubmit }: Props) {
         if (placeKind === 'svc') {
             touristServiceApi.findAll(1, 200).then((res) => setServices(res.services)).catch(() => {}).finally(() => setLoadingPlaces(false));
         } else {
-            poiApi.findAll(1, 200).then((res) => setPois(res.points ?? res.data ?? [])).catch(() => {}).finally(() => setLoadingPlaces(false));
+            poiApi.findAll(1, 200).then((res) => setPois(res.points ?? [])).catch(() => {}).finally(() => setLoadingPlaces(false));
         }
     }, [placeKind]);
 
@@ -151,7 +151,7 @@ export default function CreatePostModal({ onClose, onSubmit }: Props) {
                         >
                             <option value="">{loadingPlaces ? 'Cargando...' : `Seleccionar ${placeKind === 'svc' ? 'servicio' : 'POI'}`}</option>
                             {placeKind === 'svc'
-                                ? services.map((s) => <option key={s.id_service} value={s.id_service}>{s.name}</option>)
+                                ? services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)
                                 : pois.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)
                             }
                         </select>

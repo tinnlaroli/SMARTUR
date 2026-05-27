@@ -43,25 +43,6 @@ const STATUS_CONFIG: Record<CompanyStatus, { label: string; color: string }> = {
     suspended: { label: 'Suspendida', color: TABLE_BADGE_COLORS.rose },
 };
 
-const COMPANY_COLORS = [
-    'var(--color-purple)',
-    'var(--color-cyan)',
-    'var(--color-pink)',
-    'var(--color-green)',
-];
-
-function getCompanyColor(id: number) {
-    return COMPANY_COLORS[id % COMPANY_COLORS.length];
-}
-
-function getInitials(name?: string | null) {
-    return (name || '?')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((p) => p.charAt(0).toUpperCase())
-        .join('');
-}
 
 interface Props {
     companies: Company[];

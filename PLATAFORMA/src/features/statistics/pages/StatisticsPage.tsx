@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useStatistics } from '../hooks/useStatistics';
 import { statisticsApi } from '../api/statisticsApi';
 import type { TouristOption, LocationOption } from '../types/types';
@@ -89,6 +89,7 @@ const SearchSelect = ({
     renderLabel: (o: TouristOption) => string;
     renderSub: (o: TouristOption) => string;
 }) => {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
 

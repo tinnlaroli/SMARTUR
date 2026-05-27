@@ -213,10 +213,9 @@ export function NotificacionesPage() {
                                                 color:       'var(--color-text)',
                                             }}
                                         >
-                                            <Icon
-                                                className="size-4 shrink-0"
-                                                style={{ color: isSelected ? 'var(--color-purple)' : 'var(--color-text-alt)' }}
-                                            />
+                                            <span style={{ color: isSelected ? 'var(--color-purple)' : 'var(--color-text-alt)' }}>
+                                                <Icon className="size-4 shrink-0" />
+                                            </span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-sm font-medium">{opt.label}</p>
                                                 <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>

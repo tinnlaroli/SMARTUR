@@ -84,7 +84,7 @@ export const Testimonials: React.FC = () => {
                     className="grid gap-6 md:grid-cols-3 max-[767px]:flex max-[767px]:flex-row max-[767px]:overflow-x-auto max-[767px]:snap-x max-[767px]:snap-mandatory max-[767px]:pb-4 max-[767px]:-mx-6 max-[767px]:px-0"
                     style={{ scrollbarWidth: 'none' }}
                 >
-                    {TESTIMONIAL_KEYS.map((item, i) => (
+                    {TESTIMONIAL_KEYS.map((item, _i) => (
                         <article
                             key={item.name}
                             className="testimonial-card group relative overflow-hidden rounded-[2rem] p-8 max-[767px]:flex-none max-[767px]:w-[80vw] max-[767px]:snap-center"

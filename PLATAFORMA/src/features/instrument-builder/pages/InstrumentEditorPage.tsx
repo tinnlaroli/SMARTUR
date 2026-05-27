@@ -84,7 +84,7 @@ export const InstrumentEditorPage = () => {
         [t],
     );
 
-    const [rubric, setRubric] = useState<FullRubric | null>(null);
+    const [_rubric, setRubric] = useState<FullRubric | null>(null);
     const [criteria, setCriteria] = useState<Criterion[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

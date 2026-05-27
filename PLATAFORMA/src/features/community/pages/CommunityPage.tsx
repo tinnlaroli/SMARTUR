@@ -274,9 +274,10 @@ export const CommunityPage = () => {
 
             {totalPages > 1 && (
                 <Pagination
-                    currentPage={page}
+                    page={page}
                     totalPages={totalPages}
-                    onPageChange={(p) => setSearchParams({ page: String(p) })}
+                    limit={LIMIT}
+                    setSearchParams={setSearchParams}
                 />
             )}
 

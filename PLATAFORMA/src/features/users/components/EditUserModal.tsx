@@ -20,11 +20,6 @@ interface Props {
     onSubmit: (id: number, data: UpdateUserDTO) => Promise<boolean | undefined>;
 }
 
-// Shared input class (CSS-variable-based, no dark: Tailwind)
-const inputCls = (hasError = false) =>
-    `w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 ${
-        hasError ? 'border-red-400 focus:ring-red-400/20' : 'border-transparent focus:ring-violet-500/20'
-    }`;
 
 export default function EditUserModal({ user, onClose, onSubmit }: Props) {
     const { lang, t } = useLanguage();
@@ -109,7 +104,6 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
     };
 
     // Shared style helpers
-    const surface: React.CSSProperties = { background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' };
     const inputStyle: React.CSSProperties = { background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text)' };
     const inputFocusCls = 'focus:outline-none focus:ring-2 focus:ring-violet-500/20';
 

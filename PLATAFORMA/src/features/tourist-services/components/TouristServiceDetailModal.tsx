@@ -276,7 +276,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
                 <EvaluationWizardModal
                     isOpen={isEvaluationOpen}
                     onClose={() => setIsEvaluationOpen(false)}
-                    serviceId={service.id_service}
+                    serviceId={service.id}
                     serviceName={service.name}
                     serviceType={service.service_type}
                 />

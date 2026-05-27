@@ -39,7 +39,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     });
     const typeOptions = useMemo(() => {
         const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((option) => option.value);
-        if (form.service_type && !known.includes(form.service_type)) {
+        if (form.service_type && !known.includes(form.service_type as typeof known[number])) {
             return [{ value: form.service_type, label: form.service_type }, ...EMPRESA_SERVICE_TYPE_OPTIONS];
         }
         return EMPRESA_SERVICE_TYPE_OPTIONS;

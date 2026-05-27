@@ -2207,6 +2207,9 @@ export const ui = {
         'lang.en': 'Anglais',
         'lang.fr': 'Français',
     },
-} as Record<LanguageCode, Record<string, string>>;
+} as unknown as Record<LanguageCode, Record<string, string>>;
+
+// Português usa español como fallback hasta tener traducción completa
+ui.pt = ui.es;
 
 ui.pt = ui.es;

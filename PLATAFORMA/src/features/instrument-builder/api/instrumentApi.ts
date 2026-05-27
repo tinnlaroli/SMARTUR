@@ -2,6 +2,7 @@ import { api } from '../../../shared/api/axiosClient';
 import type {
     TemplateResponse,
     RubricResponse,
+    FullRubric,
     CreateTemplateDTO,
     UpdateTemplateDTO,
     InstrumentTemplate,

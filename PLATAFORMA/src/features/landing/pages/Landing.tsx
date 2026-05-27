@@ -180,7 +180,7 @@ export default function Landing() {
                         handleStartExperience={handleStartExperience} 
                         scrollToSection={scrollToSection} 
                         activeSection={activeSection} 
-                        user={user} 
+                        user={user as { id?: string; name?: string; email?: string } | null}
                         logout={logout} 
                     />
 
