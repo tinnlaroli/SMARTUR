@@ -40,11 +40,25 @@ export type DashboardModalsLocale = {
         statusLabel: string;
         admin: string;
         user: string;
+        empresa: string;
         active: string;
         inactive: string;
         created: string;
         updated: string;
         editUser: string;
+        roleEmpresa: string;
+        companyLinked: string;
+        companySelect: string;
+        loadingCompanies: string;
+        noCompanies: string;
+        noCompaniesHint: string;
+        colPhoto: string;
+        colName: string;
+        colEmail: string;
+        colRole: string;
+        colStatus: string;
+        colRegistered: string;
+        filterAll: string;
     };
     companies: {
         createTitle: string;
@@ -282,11 +296,25 @@ const es: DashboardModalsLocale = {
         statusLabel: 'Estado',
         admin: 'Administrador',
         user: 'Usuario',
+        empresa: 'Empresa',
         active: 'Activo',
         inactive: 'Inactivo',
         created: 'Creado',
         updated: 'Actualizado',
         editUser: 'Editar usuario',
+        roleEmpresa: 'Empresa turística',
+        companyLinked: 'Empresa vinculada',
+        companySelect: 'Selecciona una empresa…',
+        loadingCompanies: 'Cargando empresas…',
+        noCompanies: 'Sin empresas registradas.',
+        noCompaniesHint: 'Crea una primero en Compañías.',
+        colPhoto: 'Foto',
+        colName: 'Nombre',
+        colEmail: 'Email',
+        colRole: 'Rol',
+        colStatus: 'Estado',
+        colRegistered: 'Registrado',
+        filterAll: 'Todos',
     },
     companies: {
         createTitle: 'Crear nueva compañía',
@@ -539,11 +567,25 @@ const en: DashboardModalsLocale = {
         statusLabel: 'Status',
         admin: 'Administrator',
         user: 'User',
+        empresa: 'Company',
         active: 'Active',
         inactive: 'Inactive',
         created: 'Created',
         updated: 'Updated',
         editUser: 'Edit user',
+        roleEmpresa: 'Tourism company',
+        companyLinked: 'Linked company',
+        companySelect: 'Select a company…',
+        loadingCompanies: 'Loading companies…',
+        noCompanies: 'No companies registered.',
+        noCompaniesHint: 'Create one first under Companies.',
+        colPhoto: 'Photo',
+        colName: 'Name',
+        colEmail: 'Email',
+        colRole: 'Role',
+        colStatus: 'Status',
+        colRegistered: 'Registered',
+        filterAll: 'All',
     },
     companies: {
         createTitle: 'Create new company',
@@ -793,16 +835,30 @@ const fr: DashboardModalsLocale = {
         emailLabel: 'Adresse e-mail',
         roleLabel: 'Rôle',
         statusLabel: 'État',
-        admin: 'Administrateur',
-        user: 'Utilisateur',
-        active: 'Actif',
-        inactive: 'Inactif',
-        created: 'Créé',
-        updated: 'Mis à jour',
-        editUser: 'Modifier l’utilisateur',
+        admin: ‘Administrateur’,
+        user: ‘Utilisateur’,
+        empresa: ‘Entreprise’,
+        active: ‘Actif’,
+        inactive: ‘Inactif’,
+        created: ‘Créé’,
+        updated: ‘Mis à jour’,
+        editUser: ‘Modifier l’utilisateur’,
+        roleEmpresa: ‘Entreprise touristique’,
+        companyLinked: ‘Entreprise liée’,
+        companySelect: ‘Sélectionnez une entreprise…’,
+        loadingCompanies: ‘Chargement des entreprises…’,
+        noCompanies: ‘Aucune entreprise enregistrée.’,
+        noCompaniesHint: ‘Créez-en une dans Entreprises.’,
+        colPhoto: ‘Photo’,
+        colName: ‘Nom’,
+        colEmail: ‘E-mail’,
+        colRole: ‘Rôle’,
+        colStatus: ‘État’,
+        colRegistered: ‘Inscrit’,
+        filterAll: ‘Tous’,
     },
     companies: {
-        createTitle: 'Créer une entreprise',
+        createTitle: ‘Créer une entreprise’,
         companyName: 'Nom de l’entreprise',
         companyNamePh: 'Ex. Hôtel Sierra Verde',
         address: 'Adresse',

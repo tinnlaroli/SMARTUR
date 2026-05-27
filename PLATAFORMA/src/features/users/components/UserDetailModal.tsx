@@ -24,26 +24,64 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
     );
 
     useEffect(() => {
-        if (userId && isOpen) {
-            findById(userId);
-        }
+        if (userId && isOpen) findById(userId);
     }, [userId, isOpen]);
+
+    // Re-fetch user data whenever EditModal closes (covers both save & cancel — harmless extra request)
+    useEffect(() => {
+        if (!isEditModalOpen && userId && isOpen) findById(userId);
+    }, [isEditModalOpen]);
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl duration-200 dark:bg-[#121214]">
+    const getRoleLabel = (role_id: number) => {
+        if (role_id === 1) return mod.users.admin;
+        if (role_id === 3) return mod.users.roleEmpresa;
+        return mod.users.user;
+    };
 
+    const getRoleSubtitle = (role_id: number) => {
+        if (role_id === 1) return mod.users.platformAdmin;
+        if (role_id === 3) return mod.users.roleEmpresa;
+        return mod.users.registeredUser;
+    };
+
+    const getRoleBadgeStyle = (role_id: number): React.CSSProperties => {
+        if (role_id === 1) return {
+            background: 'rgba(var(--rgb-purple-accent), 0.12)',
+            color: 'var(--color-purple)',
+            border: '1px solid rgba(var(--rgb-purple-accent), 0.25)',
+        };
+        if (role_id === 3) return {
+            background: 'rgba(245,158,11, 0.12)',
+            color: '#b45309',
+            border: '1px solid rgba(245,158,11, 0.3)',
+        };
+        return {
+            background: 'rgba(var(--rgb-text), 0.07)',
+            color: 'var(--color-text-alt)',
+            border: '1px solid rgba(var(--rgb-text), 0.12)',
+        };
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+            <div
+                className="animate-in fade-in zoom-in-95 w-full max-w-lg overflow-hidden rounded-xl shadow-2xl duration-200"
+                style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-                    <h2 className="flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-white">
-                        <UserIcon className="size-5 text-violet-500" />
+                <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                    <h2 className="flex items-center gap-2 text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                        <UserIcon className="size-5" style={{ color: 'var(--color-purple)' }} />
                         {mod.users.detailTitle}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="rounded-lg p-1.5 transition-colors"
+                        style={{ color: 'var(--color-text-alt)' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--rgb-text),0.07)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                         <X className="size-5" />
                     </button>
@@ -53,74 +91,75 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
                 <div className="p-6 max-h-[65vh] overflow-y-auto">
                     {isLoading && (
                         <div className="flex justify-center py-8">
-                            <div className="size-8 animate-spin rounded-full border-4 border-zinc-200 border-t-violet-600 dark:border-zinc-700 dark:border-t-violet-500" />
+                            <div className="size-8 animate-spin rounded-full border-4" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-purple)' }} />
                         </div>
                     )}
 
                     {error && (
-                        <div className="rounded-lg bg-rose-50 p-4 dark:bg-rose-900/20">
-                            <p className="text-sm font-medium text-rose-800 dark:text-rose-300">{error}</p>
+                        <div className="rounded-lg p-4" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                            <p className="text-sm font-medium" style={{ color: '#dc2626' }}>{error}</p>
                         </div>
                     )}
 
                     {user && !isLoading && (
                         <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                             {/* Avatar + nombre */}
-                            <div className="col-span-2 flex items-center gap-4 rounded-lg border border-zinc-100 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-                                <div className="size-16 shrink-0 overflow-hidden rounded-full border-2 border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 transition-transform hover:scale-105">
+                            <div className="col-span-2 flex items-center gap-4 rounded-lg p-4" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
+                                <div className="size-16 shrink-0 overflow-hidden rounded-full" style={{ border: '2px solid var(--color-border)', background: 'var(--color-bg-alt)' }}>
                                     {user.photo_url ? (
                                         <img src={user.photo_url} alt={user.name} className="h-full w-full object-cover" />
                                     ) : (
-                                        <div className="flex h-full w-full items-center justify-center text-zinc-400">
+                                        <div className="flex h-full w-full items-center justify-center" style={{ color: 'var(--color-text-alt)' }}>
                                             <UserIcon className="size-8" />
                                         </div>
                                     )}
                                 </div>
                                 <div>
-                                    <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{user.name}</p>
-                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-500">
-                                        {user.role_id === 1 ? mod.users.platformAdmin : mod.users.registeredUser}
+                                    <p className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>{user.name}</p>
+                                    <p className="text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>
+                                        {getRoleSubtitle(user.role_id)}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Email */}
                             <div className="col-span-2">
-                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-zinc-500">
+                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
                                     <Mail className="size-3" />
                                     {mod.users.emailLabel}
                                 </span>
-                                <p className="rounded border border-zinc-100 bg-zinc-50/50 p-2 text-sm text-zinc-900 dark:border-zinc-800/50 dark:bg-zinc-800/30 dark:text-zinc-100">
+                                <p className="rounded p-2 text-sm" style={{ color: 'var(--color-text)', background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
                                     {user.email}
                                 </p>
                             </div>
 
                             {/* Rol */}
                             <div>
-                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-zinc-500">
+                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
                                     <Shield className="size-3" />
                                     {mod.users.roleLabel}
                                 </span>
-                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                    user.role_id === 1
-                                        ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300'
-                                        : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300'
-                                }`}>
-                                    {user.role_id === 1 ? mod.users.admin : mod.users.user}
+                                <span
+                                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                                    style={getRoleBadgeStyle(user.role_id)}
+                                >
+                                    {getRoleLabel(user.role_id)}
                                 </span>
                             </div>
 
                             {/* Estado */}
                             <div>
-                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-zinc-500">
+                                <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
                                     <Activity className="size-3" />
                                     {mod.users.statusLabel}
                                 </span>
-                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                    user.is_active
-                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                                        : 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
-                                }`}>
+                                <span
+                                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                                    style={user.is_active
+                                        ? { background: 'rgba(16,185,129,0.12)', color: '#065f46', border: '1px solid rgba(16,185,129,0.3)' }
+                                        : { background: 'rgba(239,68,68,0.1)',  color: '#dc2626', border: '1px solid rgba(239,68,68,0.25)' }
+                                    }
+                                >
                                     {user.is_active ? mod.users.active : mod.users.inactive}
                                 </span>
                             </div>
@@ -128,30 +167,33 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
                             {/* Fechas */}
                             <div className="col-span-2 grid grid-cols-2 gap-4 pt-2">
                                 <div>
-                                    <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-zinc-500">
+                                    <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
                                         <Calendar className="size-3" />
                                         {mod.users.created}
                                     </span>
-                                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400" suppressHydrationWarning>
+                                    <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }} suppressHydrationWarning>
                                         {new Date(user.created_at).toLocaleString(dateLocale)}
                                     </p>
                                 </div>
                                 <div>
-                                    <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-zinc-500 uppercase dark:text-zinc-500">
+                                    <span className="mb-1 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
                                         <Calendar className="size-3" />
                                         {mod.users.updated}
                                     </span>
-                                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400" suppressHydrationWarning>
+                                    <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }} suppressHydrationWarning>
                                         {new Date(user.updated_at).toLocaleString(dateLocale)}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Botón editar */}
-                            <div className="col-span-2 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+                            <div className="col-span-2 pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
                                 <button
                                     onClick={() => setIsEditModalOpen(true)}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-violet-700 active:scale-[0.98]"
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 active:scale-[0.98]"
+                                    style={{ background: 'var(--color-purple)' }}
+                                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
+                                    onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                                 >
                                     <UserPen className="size-4" />
                                     <span>{mod.users.editUser}</span>
@@ -163,7 +205,11 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
             </div>
 
             {isEditModalOpen && user && (
-                <EditUserModal onClose={() => setIsEditModalOpen(false)} onSubmit={updateUser} user={user} />
+                <EditUserModal
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSubmit={updateUser}
+                    user={user}
+                />
             )}
         </div>
     );
