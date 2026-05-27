@@ -128,6 +128,9 @@ class ServicesController {
             if (!user || !user.is_active) {
                 return res.status(401).json({ message: 'Usuario inactivo.' });
             }
+            if (user.role_id === 3 && !user.email_verified) {
+                return res.status(403).json({ message: 'Debes verificar tu correo electrónico antes de iniciar sesión.' });
+            }
 
             const payload = { id: user.user_id, email: user.email, role_id: user.role_id };
             if (user.role_id === 3 && user.id_company != null) payload.id_company = user.id_company;

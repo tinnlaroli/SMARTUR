@@ -71,6 +71,10 @@ export class UserService {
         return { status: 400, message: "Usuario no encontrado" };
       }
 
+      if (user.role_id === 3 && !user.email_verified) {
+        return { status: 403, message: "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada." };
+      }
+
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return { status: 400, message: "Credenciales incorrectas" };
