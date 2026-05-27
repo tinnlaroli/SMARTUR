@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
-import {
-    Wrench, CheckCircle2, XCircle, Plus, Pencil, Trash2,
-    Loader2, X, AlertCircle,
-} from 'lucide-react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { Wrench, Plus, Loader2, X, AlertCircle } from 'lucide-react';
 import {
     empresaApi,
     type EmpresaService,
     type ServiceCreatePayload,
     type ServiceUpdatePayload,
 } from '../api/empresaApi';
+import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
+import { TableSkeleton } from '../../../components/ui/TableSkeleton';
+import { SelectionBar } from '../../../components/ui/SelectionBar';
+import { useConfirm } from '../../../components/ui/ConfirmModal';
+import SearchInput from '../../tourist-services/components/SearchInput';
+import Pagination from '../../users/components/Pagination';
+import EmpresaServiceTable from '../components/EmpresaServiceTable';
+import { useEmpresaServices } from '../hooks/useEmpresaServices';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 
 // ── Service type options ────────────────────────────────────────────────────
 const SERVICE_TYPES = [
@@ -236,103 +242,97 @@ function ServiceModal({ initial, onClose, onSaved }: ServiceModalProps) {
     );
 }
 
-// ── Modal de confirmación de eliminación ────────────────────────────────────
-interface DeleteModalProps {
-    service: EmpresaService;
-    onClose: () => void;
-    onDeleted: (id: number) => void;
-}
+type ModalState = { isCreateOpen: boolean; editTarget: EmpresaService | null };
+type ModalAction =
+    | { type: 'OPEN_CREATE' }
+    | { type: 'CLOSE_CREATE' }
+    | { type: 'OPEN_EDIT'; service: EmpresaService }
+    | { type: 'CLOSE_EDIT' };
 
-function DeleteModal({ service, onClose, onDeleted }: DeleteModalProps) {
-    const [deleting, setDeleting] = useState(false);
-
-    const handleDelete = async () => {
-        setDeleting(true);
-        try {
-            await empresaApi.deleteService(service.id_service);
-            onDeleted(service.id_service);
-        } catch {
-            setDeleting(false);
-        }
-    };
-
-    return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-        >
-            <div
-                className="w-full max-w-sm rounded-2xl border p-6 space-y-4"
-                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-            >
-                <div className="flex items-center gap-3">
-                    <div
-                        className="flex size-10 items-center justify-center rounded-xl shrink-0"
-                        style={{ background: 'var(--color-pink)18' }}
-                    >
-                        <Trash2 size={18} style={{ color: 'var(--color-pink)' }} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            Desactivar servicio
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                            Esta acción oculta el servicio de la app.
-                        </p>
-                    </div>
-                </div>
-
-                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                    ¿Estás seguro de que quieres desactivar{' '}
-                    <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {service.name}
-                    </span>
-                    ? Los turistas no podrán verlo hasta que lo reactives.
-                </p>
-
-                <div className="flex gap-3">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
-                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={deleting}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-                        style={{ background: 'var(--color-pink)' }}
-                    >
-                        {deleting && <Loader2 size={14} className="animate-spin" />}
-                        {deleting ? 'Desactivando…' : 'Desactivar'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
+const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
+    switch (action.type) {
+        case 'OPEN_CREATE':
+            return { isCreateOpen: true, editTarget: null };
+        case 'CLOSE_CREATE':
+            return { ...state, isCreateOpen: false };
+        case 'OPEN_EDIT':
+            return { isCreateOpen: false, editTarget: action.service };
+        case 'CLOSE_EDIT':
+            return { ...state, editTarget: null };
+        default:
+            return state;
+    }
+};
 
 // ── Página principal ────────────────────────────────────────────────────────
 export function EmpresaServiciosPage() {
-    const [services, setServices] = useState<EmpresaService[]>([]);
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState<string | null>(null);
+    const {
+        services,
+        setServices,
+        isLoading,
+        error,
+        page,
+        limit,
+        search: urlSearch,
+        setSearch: setUrlSearch,
+        setSearchParams,
+    } = useEmpresaServices();
 
-    // Modals
-    const [showCreate, setShowCreate]   = useState(false);
-    const [editTarget, setEditTarget]   = useState<EmpresaService | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<EmpresaService | null>(null);
+    const [selectedServices, setSelectedServices] = useState<number[]>([]);
+    const [searchTerm, setSearchTerm] = useState(urlSearch);
+    const [modalState, dispatchModal] = useReducer(modalReducer, {
+        isCreateOpen: false,
+        editTarget: null,
+    });
+    const { confirm, modal: confirmModal } = useConfirm();
 
     useEffect(() => {
-        empresaApi.getServices()
-            .then(({ services: svcs }) => setServices(svcs))
-            .catch(() => setError('Error al cargar servicios.'))
-            .finally(() => setLoading(false));
-    }, []);
+        if (urlSearch !== searchTerm) setSearchTerm(urlSearch);
+    }, [urlSearch, searchTerm]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchTerm !== urlSearch) setUrlSearch(searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm, urlSearch, setUrlSearch]);
+
+    const normalizedSearch = urlSearch.trim().toLowerCase();
+    const filteredServices = useMemo(() => {
+        if (!normalizedSearch) return services;
+        return services.filter((svc) =>
+            [svc.name, svc.service_type ?? '', svc.description ?? '', svc.address ?? '']
+                .join(' ')
+                .toLowerCase()
+                .includes(normalizedSearch),
+        );
+    }, [services, normalizedSearch]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredServices.length / limit));
+
+    useEffect(() => {
+        if (page > totalPages) {
+            setSearchParams((prev) => {
+                prev.set('page', String(totalPages));
+                return prev;
+            });
+        }
+    }, [page, totalPages, setSearchParams]);
+
+    const paginatedServices = useMemo(() => {
+        const start = (page - 1) * limit;
+        return filteredServices.slice(start, start + limit);
+    }, [filteredServices, page, limit]);
+
+    const toggleService = (id: number) =>
+        setSelectedServices((prev) =>
+            prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
+        );
+
+    const openEditById = (id: number) => {
+        const service = services.find((s) => s.id_service === id);
+        if (service) dispatchModal({ type: 'OPEN_EDIT', service });
+    };
 
     const handleSaved = (svc: EmpresaService) => {
         setServices((prev) => {
@@ -344,221 +344,181 @@ export function EmpresaServiciosPage() {
             }
             return [svc, ...prev];
         });
-        setShowCreate(false);
-        setEditTarget(null);
+        dispatchModal({ type: 'CLOSE_CREATE' });
+        dispatchModal({ type: 'CLOSE_EDIT' });
     };
 
-    const handleDeleted = (id: number) => {
-        // Soft-delete: mark as inactive instead of removing from list
+    const handleDeleteSelected = async () => {
+        const targets = services.filter(
+            (s) => selectedServices.includes(s.id_service) && s.active,
+        );
+        if (targets.length === 0) return;
+
+        const ok = await confirm({
+            title: `Desactivar ${targets.length} servicio(s)`,
+            message: 'Los turistas dejarán de ver estos servicios en la app hasta que los reactives.',
+            confirmLabel: 'Desactivar',
+            variant: 'danger',
+        });
+        if (!ok) return;
+
+        for (const svc of targets) {
+            await empresaApi.deleteService(svc.id_service);
+        }
+
         setServices((prev) =>
-            prev.map((s) => (s.id_service === id ? { ...s, active: false } : s)),
+            prev.map((s) =>
+                selectedServices.includes(s.id_service) ? { ...s, active: false } : s,
+            ),
         );
-        setDeleteTarget(null);
+        setSelectedServices([]);
     };
 
-    if (loading) {
-        return (
-            <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="h-20 rounded-2xl animate-pulse"
-                        style={{ background: 'var(--color-bg-alt)' }}
-                    />
-                ))}
-            </div>
-        );
-    }
+    const hasServices = services.length > 0;
 
     return (
         <>
-            <div className="space-y-5">
-                {/* ── Header ── */}
-                <div className="flex items-center justify-between gap-4">
+            <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+                {confirmModal}
+
+                <div className="shrink-0">
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        Mis servicios
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Administra los servicios turísticos que ofrece tu empresa en SMARTUR.
+                    </p>
+                </div>
+
+                <div
+                    className="flex shrink-0 items-start gap-3 rounded-xl border px-5 py-4"
+                    style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                >
+                    <Wrench className="mt-0.5 size-5 shrink-0" style={{ color: MODULE_COLORS.services }} />
                     <div>
-                        <h1
-                            className="text-xl font-bold"
-                            style={{ color: 'var(--color-text)' }}
-                        >
-                            Mis Servicios
-                        </h1>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                            {services.length > 0
-                                ? `${services.length} servicio${services.length !== 1 ? 's' : ''} registrado${services.length !== 1 ? 's' : ''}`
-                                : 'Aún no tienes servicios registrados.'}
+                        <p className="mb-0.5 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            Servicios turísticos
+                        </p>
+                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                            Publica y actualiza las ofertas de tu empresa. Los turistas podrán descubrirlas,
+                            guardarlas y generar interacciones que alimentan tu panel de analytics.
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setShowCreate(true)}
-                        className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shrink-0"
-                        style={{ background: 'var(--color-purple)' }}
-                    >
-                        <Plus size={15} /> Nuevo servicio
-                    </button>
                 </div>
 
-                {/* ── Error global ── */}
-                {error && (
-                    <div
-                        className="rounded-2xl border p-4 text-sm"
-                        style={{
-                            background: 'var(--color-pink)10',
-                            borderColor: 'var(--color-pink)40',
-                            color: 'var(--color-pink)',
+                <div className="flex shrink-0 items-center gap-3">
+                    <SelectionBar
+                        count={selectedServices.length}
+                        onDelete={handleDeleteSelected}
+                        onEdit={() => {
+                            const id = selectedServices[0];
+                            if (id) openEditById(id);
                         }}
-                    >
-                        {error}
-                    </div>
-                )}
-
-                {/* ── Empty state ── */}
-                {services.length === 0 && !error && (
-                    <div
-                        className="rounded-2xl border p-12 text-center space-y-4"
-                        style={{
-                            background: 'var(--color-bg)',
-                            borderColor: 'var(--color-border)',
-                        }}
-                    >
-                        <div
-                            className="mx-auto flex size-14 items-center justify-center rounded-2xl"
-                            style={{ background: 'var(--color-purple)18' }}
-                        >
-                            <Wrench size={24} style={{ color: 'var(--color-purple)' }} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Sin servicios todavía
-                            </p>
-                            <p className="text-xs mt-1" style={{ color: 'var(--color-text-alt)' }}>
-                                Agrega tu primer servicio turístico para que aparezca en la app SMARTUR.
-                            </p>
-                        </div>
+                        onClear={() => setSelectedServices([])}
+                        deleteLabel="Desactivar"
+                    />
+                    <div className="ml-auto flex items-center gap-2">
+                        <SearchInput
+                            value={searchTerm}
+                            onChange={setSearchTerm}
+                            placeholder="Buscar por nombre, tipo o dirección..."
+                        />
                         <button
                             type="button"
-                            onClick={() => setShowCreate(true)}
-                            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
-                            style={{ background: 'var(--color-purple)' }}
+                            onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                            style={{ background: MODULE_COLORS.services }}
                         >
-                            <Plus size={15} /> Agregar servicio
+                            <Plus className="size-4" />
+                            Nuevo servicio
                         </button>
                     </div>
-                )}
+                </div>
 
-                {/* ── Lista de servicios ── */}
-                <div className="space-y-3">
-                    {services.map((svc) => (
-                        <div
-                            key={svc.id_service}
-                            className="flex items-center gap-4 rounded-2xl border p-4"
-                            style={{
-                                background: 'var(--color-bg)',
-                                borderColor: 'var(--color-border)',
-                            }}
-                        >
-                            {/* Thumbnail / icon */}
-                            {svc.image_url ? (
-                                <img
-                                    src={svc.image_url}
-                                    alt={svc.name}
-                                    className="size-16 rounded-xl object-cover shrink-0"
+                <div className="flex min-h-0 flex-1 flex-col">
+                    {isLoading && (
+                        <div className={`${DATA_TABLE_SHELL_CLASS} flex-1`}>
+                            <div className="min-h-0 flex-1 overflow-y-auto">
+                                <TableSkeleton
+                                    rows={10}
+                                    colWidths={['w-8', 'flex-1', 'w-40', 'w-28', 'w-24']}
                                 />
-                            ) : (
-                                <div
-                                    className="size-16 rounded-xl flex items-center justify-center shrink-0"
-                                    style={{ background: 'var(--color-bg-alt)' }}
-                                >
-                                    <Wrench size={20} style={{ color: 'var(--color-text-alt)' }} />
-                                </div>
-                            )}
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <p
-                                        className="text-sm font-semibold truncate"
-                                        style={{ color: 'var(--color-text)' }}
-                                    >
-                                        {svc.name}
-                                    </p>
-                                    {svc.active
-                                        ? <CheckCircle2 size={13} className="shrink-0 text-green-400" />
-                                        : <XCircle size={13} className="shrink-0 text-red-400" />}
-                                </div>
-                                {svc.service_type && (
-                                    <p
-                                        className="text-[11px] font-semibold mb-1"
-                                        style={{ color: 'var(--color-purple)' }}
-                                    >
-                                        {svc.service_type}
-                                    </p>
-                                )}
-                                {svc.description && (
-                                    <p
-                                        className="text-xs line-clamp-1"
-                                        style={{ color: 'var(--color-text-alt)' }}
-                                    >
-                                        {svc.description}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Status chip */}
-                            <span
-                                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border shrink-0 ${
-                                    svc.active
-                                        ? 'bg-green-500/15 text-green-400 border-green-500/25'
-                                        : 'bg-zinc-500/15 text-zinc-400 border-zinc-500/25'
-                                }`}
-                            >
-                                {svc.active ? 'Activo' : 'Inactivo'}
-                            </span>
-
-                            {/* Actions */}
-                            <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={() => setEditTarget(svc)}
-                                    title="Editar"
-                                    className="flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-white/10"
-                                    style={{ color: 'var(--color-text-alt)' }}
-                                >
-                                    <Pencil size={14} />
-                                </button>
-                                {svc.active && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeleteTarget(svc)}
-                                        title="Desactivar"
-                                        className="flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-red-500/15"
-                                        style={{ color: 'var(--color-pink)' }}
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                )}
                             </div>
                         </div>
-                    ))}
+                    )}
+
+                    {error && (
+                        <div className={`${DATA_TABLE_SHELL_CLASS} flex flex-1 flex-col items-center justify-center gap-3`}>
+                            <AlertCircle className="size-8 text-rose-400" />
+                            <p className="text-sm font-medium text-rose-500">{error}</p>
+                        </div>
+                    )}
+
+                    {!isLoading && !error && !hasServices && (
+                        <div
+                            className="flex h-full flex-col items-center justify-center gap-4 rounded-lg border p-12 text-center"
+                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                        >
+                            <div
+                                className="flex size-14 items-center justify-center rounded-2xl"
+                                style={{ background: `${MODULE_COLORS.services}18` }}
+                            >
+                                <Wrench size={24} style={{ color: MODULE_COLORS.services }} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    Sin servicios todavía
+                                </p>
+                                <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    Agrega tu primer servicio turístico para que aparezca en la app SMARTUR.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
+                                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
+                                style={{ background: MODULE_COLORS.services }}
+                            >
+                                <Plus size={15} /> Agregar servicio
+                            </button>
+                        </div>
+                    )}
+
+                    {!isLoading && !error && hasServices && (
+                        <EmpresaServiceTable
+                            services={paginatedServices}
+                            selectedServices={selectedServices}
+                            onToggle={toggleService}
+                            onViewDetail={openEditById}
+                            serviceTypes={SERVICE_TYPES}
+                        />
+                    )}
                 </div>
+
+                {!isLoading && !error && filteredServices.length > 0 && (
+                    <div className="shrink-0">
+                        <Pagination
+                            page={page}
+                            limit={limit}
+                            totalPages={totalPages}
+                            totalItems={filteredServices.length}
+                            setSearchParams={setSearchParams}
+                        />
+                    </div>
+                )}
             </div>
 
-            {/* ── Modals ── */}
-            {showCreate && (
-                <ServiceModal onClose={() => setShowCreate(false)} onSaved={handleSaved} />
-            )}
-            {editTarget && (
+            {modalState.isCreateOpen && (
                 <ServiceModal
-                    initial={editTarget}
-                    onClose={() => setEditTarget(null)}
+                    onClose={() => dispatchModal({ type: 'CLOSE_CREATE' })}
                     onSaved={handleSaved}
                 />
             )}
-            {deleteTarget && (
-                <DeleteModal
-                    service={deleteTarget}
-                    onClose={() => setDeleteTarget(null)}
-                    onDeleted={handleDeleted}
+            {modalState.editTarget && (
+                <ServiceModal
+                    initial={modalState.editTarget}
+                    onClose={() => dispatchModal({ type: 'CLOSE_EDIT' })}
+                    onSaved={handleSaved}
                 />
             )}
         </>

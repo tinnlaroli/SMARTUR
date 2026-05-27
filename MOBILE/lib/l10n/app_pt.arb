@@ -20,6 +20,8 @@
   "privacyPolicyBody": "Última atualização: março de 2025.\n\n1. Responsável pelo tratamento\nO SMARTUR é o responsável pelo tratamento dos seus dados pessoais.\n\n2. Dados que coletamos\nColetamos os dados que você fornece ao se cadastrar (nome, e-mail, foto de perfil opcional) e os dados gerados pelo uso do app (preferências de viagem, histórico de recomendações, avaliações de lugares).\n\n3. Finalidade do tratamento\nSeus dados são usados para personalizar recomendações turísticas, melhorar o aplicativo e nos comunicarmos com você sobre o serviço.\n\n4. Base legal\nO tratamento é baseado no seu consentimento explícito ao aceitar estes termos e na execução do contrato de serviço.\n\n5. Retenção de dados\nMantemos seus dados enquanto sua conta estiver ativa. Você pode solicitar a exclusão a qualquer momento em Configurações → Excluir conta.\n\n6. Direitos do usuário\nVocê tem o direito de acessar, retificar, excluir e portar seus dados pessoais. Para exercê-los, entre em contato pelos canais de suporte.\n\n7. Segurança\nAplicamos medidas técnicas e organizacionais para proteger seus dados contra acessos não autorizados ou perdas acidentais.\n\n8. Contato\nPara dúvidas sobre privacidade: smarturutcv@gmail.com",
   "logout": "Sair",
   "selectLanguage": "Selecionar idioma",
+  "systemLanguage": "Idioma do sistema",
+  "systemTheme": "Tema do sistema",
   "cancel": "Cancelar",
   "save": "Salvar",
   "deleteAccountTitle": "Excluir conta",
@@ -235,6 +237,7 @@
   "removeProfilePhoto": "Remover foto",
   "avatarIconsSectionHint": "Ou escolha um ícone em vez de foto",
   "changePasswordSubtitle": "Atualize sua senha de acesso",
+  "forgotPassword": "Esqueceu a senha?",
   "sessionClosed": "Sessão encerrada",
 
   "stepXOfY": "Passo {current} de {total}",

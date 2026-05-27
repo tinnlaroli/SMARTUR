@@ -20,6 +20,8 @@
   "privacyPolicyBody": "Last updated: March 2025.\n\n1. Data controller\nSMARTUR is the controller of your personal data.\n\n2. Data we collect\nWe collect the data you provide when registering (name, email, optional profile photo) and data generated through app use (travel preferences, recommendation history, place ratings).\n\n3. Purpose of processing\nYour data is used to personalize travel recommendations, improve the app, and communicate with you about the service.\n\n4. Legal basis\nProcessing is based on your explicit consent when accepting these terms and on the performance of the service contract.\n\n5. Data retention\nWe retain your data while your account is active. You may request deletion at any time via Settings → Delete account.\n\n6. User rights\nYou have the right to access, rectify, delete, and port your personal data. To exercise these rights, contact us through the support channels.\n\n7. Security\nWe apply technical and organizational measures to protect your data against unauthorized access or accidental loss.\n\n8. Contact\nFor privacy inquiries: smarturutcv@gmail.com",
   "logout": "Log out",
   "selectLanguage": "Select Language",
+  "systemLanguage": "System language",
+  "systemTheme": "System theme",
   "cancel": "Cancel",
   "save": "Save",
   "deleteAccountTitle": "Delete account",

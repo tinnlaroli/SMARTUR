@@ -72,10 +72,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get selectLanguage => 'Choisir la langue';
 
   @override
-  String get systemLanguage => 'Idioma del sistema';
+  String get systemLanguage => 'Langue du système';
 
   @override
-  String get systemTheme => 'Tema del sistema';
+  String get systemTheme => 'Thème du système';
 
   @override
   String get cancel => 'Annuler';
@@ -721,7 +721,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Mettez à jour votre mot de passe d\'accès';
 
   @override
-  String get forgotPassword => '¿Olvidaste tu contraseña?';
+  String get forgotPassword => 'Mot de passe oublié ?';
 
   @override
   String get sessionClosed => 'Session fermée';

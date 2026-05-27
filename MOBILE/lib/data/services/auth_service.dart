@@ -25,11 +25,19 @@ class AuthService {
 
   static final _googleSignIn = GoogleSignIn.instance;
 
-  AuthService() {
-    unawaited(_googleSignIn.initialize(
+  // Garantiza que initialize() se llame exactamente una vez y sea awaited
+  // antes de cualquier llamada a authenticate(). Evita el race condition
+  // que causaba error [16] (CANCELED) cuando authenticate() se lanzaba
+  // antes de que initialize() completara.
+  static Future<void>? _gsInitFuture;
+  static Future<void> _ensureGoogleSignInReady() {
+    _gsInitFuture ??= _googleSignIn.initialize(
       serverClientId: EnvConfig.googleServerClientId,
-    ));
+    );
+    return _gsInitFuture!;
   }
+
+  AuthService();
 
   // ── Token persistence ───────────────────────────────────────────────────
 
@@ -315,7 +323,10 @@ class AuthService {
 
   Future<Map<String, dynamic>?> loginWithGoogle({bool rememberMe = false}) async {
     try {
-      // Limpiar credential cacheado para evitar el error "reauth failed" (code 16)
+      // Asegurar que initialize() haya completado antes de authenticate()
+      await _ensureGoogleSignInReady();
+
+      // Limpiar credential cacheado para forzar selector de cuenta
       try { await _googleSignIn.signOut(); } catch (_) {}
 
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate(

@@ -72,10 +72,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get selectLanguage => 'Selecionar idioma';
 
   @override
-  String get systemLanguage => 'Idioma del sistema';
+  String get systemLanguage => 'Idioma do sistema';
 
   @override
-  String get systemTheme => 'Tema del sistema';
+  String get systemTheme => 'Tema do sistema';
 
   @override
   String get cancel => 'Cancelar';
@@ -716,7 +716,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get changePasswordSubtitle => 'Atualize sua senha de acesso';
 
   @override
-  String get forgotPassword => '¿Olvidaste tu contraseña?';
+  String get forgotPassword => 'Esqueceu a senha?';
 
   @override
   String get sessionClosed => 'Sessão encerrada';

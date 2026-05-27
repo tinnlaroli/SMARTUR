@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
@@ -16,6 +17,8 @@ import 'presentation/widgets/smartur_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Inicializar Firebase (requerido por firebase_messaging y google_sign_in ^7.x)
+  await Firebase.initializeApp();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool seenOnboarding = prefs.getBool('onboarding_seen') ?? false;
 

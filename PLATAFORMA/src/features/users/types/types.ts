@@ -48,6 +48,7 @@ export interface PaginationProps {
     totalPages: number;
     limit: number;
     setSearchParams: SetURLSearchParams;
+    totalItems?: number;
 }
 
 export interface UserSession {
