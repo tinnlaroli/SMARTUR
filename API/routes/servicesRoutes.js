@@ -1,6 +1,7 @@
 import express from 'express';
 import ServicesController from '../controllers/serviceController.js';
 import UserController from '../controllers/userController.js';
+import EmpresaController from '../controllers/empresaController.js';
 import upload from '../middleware/multer.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
@@ -17,5 +18,7 @@ router.post('/google-login', UserController.googleLogin);
 router.post('/auth/refresh', ServicesController.refreshController);
 // Logout — revoca todos los refresh tokens del usuario
 router.post('/auth/logout', verifyToken, ServicesController.logoutController);
+// Verificación de email
+router.get('/auth/verify-email/:token', EmpresaController.verifyEmail);
 
 export default router;

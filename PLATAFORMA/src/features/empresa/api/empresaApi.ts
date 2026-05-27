@@ -96,8 +96,8 @@ export const empresaApi = {
         return data;
     },
 
-    getServices: async (): Promise<{ services: EmpresaService[] }> => {
-        const { data } = await api.get('/empresa/services');
+    getServices: async (params?: { page?: number; limit?: number; search?: string }): Promise<{ services: EmpresaService[]; total: number }> => {
+        const { data } = await api.get('/empresa/services', { params });
         return data;
     },
 

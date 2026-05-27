@@ -217,7 +217,7 @@ export default function AppLayout() {
 
                 {/* ── Desktop header ── */}
                 <header
-                    className="sticky top-0 z-20 hidden h-16 items-center justify-between border-b px-6 backdrop-blur-md md:flex"
+                    className="sticky top-0 z-[100] hidden h-16 items-center justify-between border-b px-6 backdrop-blur-md md:flex"
                     style={{
                         borderColor: 'var(--color-border)',
                         background: 'rgba(var(--rgb-bg), 0.75)',

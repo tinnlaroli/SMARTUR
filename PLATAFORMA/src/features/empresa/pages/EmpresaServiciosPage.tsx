@@ -296,6 +296,8 @@ export function EmpresaServiciosPage() {
         setServices,
         isLoading,
         error,
+        total,
+        totalPages,
         page,
         limit,
         search: urlSearch,
@@ -307,6 +309,10 @@ export function EmpresaServiciosPage() {
     const [companyLocationId, setCompanyLocationId] = useState<number | null>(null);
 
     const [selectedServices, setSelectedServices] = useState<number[]>([]);
+    const toggleService = (id: number) =>
+        setSelectedServices((prev) =>
+            prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
+        );
     const [searchTerm, setSearchTerm] = useState(urlSearch);
     const [modalState, dispatchModal] = useReducer(modalReducer, {
         isCreateOpen: false,
@@ -331,19 +337,6 @@ export function EmpresaServiciosPage() {
         return () => clearTimeout(timer);
     }, [searchTerm, urlSearch, setUrlSearch]);
 
-    const normalizedSearch = urlSearch.trim().toLowerCase();
-    const filteredServices = useMemo(() => {
-        if (!normalizedSearch) return services;
-        return services.filter((svc) =>
-            [svc.name, svc.service_type ?? '', svc.description ?? '']
-                .join(' ')
-                .toLowerCase()
-                .includes(normalizedSearch),
-        );
-    }, [services, normalizedSearch]);
-
-    const totalPages = Math.max(1, Math.ceil(filteredServices.length / limit));
-
     useEffect(() => {
         if (page > totalPages) {
             setSearchParams((prev) => {
@@ -352,16 +345,6 @@ export function EmpresaServiciosPage() {
             });
         }
     }, [page, totalPages, setSearchParams]);
-
-    const paginatedServices = useMemo(() => {
-        const start = (page - 1) * limit;
-        return filteredServices.slice(start, start + limit);
-    }, [filteredServices, page, limit]);
-
-    const toggleService = (id: number) =>
-        setSelectedServices((prev) =>
-            prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
-        );
 
     const openEditById = (id: number) => {
         const service = services.find((s) => s.id_service === id);
@@ -488,7 +471,7 @@ export function EmpresaServiciosPage() {
 
                     {!isLoading && !error && (
                         <EmpresaServiceTable
-                            services={paginatedServices}
+                            services={services}
                             selectedServices={selectedServices}
                             onToggle={toggleService}
                             onViewDetail={openEditById}
@@ -497,13 +480,13 @@ export function EmpresaServiciosPage() {
                     )}
                 </div>
 
-                {!isLoading && !error && filteredServices.length > 0 && (
+                {!isLoading && !error && total > 0 && (
                     <div className="shrink-0">
                         <Pagination
                             page={page}
                             limit={limit}
                             totalPages={totalPages}
-                            totalItems={filteredServices.length}
+                            totalItems={total}
                             setSearchParams={setSearchParams}
                         />
                     </div>

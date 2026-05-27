@@ -15,4 +15,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Runtime
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Animation / motion
+          'vendor-motion': ['framer-motion'],
+          // Charts (recharts pulls in d3 modules — keep isolated)
+          'vendor-charts': ['recharts'],
+          // Icons
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 })

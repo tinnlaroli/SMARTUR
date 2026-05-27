@@ -4,6 +4,7 @@ import { empresaApi, type EmpresaService } from '../api/empresaApi';
 
 export function useEmpresaServices() {
     const [services, setServices] = useState<EmpresaService[]>([]);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -16,14 +17,15 @@ export function useEmpresaServices() {
         setIsLoading(true);
         setError(null);
         try {
-            const { services: rows } = await empresaApi.getServices();
+            const { services: rows, total: totalCount } = await empresaApi.getServices({ page, limit, search });
             setServices(rows);
+            setTotal(totalCount);
         } catch {
             setError('Error al cargar servicios.');
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [page, limit, search]);
 
     useEffect(() => {
         void fetchServices();
@@ -38,9 +40,13 @@ export function useEmpresaServices() {
         });
     };
 
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
     return {
         services,
         setServices,
+        total,
+        totalPages,
         isLoading,
         error,
         page,

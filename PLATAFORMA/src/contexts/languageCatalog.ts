@@ -401,6 +401,8 @@ export const ui = {
         'empresa.perfil.profileUpdated': 'Perfil actualizado',
         'empresa.perfil.profileUpdatedMsg': 'Perfil actualizado correctamente.',
         'empresa.perfil.notLoaded': 'No fue posible cargar el perfil.',
+        'empresa.perfil.email': 'Correo electrónico',
+        'empresa.perfil.phoneInvalid': 'Formato de teléfono inválido. Ingresa 10 dígitos.',
 
         // Empresa servicios
         'empresa.servicios.title': 'Mis servicios',
@@ -1133,6 +1135,8 @@ export const ui = {
         'empresa.perfil.profileUpdated': 'Profile Updated',
         'empresa.perfil.profileUpdatedMsg': 'Profile updated successfully.',
         'empresa.perfil.notLoaded': 'Could not load profile.',
+        'empresa.perfil.email': 'Email',
+        'empresa.perfil.phoneInvalid': 'Invalid phone format. Enter 10 digits.',
 
         // Empresa servicios
         'empresa.servicios.title': 'My Services',
@@ -1865,6 +1869,8 @@ export const ui = {
         'empresa.perfil.profileUpdated': 'Profil mis à jour',
         'empresa.perfil.profileUpdatedMsg': 'Profil mis à jour avec succès.',
         'empresa.perfil.notLoaded': 'Impossible de charger le profil.',
+        'empresa.perfil.email': 'Email',
+        'empresa.perfil.phoneInvalid': 'Format de téléphone invalide. Entrez 10 chiffres.',
 
         // Empresa servicios
         'empresa.servicios.title': 'Mes services',

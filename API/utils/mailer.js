@@ -234,3 +234,22 @@ export async function sendEmpresaSuspendedEmail(to, { companyName }) {
         bulk: false,
     });
 }
+
+export async function sendRegistrationConfirmation(to, { name, token }) {
+    const verifyUrl = `${process.env.API_URL || 'http://2.24.112.25:4000/api/v2'}/auth/verify-email/${token}`;
+
+    const content = `
+      ${heading(`Hola ${name}, confirma tu correo`)}
+      ${paragraph('Gracias por registrar tu empresa en SMARTUR. Solo falta un paso: haz clic en el botón para verificar tu dirección de correo electrónico.')}
+      ${ctaButton(verifyUrl, 'Verificar mi correo')}
+      ${paragraph('Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
+
+    await deliver({
+        to,
+        subject: 'Confirma tu correo — SMARTUR',
+        title: 'Verificación de correo',
+        text: `Confirma tu correo\n\nHola ${name}, haz clic en el siguiente enlace para verificar tu correo:\n${verifyUrl}\n\nSMARTUR`,
+        html: content,
+        bulk: false,
+    });
+}

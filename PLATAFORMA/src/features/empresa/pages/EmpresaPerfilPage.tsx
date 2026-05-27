@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Building2, Phone, MapPin, Save, Loader2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Building2, Phone, MapPin, Save, Loader2, AlertCircle, ShieldCheck, Mail } from 'lucide-react';
 import { empresaApi, type EmpresaProfile } from '../api/empresaApi';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useUserPreferences } from '../../../contexts/UserPreferencesContext';
+
+const PHONE_REGEX = /^(\+?\d{1,3})?[\s.-]?\(?\d{2,3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
 
 export function EmpresaPerfilPage() {
     const toast = useToast();
     const { t } = useLanguage();
+    const { user } = useUserPreferences();
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
     const [form, setForm] = useState({ name: '', address: '', phone: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
 
     useEffect(() => {
         empresaApi.getProfile()
@@ -32,8 +37,22 @@ export function EmpresaPerfilPage() {
         setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
     };
 
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setForm((f) => ({ ...f, phone: val }));
+        if (val && !PHONE_REGEX.test(val)) {
+            setPhoneError(t('empresa.perfil.phoneInvalid'));
+        } else {
+            setPhoneError(null);
+        }
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (form.phone && !PHONE_REGEX.test(form.phone)) {
+            setPhoneError(t('empresa.perfil.phoneInvalid'));
+            return;
+        }
         setSaving(true);
         setMsg(null);
         try {
@@ -143,7 +162,6 @@ export function EmpresaPerfilPage() {
                 {[
                     { name: 'name', label: t('empresa.perfil.companyName'), icon: Building2, required: true },
                     { name: 'address', label: t('empresa.perfil.address'), icon: MapPin, required: false },
-                    { name: 'phone', label: t('empresa.perfil.phone'), icon: Phone, required: false },
                 ].map((f) => (
                     <div key={f.name}>
                             <label className="text-xs font-medium block mb-1" style={{ color: 'var(--color-text-alt)' }}>{f.label}</label>
@@ -164,6 +182,47 @@ export function EmpresaPerfilPage() {
                         </div>
                     </div>
                 ))}
+
+                    {/* Email (read‑only) */}
+                    <div>
+                        <label className="text-xs font-medium block mb-1" style={{ color: 'var(--color-text-alt)' }}>{t('empresa.perfil.email')}</label>
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2" size={15} style={{ color: 'var(--color-text-alt)' }} />
+                            <input
+                                name="email"
+                                value={user?.email ?? ''}
+                                disabled
+                                className="w-full rounded-xl border pl-9 pr-4 py-3 text-sm outline-none opacity-60 cursor-not-allowed"
+                                style={{
+                                    background: 'var(--color-bg-alt)',
+                                    borderColor: 'var(--color-border)',
+                                    color: 'var(--color-text)',
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Phone with validation */}
+                    <div>
+                        <label className="text-xs font-medium block mb-1" style={{ color: 'var(--color-text-alt)' }}>{t('empresa.perfil.phone')}</label>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2" size={15} style={{ color: phoneError ? '#f43f5e' : 'var(--color-text-alt)' }} />
+                            <input
+                                name="phone"
+                                value={form.phone}
+                                onChange={handlePhoneChange}
+                                className="w-full rounded-xl border pl-9 pr-4 py-3 text-sm outline-none transition-colors"
+                                style={{
+                                    background: 'var(--color-bg-alt)',
+                                    borderColor: phoneError ? '#f43f5e' : 'var(--color-border)',
+                                    color: 'var(--color-text)',
+                                }}
+                            />
+                        </div>
+                        {phoneError && (
+                            <p className="mt-1 text-xs text-rose-400">{phoneError}</p>
+                        )}
+                    </div>
 
                 {msg && (
                     <div className={`text-sm px-4 py-2 rounded-xl border ${msg.type === 'ok'

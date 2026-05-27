@@ -20,6 +20,9 @@ CREATE TABLE "user" (
   photo_url VARCHAR(512) NULL,
   avatar_icon_key VARCHAR(64) NULL,
   birth_date DATE NULL,
+  email_verified BOOLEAN DEFAULT FALSE,
+  email_verification_token VARCHAR(255) NULL,
+  email_verification_expires TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id) REFERENCES role(role_id)

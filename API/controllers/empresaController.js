@@ -1,7 +1,9 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { validatePassword } from '../validators/userValidators.js';
+import { sendRegistrationConfirmation } from '../utils/mailer.js';
 
 const SALT_ROUNDS = 10;
 
@@ -62,11 +64,18 @@ class EmpresaController {
 
             // Crear usuario role_id=3 vinculado a la empresa
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+            // Generar token de verificación de email
+            const rawToken = crypto.randomBytes(32).toString('hex');
+            const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+            const tokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
+
             const userResult = await client.query(
-                `INSERT INTO "user" (name, email, password, role_id, id_company, is_active)
-                 VALUES ($1, $2, $3, 3, $4, TRUE)
+                `INSERT INTO "user" (name, email, password, role_id, id_company, is_active,
+                                     email_verified, email_verification_token, email_verification_expires)
+                 VALUES ($1, $2, $3, 3, $4, TRUE, FALSE, $5, $6)
                  RETURNING user_id, name, email, role_id`,
-                [name.trim(), email.trim().toLowerCase(), hashedPassword, id_company],
+                [name.trim(), email.trim().toLowerCase(), hashedPassword, id_company, tokenHash, tokenExpires],
             );
             const user = userResult.rows[0];
 
@@ -78,6 +87,10 @@ class EmpresaController {
 
             await client.query('COMMIT');
 
+            // Enviar email de confirmación (fire-and-forget)
+            sendRegistrationConfirmation(email.trim(), { name: name.trim(), token: rawToken })
+                .catch(err => console.error('[registerEmpresa] fallo al enviar email:', err.message));
+
             const token = jwt.sign(
                 { id: user.user_id, email: user.email, role_id: user.role_id, id_company },
                 process.env.JWT_SECRET,
@@ -85,7 +98,7 @@ class EmpresaController {
             );
 
             return res.status(201).json({
-                message: 'Empresa registrada exitosamente. Pendiente de verificación.',
+                message: 'Empresa registrada. Revisa tu correo para verificar tu email.',
                 token,
                 user: {
                     id: user.user_id,
@@ -173,8 +186,59 @@ class EmpresaController {
     }
 
     /**
+     * GET /api/v2/auth/verify-email/:token
+     * Verifica la dirección de correo electrónico mediante token.
+     */
+    static async verifyEmail(req, res) {
+        const { token } = req.params;
+        if (!token) {
+            return res.status(400).json({ message: 'Token requerido.' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        try {
+            const result = await pool.query(
+                `SELECT user_id, email, email_verified, email_verification_expires
+                   FROM "user"
+                  WHERE email_verification_token = $1`,
+                [tokenHash],
+            );
+
+            if (result.rowCount === 0) {
+                return res.status(404).json({ message: 'Token inválido o ya utilizado.' });
+            }
+
+            const user = result.rows[0];
+
+            if (user.email_verified) {
+                return res.json({ message: 'El email ya está verificado.' });
+            }
+
+            if (new Date() > new Date(user.email_verification_expires)) {
+                return res.status(410).json({ message: 'El token ha expirado. Solicita un nuevo enlace de verificación.' });
+            }
+
+            await pool.query(
+                `UPDATE "user"
+                    SET email_verified = TRUE,
+                        email_verification_token = NULL,
+                        email_verification_expires = NULL
+                  WHERE user_id = $1`,
+                [user.user_id],
+            );
+
+            return res.json({ message: 'Email verificado correctamente.' });
+        } catch (error) {
+            console.error('Error en verifyEmail:', error);
+            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+        }
+    }
+
+    /**
      * GET /api/v2/empresa/services
-     * Lista de servicios turísticos de la empresa.
+     * Lista paginada de servicios turísticos de la empresa.
+     * Query params: page, limit, search (filtro por nombre/tipo/descripción).
      */
     static async getServices(req, res) {
         const id_company = req.user.id_company;
@@ -182,16 +246,42 @@ class EmpresaController {
             return res.status(400).json({ message: 'Sin empresa asociada.' });
         }
 
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+        const offset = (page - 1) * limit;
+        const search = (req.query.search || '').trim();
+
         try {
+            let whereClause = 'WHERE ts.id_company = $1';
+            const params = [id_company];
+            let idx = 2;
+
+            if (search) {
+                const likeVal = `%${search}%`;
+                whereClause += ` AND (LOWER(ts.name) LIKE LOWER($${idx})
+                                   OR LOWER(ts.service_type) LIKE LOWER($${idx})
+                                   OR LOWER(ts.description) LIKE LOWER($${idx}))`;
+                params.push(likeVal);
+                idx++;
+            }
+
+            const countResult = await pool.query(
+                `SELECT COUNT(*) FROM tourist_service ts ${whereClause}`,
+                params,
+            );
+            const total = parseInt(countResult.rows[0].count, 10);
+
+            params.push(limit, offset);
             const result = await pool.query(
                 `SELECT ts.id_service, ts.name, ts.description, ts.service_type,
                         ts.active, ts.image_url, ts.id_location, ts.id_company
                    FROM tourist_service ts
-                  WHERE ts.id_company = $1
-                  ORDER BY ts.name`,
-                [id_company],
+                   ${whereClause}
+                   ORDER BY ts.name
+                   LIMIT $${idx} OFFSET $${idx + 1}`,
+                params,
             );
-            return res.json({ services: result.rows });
+            return res.json({ services: result.rows, total });
         } catch (error) {
             return res.status(500).json({ message: 'Error del servidor.', error: error.message });
         }
