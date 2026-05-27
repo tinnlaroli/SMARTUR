@@ -1,6 +1,6 @@
 # PLATAFORMA — SMARTUR Admin Dashboard
 
-React 19 + Vite admin dashboard for the SMARTUR tourism platform. Role-based access (admin only, role 1).
+React 19 + Vite admin dashboard for the SMARTUR tourism platform. Role-based access: **admin (role 1)** y **empresa (role 3)** con portales separados.
 
 ## Quick start
 
@@ -52,7 +52,13 @@ VITE_API_URL=http://localhost:4000/api/v2   # local dev
 | `/dashboard/contactos` | Contacts | Contact/subscription management |
 | `/dashboard/ml` | ML / Observability | Recommendation engine monitoring |
 | `/dashboard/estadisticas` | Statistics | Tourism statistics |
+| `/dashboard/notificaciones` | Notifications | Send FCM push to all/segment |
 | `/dashboard/configuracion` | Settings | Theme, language |
+| `/empresa/dashboard` | Empresa Dashboard | B2B company overview (role 3) |
+| `/empresa/perfil` | Empresa Perfil | Edit own company data (role 3) |
+| `/empresa/servicios` | Empresa Servicios | View own services (role 3) |
+| `/empresa/analytics` | Empresa Analytics | KPIs and engagement (role 3) |
+| `/register-empresa` | Registro Empresa | Public self-registration form |
 
 ## Tech stack
 

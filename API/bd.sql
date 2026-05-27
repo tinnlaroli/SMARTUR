@@ -889,7 +889,25 @@ BEGIN
     SELECT 1 FROM information_schema.columns
     WHERE table_name = 'user' AND column_name = 'id_company'
   ) THEN
-    ALTER TABLE "user" ADD COLUMN id_company INT NULL REFERENCES company(id_company);
+    ALTER TABLE "user"
+      ADD COLUMN id_company INT NULL,
+      ADD CONSTRAINT fk_user_company
+        FOREIGN KEY (id_company) REFERENCES company(id_company) ON DELETE SET NULL;
+  END IF;
+  -- Asegurar que la FK tiene nombre explícito si la columna ya existe sin constraint
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name = 'user' AND constraint_name = 'fk_user_company'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'user' AND column_name = 'id_company'
+  ) THEN
+    BEGIN
+      ALTER TABLE "user"
+        ADD CONSTRAINT fk_user_company
+          FOREIGN KEY (id_company) REFERENCES company(id_company) ON DELETE SET NULL;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END;
   END IF;
 END
 $$;

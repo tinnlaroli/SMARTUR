@@ -218,6 +218,16 @@ app.use('/api/v2', EmpresaRouter);
 app.use('/api/v2', NotificationRouter);
 
 
+// ── 404 handler ─────────────────────────────────────────────────────────────
+// Debe ir DESPUÉS de todas las rutas y ANTES del Sentry error handler
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Ruta no encontrada',
+        path: req.originalUrl,
+        method: req.method,
+    });
+});
+
 // Sentry: debe registrarse DESPUÉS de todas las rutas y ANTES del arranque
 setupSentryErrorHandler(app);
 

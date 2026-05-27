@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config — SMARTUR
+  Permite HTTP (cleartext) solo para el servidor de la API y entornos de desarrollo.
+  TODO: Cuando se configure HTTPS en el VPS, eliminar el dominio de producción de aquí
+        y cambiar la URL en ApiConstants a https://.
+-->
+<network-security-config>
+    <!-- Entornos de desarrollo local -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">192.168.1.1</domain>
+    </domain-config>
+
+    <!-- Servidor API de producción — remover cuando HTTPS esté activo -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">2.24.112.25</domain>
+    </domain-config>
+
+    <!-- Bloquear cleartext para todos los demás dominios -->
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

@@ -1,0 +1,178 @@
+name: CI — Lint, Type Check & Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancela ejecuciones anteriores del mismo PR para ahorrar minutos
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # API — ESLint + Node.js syntax check
+  # ─────────────────────────────────────────────────────────────
+  api:
+    name: API — Lint
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.changed_files, 'API/')
+    defaults:
+      run:
+        working-directory: API
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: API/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npx eslint . --ext .js --max-warnings 0 || true
+        # "|| true" mientras no haya reglas configuradas — quitar cuando ESLint esté configurado
+
+      - name: Syntax check (Node --check)
+        run: |
+          find . -name "*.js" \
+            -not -path "./node_modules/*" \
+            -not -path "./docs/*" \
+            | xargs node --check
+        shell: bash
+
+  # ─────────────────────────────────────────────────────────────
+  # PLATAFORMA — TypeScript + Vite build
+  # ─────────────────────────────────────────────────────────────
+  plataforma:
+    name: PLATAFORMA — TypeScript & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PLATAFORMA
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: PLATAFORMA/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Build (Vite)
+        run: npm run build
+        env:
+          VITE_API_URL: /api/v2
+          VITE_MODELO_URL: http://localhost:8000
+          VITE_BUSINESS_URL: http://localhost:4321/
+
+  # ─────────────────────────────────────────────────────────────
+  # LANDING — Astro build
+  # ─────────────────────────────────────────────────────────────
+  landing:
+    name: LANDING — Astro Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: LANDING
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: LANDING/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Astro)
+        run: npm run build
+        env:
+          PUBLIC_TOURIST_APP_URL: http://localhost/
+          PUBLIC_API_URL: http://localhost:4000/api/v2
+
+  # ─────────────────────────────────────────────────────────────
+  # MODELO — Python syntax + imports check
+  # ─────────────────────────────────────────────────────────────
+  modelo:
+    name: MODELO — Python Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MODELO
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: MODELO/requirements.txt
+
+      - name: Install dependencies
+        run: pip install --quiet -r requirements.txt
+
+      - name: Syntax check (py_compile)
+        run: |
+          python -m py_compile src/api.py src/poi_repository.py
+          echo "✓ Python syntax OK"
+
+      - name: Import check
+        run: |
+          cd src
+          python -c "import api; print('✓ api module importable')"
+        env:
+          SKIP_MODEL_BOOT: "1"
+          POI_DB_HOST: localhost
+          POI_DB_NAME: smartur
+          POI_DB_USER: postgres
+          POI_DB_PASSWORD: ""
+
+  # ─────────────────────────────────────────────────────────────
+  # MOBILE — Flutter analyze
+  # ─────────────────────────────────────────────────────────────
+  mobile:
+    name: MOBILE — Flutter Analyze
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MOBILE
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze (flutter analyze)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib/
+        continue-on-error: true
+        # continue-on-error porque el format check es orientativo, no bloqueante

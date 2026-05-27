@@ -37,14 +37,14 @@ services:
       DB_NAME: ${DB_NAME:-smartur}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-12345678}
-      JWT_SECRET: ${JWT_SECRET:-tu_contraseña_secreta}
+      JWT_SECRET: ${JWT_SECRET}
       EMAIL_USER: ${EMAIL_USER:-smarturutcv@gmail.com}
-      EMAIL_PASS: ${EMAIL_PASS:-lihichglnpzlhddg}
+      EMAIL_PASS: ${EMAIL_PASS}
       FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4321
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-1076586296171-q7mr8bdhbsm5rncmfsug58mb9t3gio2j.apps.googleusercontent.com}
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dke5fhmpk}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-759781756841837}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-h3Ke76Ry-XlJeHbhBG3SZHdS6I8}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
       IMAGE_MODERATION_MODE: ${IMAGE_MODERATION_MODE:-required}
       IMAGE_MODERATION_PROVIDER: ${IMAGE_MODERATION_PROVIDER:-sightengine}
       SIGHTENGINE_API_USER: ${SIGHTENGINE_API_USER:-}
