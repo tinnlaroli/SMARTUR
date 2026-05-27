@@ -331,7 +331,7 @@ class UserContentService {
     if (decoded is! List) return [];
     return decoded.map<Map<String, dynamic>>((e) {
       if (e is! Map) return <String, dynamic>{};
-      return Map<String, dynamic>.from(e as Map);
+      return Map<String, dynamic>.from(e);
     }).toList();
   }
 

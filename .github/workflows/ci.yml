@@ -128,14 +128,12 @@ jobs:
           cache: 'pip'
           cache-dependency-path: MODELO/requirements.txt
 
-      - name: Install system build dependencies
-        run: sudo apt-get install -y gfortran libopenblas-dev
-
       - name: Install dependencies
         run: |
-          # lightfm 1.17 falla con pip build isolation en setuptools moderno
-          pip install --quiet --no-build-isolation lightfm
-          pip install --quiet -r requirements.txt
+          # lightfm no tiene wheel para Python 3.11 en CI y no puede compilarse desde fuente.
+          # Solo se importa dentro del lifespan que SKIP_MODEL_BOOT=1 omite en el import check.
+          # El runtime Docker usa lightfm compilado correctamente con BLAS nativo.
+          grep -v "^lightfm" requirements.txt | pip install --quiet -r /dev/stdin
 
       - name: Syntax check (py_compile)
         run: |

@@ -1469,12 +1469,6 @@ class HomeScreenState extends State<HomeScreen> {
 // Private widgets
 // ═══════════════════════════════════════════════════════════════════
 
-int _cacheWidthForCard(BuildContext context, bool isHero) {
-  final screenW = MediaQuery.sizeOf(context).width - 40;
-  final dpr = MediaQuery.devicePixelRatioOf(context);
-  final logical = isHero ? screenW : (screenW - 14) / 2;
-  return (logical * dpr).round().clamp(360, 1280);
-}
 
 class _PlaceCard extends StatefulWidget {
   final Place place;
