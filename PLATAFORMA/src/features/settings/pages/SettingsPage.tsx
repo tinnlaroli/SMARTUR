@@ -354,7 +354,11 @@ export const SettingsPage = () => {
                                     {copy.settings.roleLabel}
                                 </p>
                                 <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    {user?.role_id === 1 ? copy.settings.adminRole : copy.settings.userRole}
+                                    {user?.role_id === 1
+                                        ? copy.settings.adminRole
+                                        : user?.role_id === 3
+                                          ? 'Empresa'
+                                          : copy.settings.userRole}
                                 </p>
                             </div>
                         </div>

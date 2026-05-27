@@ -30,6 +30,7 @@ import { EmpresaDashboardPage } from '../features/empresa/pages/EmpresaDashboard
 import { EmpresaPerfilPage }    from '../features/empresa/pages/EmpresaPerfilPage';
 import { EmpresaServiciosPage } from '../features/empresa/pages/EmpresaServiciosPage';
 import { EmpresaAnalyticsPage } from '../features/empresa/pages/EmpresaAnalyticsPage';
+import { EmpresaConfiguracionPage } from '../features/empresa/pages/EmpresaConfiguracionPage';
 
 export const router = createBrowserRouter([
     {
@@ -156,6 +157,7 @@ export const router = createBrowserRouter([
                             { path: 'perfil',    element: <EmpresaPerfilPage /> },
                             { path: 'servicios', element: <EmpresaServiciosPage /> },
                             { path: 'analytics', element: <EmpresaAnalyticsPage /> },
+                            { path: 'configuracion', element: <EmpresaConfiguracionPage /> },
                             { index: true, element: <Navigate to="dashboard" replace /> },
                         ],
                     },

@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Building2, Phone, MapPin, Save, Loader2 } from 'lucide-react';
+import { Building2, Phone, MapPin, Save, Loader2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { empresaApi, type EmpresaProfile } from '../api/empresaApi';
+import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
+import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 
 export function EmpresaPerfilPage() {
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
     const [form, setForm] = useState({ name: '', address: '', phone: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
     useEffect(() => {
@@ -15,7 +19,7 @@ export function EmpresaPerfilPage() {
                 setProfile(company);
                 setForm({ name: company.name, address: company.address ?? '', phone: company.phone ?? '' });
             })
-            .catch(console.error)
+            .catch(() => setError('Error al cargar el perfil de empresa.'))
             .finally(() => setLoading(false));
     }, []);
 
@@ -38,36 +42,74 @@ export function EmpresaPerfilPage() {
     };
 
     if (loading) {
-        return <div className="h-32 rounded-2xl bg-white/[0.04] animate-pulse" />;
+        return (
+            <div className={`${DATA_TABLE_SHELL_CLASS} h-40`}>
+                <TableSkeleton rows={3} colWidths={['flex-1', 'flex-1']} />
+            </div>
+        );
+    }
+
+    if (error || !profile) {
+        return (
+            <div className={`${DATA_TABLE_SHELL_CLASS} flex h-full flex-col items-center justify-center gap-3`}>
+                <AlertCircle className="size-8 text-rose-400" />
+                <p className="text-sm font-medium text-rose-500">{error ?? 'No fue posible cargar el perfil.'}</p>
+            </div>
+        );
     }
 
     return (
-        <div className="max-w-2xl space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-white">Perfil de empresa</h1>
-                <p className="text-zinc-400 text-sm mt-1">Actualiza los datos de tu empresa turística.</p>
+        <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                    Perfil de empresa
+                </h1>
+                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                    Gestiona la informacion oficial y de contacto que veran turistas y administradores.
+                </p>
             </div>
 
-            {/* Read-only info */}
-            {profile && (
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.04] p-5 grid grid-cols-2 gap-4 text-sm">
+            <div
+                className="flex shrink-0 items-start gap-3 rounded-xl border px-5 py-4"
+                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+            >
+                <ShieldCheck className="mt-0.5 size-5 shrink-0" style={{ color: MODULE_COLORS.services }} />
+                <div>
+                    <p className="mb-0.5 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                        Informacion empresarial
+                    </p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Manten estos datos al dia para mejorar confianza, contacto y trazabilidad operativa.
+                    </p>
+                </div>
+            </div>
+
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-5">
+                <div
+                    className="rounded-2xl border p-5 text-sm xl:col-span-2"
+                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                >
+                    <p className="mb-4 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                        Datos de registro
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <p className="text-zinc-500 text-xs mb-0.5">Sector</p>
-                        <p className="text-white">{profile.sector_name}</p>
+                            <p className="mb-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>Sector</p>
+                            <p style={{ color: 'var(--color-text)' }}>{profile.sector_name}</p>
                     </div>
                     <div>
-                        <p className="text-zinc-500 text-xs mb-0.5">Municipio</p>
-                        <p className="text-white">{profile.location_name ?? '—'}</p>
+                            <p className="mb-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>Municipio</p>
+                            <p style={{ color: 'var(--color-text)' }}>{profile.location_name ?? '—'}</p>
                     </div>
                     <div>
-                        <p className="text-zinc-500 text-xs mb-0.5">Fecha de registro</p>
-                        <p className="text-white">
+                            <p className="mb-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>Fecha de registro</p>
+                            <p style={{ color: 'var(--color-text)' }}>
                             {new Date(profile.registration_date).toLocaleDateString('es-MX')}
                         </p>
                     </div>
                     <div>
-                        <p className="text-zinc-500 text-xs mb-0.5">Estado</p>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border
+                            <p className="mb-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>Estado</p>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border
                             ${profile.status === 'active'
                                 ? 'bg-green-500/20 text-green-400 border-green-500/30'
                                 : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'}`}>
@@ -75,12 +117,15 @@ export function EmpresaPerfilPage() {
                         </span>
                     </div>
                 </div>
-            )}
+                </div>
 
-            {/* Editable form */}
-            <form onSubmit={handleSave} className="rounded-2xl border border-white/[0.07] bg-white/[0.04] p-6 space-y-4">
-                <h2 className="text-white font-semibold text-sm flex items-center gap-2">
-                    <Building2 size={15} className="text-orange-400" /> Datos editables
+                <form
+                    onSubmit={handleSave}
+                    className="rounded-2xl border p-6 space-y-4 xl:col-span-3"
+                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                >
+                    <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+                    <Building2 size={15} style={{ color: MODULE_COLORS.services }} /> Datos editables
                 </h2>
 
                 {[
@@ -89,15 +134,20 @@ export function EmpresaPerfilPage() {
                     { name: 'phone', label: 'Teléfono', icon: Phone, required: false },
                 ].map((f) => (
                     <div key={f.name}>
-                        <label className="text-xs text-zinc-400 font-medium block mb-1">{f.label}</label>
+                            <label className="text-xs font-medium block mb-1" style={{ color: 'var(--color-text-alt)' }}>{f.label}</label>
                         <div className="relative">
-                            <f.icon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
+                                <f.icon className="absolute left-3 top-1/2 -translate-y-1/2" size={15} style={{ color: 'var(--color-text-alt)' }} />
                             <input
                                 name={f.name}
                                 value={form[f.name as keyof typeof form]}
                                 onChange={handleChange}
                                 required={f.required}
-                                className="w-full bg-white/[0.05] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-orange-500 text-sm"
+                                    className="w-full rounded-xl border pl-9 pr-4 py-3 text-sm outline-none transition-colors"
+                                    style={{
+                                        background: 'var(--color-bg-alt)',
+                                        borderColor: 'var(--color-border)',
+                                        color: 'var(--color-text)',
+                                    }}
                             />
                         </div>
                     </div>
@@ -114,12 +164,14 @@ export function EmpresaPerfilPage() {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+                        className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        style={{ background: MODULE_COLORS.services }}
                 >
                     {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
                     {saving ? 'Guardando…' : 'Guardar cambios'}
                 </button>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }

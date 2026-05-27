@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
-    X, Building2, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3,
+    X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,7 @@ interface MenuItem {
 
 const MENU_GROUPS = [
     { label: 'Principal', items: ['home'] },
-    { label: 'Gestión', items: ['services', 'analytics', 'profile'] },
+    { label: 'Gestión', items: ['services', 'analytics', 'profile', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -39,6 +39,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'services', label: 'Mis servicios', icon: Wrench, path: '/empresa/servicios' },
         { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/empresa/analytics' },
         { id: 'profile', label: 'Perfil', icon: UserCircle, path: '/empresa/perfil' },
+        { id: 'settings', label: 'Configuración', icon: Settings, path: '/empresa/configuracion' },
     ];
 
     const itemMap = Object.fromEntries(allItems.map((i) => [i.id, i]));

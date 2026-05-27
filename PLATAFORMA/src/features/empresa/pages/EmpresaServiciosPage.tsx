@@ -374,8 +374,6 @@ export function EmpresaServiciosPage() {
         setSelectedServices([]);
     };
 
-    const hasServices = services.length > 0;
-
     return (
         <>
             <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -454,37 +452,7 @@ export function EmpresaServiciosPage() {
                         </div>
                     )}
 
-                    {!isLoading && !error && !hasServices && (
-                        <div
-                            className="flex h-full flex-col items-center justify-center gap-4 rounded-lg border p-12 text-center"
-                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                        >
-                            <div
-                                className="flex size-14 items-center justify-center rounded-2xl"
-                                style={{ background: `${MODULE_COLORS.services}18` }}
-                            >
-                                <Wrench size={24} style={{ color: MODULE_COLORS.services }} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    Sin servicios todavía
-                                </p>
-                                <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    Agrega tu primer servicio turístico para que aparezca en la app SMARTUR.
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
-                                style={{ background: MODULE_COLORS.services }}
-                            >
-                                <Plus size={15} /> Agregar servicio
-                            </button>
-                        </div>
-                    )}
-
-                    {!isLoading && !error && hasServices && (
+                    {!isLoading && !error && (
                         <EmpresaServiceTable
                             services={paginatedServices}
                             selectedServices={selectedServices}

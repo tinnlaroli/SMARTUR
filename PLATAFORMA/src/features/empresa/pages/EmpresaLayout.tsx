@@ -180,6 +180,8 @@ export function EmpresaLayout() {
         ? 'Mis servicios'
         : pathname.startsWith('/empresa/analytics')
           ? 'Analytics'
+          : pathname.startsWith('/empresa/configuracion')
+            ? 'Configuracion'
           : pathname.startsWith('/empresa/perfil')
             ? 'Perfil'
             : 'Inicio';
