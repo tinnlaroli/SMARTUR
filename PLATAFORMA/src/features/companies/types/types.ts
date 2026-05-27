@@ -1,5 +1,7 @@
 import type { SetURLSearchParams } from 'react-router-dom';
 
+export type CompanyStatus = 'pending' | 'active' | 'suspended';
+
 export interface Company {
     id: number;
     name: string;
@@ -8,6 +10,8 @@ export interface Company {
     id_sector: number;
     id_location: number;
     registration_date: string;
+    status: CompanyStatus;
+    owner_user_id: number | null;
 }
 
 export interface CreateCompanyDTO {
@@ -24,6 +28,7 @@ export interface UpdateCompanyDTO {
     phone?: string;
     id_sector?: number;
     id_location?: number;
+    status?: CompanyStatus;
 }
 
 export interface CompanyResponse {

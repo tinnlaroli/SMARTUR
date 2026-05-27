@@ -80,7 +80,7 @@ class Company {
     }
 
     static async update(id_company, data) {
-        const { name, address, phone, id_sector, id_location } = data;
+        const { name, address, phone, id_sector, id_location, status } = data;
 
         const fields = [];
         const values = [];
@@ -109,6 +109,15 @@ class Company {
         if (id_location !== undefined) {
             fields.push(`id_location = $${index++}`);
             values.push(id_location);
+        }
+
+        if (status !== undefined) {
+            const validStatuses = ['pending', 'active', 'suspended'];
+            if (!validStatuses.includes(status)) {
+                throw new Error(`Estado inválido: ${status}`);
+            }
+            fields.push(`status = $${index++}`);
+            values.push(status);
         }
 
         if (fields.length === 0) {

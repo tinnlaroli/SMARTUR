@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import type { Company } from '../types/types';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import type { Company, CompanyStatus } from '../types/types';
 import {
     DataTable,
     DataTableBody,
@@ -36,6 +37,12 @@ const SECTOR_COLORS: Record<number, string> = {
     5: TABLE_BADGE_COLORS.rose,
 };
 
+const STATUS_CONFIG: Record<CompanyStatus, { label: string; color: string }> = {
+    pending:   { label: 'Pendiente',  color: TABLE_BADGE_COLORS.amber },
+    active:    { label: 'Activa',     color: TABLE_BADGE_COLORS.emerald },
+    suspended: { label: 'Suspendida', color: TABLE_BADGE_COLORS.rose },
+};
+
 const COMPANY_COLORS = [
     'var(--color-purple)',
     'var(--color-cyan)',
@@ -63,6 +70,7 @@ interface Props {
     onViewDetail: (id: number) => void;
     sector: number | undefined;
     setSector: (sectorId: number | undefined) => void;
+    onUpdateStatus?: (id: number, status: CompanyStatus) => void;
 }
 
 export default function CompanyTable({
@@ -72,7 +80,9 @@ export default function CompanyTable({
     onViewDetail,
     sector,
     setSector,
+    onUpdateStatus,
 }: Props) {
+    const { t } = useLanguage();
     const [sort, setSort] = useState<SortState | null>(null);
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
     const displayData = useMemo(() => sortRows(companies, sort), [companies, sort]);
@@ -122,6 +132,7 @@ export default function CompanyTable({
                                 </div>
                             </DataTableHeadCell>
                             <SortableHeadCell sortKey="registration_date" sort={sort} onSort={handleSort} className="w-36">Registro</SortableHeadCell>
+                            <DataTableHeadCell className="w-44">Estado</DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>
@@ -148,7 +159,7 @@ export default function CompanyTable({
                                 <DataTableCell className="w-36">{company.phone}</DataTableCell>
                                 <DataTableCell className="w-44">
                                     <TableBadge
-                                        text={SECTOR_LABELS[company.id_sector] ?? 'Sin sector'}
+                                        text={SECTOR_LABELS[company.id_sector] ?? t('company.sectorNone')}
                                         color={SECTOR_COLORS[company.id_sector] ?? TABLE_BADGE_COLORS.neutral}
                                     />
                                 </DataTableCell>
@@ -158,6 +169,32 @@ export default function CompanyTable({
                                         month: '2-digit',
                                         day: '2-digit',
                                     })}
+                                </DataTableCell>
+                                <DataTableCell className="w-44">
+                                    <div className="flex items-center gap-1.5">
+                                        <TableBadge
+                                            text={STATUS_CONFIG[company.status ?? 'active'].label}
+                                            color={STATUS_CONFIG[company.status ?? 'active'].color}
+                                        />
+                                        {onUpdateStatus && company.status === 'pending' && (
+                                            <>
+                                                <button
+                                                    title="Aprobar empresa"
+                                                    onClick={() => onUpdateStatus(company.id, 'active')}
+                                                    className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
+                                                >
+                                                    ✓
+                                                </button>
+                                                <button
+                                                    title="Suspender empresa"
+                                                    onClick={() => onUpdateStatus(company.id, 'suspended')}
+                                                    className="rounded px-1.5 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 hover:bg-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 transition-colors"
+                                                >
+                                                    ✗
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </DataTableCell>
                             </DataTableRow>
                         ))}

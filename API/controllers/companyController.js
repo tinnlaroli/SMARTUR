@@ -25,6 +25,8 @@ class CompanyController {
                     id_sector: company.id_sector,
                     id_location: company.id_location,
                     registration_date: company.registration_date,
+                    status: company.status ?? 'active',
+                    owner_user_id: company.owner_user_id ?? null,
                 })),
             });
         } catch (error) {
@@ -54,6 +56,8 @@ class CompanyController {
                     id_sector: company.id_sector,
                     id_location: company.id_location,
                     registration_date: company.registration_date,
+                    status: company.status ?? 'active',
+                    owner_user_id: company.owner_user_id ?? null,
                 },
             });
         } catch (error) {
@@ -85,6 +89,8 @@ class CompanyController {
                     id_sector: company.id_sector,
                     id_location: company.id_location,
                     registration_date: company.registration_date,
+                    status: company.status ?? 'pending',
+                    owner_user_id: company.owner_user_id ?? null,
                 },
             });
         } catch (error) {
@@ -114,6 +120,8 @@ class CompanyController {
                     id_sector: company.id_sector,
                     id_location: company.id_location,
                     registration_date: company.registration_date,
+                    status: company.status ?? 'active',
+                    owner_user_id: company.owner_user_id ?? null,
                 },
             });
         } catch (error) {

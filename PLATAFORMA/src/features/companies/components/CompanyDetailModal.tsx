@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useCompany } from '../hooks/useCompany';
-import { UserPen, X, Building2, MapPin, Phone, Briefcase, Calendar, Loader2, Plus, Trash2 } from 'lucide-react';
+import { UserPen, X, Building2, MapPin, Phone, Briefcase, Calendar, Loader2, Plus, Trash2, ShieldCheck, ShieldX, ShieldAlert } from 'lucide-react';
 import EditCompanyModal from './EditCompanyModal';
-import type { UpdateCompanyDTO } from '../types/types';
+import type { UpdateCompanyDTO, CompanyStatus } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import type { SectorId } from '../../../shared/i18n/dashboardModalsLocale';
@@ -16,11 +16,17 @@ interface Props {
     updateCompany: (id: number, data: UpdateCompanyDTO) => Promise<boolean | undefined>;
 }
 
-const IMPACT_OPTIONS = [
-    { label: 'Bajo', value: 'bajo' },
-    { label: 'Medio', value: 'medio' },
-    { label: 'Alto', value: 'alto' },
-];
+const STATUS_LABEL: Record<CompanyStatus, string> = {
+    pending:   'Pendiente de aprobación',
+    active:    'Activa',
+    suspended: 'Suspendida',
+};
+
+const STATUS_CLASS: Record<CompanyStatus, string> = {
+    pending:   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    active:    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    suspended: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+};
 
 const impactBadge = (value: string | undefined) => {
     if (!value) return null;
@@ -40,7 +46,13 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
     const { company, isLoading, error, findById } = useCompany();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
-    const { lang } = useLanguage();
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+    const { t, lang } = useLanguage();
+    const impactOptions = useMemo(() => [
+        { label: t('activity.modal.impactLow'), value: 'bajo' },
+        { label: t('activity.modal.impactMed'), value: 'medio' },
+        { label: t('activity.modal.impactHigh'), value: 'alto' },
+    ], [t]);
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const dateLocale = useMemo(
         () => (lang === 'en' ? 'en-US' : lang === 'fr' ? 'fr-FR' : 'es-MX'),
@@ -119,6 +131,17 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
         }
     };
 
+    const handleStatusChange = async (newStatus: CompanyStatus) => {
+        if (!companyId) return;
+        setUpdatingStatus(true);
+        try {
+            await updateCompany(companyId, { status: newStatus });
+            await findById(companyId); // refrescar datos del modal
+        } finally {
+            setUpdatingStatus(false);
+        }
+    };
+
     const handleDeleteActivity = async (id: number) => {
         if (!confirm('¿Eliminar esta actividad?')) return;
         setDeletingId(id);
@@ -160,7 +183,7 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
 
                 {/* Tabs */}
                 <div className="flex border-b border-zinc-200 dark:border-zinc-800 px-6">
-                    {['Información', 'Actividades'].map((tab, i) => (
+                    {[t('companyDetail.tabInfo'), t('companyDetail.tabActivities')].map((tab, i) => (
                         <button
                             key={i}
                             onClick={() => setActiveTab(i)}
@@ -203,6 +226,50 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                     <p className="text-xs text-zinc-500 dark:text-zinc-500 flex items-center gap-1">
                                         {mod.companies.activeRegistry}
                                     </p>
+                                </div>
+                            </div>
+
+                            {/* ── Estado de la empresa ── */}
+                            <div className="flex items-center justify-between rounded-xl border px-4 py-3"
+                                style={{ borderColor: 'var(--color-border, #e4e4e7)', background: 'var(--color-bg-alt, #f4f4f5)' }}>
+                                <div className="flex items-center gap-2">
+                                    {company.status === 'active'    && <ShieldCheck className="size-4 text-emerald-500" />}
+                                    {company.status === 'pending'   && <ShieldAlert className="size-4 text-amber-500" />}
+                                    {company.status === 'suspended' && <ShieldX className="size-4 text-rose-500" />}
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLASS[company.status ?? 'active']}`}>
+                                        {STATUS_LABEL[company.status ?? 'active']}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {updatingStatus && <Loader2 className="size-4 animate-spin text-zinc-400" />}
+                                    {!updatingStatus && company.status !== 'active' && (
+                                        <button
+                                            onClick={() => handleStatusChange('active')}
+                                            className="flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                        >
+                                            <ShieldCheck className="size-3" />
+                                            Aprobar
+                                        </button>
+                                    )}
+                                    {!updatingStatus && company.status !== 'suspended' && (
+                                        <button
+                                            onClick={() => handleStatusChange('suspended')}
+                                            className="flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition-colors"
+                                        >
+                                            <ShieldX className="size-3" />
+                                            Suspender
+                                        </button>
+                                    )}
+                                    {!updatingStatus && company.status !== 'pending' && (
+                                        <button
+                                            onClick={() => handleStatusChange('pending')}
+                                            className="flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                            style={{ borderColor: 'var(--color-border, #e4e4e7)' }}
+                                        >
+                                            <ShieldAlert className="size-3" />
+                                            Marcar pendiente
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
@@ -267,14 +334,14 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                    Actividades de la empresa
+                                    {t('companyDetail.activitiesHeading')}
                                 </p>
                                 <button
                                     onClick={() => setShowNewForm((v) => !v)}
                                     className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
                                 >
                                     <Plus className="size-3.5" />
-                                    Nueva actividad
+                                    {t('companyDetail.newActivity')}
                                 </button>
                             </div>
 
@@ -286,12 +353,12 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                     style={{ borderColor: 'var(--color-border, #e4e4e7)', background: 'var(--color-bg-alt, #f4f4f5)' }}
                                 >
                                     <div>
-                                        <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">Valor de producción</label>
+                                        <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">{t('companyDetail.productionValue')}</label>
                                         <input
                                             type="number"
                                             min="0"
                                             step="0.01"
-                                            placeholder="Ej: 15000"
+                                            placeholder={t('companyDetail.productionValuePh')}
                                             value={newProdValue}
                                             onChange={(e) => setNewProdValue(e.target.value)}
                                             className={inputCls}
@@ -301,25 +368,25 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">Impacto ambiental</label>
+                                            <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">{t('companyDetail.envImpact')}</label>
                                             <select
                                                 value={newEnvImpact}
                                                 onChange={(e) => setNewEnvImpact(e.target.value)}
                                                 className={inputCls}
                                                 style={inputStyle}
                                             >
-                                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">Impacto social</label>
+                                            <label className="mb-1 block text-xs font-semibold text-zinc-500 dark:text-zinc-400">{t('companyDetail.socialImpact')}</label>
                                             <select
                                                 value={newSocialImpact}
                                                 onChange={(e) => setNewSocialImpact(e.target.value)}
                                                 className={inputCls}
                                                 style={inputStyle}
                                             >
-                                                {IMPACT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                                {impactOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -330,7 +397,7 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                             className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
                                             style={{ borderColor: 'var(--color-border, #e4e4e7)' }}
                                         >
-                                            Cancelar
+                                            {t('activity.modal.cancel')}
                                         </button>
                                         <button
                                             type="submit"
@@ -338,7 +405,7 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                             className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
                                         >
                                             {savingActivity && <Loader2 className="size-3 animate-spin" />}
-                                            Guardar
+                                            {t('activity.modal.save')}
                                         </button>
                                     </div>
                                 </form>
@@ -351,7 +418,7 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                                 </div>
                             ) : activities.length === 0 ? (
                                 <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                                    Sin actividades registradas para esta empresa.
+                                    {t('companyDetail.noActivities')}
                                 </p>
                             ) : (
                                 <div className="space-y-2">

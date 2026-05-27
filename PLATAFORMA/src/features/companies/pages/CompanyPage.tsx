@@ -7,6 +7,7 @@ import CompanyDetailModal from '../components/CompanyDetailModal';
 import CompanyTable from '../components/CompanyTable';
 import SearchInput from '../components/SearchInput';
 import { Building2, Plus, AlertCircle } from 'lucide-react';
+import type { CompanyStatus } from '../types/types';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -59,11 +60,15 @@ export const CompanyPage = () => {
     const toggleCompany = (id: number) =>
         setSelectedCompanies((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
 
+    const handleUpdateStatus = async (id: number, status: CompanyStatus) => {
+        await updateCompany(id, { status });
+    };
+
     const handleDeleteSelected = async () => {
         const ok = await confirm({
-            title: `Eliminar ${selectedCompanies.length} compañía(s)`,
-            message: 'Esta acción es permanente y no se puede deshacer.',
-            confirmLabel: 'Eliminar',
+            title: m.common.confirmDeleteCompanies(selectedCompanies.length),
+            message: m.common.confirmDeleteCompaniesMsg(selectedCompanies.length),
+            confirmLabel: m.common.delete,
             variant: 'danger',
         });
         if (!ok) return;
@@ -88,8 +93,8 @@ export const CompanyPage = () => {
             <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
                 <Building2 className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.companies }} />
                 <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Gestión de compañías</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Registra y administra las empresas turísticas de la región. Cada compañía puede tener múltiples servicios asociados visibles en la app móvil.</p>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.companies.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.companies.bannerDescription}</p>
                 </div>
             </div>
 
@@ -139,6 +144,7 @@ export const CompanyPage = () => {
                         onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
                         sector={sector}
                         setSector={setSector}
+                        onUpdateStatus={handleUpdateStatus}
                     />
                 )}
             </div>

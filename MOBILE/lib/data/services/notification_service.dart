@@ -20,8 +20,6 @@ class NotificationService {
     if (_initialized) return;
 
     try {
-      await Firebase.initializeApp();
-
       final messaging = FirebaseMessaging.instance;
 
       // Solicitar permiso (Android 13+, iOS)
