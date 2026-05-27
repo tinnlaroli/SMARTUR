@@ -270,6 +270,11 @@ export function NotificacionesPage() {
                         )}
                     </div>
 
+                </div>
+
+                {/* ── Columna derecha: vista previa + historial ───────────── */}
+                <div className="flex flex-col gap-4">
+
                     {/* Vista previa */}
                     <div
                         className="rounded-2xl border p-5 space-y-3"
@@ -303,15 +308,14 @@ export function NotificacionesPage() {
                             </p>
                         </div>
                     </div>
-                </div>
 
-                {/* ── Columna derecha: historial ───────────────────────────── */}
+                {/* Historial */}
                 <div
-                    className="rounded-2xl border flex flex-col"
+                    className="rounded-2xl border flex flex-col flex-1"
                     style={{
                         background:  'var(--color-bg)',
                         borderColor: 'var(--color-border)',
-                        minHeight:   '400px',
+                        minHeight:   '360px',
                     }}
                 >
                     {/* Cabecera historial */}
@@ -437,7 +441,9 @@ export function NotificacionesPage() {
                         <CheckCircle2 className="size-3 shrink-0" style={{ color: '#10b981' }} />
                         <span>Solo usuarios con permisos de notificación activos reciben el mensaje</span>
                     </div>
-                </div>
+                </div>{/* fin historial */}
+
+                </div>{/* fin columna derecha */}
 
             </div>
         </div>
