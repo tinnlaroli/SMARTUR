@@ -1,0 +1,99 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="404 — Página no encontrada | SMARTUR">
+  <main
+    style="
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      background: var(--color-bg, #0f1117);
+      color: var(--color-text, #f4f4f5);
+      font-family: 'Inter', sans-serif;
+    "
+  >
+    <!-- Número grande -->
+    <p
+      style="
+        font-size: clamp(6rem, 20vw, 12rem);
+        font-weight: 900;
+        line-height: 1;
+        background: linear-gradient(135deg, #984EFD 0%, #FC478E 60%, #4DB9CA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 0.5rem;
+        letter-spacing: -4px;
+      "
+    >
+      404
+    </p>
+
+    <!-- Icono pin -->
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom:1.25rem">
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+        fill="#984EFD"
+        opacity="0.25"
+      />
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+        stroke="#984EFD"
+        stroke-width="1.5"
+        fill="none"
+      />
+      <circle cx="12" cy="9" r="2.5" fill="#984EFD"/>
+    </svg>
+
+    <h1
+      style="
+        font-size: clamp(1.25rem, 4vw, 2rem);
+        font-weight: 700;
+        margin: 0 0 0.75rem;
+        color: #f4f4f5;
+      "
+    >
+      Esta página no existe
+    </h1>
+
+    <p
+      style="
+        font-size: 1rem;
+        color: rgba(244,244,245,0.55);
+        max-width: 360px;
+        margin: 0 0 2rem;
+        line-height: 1.6;
+      "
+    >
+      El destino que buscas no está en nuestro mapa. Quizás la URL cambió o fue eliminada.
+    </p>
+
+    <a
+      href="/"
+      style="
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.75rem;
+        background: linear-gradient(135deg, #984EFD, #7c3aed);
+        color: #fff;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: opacity 0.2s;
+      "
+      onmouseover="this.style.opacity='0.85'"
+      onmouseout="this.style.opacity='1'"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Volver al inicio
+    </a>
+  </main>
+</Layout>

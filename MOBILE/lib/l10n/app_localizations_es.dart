@@ -286,13 +286,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAll => 'Todos';
 
   @override
-  String get filterMuseums => 'Museos';
+  String get filterMuseums => 'Cultura';
 
   @override
-  String get filterCafes => 'Cafés';
+  String get filterCafes => 'Gastronomía';
 
   @override
-  String get filterViewpoints => 'Miradores';
+  String get filterViewpoints => 'Aventuras';
+
+  @override
+  String get filterHotels => 'Hotelería';
 
   @override
   String get filterMuseumsOnly => 'Solo ver Museos';

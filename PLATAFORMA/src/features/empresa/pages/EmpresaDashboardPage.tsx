@@ -1,129 +1,285 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Building2, Star, Wrench, BarChart3, AlertCircle, ArrowRight, TrendingUp } from 'lucide-react';
-import { empresaApi, type EmpresaProfile, type AnalyticsSummary } from '../api/empresaApi';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { DashboardHeader, DashboardLoadingShell } from '../../home/components/DashboardWidgets';
+import { WidgetCatalog } from '../../home/components/WidgetCatalog';
+import { WidgetGrid } from '../../home/components/WidgetGrid';
+import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import { useUserPreferences } from '../../../contexts/LanguageContext';
+import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { empresaApi, type AnalyticsResponse, type EmpresaProfile } from '../api/empresaApi';
+import {
+    EmpresaEngagementTrendCard,
+    EmpresaKpiStrip,
+    EmpresaProfileCard,
+    EmpresaQualityScoreCard,
+    EmpresaQuickActionsCard,
+    EmpresaStatusBanner,
+    EmpresaTopServicesCard,
+} from '../dashboard/components/EmpresaDashboardWidgets';
+import { useEmpresaDashboardPreferences } from '../dashboard/hooks/useEmpresaDashboardPreferences';
+import { useEmpresaWidgetGrid } from '../dashboard/hooks/useEmpresaWidgetGrid';
+import { deriveEmpresaDashboardViewModel } from '../dashboard/utils/empresaDashboard';
+import {
+    EMPRESA_WIDGET_REGISTRY,
+    EMPRESA_WIDGET_REGISTRY_MAP,
+} from '../dashboard/widgets/empresaWidgetRegistry';
+import LangSwitchWidget from '../../home/widgets/LangSwitchWidget';
+
+const DashboardLoader = ({ label }: { label: string }) => (
+    <div className="flex flex-col items-center gap-4 sy-fade-up">
+        <div className="relative size-14">
+            <div
+                className="absolute inset-0 animate-ping rounded-full"
+                style={{ background: `${DASHBOARD_COLORS.purple}33` }}
+            />
+            <div
+                className="relative flex size-14 items-center justify-center rounded-full"
+                style={{ background: `${DASHBOARD_COLORS.purple}18` }}
+            >
+                <Loader2 className="size-7 animate-spin" style={{ color: DASHBOARD_COLORS.purple }} />
+            </div>
+        </div>
+        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+            {label}
+        </p>
+    </div>
+);
 
 export function EmpresaDashboardPage() {
     const { user } = useUserPreferences();
+    const copy = getDashboardText('es');
+
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
-    const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+    const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const { preferences } = useEmpresaDashboardPreferences();
+    const {
+        instances,
+        isEditing,
+        catalogOpen,
+        activeWidgetIds,
+        addWidget,
+        removeWidget,
+        moveWidget,
+        resizeWidget,
+        toggleEditing,
+        openCatalog,
+        closeCatalog,
+        resetGrid,
+    } = useEmpresaWidgetGrid();
+
+    const fetchData = async (mode: 'initial' | 'refresh' = 'initial') => {
+        if (mode === 'refresh' && profile && analytics) {
+            setRefreshing(true);
+        } else {
+            setLoading(true);
+        }
+        setError(null);
+        try {
+            const [profileRes, analyticsRes] = await Promise.all([
+                empresaApi.getProfile(),
+                empresaApi.getAnalytics(),
+            ]);
+            setProfile(profileRes.company);
+            setAnalytics(analyticsRes);
+        } catch {
+            setError('dashboard-error');
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        Promise.all([empresaApi.getProfile(), empresaApi.getAnalytics()])
-            .then(([p, a]) => {
-                setProfile(p.company);
-                setSummary(a.summary);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        void fetchData('initial');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const kpis = [
-        { label: 'Recomendaciones ML', value: summary?.total_recomendaciones ?? '—', icon: TrendingUp, color: '#9CCC44' },
-        { label: 'Favoritos',          value: summary?.total_favoritos ?? '—',         icon: Star,      color: '#FF7D1F' },
-        { label: 'Visitas',            value: summary?.total_visitas ?? '—',            icon: BarChart3, color: '#4DB9CA' },
-        { label: 'Servicios activos',  value: summary?.total_servicios_activos ?? '—', icon: Wrench,    color: '#984EFD' },
-    ];
+    const viewModel = useMemo(
+        () => (profile && analytics ? deriveEmpresaDashboardViewModel(profile, analytics) : null),
+        [profile, analytics],
+    );
+
+    const headerTitle = `Bienvenido, ${user?.name?.split(' ')[0] ?? 'Empresa'}`;
+    const headerSubtitle = profile
+        ? `${profile.name}${profile.location_name ? ` · ${profile.location_name}` : ''} — KPIs de engagement y servicios de tu empresa.`
+        : 'KPIs de engagement y servicios disenados para leerse rapido, sin depender de scroll.';
+
+    const renderWidget = useCallback(
+        (widgetId: string): ReactNode => {
+            const { density } = preferences;
+
+            if (!viewModel || !profile) {
+                return (
+                    <div
+                        className="flex h-full items-center justify-center rounded-[28px] border sy-shimmer-pulse"
+                        style={{
+                            background: 'var(--color-bg)',
+                            borderColor: 'var(--color-border)',
+                        }}
+                    />
+                );
+            }
+
+            switch (widgetId) {
+                case 'kpi-strip':
+                    return <EmpresaKpiStrip metrics={viewModel.metrics} density={density} />;
+
+                case 'engagement-trend':
+                    return (
+                        <EmpresaEngagementTrendCard
+                            data={viewModel.trendData}
+                            summary={viewModel.trendSummary}
+                            insights={viewModel.trendInsights}
+                            density={density}
+                        />
+                    );
+
+                case 'top-services':
+                    return (
+                        <EmpresaTopServicesCard
+                            services={viewModel.topServices}
+                            summary={viewModel.topServicesSummary}
+                            density={density}
+                        />
+                    );
+
+                case 'company-profile':
+                    return <EmpresaProfileCard profile={profile} density={density} />;
+
+                case 'quick-actions':
+                    return <EmpresaQuickActionsCard density={density} />;
+
+                case 'quality-score':
+                    return (
+                        <EmpresaQualityScoreCard
+                            score={viewModel.qualityScore}
+                            summary={viewModel.qualitySummary}
+                            density={density}
+                        />
+                    );
+
+                case 'status-banner':
+                    return viewModel.showStatusBanner ? (
+                        <EmpresaStatusBanner message={viewModel.statusMessage} />
+                    ) : (
+                        <EmptyWidgetPlaceholder message="Tu empresa esta activa. Este aviso solo aparece en revision o suspension." />
+                    );
+
+                case 'lang-switch':
+                    return <LangSwitchWidget />;
+
+                default:
+                    return null;
+            }
+        },
+        [preferences, profile, viewModel],
+    );
 
     if (loading) {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="rounded-2xl border border-white/[0.07] bg-white/[0.04] h-24 animate-pulse" />
-                ))}
+            <div className="relative">
+                <DashboardLoadingShell density={preferences.density} />
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="rounded-[32px] border px-8 py-6 shadow-2xl backdrop-blur-md"
+                        style={{
+                            background: 'rgba(var(--rgb-bg), 0.72)',
+                            borderColor: 'rgba(var(--rgb-text), 0.08)',
+                        }}
+                    >
+                        <DashboardLoader label={copy.home.loadingLabel} />
+                    </div>
+                </div>
             </div>
         );
     }
 
+    if (error && (!profile || !analytics)) {
+        return (
+            <div className="flex h-full items-center justify-center">
+                <div
+                    className="rounded-[28px] border p-8 text-center shadow-sm sy-fade-up"
+                    style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                >
+                    <AlertCircle className="mx-auto size-10" style={{ color: DASHBOARD_COLORS.danger }} />
+                    <p className="mt-3 font-semibold" style={{ color: 'var(--color-text)' }}>
+                        {copy.home.dashboardError}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => { void fetchData('initial'); }}
+                        className="mt-5 inline-flex items-center gap-2 rounded-2xl px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                        style={{ background: DASHBOARD_COLORS.purple }}
+                    >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        {copy.home.retry}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!profile || !analytics || !viewModel) return null;
+
     return (
-        <div className="space-y-6">
-            {/* Welcome */}
-            <div>
-                <h1 className="text-2xl font-bold text-white">
-                    Bienvenido, {user?.name?.split(' ')[0] ?? 'Empresa'} 👋
-                </h1>
-                <p className="text-zinc-400 text-sm mt-1">
-                    {profile?.name ?? 'Tu empresa'} · {profile?.location_name ?? ''}
-                </p>
+        <div className="relative flex flex-col gap-4">
+            <DashboardHeader
+                title={headerTitle}
+                subtitle={headerSubtitle}
+                onRefresh={() => { void fetchData('refresh'); }}
+                refreshing={refreshing}
+                isEditing={isEditing}
+                onToggleEditing={toggleEditing}
+                onOpenCatalog={openCatalog}
+                onResetGrid={resetGrid}
+            />
+
+            <WidgetGrid
+                instances={instances}
+                registryMap={EMPRESA_WIDGET_REGISTRY_MAP}
+                isEditing={isEditing}
+                renderWidget={renderWidget}
+                onRemove={removeWidget}
+                onMove={moveWidget}
+                onResize={resizeWidget}
+            />
+
+            <WidgetCatalog
+                open={catalogOpen}
+                onClose={closeCatalog}
+                activeWidgetIds={activeWidgetIds}
+                onAdd={addWidget}
+                registry={EMPRESA_WIDGET_REGISTRY}
+            />
+
+            <div
+                aria-hidden={!refreshing}
+                className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center backdrop-blur-[2px]"
+                style={{
+                    background: 'rgba(var(--rgb-bg), 0.58)',
+                    opacity: refreshing ? 1 : 0,
+                    transition: 'opacity 0.3s var(--ease-out-cubic)',
+                }}
+            >
+                {refreshing && <DashboardLoader label={copy.home.loadingRefreshLabel} />}
             </div>
+        </div>
+    );
+}
 
-            {/* Status banner */}
-            {profile?.status !== 'active' && (
-                <div className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/25 rounded-2xl p-4">
-                    <AlertCircle className="text-yellow-400 shrink-0 mt-0.5" size={18} />
-                    <div>
-                        <p className="text-yellow-300 font-semibold text-sm">Empresa en revisión</p>
-                        <p className="text-yellow-400/70 text-xs mt-0.5">
-                            El equipo SMARTUR verificará tu información pronto. Mientras tanto puedes explorar el portal.
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* KPI cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {kpis.map((kpi) => (
-                    <div
-                        key={kpi.label}
-                        className="rounded-2xl border border-white/[0.07] bg-white/[0.04] p-5 flex items-center gap-4"
-                    >
-                        <div
-                            className="flex size-10 shrink-0 items-center justify-center rounded-xl"
-                            style={{ background: `${kpi.color}1a` }}
-                        >
-                            <kpi.icon className="size-5" style={{ color: kpi.color }} />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-white">{String(kpi.value)}</p>
-                            <p className="text-xs text-zinc-400">{kpi.label}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Quick actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                    { label: 'Ver mis servicios', to: '/empresa/servicios', color: '#FF7D1F' },
-                    { label: 'Analytics completo', to: '/empresa/analytics', color: '#4DB9CA' },
-                    { label: 'Editar perfil', to: '/empresa/perfil', color: '#984EFD' },
-                ].map((action) => (
-                    <Link
-                        key={action.to}
-                        to={action.to}
-                        className="flex items-center justify-between px-5 py-4 rounded-2xl border border-white/[0.07] bg-white/[0.04] hover:bg-white/[0.08] transition-colors group"
-                    >
-                        <span className="text-white font-medium text-sm">{action.label}</span>
-                        <ArrowRight className="text-zinc-500 group-hover:text-white transition-colors" size={16} />
-                    </Link>
-                ))}
-            </div>
-
-            {/* Info panel */}
-            {profile && (
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.04] p-5">
-                    <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
-                        <Building2 size={16} className="text-orange-400" /> Datos de la empresa
-                    </h2>
-                    <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                        {[
-                            ['Nombre', profile.name],
-                            ['Sector', profile.sector_name],
-                            ['Municipio', profile.location_name ?? '—'],
-                            ['Teléfono', profile.phone ?? '—'],
-                            ['Dirección', profile.address ?? '—'],
-                            ['Registro', new Date(profile.registration_date).toLocaleDateString('es-MX')],
-                        ].map(([k, v]) => (
-                            <div key={k}>
-                                <dt className="text-zinc-500 text-xs">{k}</dt>
-                                <dd className="text-white">{v}</dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            )}
+function EmptyWidgetPlaceholder({ message }: { message: string }) {
+    return (
+        <div
+            className="flex h-full items-center justify-center rounded-[28px] border p-6 text-center"
+            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+        >
+            <p className="max-w-sm text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                {message}
+            </p>
         </div>
     );
 }

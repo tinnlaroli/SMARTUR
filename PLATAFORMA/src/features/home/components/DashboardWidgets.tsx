@@ -54,6 +54,8 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 interface DashboardHeaderProps {
     onRefresh: () => void;
     refreshing: boolean;
+    title?: string;
+    subtitle?: string;
     /** @deprecated — no longer renders a preferences button; kept for compatibility */
     preferencesOpen?: boolean;
     /** @deprecated — no longer used; kept for compatibility */
@@ -491,6 +493,8 @@ const TrendTooltip = ({ active, label, payload }: TrendTooltipProps) => {
 export const DashboardHeader = ({
     onRefresh,
     refreshing,
+    title,
+    subtitle,
     isEditing = false,
     onToggleEditing,
     onOpenCatalog,
@@ -506,10 +510,10 @@ export const DashboardHeader = ({
                     className="text-[1.85rem] font-bold leading-none tracking-tight"
                     style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)' }}
                 >
-                    {copy.headerTitle}
+                    {title ?? copy.headerTitle}
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                    {copy.headerSubtitle}
+                    {subtitle ?? copy.headerSubtitle}
                 </p>
             </div>
 

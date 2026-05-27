@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building2, User, Mail, Lock, Phone, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
 import { empresaApi } from '../api/empresaApi';
@@ -20,6 +20,9 @@ export function RegisterEmpresaPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
+    const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => () => { if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current); }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -42,7 +45,7 @@ export function RegisterEmpresaPage() {
             localStorage.setItem('token', res.token);
             setUser(res.user);
             setDone(true);
-            setTimeout(() => navigate('/empresa/dashboard', { replace: true }), 1800);
+            redirectTimerRef.current = setTimeout(() => navigate('/empresa/dashboard', { replace: true }), 1800);
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })
                 ?.response?.data?.message ?? 'Error al registrar empresa.';

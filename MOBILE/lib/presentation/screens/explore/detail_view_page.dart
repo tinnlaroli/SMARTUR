@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
@@ -227,13 +228,13 @@ class _DetailViewPageState extends State<DetailViewPage>
                         child: const Icon(Icons.image_not_supported_outlined,
                             color: Colors.white38, size: 48),
                       )
-                    : Image.network(
-                        widget.heroImageUrl,
+                    : CachedNetworkImage(
+                        imageUrl: widget.heroImageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
-                        isAntiAlias: true,
-                        gaplessPlayback: true,
-                        errorBuilder: (context, error, stack) => Container(
+                        fadeInDuration: const Duration(milliseconds: 300),
+                        placeholder: (_, __) => Container(color: Colors.grey.shade900),
+                        errorWidget: (_, __, ___) => Container(
                           color: Colors.grey.shade900,
                           child: const Icon(Icons.image_not_supported_outlined,
                               color: Colors.white38, size: 48),
@@ -867,11 +868,15 @@ class _MiniThumb extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
       ),
       child: ClipOval(
-        child: Image.network(
-          url,
+        child: CachedNetworkImage(
+          imageUrl: url,
           fit: BoxFit.cover,
           filterQuality: FilterQuality.medium,
-          cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round().clamp(80, 256),
+          placeholder: (_, __) => Container(color: Colors.grey.shade800),
+          errorWidget: (_, __, ___) => Container(
+            color: Colors.grey.shade800,
+            child: const Icon(Icons.image_not_supported_outlined, color: Colors.white38, size: 20),
+          ),
         ),
       ),
     );

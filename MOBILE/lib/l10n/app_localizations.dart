@@ -621,20 +621,26 @@ abstract class AppLocalizations {
   /// No description provided for @filterMuseums.
   ///
   /// In es, this message translates to:
-  /// **'Museos'**
+  /// **'Cultura'**
   String get filterMuseums;
 
   /// No description provided for @filterCafes.
   ///
   /// In es, this message translates to:
-  /// **'Cafés'**
+  /// **'Gastronomía'**
   String get filterCafes;
 
   /// No description provided for @filterViewpoints.
   ///
   /// In es, this message translates to:
-  /// **'Miradores'**
+  /// **'Aventuras'**
   String get filterViewpoints;
+
+  /// No description provided for @filterHotels.
+  ///
+  /// In es, this message translates to:
+  /// **'Hotelería'**
+  String get filterHotels;
 
   /// No description provided for @filterMuseumsOnly.
   ///

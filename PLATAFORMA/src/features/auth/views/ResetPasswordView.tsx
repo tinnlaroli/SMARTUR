@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { authApi } from '../authApi';
 import type { ResetPasswordPayload } from '../types';
 import { KeyRound, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -16,6 +16,9 @@ export const ResetPasswordView = ({ email, onSwitchStep }: ResetPasswordViewProp
     const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => () => { if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current); }, []);
 
     const [formData, setFormData] = useState<ResetPasswordPayload>({
         email: email || '',
@@ -44,7 +47,7 @@ export const ResetPasswordView = ({ email, onSwitchStep }: ResetPasswordViewProp
         try {
             await authApi.resetPassword(formData);
             toast.success(t('auth.resetPassword.success.title'), t('auth.resetPassword.success.body'));
-            setTimeout(() => onSwitchStep('login'), 2000);
+            redirectTimerRef.current = setTimeout(() => onSwitchStep('login'), 2000);
         } catch (error) {
             toast.error(t('auth.resetPassword.error.title'), t('auth.resetPassword.error.body'));
         } finally {

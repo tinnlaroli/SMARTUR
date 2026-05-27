@@ -1,9 +1,10 @@
 import React, { type DragEvent, type ReactNode, useRef, useState } from 'react';
-import { WIDGET_REGISTRY_MAP, type WidgetInstance } from '../widgets/widgetRegistry';
+import { WIDGET_REGISTRY_MAP, type WidgetDef, type WidgetInstance } from '../widgets/widgetRegistry';
 import { WidgetShell } from './WidgetShell';
 
 interface WidgetGridProps {
     instances: WidgetInstance[];
+    registryMap?: Record<string, WidgetDef>;
     isEditing: boolean;
     /** Called by the grid to render a widget by its widgetId */
     renderWidget: (widgetId: string) => ReactNode;
@@ -25,6 +26,7 @@ interface WidgetGridProps {
  */
 export const WidgetGrid: React.FC<WidgetGridProps> = ({
     instances,
+    registryMap = WIDGET_REGISTRY_MAP,
     isEditing,
     renderWidget,
     onRemove,
@@ -67,7 +69,7 @@ export const WidgetGrid: React.FC<WidgetGridProps> = ({
     return (
         <div className="widget-grid" onDragEnd={handleDragEnd}>
             {instances.map((instance, index) => {
-                const def = WIDGET_REGISTRY_MAP[instance.widgetId];
+                const def = registryMap[instance.widgetId];
                 if (!def) return null;
 
                 return (

@@ -115,6 +115,7 @@ interface WidgetCatalogProps {
     onClose: () => void;
     activeWidgetIds: Set<string>;
     onAdd: (widgetId: string) => void;
+    registry?: WidgetDef[];
 }
 
 export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
@@ -122,11 +123,12 @@ export const WidgetCatalog: React.FC<WidgetCatalogProps> = ({
     onClose,
     activeWidgetIds,
     onAdd,
+    registry = WIDGET_REGISTRY,
 }) => {
     const { lang } = useLanguage();
     const copy = getDashboardText(lang).widgets;
 
-    const availableWidgets = WIDGET_REGISTRY.filter((w) => !activeWidgetIds.has(w.id));
+    const availableWidgets = registry.filter((w) => !activeWidgetIds.has(w.id));
 
     // Group by category (only show categories that have at least 1 available widget)
     const grouped = CATEGORY_ORDER.reduce<Record<WidgetCategory, WidgetDef[]>>(

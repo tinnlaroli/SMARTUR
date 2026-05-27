@@ -32,105 +32,105 @@ const MIGRATIONS = [
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xalapa' LIMIT 1),
   description = 'Cerro volcánico con miradores panorámicos y senderos naturales en Xalapa.',
-  image_url = 'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800',
   rating = 4.7
 WHERE name = 'Parque Macuiltépetl' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xalapa' LIMIT 1),
   description = 'Museo con exposiciones interactivas de ciencia y tecnología, ideal para familias.',
-  image_url = 'https://images.pexels.com/photos/1839919/pexels-photo-1839919.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800',
   rating = 4.5
 WHERE name IN ('Museo Interactivo', 'Museo Interactivo de Xalapa') AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Coatepec' LIMIT 1),
   description = 'Impresionante cascada de 40 metros en el bosque tropical de Coatepec.',
-  image_url = 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800',
   rating = 4.8
 WHERE name = 'Cascada de Texolo' AND latitude BETWEEN 19.44 AND 19.47;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Coatepec' LIMIT 1),
   description = 'Hacienda colonial del siglo XIX con jardines y rica historia cafetalera.',
-  image_url = 'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Hacienda_el_Lencero_Veracruz_Mexico.jpg?width=800',
   rating = 4.3
 WHERE name = 'Ex-Hacienda de Toxpan' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Orizaba' LIMIT 1),
   description = 'El volcán más alto de México. Destino para alpinismo y naturaleza extrema.',
-  image_url = 'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Pico_de_Orizaba_from_Tlachichuca.jpg?width=800',
   rating = 4.9
 WHERE name = 'Pico de Orizaba' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Orizaba' LIMIT 1),
   description = 'Emblemático edificio art nouveau importado de Bélgica, símbolo de Orizaba.',
-  image_url = 'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Palacio_de_Hierro_Orizaba.jpg?width=800',
   rating = 4.6
 WHERE name = 'Palacio de Hierro Orizaba' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Fortín de las Flores' LIMIT 1),
   description = 'Jardín con más de 3,000 especies de plantas tropicales y orquídeas.',
-  image_url = 'https://images.pexels.com/photos/1353938/pexels-photo-1353938.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Fortin_de_las_Flores_Veracruz.jpg?width=800',
   rating = 4.5
 WHERE name = 'Jardín Botánico Fortín' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Córdoba' LIMIT 1),
   description = 'Catedral barroca del siglo XVII en el centro histórico de Córdoba.',
-  image_url = 'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_Cordoba_Veracruz.jpg?width=800',
   rating = 4.5
 WHERE name = 'Catedral de Córdoba' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Córdoba' LIMIT 1),
   description = 'Paseo colonial con cafés, tiendas y vida nocturna junto al zócalo.',
-  image_url = 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800',
   rating = 4.4
 WHERE name = 'Los Portales de Córdoba' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Córdoba' LIMIT 1),
   description = 'Área natural protegida con senderos y vistas al valle de Córdoba.',
-  image_url = 'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800',
   rating = 4.3
 WHERE name = 'Parque Ecológico Cerro del Metate' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Córdoba' LIMIT 1),
   description = 'Barrio histórico con arquitectura colonial y gastronomía típica cordobesa.',
-  image_url = 'https://images.pexels.com/photos/3889742/pexels-photo-3889742.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800',
   rating = 4.2
 WHERE name = 'Municipio de La Villa' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xico' LIMIT 1),
   description = 'Majestuosa cascada de niebla en el corazón del Pueblo Mágico de Xico.',
-  image_url = 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800',
   rating = 4.9
 WHERE name IN ('Cascada de Texolo', 'Cascada de Texolo (Xico)') AND latitude BETWEEN 19.41 AND 19.44 AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xico' LIMIT 1),
   description = 'Santuario histórico dedicado a la patrona de Xico, con procesiones famosas.',
-  image_url = 'https://images.pexels.com/photos/208745/pexels-photo-208745.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800',
   rating = 4.6
 WHERE name = 'Santuario de María Magdalena' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xico' LIMIT 1),
   description = 'Mercado artesanal con mole xiqueño, conservas y productos locales únicos.',
-  image_url = 'https://images.pexels.com/photos/1132558/pexels-photo-1132558.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800',
   rating = 4.7
 WHERE name = 'Mercado de Xico' AND id_location IS NULL;
 
 UPDATE point_of_interest SET
   id_location = (SELECT id_location FROM location WHERE name='Xico' LIMIT 1),
   description = 'Mirador entre niebla y cafetales con vistas al barranco y la cascada de Texolo.',
-  image_url = 'https://images.pexels.com/photos/1141853/pexels-photo-1141853.jpeg?auto=compress&w=800',
+  image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800',
   rating = 4.8
 WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
 `,

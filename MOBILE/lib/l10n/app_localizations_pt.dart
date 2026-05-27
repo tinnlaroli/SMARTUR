@@ -287,13 +287,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get filterAll => 'Todos';
 
   @override
-  String get filterMuseums => 'Museus';
+  String get filterMuseums => 'Cultura';
 
   @override
-  String get filterCafes => 'Cafés';
+  String get filterCafes => 'Gastronomia';
 
   @override
-  String get filterViewpoints => 'Mirantes';
+  String get filterViewpoints => 'Aventuras';
+
+  @override
+  String get filterHotels => 'Hotelaria';
 
   @override
   String get filterMuseumsOnly => 'Somente museus';

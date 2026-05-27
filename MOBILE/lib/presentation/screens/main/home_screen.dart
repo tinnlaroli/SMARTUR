@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -1609,21 +1610,15 @@ class _PlaceCardState extends State<_PlaceCard>
                         child: const Icon(Icons.image_not_supported_outlined,
                             color: Colors.white54, size: 36),
                       )
-                    : Image.network(
-                        place.imageUrl,
+                    : CachedNetworkImage(
+                        imageUrl: place.imageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.medium,
-                        cacheWidth: _cacheWidthForCard(context, isHero),
-                        frameBuilder: (_, child, frame, loaded) {
-                          if (loaded) return child;
-                          return AnimatedOpacity(
-                            opacity: frame != null ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeOut,
-                            child: child,
-                          );
-                        },
-                        errorBuilder: (context, error, stack) => Container(
+                        fadeInDuration: const Duration(milliseconds: 400),
+                        placeholder: (_, __) => Container(
+                          color: scheme.outlineVariant.withValues(alpha: 0.3),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
                           color: scheme.outlineVariant,
                           child: const Icon(Icons.image_not_supported_outlined,
                               color: Colors.white54, size: 36),
