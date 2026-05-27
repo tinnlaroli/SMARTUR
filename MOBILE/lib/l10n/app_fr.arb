@@ -358,5 +358,7 @@
   "recoOutdoor": "Plein air",
 
   "latencyMs": "{ms} ms",
-  "@latencyMs": { "placeholders": { "ms": {} } }
+  "@latencyMs": { "placeholders": { "ms": {} } },
+
+  "homeOfflineBanner": "Pas de connexion. Activez Internet pour voir la carte."
 }

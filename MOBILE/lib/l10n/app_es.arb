@@ -358,5 +358,7 @@
   "recoOutdoor": "Al aire libre",
 
   "latencyMs": "{ms} ms",
-  "@latencyMs": { "placeholders": { "ms": {} } }
+  "@latencyMs": { "placeholders": { "ms": {} } },
+
+  "homeOfflineBanner": "Sin conexión. Activa el internet para ver el mapa."
 }

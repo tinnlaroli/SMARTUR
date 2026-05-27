@@ -358,5 +358,7 @@
   "recoOutdoor": "Outdoor",
 
   "latencyMs": "{ms} ms",
-  "@latencyMs": { "placeholders": { "ms": {} } }
+  "@latencyMs": { "placeholders": { "ms": {} } },
+
+  "homeOfflineBanner": "No connection. Enable internet to view the map."
 }
