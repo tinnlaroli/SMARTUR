@@ -1,4 +1,6 @@
 import Company from '../models/companyModel.js';
+import pool from '../config/db.js';
+import { sendEmpresaApprovedEmail, sendEmpresaSuspendedEmail } from '../utils/mailer.js';
 
 class CompanyController {
     static async getAll(req, res) {
@@ -108,6 +110,29 @@ class CompanyController {
 
             if (!company) {
                 return res.status(404).json({ message: 'Compañía no encontrada' });
+            }
+
+            // Notificar al owner si el admin cambió el status
+            const newStatus = req.body.status;
+            if ((newStatus === 'active' || newStatus === 'suspended') && company.owner_user_id) {
+                pool.query(
+                    `SELECT email FROM "user" WHERE user_id = $1`,
+                    [company.owner_user_id],
+                ).then(async ({ rows }) => {
+                    if (!rows.length) return;
+                    const { email } = rows[0];
+                    try {
+                        if (newStatus === 'active') {
+                            await sendEmpresaApprovedEmail(email, { companyName: company.name });
+                        } else {
+                            await sendEmpresaSuspendedEmail(email, { companyName: company.name });
+                        }
+                    } catch (emailErr) {
+                        console.warn('[company] email de estado no enviado:', emailErr.message);
+                    }
+                }).catch((err) => {
+                    console.warn('[company] lookup owner fallido:', err.message);
+                });
             }
 
             res.json({

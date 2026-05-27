@@ -199,3 +199,38 @@ export async function sendWelcomeEmail(to) {
         html: content,
     });
 }
+
+export async function sendEmpresaApprovedEmail(to, { companyName }) {
+    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://smartur.mx';
+
+    const content = `
+      ${heading('¡Tu empresa fue aprobada!')}
+      ${paragraph(`Buenas noticias: <strong style="color:${TEXT};">${companyName}</strong> ha sido verificada por el equipo SMARTUR y ya está activa en la plataforma.`)}
+      ${paragraph('Ahora puedes iniciar sesión y comenzar a gestionar tus servicios turísticos desde tu dashboard.')}
+      ${ctaButton(`${platformUrl}/empresa/dashboard`, 'Ir a mi dashboard')}`;
+
+    await deliver({
+        to,
+        subject: '¡Tu empresa fue aprobada! — SMARTUR',
+        title: 'Empresa aprobada',
+        text: `¡Tu empresa fue aprobada!\n\n${companyName} ya está activa en SMARTUR.\nVisita ${platformUrl}/empresa/dashboard para comenzar.\n\nSMARTUR`,
+        html: content,
+        bulk: false,
+    });
+}
+
+export async function sendEmpresaSuspendedEmail(to, { companyName }) {
+    const content = `
+      ${heading('Tu empresa ha sido suspendida')}
+      ${paragraph(`La cuenta de <strong style="color:${TEXT};">${companyName}</strong> en SMARTUR ha sido suspendida por el equipo administrativo.`)}
+      ${paragraph('Si crees que esto es un error o quieres más información, por favor responde este correo o contáctanos desde la plataforma.')}`;
+
+    await deliver({
+        to,
+        subject: 'Tu empresa ha sido suspendida — SMARTUR',
+        title: 'Empresa suspendida',
+        text: `Tu empresa ha sido suspendida\n\nLa cuenta de ${companyName} en SMARTUR ha sido suspendida.\n\nSi crees que es un error, contáctanos.\n\nSMARTUR`,
+        html: content,
+        bulk: false,
+    });
+}
