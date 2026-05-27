@@ -13,35 +13,32 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
 <dialog
   id="register-empresa-modal"
   aria-labelledby="rem-title"
-  class="modal-dialog w-[calc(100vw-2rem)] max-w-lg rounded-2xl p-0 shadow-2xl border"
-  style="background: var(--color-bg); border-color: var(--color-border);"
+  class="rem-dialog"
 >
-  <div class="p-6 sm:p-8">
+  <div class="rem-inner">
 
     <!-- Header -->
-    <div class="flex items-start justify-between mb-1">
+    <div class="rem-header">
       <div>
-        <span class="rem-badge">Portal B2B</span>
         <h3 id="rem-title" class="rem-title">Registra tu empresa</h3>
+        <p class="rem-subtitle">Crea tu cuenta turística — revisión en 24 h.</p>
       </div>
       <button
         type="button"
         id="rem-close"
-        class="ml-4 shrink-0 rounded-xl p-2 transition-colors"
-        style="color: var(--color-text-alt);"
+        class="rem-close-btn"
         aria-label="Cerrar"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
-    <p class="rem-subtitle">Crea tu cuenta de empresa turística. Tu perfil será revisado por el equipo SMARTUR en 24 h.</p>
 
-    <!-- Error -->
-    <div id="rem-error" hidden class="rem-error-box">
-      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    <!-- Error banner -->
+    <div id="rem-error" hidden class="rem-error-box" role="alert">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rem-icon-alert" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       <span id="rem-error-text"></span>
     </div>
@@ -49,63 +46,118 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     <!-- Form -->
     <form id="rem-form" novalidate class="rem-form">
 
-      <!-- 2 cols: nombre responsable + email -->
+      <!-- Row 1: nombre + email -->
       <div class="rem-row">
         <div class="rem-field">
-          <label for="rem-name">Tu nombre <span class="req">*</span></label>
-          <input id="rem-name" name="name" type="text" autocomplete="name"
-            placeholder="Ej: María García" required
-            class="rem-input" />
+          <label for="rem-name">
+            Tu nombre
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="rem-name" name="name" type="text" autocomplete="name"
+            placeholder="María García" required
+            class="rem-input"
+          />
+          <span class="rem-field-error" id="err-name" hidden></span>
         </div>
         <div class="rem-field">
-          <label for="rem-email">Correo electrónico <span class="req">*</span></label>
-          <input id="rem-email" name="email" type="email" autocomplete="email"
+          <label for="rem-email">
+            Correo electrónico
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="rem-email" name="email" type="email" autocomplete="email"
             placeholder="empresa@ejemplo.com" required
-            class="rem-input" />
+            class="rem-input"
+          />
+          <span class="rem-field-error" id="err-email" hidden></span>
         </div>
       </div>
 
-      <!-- Contraseña -->
-      <div class="rem-field">
-        <label for="rem-password">Contraseña <span class="req">*</span></label>
-        <input id="rem-password" name="password" type="password" autocomplete="new-password"
-          placeholder="Mínimo 8 caracteres" required minlength="8"
-          class="rem-input" />
+      <!-- Row 2: contraseña + confirmar -->
+      <div class="rem-row">
+        <div class="rem-field">
+          <label for="rem-password">
+            Contraseña
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <div class="rem-input-wrap">
+            <input
+              id="rem-password" name="password" type="password" autocomplete="new-password"
+              placeholder="Mínimo 8 caracteres" required minlength="8"
+              class="rem-input"
+            />
+            <button type="button" class="rem-eye-btn" data-target="rem-password" aria-label="Mostrar contraseña">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <span class="rem-field-error" id="err-password" hidden></span>
+        </div>
+        <div class="rem-field">
+          <label for="rem-confirm">
+            Confirmar contraseña
+            <span class="req" aria-hidden="true">*</span>
+          </label>
+          <div class="rem-input-wrap">
+            <input
+              id="rem-confirm" name="confirm" type="password" autocomplete="new-password"
+              placeholder="Repite tu contraseña" required
+              class="rem-input"
+            />
+            <button type="button" class="rem-eye-btn" data-target="rem-confirm" aria-label="Mostrar contraseña">
+              <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-hide hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <span class="rem-field-error" id="err-confirm" hidden></span>
+        </div>
       </div>
 
       <!-- Nombre empresa -->
       <div class="rem-field">
-        <label for="rem-company">Nombre de tu empresa <span class="req">*</span></label>
-        <input id="rem-company" name="companyName" type="text"
+        <label for="rem-company">
+          Nombre de tu empresa
+          <span class="req" aria-hidden="true">*</span>
+        </label>
+        <input
+          id="rem-company" name="companyName" type="text"
           placeholder="Ej: Eco Tours Orizaba" required
-          class="rem-input" />
+          class="rem-input"
+        />
+        <span class="rem-field-error" id="err-company" hidden></span>
       </div>
 
-      <!-- 2 cols: sector + teléfono -->
+      <!-- Row 3: sector + teléfono -->
       <div class="rem-row">
         <div class="rem-field">
-          <label for="rem-sector">Sector turístico <span class="req">*</span></label>
+          <label for="rem-sector">
+            Sector turístico
+            <span class="req" aria-hidden="true">*</span>
+          </label>
           <select id="rem-sector" name="id_sector" required class="rem-input rem-select">
             <option value="" disabled selected>Selecciona…</option>
             <option value="1">Hotelería</option>
             <option value="2">Restaurantes</option>
             <option value="3">Turismo de naturaleza</option>
           </select>
+          <span class="rem-field-error" id="err-sector" hidden></span>
         </div>
         <div class="rem-field">
           <label for="rem-phone">Teléfono</label>
-          <input id="rem-phone" name="phone" type="tel" autocomplete="tel"
+          <input
+            id="rem-phone" name="phone" type="tel" autocomplete="tel"
             placeholder="2711234567"
-            class="rem-input" />
+            class="rem-input"
+          />
         </div>
       </div>
 
       <!-- Submit -->
       <button type="submit" id="rem-submit" class="rem-btn">
         <span id="rem-btn-label">Crear cuenta gratuita</span>
-        <svg id="rem-spinner" xmlns="http://www.w3.org/2000/svg" class="rem-spinner hidden size-4" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        <svg id="rem-spinner" class="rem-spinner hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40" stroke-dashoffset="15"/>
         </svg>
       </button>
 
@@ -116,13 +168,21 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
       </p>
     </form>
 
-    <!-- Success state (hidden initially) -->
+    <!-- Success state -->
     <div id="rem-success" hidden class="rem-success-box">
-      <div class="rem-success-icon" aria-hidden="true">✅</div>
+      <div class="rem-success-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
       <h4 class="rem-success-title">¡Registro exitoso!</h4>
       <p class="rem-success-text">Tu empresa fue registrada y está en revisión. Recibirás acceso en 24 h.</p>
       <a id="rem-portal-link" href="#" target="_blank" rel="noopener" class="rem-portal-btn">
-        Entrar a mi portal →
+        Entrar a mi portal
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
       </a>
     </div>
 
@@ -130,62 +190,98 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
 </dialog>
 
 <style>
-  /* ── Dialog reset ── */
-  .modal-dialog {
-    max-height: 90vh;
+  /* ── Dialog base ───────────────────────── */
+  .rem-dialog {
+    width: calc(100vw - 2rem);
+    max-width: 680px;
+    max-height: 92vh;
     overflow-y: auto;
     scrollbar-width: thin;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(var(--rgb-text), 0.1);
+    background: var(--color-bg);
+    padding: 0;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+
+    /* reset browser default positioning */
+    margin: auto;
   }
 
-  .modal-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
+  .rem-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
   }
 
-  /* ── Header ── */
-  .rem-badge {
-    display: inline-block;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-purple);
-    background: rgba(var(--rgb-purple-accent), 0.12);
-    border: 1px solid rgba(var(--rgb-purple-accent), 0.25);
-    border-radius: 100px;
-    padding: 0.2rem 0.65rem;
-    margin-bottom: 0.5rem;
+  .rem-inner {
+    padding: 2rem 2.25rem;
+
+    @media (max-width: 480px) {
+      padding: 1.5rem 1.25rem;
+    }
+  }
+
+  /* ── Header ─────────────────────────────── */
+  .rem-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .rem-title {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.375rem;
+    font-weight: 800;
     color: var(--color-text);
-    margin: 0;
+    margin: 0 0 0.25rem;
+    line-height: 1.2;
   }
 
   .rem-subtitle {
     font-size: 0.8125rem;
     color: var(--color-text-alt);
-    margin: 0.5rem 0 1.25rem;
-    line-height: 1.6;
+    margin: 0;
+    line-height: 1.5;
   }
 
-  /* ── Error ── */
+  .rem-close-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(var(--rgb-text), 0.1);
+    background: transparent;
+    color: var(--color-text-alt);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: rgba(var(--rgb-text), 0.06);
+      color: var(--color-text);
+    }
+  }
+
+  /* ── Error banner ───────────────────────── */
   .rem-error-box {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(var(--rgb-pink-accent, 236, 72, 153), 0.08);
-    border: 1px solid rgba(var(--rgb-pink-accent, 236, 72, 153), 0.3);
-    border-radius: 0.75rem;
+    gap: 0.6rem;
+    background: rgba(220, 38, 38, 0.07);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    border-radius: 0.875rem;
     padding: 0.75rem 1rem;
     font-size: 0.8125rem;
-    color: var(--color-pink);
-    margin-bottom: 1rem;
+    color: #dc2626;
+    margin-bottom: 1.25rem;
+    line-height: 1.4;
   }
 
-  /* ── Form ── */
+  .rem-icon-alert { flex-shrink: 0; }
+
+  /* ── Form ───────────────────────────────── */
   .rem-form {
     display: flex;
     flex-direction: column;
@@ -195,9 +291,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
   .rem-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 0.875rem;
 
-    @media (max-width: 480px) {
+    @media (max-width: 520px) {
       grid-template-columns: 1fr;
     }
   }
@@ -212,9 +308,38 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-text);
+    letter-spacing: 0.01em;
   }
 
-  .req { color: var(--color-pink); }
+  .req { color: #dc2626; margin-left: 0.1em; }
+
+  /* input wrapper for password toggle */
+  .rem-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .rem-input-wrap .rem-input {
+    padding-right: 2.75rem;
+    width: 100%;
+  }
+
+  .rem-eye-btn {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--color-text-alt);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 1; }
+  }
 
   .rem-input {
     width: 100%;
@@ -227,17 +352,38 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
+    font-family: inherit;
 
-    &::placeholder { opacity: 0.5; }
+    &::placeholder { opacity: 0.45; }
+
     &:focus {
-      border-color: rgba(var(--rgb-purple-accent), 0.6);
+      border-color: rgba(var(--rgb-purple-accent), 0.55);
       box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1);
+    }
+
+    &[aria-invalid="true"] {
+      border-color: rgba(220, 38, 38, 0.5);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
     }
   }
 
-  .rem-select { appearance: none; cursor: pointer; }
+  .rem-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    padding-right: 2.25rem;
+  }
 
-  /* ── Submit button ── */
+  /* Per-field inline error */
+  .rem-field-error {
+    font-size: 0.7rem;
+    color: #dc2626;
+    margin-top: -0.1rem;
+  }
+
+  /* ── Submit ─────────────────────────────── */
   .rem-btn {
     display: flex;
     align-items: center;
@@ -247,51 +393,66 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     color: #fff;
     font-size: 0.9375rem;
     font-weight: 700;
-    padding: 0.85rem 1.5rem;
+    padding: 0.875rem 1.5rem;
     border-radius: 100px;
     border: none;
     cursor: pointer;
     width: 100%;
-    transition: opacity 0.2s, transform 0.15s;
     margin-top: 0.25rem;
+    font-family: inherit;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
 
-    &:hover { opacity: 0.88; transform: translateY(-1px); }
+    &:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(var(--rgb-purple-accent), 0.3);
+    }
+
     &:active { transform: translateY(0); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
   }
 
   .rem-spinner {
-    animation: spin 0.8s linear infinite;
+    animation: rem-spin 0.75s linear infinite;
   }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes rem-spin { to { transform: rotate(360deg); } }
 
   .hidden { display: none !important; }
 
-  /* ── Legal ── */
+  /* ── Legal ──────────────────────────────── */
   .rem-legal {
     font-size: 0.7rem;
     color: var(--color-text-alt);
     text-align: center;
-    opacity: 0.7;
+    opacity: 0.6;
     margin-top: -0.25rem;
   }
 
-  /* ── Success ── */
+  /* ── Success ────────────────────────────── */
   .rem-success-box {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 0.75rem;
+    gap: 1rem;
     padding: 1.5rem 0 0.5rem;
   }
 
-  .rem-success-icon { font-size: 3rem; line-height: 1; }
+  .rem-success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: rgba(var(--rgb-purple-accent), 0.1);
+    color: var(--color-purple);
+  }
 
   .rem-success-title {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--color-text);
     margin: 0;
   }
@@ -300,13 +461,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     font-size: 0.875rem;
     color: var(--color-text-alt);
     margin: 0;
-    max-width: 34ch;
+    max-width: 36ch;
+    line-height: 1.6;
   }
 
   .rem-portal-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     background: var(--color-purple);
     color: #fff;
     font-size: 0.9375rem;
@@ -314,57 +476,150 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
     padding: 0.75rem 1.75rem;
     border-radius: 100px;
     text-decoration: none;
-    margin-top: 0.5rem;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 0.25rem;
 
-    &:hover { opacity: 0.88; }
+    &:hover { opacity: 0.88; transform: translateY(-1px); }
   }
 </style>
 
 <script define:vars={{ apiUrl }}>
-  const dialog  = document.getElementById('register-empresa-modal');
-  const form    = document.getElementById('rem-form');
-  const errBox  = document.getElementById('rem-error');
-  const errTxt  = document.getElementById('rem-error-text');
-  const success = document.getElementById('rem-success');
-  const submit  = document.getElementById('rem-submit');
-  const btnLbl  = document.getElementById('rem-btn-label');
-  const spinner = document.getElementById('rem-spinner');
-  const link    = document.getElementById('rem-portal-link');
-  const closeBtn= document.getElementById('rem-close');
+  const dialog   = document.getElementById('register-empresa-modal');
+  const form     = document.getElementById('rem-form');
+  const errBox   = document.getElementById('rem-error');
+  const errTxt   = document.getElementById('rem-error-text');
+  const success  = document.getElementById('rem-success');
+  const submit   = document.getElementById('rem-submit');
+  const btnLbl   = document.getElementById('rem-btn-label');
+  const spinner  = document.getElementById('rem-spinner');
+  const link     = document.getElementById('rem-portal-link');
+  const closeBtn = document.getElementById('rem-close');
 
   const plataformaUrl = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl
     || window.location.origin;
 
+  /* ── Password toggle ─── */
+  document.querySelectorAll('.rem-eye-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      btn.querySelector('.eye-show').classList.toggle('hidden', !isText);
+      btn.querySelector('.eye-hide').classList.toggle('hidden', isText);
+    });
+  });
+
+  /* ── Helpers ─── */
   function setLoading(on) {
     submit.disabled = on;
     spinner.classList.toggle('hidden', !on);
     btnLbl.textContent = on ? 'Registrando…' : 'Crear cuenta gratuita';
   }
 
-  function showError(msg) {
+  function showGlobalError(msg) {
     errTxt.textContent = msg;
     errBox.hidden = false;
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function hideError() { errBox.hidden = true; }
+  function hideGlobalError() { errBox.hidden = true; }
 
+  function setFieldError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (msg) {
+      el.textContent = msg;
+      el.hidden = false;
+      const input = el.closest('.rem-field')?.querySelector('.rem-input');
+      if (input) input.setAttribute('aria-invalid', 'true');
+    } else {
+      el.hidden = true;
+      const input = el.closest('.rem-field')?.querySelector('.rem-input');
+      if (input) input.removeAttribute('aria-invalid');
+    }
+  }
+
+  function clearAllErrors() {
+    hideGlobalError();
+    ['name', 'email', 'password', 'confirm', 'company', 'sector'].forEach((k) =>
+      setFieldError(`err-${k}`, '')
+    );
+  }
+
+  /* ── Inline real-time validation on blur ─── */
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  document.getElementById('rem-name')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    setFieldError('err-name', v.length < 2 ? 'Ingresa tu nombre completo.' : '');
+  });
+
+  document.getElementById('rem-email')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    setFieldError('err-email', !EMAIL_RE.test(v) ? 'Correo electrónico no válido.' : '');
+  });
+
+  document.getElementById('rem-password')?.addEventListener('blur', (e) => {
+    const v = e.target.value;
+    if (v.length < 8) {
+      setFieldError('err-password', 'Mínimo 8 caracteres.');
+    } else if (!/[A-Z]/.test(v) || !/[a-z]/.test(v) || !/[0-9]/.test(v)) {
+      setFieldError('err-password', 'Debe incluir mayúscula, minúscula y número.');
+    } else {
+      setFieldError('err-password', '');
+    }
+  });
+
+  document.getElementById('rem-confirm')?.addEventListener('blur', (e) => {
+    const pass = document.getElementById('rem-password')?.value || '';
+    setFieldError('err-confirm', e.target.value !== pass ? 'Las contraseñas no coinciden.' : '');
+  });
+
+  document.getElementById('rem-company')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    setFieldError('err-company', v.length < 2 ? 'Ingresa el nombre de tu empresa.' : '');
+  });
+
+  /* ── Close ─── */
   closeBtn?.addEventListener('click', () => dialog.close());
   dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
+  /* ── Submit ─── */
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    hideError();
+    clearAllErrors();
 
     const data = Object.fromEntries(new FormData(form));
-    if (!data.name || !data.email || !data.password || !data.companyName || !data.id_sector) {
-      showError('Completa todos los campos obligatorios.');
-      return;
+    let hasError = false;
+
+    if (!data.name?.trim() || data.name.trim().length < 2) {
+      setFieldError('err-name', 'Ingresa tu nombre completo.');
+      hasError = true;
     }
-    if (data.password.length < 8) {
-      showError('La contraseña debe tener al menos 8 caracteres.');
-      return;
+    if (!EMAIL_RE.test(data.email?.trim())) {
+      setFieldError('err-email', 'Correo electrónico no válido.');
+      hasError = true;
     }
+    if (!data.password || data.password.length < 8) {
+      setFieldError('err-password', 'Mínimo 8 caracteres.');
+      hasError = true;
+    } else if (!/[A-Z]/.test(data.password) || !/[a-z]/.test(data.password) || !/[0-9]/.test(data.password)) {
+      setFieldError('err-password', 'Debe incluir mayúscula, minúscula y número.');
+      hasError = true;
+    }
+    if (data.confirm !== data.password) {
+      setFieldError('err-confirm', 'Las contraseñas no coinciden.');
+      hasError = true;
+    }
+    if (!data.companyName?.trim() || data.companyName.trim().length < 2) {
+      setFieldError('err-company', 'Ingresa el nombre de tu empresa.');
+      hasError = true;
+    }
+    if (!data.id_sector) {
+      setFieldError('err-sector', 'Selecciona un sector.');
+      hasError = true;
+    }
+    if (hasError) return;
 
     setLoading(true);
     try {
@@ -372,28 +627,25 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://2.24.112.25:4000/api/v2
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: data.name,
-          email: data.email,
+          name: data.name.trim(),
+          email: data.email.trim().toLowerCase(),
           password: data.password,
-          companyName: data.companyName,
-          phone: data.phone || undefined,
+          companyName: data.companyName.trim(),
+          phone: data.phone?.trim() || undefined,
           id_sector: Number(data.id_sector),
         }),
       });
       const json = await res.json();
       if (!res.ok) {
-        showError(json.message || 'Error al registrar. Intenta de nuevo.');
+        showGlobalError(json.message || 'Error al registrar. Intenta de nuevo.');
         return;
       }
-      // Success → store token if same origin and show success state
-      try {
-        if (json.token) localStorage.setItem('smartur_token', json.token);
-      } catch (_) {}
+      try { if (json.token) localStorage.setItem('smartur_token', json.token); } catch (_) {}
       link.href = plataformaUrl + '/empresa/dashboard';
       form.hidden = true;
       success.hidden = false;
     } catch (_) {
-      showError('Error de conexión. Verifica tu internet e intenta de nuevo.');
+      showGlobalError('Error de conexión. Verifica tu internet e intenta de nuevo.');
     } finally {
       setLoading(false);
     }
