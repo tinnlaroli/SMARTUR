@@ -115,11 +115,6 @@ const ICONS: Record<string, string> = {
   <div data-plataforma-url={plataformaUrl} hidden aria-hidden="true"></div>
 
   <div class="u-container">
-    <!-- Section label -->
-    <div class="section-label-row">
-      <span class="section-badge">{t.badge}</span>
-    </div>
-
     <div class="inner">
       <!-- Left: text + CTA -->
       <div class="left">
@@ -199,31 +194,6 @@ const ICONS: Record<string, string> = {
     @media (--mq-phone) {
       padding: 3rem 0;
     }
-  }
-
-  /* ── Section label ───────────────────── */
-  .section-label-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 3rem;
-
-    @media (--mq-tablet) {
-      margin-bottom: 2.5rem;
-    }
-  }
-
-  .section-badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-purple);
-    background: rgba(var(--rgb-purple-accent), 0.1);
-    border: 1px solid rgba(var(--rgb-purple-accent), 0.2);
-    border-radius: 100px;
-    padding: 0.3rem 1rem;
   }
 
   /* ── Main grid ───────────────────────── */
