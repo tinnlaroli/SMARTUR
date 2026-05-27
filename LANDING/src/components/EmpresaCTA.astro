@@ -15,22 +15,22 @@ const t = {
     ctaNote: "Sin costo durante el período de lanzamiento",
     features: [
       {
-        icon: "📊",
+        icon: "chart",
         title: "Panel de analytics",
         desc: "Métricas de favoritos, visitas y calificaciones de tus servicios en tiempo real.",
       },
       {
-        icon: "📱",
+        icon: "mobile",
         title: "Visibilidad en la app",
         desc: "Tus servicios aparecen en las recomendaciones de IA de la app SMARTUR para iOS y Android.",
       },
       {
-        icon: "🔔",
+        icon: "bell",
         title: "Notificaciones push",
         desc: "El equipo SMARTUR puede comunicar novedades directamente a los turistas interesados en ti.",
       },
       {
-        icon: "✅",
+        icon: "check",
         title: "Registro inmediato",
         desc: "Crea tu cuenta y agrega tus servicios en minutos. Revisión por el equipo en 24h.",
       },
@@ -45,22 +45,22 @@ const t = {
     ctaNote: "Free during launch period",
     features: [
       {
-        icon: "📊",
+        icon: "chart",
         title: "Analytics dashboard",
         desc: "Real-time favorites, visits, and ratings metrics for your services.",
       },
       {
-        icon: "📱",
+        icon: "mobile",
         title: "In-app visibility",
         desc: "Your services appear in AI-powered recommendations on the SMARTUR iOS & Android app.",
       },
       {
-        icon: "🔔",
+        icon: "bell",
         title: "Push notifications",
         desc: "The SMARTUR team can send updates directly to tourists interested in your business.",
       },
       {
-        icon: "✅",
+        icon: "check",
         title: "Quick onboarding",
         desc: "Create your account and add services in minutes. Team review within 24h.",
       },
@@ -75,22 +75,22 @@ const t = {
     ctaNote: "Gratuit pendant la période de lancement",
     features: [
       {
-        icon: "📊",
+        icon: "chart",
         title: "Tableau de bord",
         desc: "Métriques en temps réel : favoris, visites et évaluations de vos services.",
       },
       {
-        icon: "📱",
+        icon: "mobile",
         title: "Visibilité dans l'app",
         desc: "Vos services apparaissent dans les recommandations IA de l'app SMARTUR (iOS & Android).",
       },
       {
-        icon: "🔔",
+        icon: "bell",
         title: "Notifications push",
         desc: "L'équipe SMARTUR peut communiquer des nouveautés directement aux touristes intéressés.",
       },
       {
-        icon: "✅",
+        icon: "check",
         title: "Inscription rapide",
         desc: "Créez votre compte et ajoutez vos services en quelques minutes. Révision sous 24h.",
       },
@@ -100,6 +100,14 @@ const t = {
 
 const plataformaUrl =
   import.meta.env.PUBLIC_TOURIST_APP_URL || "http://2.24.112.25";
+
+/* SVG icon map — stroke-based, matches Landing's icon aesthetic */
+const ICONS: Record<string, string> = {
+  chart: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
+  mobile: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  bell: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  check: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+};
 ---
 
 <section class="empresa-cta">
@@ -107,33 +115,39 @@ const plataformaUrl =
   <div data-plataforma-url={plataformaUrl} hidden aria-hidden="true"></div>
 
   <div class="u-container">
+    <!-- Section label -->
+    <div class="section-label-row">
+      <span class="section-badge">{t.badge}</span>
+    </div>
+
     <div class="inner">
       <!-- Left: text + CTA -->
       <div class="left">
-        <span class="badge">{t.badge}</span>
-        <h2 class="u-heading title" data-sy-reveal="words" data-sy-reveal-manual="">
+        <h2 class="u-heading ec-title" data-sy-reveal="words" data-sy-reveal-manual="">
           {t.title}
         </h2>
-        <p class="u-text subtitle">{t.subtitle}</p>
+        <p class="u-text ec-subtitle">{t.subtitle}</p>
 
-        <button type="button" id="open-register-empresa" class="cta-btn">
-          {t.cta}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-        <p class="cta-note">{t.ctaNote}</p>
+        <div class="cta-row">
+          <button type="button" id="open-register-empresa" class="ec-cta-btn">
+            {t.cta}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+          <p class="ec-cta-note">{t.ctaNote}</p>
+        </div>
       </div>
 
       <!-- Right: feature cards -->
@@ -145,12 +159,12 @@ const plataformaUrl =
               data-sy-reveal="fade"
               style={`transition-delay: ${i * 0.1}s`}
             >
-              <span class="feature-icon" aria-hidden="true">
-                {f.icon}
-              </span>
-              <div>
+              <div class="feature-icon-wrap" aria-hidden="true">
+                <Fragment set:html={ICONS[f.icon]} />
+              </div>
+              <div class="feature-body">
                 <p class="feature-title">{f.title}</p>
-                <p class="feature-desc">{f.desc}</p>
+                <p class="u-text feature-desc">{f.desc}</p>
               </div>
             </div>
           ))
@@ -164,20 +178,18 @@ const plataformaUrl =
   .empresa-cta {
     position: relative;
     padding: 6rem 0;
-    background: var(--color-bg);
+    background: var(--color-bg-alt);
     overflow: hidden;
 
-    /* Decorative glow */
+    /* Top border line — matches other sections */
     &::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        ellipse 80% 60% at 50% 120%,
-        rgba(var(--rgb-purple-accent), 0.12) 0%,
-        transparent 70%
-      );
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(var(--rgb-text), 0.07);
     }
 
     @media (--mq-tablet) {
@@ -189,10 +201,36 @@ const plataformaUrl =
     }
   }
 
+  /* ── Section label ───────────────────── */
+  .section-label-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+
+    @media (--mq-tablet) {
+      margin-bottom: 2.5rem;
+    }
+  }
+
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-purple);
+    background: rgba(var(--rgb-purple-accent), 0.1);
+    border: 1px solid rgba(var(--rgb-purple-accent), 0.2);
+    border-radius: 100px;
+    padding: 0.3rem 1rem;
+  }
+
+  /* ── Main grid ───────────────────────── */
   .inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    gap: 5rem;
     align-items: center;
 
     @media (--mq-tablet) {
@@ -201,48 +239,32 @@ const plataformaUrl =
     }
   }
 
-  /* ── Left ─────────────────────────────── */
+  /* ── Left ────────────────────────────── */
   .left {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-purple);
-    background: rgba(var(--rgb-purple-accent), 0.12);
-    border: 1px solid rgba(var(--rgb-purple-accent), 0.25);
-    border-radius: 100px;
-    padding: 0.35rem 0.9rem;
-    width: fit-content;
-  }
-
-  .title {
-    --fs: 3rem;
+  .ec-title {
+    --fs: 2.75rem;
     --lh: 1.2;
     --fw: 800;
     color: var(--color-text);
 
     @media (--mq-tablet) {
-      --fs: 2.5rem;
+      --fs: 2.25rem;
     }
 
     @media (--mq-phone) {
-      --fs: 2rem;
+      --fs: 1.875rem;
     }
   }
 
-  .subtitle {
+  .ec-subtitle {
     --fs: var(--font-size-md);
     color: var(--color-text-alt);
-    max-width: 40ch;
+    max-width: 42ch;
     line-height: 1.7;
 
     @media (--mq-phone) {
@@ -250,15 +272,26 @@ const plataformaUrl =
     }
   }
 
-  .cta-btn {
+  .cta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+
+    @media (--mq-phone) {
+      align-items: stretch;
+    }
+  }
+
+  .ec-cta-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
     background: var(--color-purple);
     color: var(--color-white);
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-sm);
     font-weight: 700;
-    padding: 0.9rem 1.75rem;
+    padding: 0.85rem 1.75rem;
     border-radius: 100px;
     border: none;
     cursor: pointer;
@@ -271,7 +304,7 @@ const plataformaUrl =
     &:hover {
       opacity: 0.88;
       transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(var(--rgb-purple-accent), 0.35);
+      box-shadow: 0 8px 28px rgba(var(--rgb-purple-accent), 0.3);
     }
 
     &:active {
@@ -281,22 +314,20 @@ const plataformaUrl =
     @media (--mq-phone) {
       width: 100%;
       justify-content: center;
-      font-size: var(--font-size-sm);
     }
   }
 
-  .cta-note {
+  .ec-cta-note {
     --fs: var(--font-size-xs);
     color: var(--color-text-alt);
-    opacity: 0.6;
-    margin-top: -0.5rem;
+    opacity: 0.55;
   }
 
-  /* ── Feature grid ─────────────────────── */
+  /* ── Feature grid ────────────────────── */
   .features {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
+    gap: 1rem;
 
     @media (--mq-phone) {
       grid-template-columns: 1fr;
@@ -305,36 +336,53 @@ const plataformaUrl =
 
   .feature-card {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    background: var(--color-bg-alt);
+    flex-direction: row;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--color-bg);
     border: 1px solid rgba(var(--rgb-text), 0.07);
     border-radius: 1.25rem;
-    padding: 1.5rem;
+    padding: 1.25rem;
     transition:
       border-color 0.25s var(--ease-standard),
-      transform 0.25s var(--ease-standard);
+      transform 0.25s var(--ease-standard),
+      box-shadow 0.25s var(--ease-standard);
 
     &:hover {
-      border-color: rgba(var(--rgb-purple-accent), 0.3);
-      transform: translateY(-3px);
+      border-color: rgba(var(--rgb-purple-accent), 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(var(--rgb-text), 0.06);
     }
   }
 
-  .feature-icon {
-    font-size: 1.75rem;
-    line-height: 1;
+  .feature-icon-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background: rgba(var(--rgb-purple-accent), 0.1);
+    color: var(--color-purple);
+    margin-top: 0.1rem;
+  }
+
+  .feature-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .feature-title {
     font-size: var(--font-size-sm);
     font-weight: 700;
     color: var(--color-text);
-    margin-bottom: 0.25rem;
+    line-height: 1.3;
   }
 
   .feature-desc {
-    font-size: var(--font-size-xs);
+    --fs: var(--font-size-xs);
     color: var(--color-text-alt);
     line-height: 1.6;
   }
