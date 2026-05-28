@@ -1,5 +1,6 @@
 import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import { requireRole } from '../middleware/rbacMiddleware.js';
 import db from '../config/db.js';
 
 const router = express.Router();
@@ -219,7 +220,7 @@ router.get('/ml/sessions/me', verifyToken, async (req, res) => {
  * Returns the current nightly retraining schedule from MODELO.
  * Readable by the PLATAFORMA admin dashboard without a UI restart.
  */
-router.get('/ml/scheduler-config', verifyToken, async (req, res) => {
+router.get('/ml/scheduler-config', verifyToken, requireRole([1]), async (req, res) => {
     try {
         const r = await fetch(`${MODELO_URL}/scheduler`, {
             signal: AbortSignal.timeout(5_000),
@@ -237,7 +238,7 @@ router.get('/ml/scheduler-config', verifyToken, async (req, res) => {
  * Reschedules or enables/disables nightly retraining.
  * Body: { enabled: boolean, hour: number (0-23), minute?: number (0-59) }
  */
-router.put('/ml/scheduler-config', verifyToken, async (req, res) => {
+router.put('/ml/scheduler-config', verifyToken, requireRole([1]), async (req, res) => {
     try {
         const r = await fetch(`${MODELO_URL}/scheduler`, {
             method: 'PUT',

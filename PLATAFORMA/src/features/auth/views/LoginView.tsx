@@ -65,6 +65,8 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 const completeAction = () => {
                     if (userRole === 1) {
                         navigate('/dashboard');
+                    } else if (userRole === 3) {
+                        navigate('/empresa/dashboard');
                     } else {
                         navigate('/', { state: { openForm: true } });
                     }
