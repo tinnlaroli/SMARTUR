@@ -133,7 +133,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SMARTUR Recommender API v2", version="2.1", lifespan=lifespan)
 
-_CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+_CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
