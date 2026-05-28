@@ -139,7 +139,7 @@ services:
     container_name: smartur-landing
     restart: unless-stopped
     environment:
-      PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}/
+      PUBLIC_TOURIST_APP_URL: https://smartur.duckdns.org/
     depends_on:
       - plataforma
     networks:

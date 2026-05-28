@@ -511,7 +511,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   const closeBtn = document.getElementById('rem-close');
 
   const plataformaUrl = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl
-    || window.location.origin;
+    || 'https://smartur.duckdns.org';
 
   /* ── Password toggle ─── */
   document.querySelectorAll('.rem-eye-btn').forEach((btn) => {
