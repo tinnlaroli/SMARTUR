@@ -2,9 +2,9 @@ import { api } from '../../../shared/api/axiosClient';
 import type { POI, POIResponse, CreatePOIDTO, UpdatePOIDTO } from '../types/types';
 
 export const poiApi = {
-    findAll: async (page: number = 1, limit: number = 50): Promise<POIResponse> => {
+    findAll: async (page: number = 1, limit: number = 50, search?: string): Promise<POIResponse> => {
         const response = await api.get('/points-of-interest', {
-            params: { page, limit },
+            params: { page, limit, search: search || undefined },
         });
         return response.data;
     },

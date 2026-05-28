@@ -9,15 +9,16 @@ export function useActivities() {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const search = searchParams.get('search') || '';
 
     const fetchActivities = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await activityApi.findAll(page, limit);
+            const data = await activityApi.findAll(page, limit, search);
             setActivities(data.touristActivities || []);
             setTotalPages(data.totalPages);
         } catch (error: any) {
@@ -25,7 +26,7 @@ export function useActivities() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit]);
+    }, [page, limit, search]);
 
     useEffect(() => {
         fetchActivities();
@@ -70,5 +71,14 @@ export function useActivities() {
         }
     };
 
-    return { activities, isLoading, totalPages, createActivity, updateActivity, deleteActivity, fetchActivities };
+    const setSearch = (term: string) => {
+        setSearchParams((prev) => {
+            if (term) prev.set('search', term);
+            else prev.delete('search');
+            prev.set('page', '1');
+            return prev;
+        });
+    };
+
+    return { activities, isLoading, totalPages, search, setSearch, createActivity, updateActivity, deleteActivity, fetchActivities };
 }

@@ -108,6 +108,7 @@ export type DashboardModules = {
         title: string;
         subtitle: string;
         empty: string;
+        searchPlaceholder: string;
         colOrder: string;
         colCompany: string;
         colProduction: string;
@@ -135,6 +136,7 @@ export type DashboardModules = {
         title: string;
         subtitle: string;
         empty: string;
+        searchPlaceholder: string;
         colName: string;
         colDescription: string;
         colType: string;
@@ -554,6 +556,7 @@ const es: DashboardModules = {
         title: 'Actividades turísticas',
         subtitle: 'Impacto social y ambiental por actividad económica',
         empty: 'No hay actividades registradas',
+        searchPlaceholder: 'Buscar por empresa…',
         colOrder: 'Orden',
         colCompany: 'Empresa',
         colProduction: 'Producción',
@@ -581,6 +584,7 @@ const es: DashboardModules = {
         title: 'Puntos de interés',
         subtitle: 'Lugares turísticos y su nivel de sostenibilidad',
         empty: 'No hay POI registrados',
+        searchPlaceholder: 'Buscar POI…',
         colName: 'Nombre',
         colDescription: 'Descripción',
         colType: 'Tipo',
@@ -1015,6 +1019,7 @@ const en: DashboardModules = {
         title: 'Tourism activities',
         subtitle: 'Social and environmental impact by economic activity',
         empty: 'No activities registered',
+        searchPlaceholder: 'Search by company…',
         colOrder: 'Order',
         colCompany: 'Company',
         colProduction: 'Production',
@@ -1042,6 +1047,7 @@ const en: DashboardModules = {
         title: 'Points of interest',
         subtitle: 'Tourist sites and sustainability level',
         empty: 'No POIs registered',
+        searchPlaceholder: 'Search POI…',
         colName: 'Name',
         colDescription: 'Description',
         colType: 'Type',
@@ -1476,6 +1482,7 @@ const fr: DashboardModules = {
         title: 'Activités touristiques',
         subtitle: 'Impact social et environnemental par activité',
         empty: 'Aucune activité enregistrée',
+        searchPlaceholder: 'Rechercher par entreprise…',
         colOrder: 'Ordre',
         colCompany: 'Entreprise',
         colProduction: 'Production',
@@ -1503,6 +1510,7 @@ const fr: DashboardModules = {
         title: 'Points d’intérêt',
         subtitle: 'Sites touristiques et niveau de durabilité',
         empty: 'Aucun POI enregistré',
+        searchPlaceholder: 'Rechercher un POI…',
         colName: 'Nom',
         colDescription: 'Description',
         colType: 'Type',

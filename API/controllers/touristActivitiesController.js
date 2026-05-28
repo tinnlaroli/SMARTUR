@@ -6,11 +6,13 @@ export class TouristActivitiesController {
             const page = parseInt(req.query.page) || 1;
             const limit = Math.min(parseInt(req.query.limit) || 50, 100);
             const id_company = req.query.id_company ? parseInt(req.query.id_company) : null;
+            const search = String(req.query.search || '').trim();
 
             const result = await TouristActivitiesModel.findAllTouristActivities(
                 page,
                 limit,
-                id_company
+                id_company,
+                search
             );
 
             res.json({

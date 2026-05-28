@@ -9,15 +9,16 @@ export function usePOI() {
     const [points, setPoints] = useState<POI[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const search = searchParams.get('search') || '';
 
     const fetchPoints = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await poiApi.findAll(page, limit);
+            const data = await poiApi.findAll(page, limit, search);
             setPoints(data.points || []);
             setTotalPages(data.totalPages);
         } catch (error: any) {
@@ -25,7 +26,7 @@ export function usePOI() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit]);
+    }, [page, limit, search]);
 
     useEffect(() => {
         fetchPoints();
@@ -67,5 +68,14 @@ export function usePOI() {
         }
     };
 
-    return { points, isLoading, totalPages, createPoint, updatePoint, deletePoint, fetchPoints };
+    const setSearch = (term: string) => {
+        setSearchParams((prev) => {
+            if (term) prev.set('search', term);
+            else prev.delete('search');
+            prev.set('page', '1');
+            return prev;
+        });
+    };
+
+    return { points, isLoading, totalPages, search, setSearch, createPoint, updatePoint, deletePoint, fetchPoints };
 }

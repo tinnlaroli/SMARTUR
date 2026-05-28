@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { usePOI } from '../hooks/usePOI';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
+import SearchInput from '../../users/components/SearchInput';
 import { Star, Leaf, Tag, Plus } from 'lucide-react';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import { SelectionBar } from '../../../components/ui/SelectionBar';
@@ -34,10 +35,11 @@ import type { POI } from '../types/types';
 export const POIPage = () => {
     const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
-    const { points, isLoading, totalPages, createPoint, updatePoint, deletePoint } = usePOI();
+    const { points, isLoading, totalPages, search: urlSearch, setSearch, createPoint, updatePoint, deletePoint } = usePOI();
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const [searchTerm, setSearchTerm] = useState(urlSearch);
     const [sort, setSort] = useState<SortState | null>(null);
     const [sustainableFilter, setSustainableFilter] = useState('');
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
@@ -47,6 +49,12 @@ export const POIPage = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editPOI, setEditPOI] = useState<POI | null>(null);
     const { confirm, modal: confirmModal } = useConfirm();
+
+    useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
+    useEffect(() => {
+        const t = setTimeout(() => { if (searchTerm !== urlSearch) setSearch(searchTerm); }, 500);
+        return () => clearTimeout(t);
+    }, [searchTerm, urlSearch, setSearch]);
 
     const toggleId = (id: number) =>
         setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -104,7 +112,8 @@ export const POIPage = () => {
                     onEdit={handleEditSelected}
                     onClear={() => setSelectedIds([])}
                 />
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.poi.searchPlaceholder} />
                     <button
                         onClick={() => setIsCreateOpen(true)}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"

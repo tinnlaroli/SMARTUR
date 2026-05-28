@@ -2,9 +2,9 @@ import { api } from '../../../shared/api/axiosClient';
 import type { Activity, ActivityResponse, CreateActivityDTO, UpdateActivityDTO } from '../types/types';
 
 export const activityApi = {
-    findAll: async (page: number = 1, limit: number = 50): Promise<ActivityResponse> => {
+    findAll: async (page: number = 1, limit: number = 50, search?: string): Promise<ActivityResponse> => {
         const response = await api.get('/tourist_activities', {
-            params: { page, limit },
+            params: { page, limit, search: search || undefined },
         });
         return response.data;
     },

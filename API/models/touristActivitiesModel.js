@@ -1,38 +1,44 @@
 import pool from '../config/db.js';
 
 class TouristActivities {
-    static async findAllTouristActivities(page = 1, limit = 50, id_company = null) {
+    static async findAllTouristActivities(page = 1, limit = 50, id_company = null, search = '') {
         const offset = (page - 1) * limit;
 
         const values = [];
         const conditions = [];
         let index = 1;
 
-        conditions.push(`is_active = TRUE`);
+        conditions.push(`ta.is_active = TRUE`);
 
         if (id_company !== null) {
-            conditions.push(`id_company = $${index}`);
+            conditions.push(`ta.id_company = $${index}`);
             values.push(id_company);
             index++;
         }
 
+        if (search) {
+            conditions.push(`c.name ILIKE $${index}`);
+            values.push(`%${search}%`);
+            index++;
+        }
+
+        const joinClause = search ? `JOIN company c ON c.id_company = ta.id_company` : '';
+        const fromClause = search ? `tourist_activities ta ${joinClause}` : `tourist_activities ta`;
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-        // Contar total con filtros
         const countQuery = await pool.query(
-            `SELECT COUNT(*) FROM tourist_activities ${whereClause}`,
+            `SELECT COUNT(*) FROM ${fromClause} ${whereClause}`,
             values
         );
 
         const totalRecords = parseInt(countQuery.rows[0].count);
         const totalPages = Math.ceil(totalRecords / limit);
 
-        // Obtener datos paginados
         const dataQuery = await pool.query(
-            `SELECT id_activity, id_company, production_value, environmental_impact, social_impact
-             FROM tourist_activities
+            `SELECT ta.id_activity, ta.id_company, ta.production_value, ta.environmental_impact, ta.social_impact
+             FROM ${fromClause}
              ${whereClause}
-             ORDER BY id_activity
+             ORDER BY ta.id_activity
              LIMIT $${index}
              OFFSET $${index + 1}`,
             [...values, limit, offset]

@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useActivities } from '../hooks/useActivities';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
+import SearchInput from '../../users/components/SearchInput';
 import { Activity, DollarSign, Plus } from 'lucide-react';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import { SelectionBar } from '../../../components/ui/SelectionBar';
@@ -57,10 +58,11 @@ const ImpactBadge = ({
 export const ActivitiesPage = () => {
     const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
-    const { activities, isLoading, totalPages, createActivity, updateActivity, deleteActivity } = useActivities();
+    const { activities, isLoading, totalPages, search: urlSearch, setSearch, createActivity, updateActivity, deleteActivity } = useActivities();
     const [searchParams, setSearchParams] = useSearchParams();
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
+    const [searchTerm, setSearchTerm] = useState(urlSearch);
     const [sort, setSort] = useState<SortState | null>(null);
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
     const displayData = useMemo(() => sortRows(activities, sort), [activities, sort]);
@@ -69,6 +71,12 @@ export const ActivitiesPage = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editActivity, setEditActivity] = useState<ActivityType | null>(null);
     const { confirm, modal: confirmModal } = useConfirm();
+
+    useEffect(() => { if (urlSearch !== searchTerm) setSearchTerm(urlSearch); }, [urlSearch]);
+    useEffect(() => {
+        const t = setTimeout(() => { if (searchTerm !== urlSearch) setSearch(searchTerm); }, 500);
+        return () => clearTimeout(t);
+    }, [searchTerm, urlSearch, setSearch]);
 
     const [companies, setCompanies] = useState<Company[]>([]);
     useEffect(() => {
@@ -133,7 +141,8 @@ export const ActivitiesPage = () => {
                     onEdit={handleEditSelected}
                     onClear={() => setSelectedIds([])}
                 />
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-2">
+                    <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.activities.searchPlaceholder} />
                     <button
                         onClick={() => setIsCreateOpen(true)}
                         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
