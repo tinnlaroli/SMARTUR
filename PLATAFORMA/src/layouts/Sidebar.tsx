@@ -307,13 +307,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 type="button"
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
-                className="fixed z-[150] hidden -translate-y-1/2 items-center justify-center rounded-full border p-1 shadow-md transition-all duration-300 hover:scale-110 md:flex"
+                className="fixed z-[150] hidden items-center justify-center rounded-full border p-1 shadow-md transition-all duration-300 hover:scale-110 md:flex"
                 style={{
                     background: 'var(--color-bg)',
                     borderColor: 'var(--color-border)',
                     color: 'var(--color-text-alt)',
-                    left: isCollapsed ? '68px' : '252px',
-                    top: '32px',
+                    left: isCollapsed ? '61px' : '245px',
+                    top: '0',
                 }}
             >
                 {isCollapsed
