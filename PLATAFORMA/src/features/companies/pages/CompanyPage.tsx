@@ -7,7 +7,6 @@ import CompanyDetailModal from '../components/CompanyDetailModal';
 import CompanyTable from '../components/CompanyTable';
 import SearchInput from '../components/SearchInput';
 import { Building2, Plus, AlertCircle } from 'lucide-react';
-import type { CompanyStatus } from '../types/types';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -59,10 +58,6 @@ export const CompanyPage = () => {
 
     const toggleCompany = (id: number) =>
         setSelectedCompanies((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
-
-    const handleUpdateStatus = async (id: number, status: CompanyStatus) => {
-        await updateCompany(id, { status });
-    };
 
     const handleDeleteSelected = async () => {
         const ok = await confirm({
@@ -144,7 +139,6 @@ export const CompanyPage = () => {
                         onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
                         sector={sector}
                         setSector={setSector}
-                        onUpdateStatus={handleUpdateStatus}
                     />
                 )}
             </div>
