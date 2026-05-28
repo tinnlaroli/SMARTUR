@@ -100,27 +100,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 >
                     <AnimatePresence mode="wait">
                         {isCollapsed ? (
-                            <motion.img
-                                key="icon"
-                                src="/image.png"
-                                alt="Smartur"
-                                initial={{ opacity: 0, scale: 0.7 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.7 }}
-                                transition={{ duration: 0.2 }}
-                                className="size-9 object-contain"
-                            />
+                            <a key="icon-link" href="/" className="shrink-0">
+                                <motion.img
+                                    src="/image.png"
+                                    alt="Smartur"
+                                    initial={{ opacity: 0, scale: 0.7 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.7 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="size-9 object-contain"
+                                />
+                            </a>
                         ) : (
-                            <motion.img
-                                key="logo"
-                                src="/smartur.png"
-                                alt="Smartur"
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="h-20 w-auto object-contain"
-                            />
+                            <a key="logo-link" href="/" className="shrink-0">
+                                <motion.img
+                                    src="/smartur.png"
+                                    alt="Smartur"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="h-20 w-auto object-contain"
+                                />
+                            </a>
                         )}
                     </AnimatePresence>
 
@@ -129,12 +131,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         type="button"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
-                        className={`absolute -right-3.5 top-1/2 z-10 hidden -translate-y-1/2 items-center justify-center rounded-full border p-1 shadow-md transition-colors hover:scale-110 md:flex`}
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                        className={`absolute -right-4 top-1/2 z-50 hidden -translate-y-1/2 items-center justify-center rounded-full border-2 p-1.5 shadow-lg transition-all hover:scale-110 hover:shadow-xl md:flex`}
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-purple)', color: 'var(--color-purple)' }}
                     >
                         {isCollapsed
-                            ? <ChevronRight className="size-3.5" />
-                            : <ChevronLeft className="size-3.5" />}
+                            ? <ChevronRight className="size-4" />
+                            : <ChevronLeft className="size-4" />}
                     </button>
 
                     {/* close button — mobile */}
