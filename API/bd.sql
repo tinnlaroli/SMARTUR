@@ -261,7 +261,7 @@ CREATE TABLE evaluation_detail (
     id_detail SERIAL PRIMARY KEY,
     id_evaluation INTEGER REFERENCES service_evaluation(id_evaluation),
     id_criterion INTEGER REFERENCES evaluation_criterion(id_criterion),
-    assigned_score INTEGER CHECK (assigned_score BETWEEN 0 AND 4),
+    assigned_score INTEGER CHECK (assigned_score BETWEEN 0 AND 10),
     id_selected_subcriterion INTEGER REFERENCES evaluation_subcriterion(id_subcriterion),
     observations TEXT,
     is_active BOOLEAN DEFAULT TRUE,
