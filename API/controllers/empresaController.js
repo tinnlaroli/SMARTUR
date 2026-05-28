@@ -50,83 +50,46 @@ class EmpresaController {
             return res.status(400).json({ message: err.message });
         }
 
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
+        const trimmedEmail = email.trim().toLowerCase();
 
-            // Verificar email único
-            const existing = await client.query(
+        try {
+            // Verificar email único (en ambas tablas)
+            const existingUser = await pool.query(
                 'SELECT user_id FROM "user" WHERE LOWER(email) = LOWER($1)',
-                [email.trim()],
+                [trimmedEmail],
             );
-            if (existing.rowCount > 0) {
-                await client.query('ROLLBACK');
+            if (existingUser.rowCount > 0) {
                 return res.status(409).json({ message: 'El email ya está registrado.' });
             }
 
-            // Crear empresa con status=pending
-            const companyResult = await client.query(
-                `INSERT INTO company (name, phone, id_sector, id_location, status)
-                 VALUES ($1, $2, $3, $4, 'pending')
-                 RETURNING id_company`,
-                [companyName.trim(), phone ?? null, id_sector, id_location ?? null],
+            const existingPending = await pool.query(
+                'SELECT id FROM pending_registration WHERE LOWER(email) = LOWER($1)',
+                [trimmedEmail],
             );
-            const id_company = companyResult.rows[0].id_company;
+            if (existingPending.rowCount > 0) {
+                await pool.query('DELETE FROM pending_registration WHERE LOWER(email) = LOWER($1)', [trimmedEmail]);
+            }
 
-            // Crear usuario role_id=3 vinculado a la empresa
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-            // Generar token de verificación de email (link + OTP)
-            const rawToken = crypto.randomBytes(32).toString('hex');
-            const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-            const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
             const otpHash = crypto.createHash('sha256').update(otpCode).digest('hex');
-            const tokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
+            const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-            const userResult = await client.query(
-                `INSERT INTO "user" (name, email, password, role_id, id_company, is_active,
-                                     email_verified, email_verification_token, email_verification_otp, email_verification_expires)
-                 VALUES ($1, $2, $3, 3, $4, TRUE, FALSE, $5, $6, $7)
-                 RETURNING user_id, name, email, role_id`,
-                [name.trim(), email.trim().toLowerCase(), hashedPassword, id_company, tokenHash, otpHash, tokenExpires],
-            );
-            const user = userResult.rows[0];
-
-            // Actualizar owner_user_id en la empresa
-            await client.query(
-                'UPDATE company SET owner_user_id = $1 WHERE id_company = $2',
-                [user.user_id, id_company],
+            await pool.query(
+                `INSERT INTO pending_registration (email, name, password, company_name, phone, id_sector, id_location, otp_hash, otp_expires)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                [trimmedEmail, name.trim(), hashedPassword, companyName.trim(), phone ?? null, id_sector, id_location ?? null, otpHash, otpExpires],
             );
 
-            await client.query('COMMIT');
-
-            // Enviar email de confirmación con OTP (fire-and-forget)
-            sendRegistrationConfirmation(email.trim(), { name: name.trim(), token: rawToken, otp: otpCode })
+            sendRegistrationConfirmation(trimmedEmail, { name: name.trim(), otp: otpCode })
                 .catch(err => console.error('[registerEmpresa] fallo al enviar email:', err.message));
 
-            const token = jwt.sign(
-                { id: user.user_id, email: user.email, role_id: user.role_id, id_company },
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' },
-            );
-
             return res.status(201).json({
-                message: 'Empresa registrada. Revisa tu correo para verificar tu email.',
-                token,
-                user: {
-                    id: user.user_id,
-                    name: user.name,
-                    email: user.email,
-                    role_id: user.role_id,
-                    id_company,
-                },
+                message: 'OTP enviado al correo. Verifica tu email para completar el registro.',
             });
         } catch (error) {
-            await client.query('ROLLBACK');
             console.error('Error en registerEmpresa:', error);
             return res.status(500).json({ message: 'Error del servidor.', error: error.message });
-        } finally {
-            client.release();
         }
     }
 
@@ -252,7 +215,7 @@ class EmpresaController {
 
     /**
      * POST /api/v2/auth/verify-email-otp
-     * Verifica el email mediante código OTP de 6 dígitos.
+     * Verifica el OTP y, si es válido, crea la empresa y el usuario.
      */
     static async verifyEmailOTP(req, res) {
         const { email, otp } = req.body;
@@ -260,44 +223,86 @@ class EmpresaController {
             return res.status(400).json({ message: 'Email y OTP requeridos.' });
         }
 
+        const trimmedEmail = email.trim().toLowerCase();
         const otpHash = crypto.createHash('sha256').update(otp.toString()).digest('hex');
 
+        const client = await pool.connect();
         try {
-            const result = await pool.query(
-                `SELECT user_id, email_verified, email_verification_expires
-                   FROM "user"
-                  WHERE LOWER(email) = LOWER($1) AND email_verification_otp = $2`,
-                [email.trim(), otpHash],
+            await client.query('BEGIN');
+
+            const pendingResult = await client.query(
+                `SELECT * FROM pending_registration
+                  WHERE LOWER(email) = LOWER($1) AND otp_hash = $2`,
+                [trimmedEmail, otpHash],
             );
 
-            if (result.rowCount === 0) {
+            if (pendingResult.rowCount === 0) {
+                await client.query('ROLLBACK');
                 return res.status(400).json({ message: 'OTP inválido.' });
             }
 
-            const user = result.rows[0];
+            const pending = pendingResult.rows[0];
 
-            if (user.email_verified) {
-                return res.json({ message: 'El email ya está verificado.', already_verified: true });
-            }
-
-            if (new Date() > new Date(user.email_verification_expires)) {
+            if (new Date() > new Date(pending.otp_expires)) {
+                await client.query('ROLLBACK');
                 return res.status(410).json({ message: 'El código OTP ha expirado. Solicita uno nuevo.' });
             }
 
-            await pool.query(
-                `UPDATE "user"
-                    SET email_verified = TRUE,
-                        email_verification_token = NULL,
-                        email_verification_otp = NULL,
-                        email_verification_expires = NULL
-                  WHERE user_id = $1`,
-                [user.user_id],
+            // Crear empresa con status=pending
+            const companyResult = await client.query(
+                `INSERT INTO company (name, phone, id_sector, id_location, status)
+                 VALUES ($1, $2, $3, $4, 'pending')
+                 RETURNING id_company`,
+                [pending.company_name, pending.phone, pending.id_sector, pending.id_location],
+            );
+            const id_company = companyResult.rows[0].id_company;
+
+            // Crear usuario role_id=3 vinculado a la empresa
+            const userResult = await client.query(
+                `INSERT INTO "user" (name, email, password, role_id, id_company, is_active, email_verified)
+                 VALUES ($1, $2, $3, 3, $4, TRUE, TRUE)
+                 RETURNING user_id, name, email, role_id, id_company`,
+                [pending.name, pending.email, pending.password, id_company],
+            );
+            const user = userResult.rows[0];
+
+            // Actualizar owner_user_id en la empresa
+            await client.query(
+                'UPDATE company SET owner_user_id = $1 WHERE id_company = $2',
+                [user.user_id, id_company],
             );
 
-            return res.json({ message: 'Email verificado correctamente.' });
+            // Eliminar registro pendiente
+            await client.query(
+                'DELETE FROM pending_registration WHERE id = $1',
+                [pending.id],
+            );
+
+            await client.query('COMMIT');
+
+            const token = jwt.sign(
+                { id: user.user_id, email: user.email, role_id: user.role_id, id_company },
+                process.env.JWT_SECRET,
+                { expiresIn: '24h' },
+            );
+
+            return res.status(201).json({
+                message: 'Email verificado. Empresa registrada correctamente.',
+                token,
+                user: {
+                    id: user.user_id,
+                    name: user.name,
+                    email: user.email,
+                    role_id: user.role_id,
+                    id_company,
+                },
+            });
         } catch (error) {
+            await client.query('ROLLBACK');
             console.error('Error en verifyEmailOTP:', error);
             return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+        } finally {
+            client.release();
         }
     }
 

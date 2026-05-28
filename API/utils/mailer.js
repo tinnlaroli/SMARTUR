@@ -235,22 +235,18 @@ export async function sendEmpresaSuspendedEmail(to, { companyName }) {
     });
 }
 
-export async function sendRegistrationConfirmation(to, { name, token, otp }) {
-    const verifyUrl = `${process.env.API_URL || 'http://2.24.112.25:4000/api/v2'}/auth/verify-email/${token}`;
-
+export async function sendRegistrationConfirmation(to, { name, otp }) {
     const content = `
       ${heading(`Hola ${name}, confirma tu correo`)}
       ${paragraph('Gracias por registrar tu empresa en SMARTUR. Usa el siguiente código para verificar tu correo electrónico:')}
       <div style="background:#f3f0ff;border-radius:12px;padding:24px;text-align:center;margin:24px 0;font-size:32px;font-weight:700;letter-spacing:8px;color:#6d28d9;font-family:monospace">${otp}</div>
-      ${paragraph('O haz clic en el botón:')}
-      ${ctaButton(verifyUrl, 'Verificar mi correo')}
-      ${paragraph('Este código expira en 48 horas. Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
+      ${paragraph('Este código expira en 10 minutos. Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
 
     await deliver({
         to,
         subject: 'Confirma tu correo — SMARTUR',
         title: 'Verificación de correo',
-        text: `Confirma tu correo\n\nHola ${name}, tu código de verificación es: ${otp}\n\nO haz clic en el siguiente enlace:\n${verifyUrl}\n\nSMARTUR`,
+        text: `Confirma tu correo\n\nHola ${name}, tu código de verificación es: ${otp}\n\nSMARTUR`,
         html: content,
         bulk: false,
     });

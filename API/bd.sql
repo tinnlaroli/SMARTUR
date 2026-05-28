@@ -301,7 +301,25 @@ CREATE TABLE password_reset_tokens (
 );
 
 -- ============================================
--- A5: REGISTRO DE SEGURIDAD Y AUDITORÍA
+-- A5: REGISTRO TEMPORAL DE EMPRESAS (pre-OTP)
+-- Almacena datos del registro hasta que se verifique el OTP.
+-- ============================================
+CREATE TABLE pending_registration (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  company_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20),
+  id_sector INT NOT NULL,
+  id_location INT,
+  otp_hash VARCHAR(255) NOT NULL,
+  otp_expires TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- A6: REGISTRO DE SEGURIDAD Y AUDITORÍA
 -- Tabla para observabilidad de eventos de auth
 -- Usada por: services/monitoringService.js
 -- ============================================

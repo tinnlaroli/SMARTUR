@@ -176,6 +176,22 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
         sql: `ALTER TABLE "user"
               ADD COLUMN IF NOT EXISTS email_verification_otp VARCHAR(255) NULL;`,
     },
+    {
+        name: 'v09_pending_registration',
+        sql: `CREATE TABLE IF NOT EXISTS pending_registration (
+              id         SERIAL PRIMARY KEY,
+              email      VARCHAR(100) UNIQUE NOT NULL,
+              name       VARCHAR(50) NOT NULL,
+              password   VARCHAR(255) NOT NULL,
+              company_name VARCHAR(100) NOT NULL,
+              phone      VARCHAR(20),
+              id_sector  INT NOT NULL,
+              id_location INT,
+              otp_hash   VARCHAR(255) NOT NULL,
+              otp_expires TIMESTAMP NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );`,
+    },
 ];
 
 export async function runMigrations() {
