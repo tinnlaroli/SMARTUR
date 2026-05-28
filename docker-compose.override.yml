@@ -49,7 +49,3 @@ services:
       - ./MODELO:/app
 
   nginx:
-    ports:
-      - "443:443"
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro

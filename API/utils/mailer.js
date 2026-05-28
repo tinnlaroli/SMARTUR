@@ -236,7 +236,7 @@ export async function sendEmpresaSuspendedEmail(to, { companyName }) {
 }
 
 export async function sendRegistrationConfirmation(to, { name, token, otp }) {
-    const verifyUrl = `${process.env.API_URL || 'https://smartur.duckdns.org/api/v2'}/auth/verify-email/${token}`;
+    const verifyUrl = `${process.env.API_URL || 'http://2.24.112.25:4000/api/v2'}/auth/verify-email/${token}`;
 
     const content = `
       ${heading(`Hola ${name}, confirma tu correo`)}

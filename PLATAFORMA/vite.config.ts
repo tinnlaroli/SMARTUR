@@ -7,7 +7,6 @@ export default defineConfig({
   base: '/',
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ['smartur.duckdns.org'],
     proxy: {
       '/api/v2': {
         target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:4000',

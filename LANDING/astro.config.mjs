@@ -5,14 +5,9 @@ import tailwind from "@astrojs/tailwind";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://smartur.duckdns.org",
+  site: "http://localhost",
   base: "/",
   integrations: [react(), tailwind()],
-  vite: {
-    server: {
-      allowedHosts: ['smartur.duckdns.org'],
-    },
-  },
   scopedStyleStrategy: "where",
   i18n: {
     defaultLocale: "es",
