@@ -131,12 +131,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         type="button"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
-                        className={`absolute -right-4 top-1/2 z-50 hidden -translate-y-1/2 items-center justify-center rounded-full border-2 p-1.5 shadow-lg transition-all hover:scale-110 hover:shadow-xl md:flex`}
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-purple)', color: 'var(--color-purple)' }}
+                        className="absolute -right-3.5 top-1/2 z-[150] hidden -translate-y-1/2 items-center justify-center rounded-full border p-1 shadow-md transition-colors hover:scale-110 md:flex"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                     >
                         {isCollapsed
-                            ? <ChevronRight className="size-4" />
-                            : <ChevronLeft className="size-4" />}
+                            ? <ChevronRight className="size-3.5" />
+                            : <ChevronLeft className="size-3.5" />}
                     </button>
 
                     {/* close button — mobile */}
