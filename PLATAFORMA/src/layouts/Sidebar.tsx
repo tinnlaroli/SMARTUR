@@ -313,7 +313,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     borderColor: 'var(--color-border)',
                     color: 'var(--color-text-alt)',
                     left: isCollapsed ? '61px' : '245px',
-                    top: '6px',
+                    top: '20px',
                 }}
             >
                 {isCollapsed
