@@ -7,6 +7,17 @@ import { sendRegistrationConfirmation } from '../utils/mailer.js';
 
 const SALT_ROUNDS = 10;
 
+async function assertNotSuspended(id_company, res) {
+    const r = await pool.query('SELECT status FROM company WHERE id_company = $1', [id_company]);
+    if (r.rows[0]?.status === 'suspended') {
+        res.status(403).json({
+            message: 'Tu empresa ha sido suspendida. Contacta al equipo SMARTUR para más información.',
+        });
+        return false;
+    }
+    return true;
+}
+
 /**
  * EmpresaController
  * Gestiona el portal B2B de empresas turísticas:
@@ -167,6 +178,7 @@ class EmpresaController {
         }
 
         try {
+            if (!await assertNotSuspended(id_company, res)) return;
             const setClauses = [];
             const values = [];
             let idx = 1;
@@ -409,6 +421,7 @@ class EmpresaController {
         }
 
         try {
+            if (!await assertNotSuspended(id_company, res)) return;
             let locationId = id_location ?? null;
             if (!locationId) {
                 const companyResult = await pool.query(
@@ -448,6 +461,7 @@ class EmpresaController {
         const { name, description, service_type, active, id_location } = req.body;
 
         try {
+            if (!await assertNotSuspended(id_company, res)) return;
             const check = await pool.query(
                 'SELECT id_service FROM tourist_service WHERE id_service=$1 AND id_company=$2',
                 [id, id_company],
@@ -493,6 +507,7 @@ class EmpresaController {
         const { id } = req.params;
 
         try {
+            if (!await assertNotSuspended(id_company, res)) return;
             const result = await pool.query(
                 `UPDATE tourist_service SET active=false
                  WHERE id_service=$1 AND id_company=$2 RETURNING id_service`,

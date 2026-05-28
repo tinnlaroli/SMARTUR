@@ -171,6 +171,7 @@ export function EmpresaLayout() {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         clearUser();
         openModal('login');
         navigate('/');

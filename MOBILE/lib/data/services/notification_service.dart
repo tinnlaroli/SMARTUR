@@ -70,16 +70,25 @@ class NotificationService {
   }
 
   /// Registra/actualiza el token en la API SMARTUR.
+  /// Reintenta hasta 3 veces con backoff exponencial (1s, 2s, 4s) ante fallos transitorios.
   static Future<void> _registerToken(String token, String platform) async {
-    try {
-      await ApiClient.post(
-        Uri.parse('${ApiConstants.baseUrl}/me/device-token'),
-        body: json.encode({'token': token, 'platform': platform}),
-      );
-      debugPrint('[FCM] Token registrado en API.');
-    } catch (e) {
-      debugPrint('[FCM] Error registrando token en API: $e');
+    const maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await ApiClient.post(
+          Uri.parse('${ApiConstants.baseUrl}/me/device-token'),
+          body: json.encode({'token': token, 'platform': platform}),
+        );
+        debugPrint('[FCM] Token registrado en API.');
+        return;
+      } catch (e) {
+        debugPrint('[FCM] Intento $attempt/$maxAttempts falló: $e');
+        if (attempt < maxAttempts) {
+          await Future.delayed(Duration(seconds: 1 << (attempt - 1)));
+        }
+      }
     }
+    debugPrint('[FCM] No se pudo registrar el token tras $maxAttempts intentos.');
   }
 
   /// Muestra un banner in-app cuando llega un mensaje en primer plano.
