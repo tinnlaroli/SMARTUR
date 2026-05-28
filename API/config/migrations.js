@@ -171,6 +171,11 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
             CREATE INDEX IF NOT EXISTS idx_post_reports_post ON post_reports (post_id);
             CREATE INDEX IF NOT EXISTS idx_post_reports_resolved ON post_reports (resolved, created_at DESC);`,
     },
+    {
+        name: 'v08_email_verification_otp',
+        sql: `ALTER TABLE "user"
+              ADD COLUMN IF NOT EXISTS email_verification_otp VARCHAR(255) NULL;`,
+    },
 ];
 
 export async function runMigrations() {
