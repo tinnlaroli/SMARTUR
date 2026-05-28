@@ -126,19 +126,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         )}
                     </AnimatePresence>
 
-                    {/* collapse button — desktop */}
-                    <button
-                        type="button"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
-                        className="absolute -right-3.5 top-1/2 z-[150] hidden -translate-y-1/2 items-center justify-center rounded-full border p-1 shadow-md transition-colors hover:scale-110 md:flex"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
-                    >
-                        {isCollapsed
-                            ? <ChevronRight className="size-3.5" />
-                            : <ChevronLeft className="size-3.5" />}
-                    </button>
-
                     {/* close button — mobile */}
                     <button
                         type="button"
@@ -314,6 +301,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     )}
                 </div>
             </aside>
+
+            {/* collapse button — desktop (outside aside to avoid stacking-context confinement) */}
+            <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
+                className="fixed z-[150] hidden -translate-y-1/2 items-center justify-center rounded-full border p-1 shadow-md transition-all duration-300 hover:scale-110 md:flex"
+                style={{
+                    background: 'var(--color-bg)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text-alt)',
+                    left: isCollapsed ? '68px' : '252px',
+                    top: '32px',
+                }}
+            >
+                {isCollapsed
+                    ? <ChevronRight className="size-3.5" />
+                    : <ChevronLeft className="size-3.5" />}
+            </button>
 
             {/* Legal modals */}
             {legalModal && (
