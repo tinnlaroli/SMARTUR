@@ -154,6 +154,7 @@ const authLimiter = rateLimit({
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
 app.use('/api/v2/auth/register-empresa', authLimiter);
+app.use('/api/v2/auth/verify-email-otp', authLimiter);
 app.use('/api/v2/auth/refresh', authLimiter);
 
 // ─────────────────────────────────────────────────────────────────────────────

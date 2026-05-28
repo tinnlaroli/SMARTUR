@@ -235,20 +235,22 @@ export async function sendEmpresaSuspendedEmail(to, { companyName }) {
     });
 }
 
-export async function sendRegistrationConfirmation(to, { name, token }) {
+export async function sendRegistrationConfirmation(to, { name, token, otp }) {
     const verifyUrl = `${process.env.API_URL || 'https://smartur.duckdns.org/api/v2'}/auth/verify-email/${token}`;
 
     const content = `
       ${heading(`Hola ${name}, confirma tu correo`)}
-      ${paragraph('Gracias por registrar tu empresa en SMARTUR. Solo falta un paso: haz clic en el botón para verificar tu dirección de correo electrónico.')}
+      ${paragraph('Gracias por registrar tu empresa en SMARTUR. Usa el siguiente código para verificar tu correo electrónico:')}
+      <div style="background:#f3f0ff;border-radius:12px;padding:24px;text-align:center;margin:24px 0;font-size:32px;font-weight:700;letter-spacing:8px;color:#6d28d9;font-family:monospace">${otp}</div>
+      ${paragraph('O haz clic en el botón:')}
       ${ctaButton(verifyUrl, 'Verificar mi correo')}
-      ${paragraph('Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
+      ${paragraph('Este código expira en 48 horas. Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
 
     await deliver({
         to,
         subject: 'Confirma tu correo — SMARTUR',
         title: 'Verificación de correo',
-        text: `Confirma tu correo\n\nHola ${name}, haz clic en el siguiente enlace para verificar tu correo:\n${verifyUrl}\n\nSMARTUR`,
+        text: `Confirma tu correo\n\nHola ${name}, tu código de verificación es: ${otp}\n\nO haz clic en el siguiente enlace:\n${verifyUrl}\n\nSMARTUR`,
         html: content,
         bulk: false,
     });

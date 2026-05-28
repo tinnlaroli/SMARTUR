@@ -14,6 +14,7 @@ const router = Router();
  * Crea empresa (status=pending) + usuario (role_id=3) y devuelve JWT.
  */
 router.post('/auth/register-empresa', EmpresaController.registerEmpresa);
+router.post('/auth/verify-email-otp', EmpresaController.verifyEmailOTP);
 
 // ── Empresa / Admin ────────────────────────────────────────────────────────────
 

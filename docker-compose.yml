@@ -134,12 +134,12 @@ services:
       context: ./LANDING
       dockerfile: Dockerfile
       args:
-        PUBLIC_TOURIST_APP_URL: https://smartur.duckdns.org/
+        PUBLIC_TOURIST_APP_URL: https://smartur.duckdns.org
         PUBLIC_API_URL: https://smartur.duckdns.org/api/v2
     container_name: smartur-landing
     restart: unless-stopped
     environment:
-      PUBLIC_TOURIST_APP_URL: https://smartur.duckdns.org/
+      PUBLIC_TOURIST_APP_URL: https://smartur.duckdns.org
     depends_on:
       - plataforma
     networks:

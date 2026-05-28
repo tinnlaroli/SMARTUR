@@ -129,7 +129,7 @@ const t = {
 }[lang];
 
 const plataformaUrl =
-  import.meta.env.PUBLIC_TOURIST_APP_URL || "https://smartur.duckdns.org";
+  (import.meta.env.PUBLIC_TOURIST_APP_URL || "https://smartur.duckdns.org").replace(/\/+$/, "");
 
 /* SVG icon map — stroke-based, matches Landing's icon aesthetic */
 const ICONS: Record<string, string> = {

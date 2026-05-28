@@ -22,6 +22,7 @@ CREATE TABLE "user" (
   birth_date DATE NULL,
   email_verified BOOLEAN DEFAULT FALSE,
   email_verification_token VARCHAR(255) NULL,
+  email_verification_otp VARCHAR(255) NULL,
   email_verification_expires TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -76,17 +76,19 @@ class EmpresaController {
             // Crear usuario role_id=3 vinculado a la empresa
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-            // Generar token de verificación de email
+            // Generar token de verificación de email (link + OTP)
             const rawToken = crypto.randomBytes(32).toString('hex');
             const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 dígitos
+            const otpHash = crypto.createHash('sha256').update(otpCode).digest('hex');
             const tokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
 
             const userResult = await client.query(
                 `INSERT INTO "user" (name, email, password, role_id, id_company, is_active,
-                                     email_verified, email_verification_token, email_verification_expires)
-                 VALUES ($1, $2, $3, 3, $4, TRUE, FALSE, $5, $6)
+                                     email_verified, email_verification_token, email_verification_otp, email_verification_expires)
+                 VALUES ($1, $2, $3, 3, $4, TRUE, FALSE, $5, $6, $7)
                  RETURNING user_id, name, email, role_id`,
-                [name.trim(), email.trim().toLowerCase(), hashedPassword, id_company, tokenHash, tokenExpires],
+                [name.trim(), email.trim().toLowerCase(), hashedPassword, id_company, tokenHash, otpHash, tokenExpires],
             );
             const user = userResult.rows[0];
 
@@ -98,8 +100,8 @@ class EmpresaController {
 
             await client.query('COMMIT');
 
-            // Enviar email de confirmación (fire-and-forget)
-            sendRegistrationConfirmation(email.trim(), { name: name.trim(), token: rawToken })
+            // Enviar email de confirmación con OTP (fire-and-forget)
+            sendRegistrationConfirmation(email.trim(), { name: name.trim(), token: rawToken, otp: otpCode })
                 .catch(err => console.error('[registerEmpresa] fallo al enviar email:', err.message));
 
             const token = jwt.sign(
@@ -235,6 +237,7 @@ class EmpresaController {
                 `UPDATE "user"
                     SET email_verified = TRUE,
                         email_verification_token = NULL,
+                        email_verification_otp = NULL,
                         email_verification_expires = NULL
                   WHERE user_id = $1`,
                 [user.user_id],
@@ -243,6 +246,57 @@ class EmpresaController {
             return res.json({ message: 'Email verificado correctamente.' });
         } catch (error) {
             console.error('Error en verifyEmail:', error);
+            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+        }
+    }
+
+    /**
+     * POST /api/v2/auth/verify-email-otp
+     * Verifica el email mediante código OTP de 6 dígitos.
+     */
+    static async verifyEmailOTP(req, res) {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email y OTP requeridos.' });
+        }
+
+        const otpHash = crypto.createHash('sha256').update(otp.toString()).digest('hex');
+
+        try {
+            const result = await pool.query(
+                `SELECT user_id, email_verified, email_verification_expires
+                   FROM "user"
+                  WHERE LOWER(email) = LOWER($1) AND email_verification_otp = $2`,
+                [email.trim(), otpHash],
+            );
+
+            if (result.rowCount === 0) {
+                return res.status(400).json({ message: 'OTP inválido.' });
+            }
+
+            const user = result.rows[0];
+
+            if (user.email_verified) {
+                return res.json({ message: 'El email ya está verificado.', already_verified: true });
+            }
+
+            if (new Date() > new Date(user.email_verification_expires)) {
+                return res.status(410).json({ message: 'El código OTP ha expirado. Solicita uno nuevo.' });
+            }
+
+            await pool.query(
+                `UPDATE "user"
+                    SET email_verified = TRUE,
+                        email_verification_token = NULL,
+                        email_verification_otp = NULL,
+                        email_verification_expires = NULL
+                  WHERE user_id = $1`,
+                [user.user_id],
+            );
+
+            return res.json({ message: 'Email verificado correctamente.' });
+        } catch (error) {
+            console.error('Error en verifyEmailOTP:', error);
             return res.status(500).json({ message: 'Error del servidor.', error: error.message });
         }
     }
