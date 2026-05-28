@@ -186,7 +186,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       </div>
       <h4 class="rem-success-title">{t["register.successTitle"]}</h4>
       <p class="rem-success-text">{t["register.successMessage"]}</p>
-      <a id="rem-portal-link" href="#" target="_blank" rel="noopener" class="rem-portal-btn">
+      <a id="rem-portal-link" href="#" class="rem-portal-btn">
         {t["register.portalLink"]}
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -656,9 +656,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         return;
       }
       try { if (json.token) localStorage.setItem('smartur_token', json.token); } catch (_) {}
-      link.href = plataformaUrl + '/empresa/dashboard';
       form.hidden = true;
       success.hidden = false;
+      /* redirect to portal with token in hash so PLATAFORMA can read it cross-origin */
+      var encUser = json.user ? btoa(JSON.stringify(json.user)) : '';
+      window.location.href = plataformaUrl + '/empresa/dashboard#token=' + encodeURIComponent(json.token) + '&user=' + encodeURIComponent(encUser);
     } catch (_) {
       showGlobalError(errConnection);
     } finally {
