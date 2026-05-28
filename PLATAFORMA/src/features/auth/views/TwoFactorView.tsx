@@ -179,7 +179,7 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={handlePaste}
                                 onFocus={(e) => e.target.select()}
-                                className={`h-14 w-12 rounded-lg border text-center text-xl font-bold transition-all duration-150 focus:outline-none ${index === 3 ? 'ml-2' : ''}`}
+                                className={`h-14 w-10 sm:w-12 rounded-lg border text-center text-xl font-bold transition-all duration-150 focus:outline-none ${index === 3 ? 'ml-1 sm:ml-2' : ''}`}
                                 style={{
                                     borderColor: 'var(--color-border)',
                                     background: 'var(--color-bg)',
