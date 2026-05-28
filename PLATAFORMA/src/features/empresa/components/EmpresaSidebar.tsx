@@ -284,7 +284,7 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
                     borderColor: 'var(--color-border)',
                     color: 'var(--color-text-alt)',
                     left: isCollapsed ? '61px' : '245px',
-                    top: '0',
+                    top: '6px',
                 }}
             >
                 {isCollapsed ? <ChevronRight className="size-3.5" /> : <ChevronLeft className="size-3.5" />}
