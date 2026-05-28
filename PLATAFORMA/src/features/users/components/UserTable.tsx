@@ -29,6 +29,8 @@ interface Props {
     onViewDetail: (id: number) => void;
     role: number | undefined;
     setRole: (roleId: number | undefined) => void;
+    isActive: string;
+    setIsActive: (value: string) => void;
 }
 
 const getInitials = (name?: string | null) =>
@@ -39,7 +41,7 @@ const getInitials = (name?: string | null) =>
         .map((part) => part.charAt(0).toUpperCase())
         .join('');
 
-export default function UserTable({ users, selectedUsers, onToggle, onViewDetail, role, setRole }: Props) {
+export default function UserTable({ users, selectedUsers, onToggle, onViewDetail, role, setRole, isActive, setIsActive }: Props) {
     const { lang } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals.users, [lang]);
 
@@ -95,7 +97,19 @@ export default function UserTable({ users, selectedUsers, onToggle, onViewDetail
                                     </DataTableHeaderSelect>
                                 </div>
                             </DataTableHeadCell>
-                            <DataTableHeadCell className="w-32">{mod.colStatus}</DataTableHeadCell>
+                            <DataTableHeadCell className="w-32">
+                                <div className="flex items-center gap-2">
+                                    <span>{mod.colStatus}</span>
+                                    <DataTableHeaderSelect
+                                        value={isActive}
+                                        onChange={(value) => setIsActive(value)}
+                                    >
+                                        <option value="true">{mod.active}</option>
+                                        <option value="false">{mod.inactive}</option>
+                                        <option value="all">{mod.filterAll}</option>
+                                    </DataTableHeaderSelect>
+                                </div>
+                            </DataTableHeadCell>
                             <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort} className="w-36">{mod.colRegistered}</SortableHeadCell>
                         </tr>
                     </DataTableHead>

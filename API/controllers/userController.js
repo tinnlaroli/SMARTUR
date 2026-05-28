@@ -36,8 +36,9 @@ class UserController {
 
       const search = req.query.search || "";
       const role = req.query.role ? parseInt(req.query.role) : null;
+      const is_active = req.query.is_active !== undefined ? req.query.is_active === 'true' : null;
 
-      const result = await User.findAll(page, limit, search, role);
+      const result = await User.findAll(page, limit, search, role, is_active);
 
       res.json({
         message: "Usuarios obtenidos exitosamente",

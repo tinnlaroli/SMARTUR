@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
@@ -165,6 +165,173 @@ const NotificationPanel = ({
     </motion.div>
 );
 
+/* ── Layout header ──────────────────────────────────────────────────── */
+const DashboardHeader = memo(function DashboardHeader({
+    copy, handleLogout, handleToggleNotifications, lang, notifOpen, notifWrapperRef,
+    notifications, onOpenSidebar, pathname, startTour, t, theme, toggleTheme, unreadCount, user, userRole,
+}: {
+    copy: ReturnType<typeof getDashboardText>;
+    handleLogout: () => void;
+    handleToggleNotifications: () => void;
+    lang: string;
+    notifOpen: boolean;
+    notifWrapperRef: React.RefObject<HTMLDivElement | null>;
+    notifications: ToastNotification[];
+    onOpenSidebar: () => void;
+    pathname: string;
+    startTour: () => void;
+    t: (key: string) => string;
+    theme: string;
+    toggleTheme: () => void;
+    unreadCount: number;
+    user: { name?: string } | null;
+    userRole: number;
+}) {
+    return (
+        <>
+            {/* ── Desktop header ── */}
+            <header
+                className="sticky top-0 z-[100] hidden h-16 items-center justify-between border-b px-6 backdrop-blur-md md:flex"
+                style={{
+                    borderColor: 'var(--color-border)',
+                    background: 'rgba(var(--rgb-bg), 0.75)',
+                }}
+            >
+                <Breadcrumb pathname={pathname} routeLabels={copy.layout.routes} />
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={startTour}
+                        title="Ver tour del dashboard"
+                        className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                        <HelpCircle className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
+                    </button>
+
+                    <button
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
+                        className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                        {theme === 'dark'
+                            ? <Sun className="size-[18px] text-amber-400" />
+                            : <Moon className="size-[18px] text-violet-400" />}
+                    </button>
+
+                    <div className="relative" ref={notifWrapperRef}>
+                        <button
+                            onClick={handleToggleNotifications}
+                            className="relative rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            title={copy.layout.notificationTitle}
+                        >
+                            <Bell className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
+                            {unreadCount > 0 && (
+                                <motion.span
+                                    animate={{ scale: [1, 1.3, 1] }}
+                                    transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
+                                    className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white"
+                                >
+                                    {Math.min(unreadCount, 9)}
+                                </motion.span>
+                            )}
+                        </button>
+
+                        <AnimatePresence>
+                            {notifOpen && (
+                                <NotificationPanel
+                                    clearLabel={copy.layout.clearAll}
+                                    emptyHint={copy.layout.notificationEmptyHint}
+                                    emptyTitle={copy.layout.notificationEmpty}
+                                    justNowLabel={copy.layout.justNow}
+                                    locale={copy.locale}
+                                    notifications={notifications}
+                                    recentLabel={copy.layout.recentLabel}
+                                    title={copy.layout.notificationTitle}
+                                    onClear={clearNotifications}
+                                />
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="mx-1 h-6 w-px" style={{ background: 'var(--color-border)' }} />
+
+                    <div
+                        className="flex items-center gap-2.5 rounded-xl border px-3 py-1.5 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                        style={{ borderColor: 'var(--color-border)' }}
+                    >
+                        <div
+                            className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white shadow-sm"
+                            style={{ background: 'var(--color-purple)' }}
+                        >
+                            {user ? getInitials(user.name) : 'U'}
+                        </div>
+                        <div className="leading-tight">
+                            <p className="text-sm font-semibold leading-none" style={{ color: 'var(--color-text)' }}>
+                                {user?.name || t('sidebar.user')}
+                            </p>
+                            <p className="mt-0.5 text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                                {userRole === 1 ? t('sidebar.admin') : t('sidebar.user')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handleLogout}
+                        title={t('header.logout')}
+                        className="rounded-xl p-2 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20"
+                    >
+                        <LogOut className="size-4" style={{ color: 'var(--color-pink)' }} />
+                    </button>
+                </div>
+            </header>
+
+            {/* ── Mobile header ── */}
+            <div
+                className="sticky top-0 z-30 flex h-14 items-center border-b px-4 backdrop-blur-sm md:hidden"
+                style={{
+                    borderColor: 'var(--color-border)',
+                    background: 'rgba(var(--rgb-bg), 0.85)',
+                }}
+            >
+                <button
+                    type="button"
+                    onClick={onOpenSidebar}
+                    className="-ml-1 rounded-xl p-2 nav-item-idle"
+                    aria-label={t('header.openMenu')}
+                >
+                    <Menu className="size-5" />
+                </button>
+
+                <span className="ml-3 text-base font-bold" style={{ color: 'var(--color-purple)' }}>
+                    Smartur
+                </span>
+
+                <div className="ml-auto flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={handleToggleNotifications}
+                        className="relative rounded-xl p-2 transition-colors nav-item-idle"
+                        aria-label={copy.layout.notificationTitle}
+                    >
+                        <Bell className="size-[18px]" />
+                        {unreadCount > 0 && (
+                            <span className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                                {Math.min(unreadCount, 9)}
+                            </span>
+                        )}
+                    </button>
+                    <div
+                        className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white shadow"
+                        style={{ background: 'var(--color-purple)' }}
+                    >
+                        {user ? getInitials(user.name) : 'U'}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+});
+
 /* ── Main layout ─────────────────────────────────────────────────────── */
 export default function AppLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -188,185 +355,53 @@ export default function AppLayout() {
     const { pathname } = useLocation();
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
-    const copy = getDashboardText(lang);
+    const copy = useMemo(() => getDashboardText(lang), [lang]);
     const { startTour } = useDashboardTour(lang, navigate);
 
     const userRole = user?.role_id || 2;
 
-    const handleToggleNotifications = () => {
+    const handleToggleNotifications = useCallback(() => {
         setNotifOpen((current) => {
             const next = !current;
             if (next) markAllAsRead();
             return next;
         });
-    };
+    }, [markAllAsRead]);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         clearUser();
         openModal('login');
         navigate('/');
-    };
+    }, [clearUser, openModal, navigate]);
+
+    const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
     return (
         
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
             <div className="flex min-w-0 flex-1 flex-col">
-
-                {/* ── Desktop header ── */}
-                <header
-                    className="sticky top-0 z-[100] hidden h-16 items-center justify-between border-b px-6 backdrop-blur-md md:flex"
-                    style={{
-                        borderColor: 'var(--color-border)',
-                        background: 'rgba(var(--rgb-bg), 0.75)',
-                    }}
-                >
-                    {/* Left: breadcrumb */}
-                    <Breadcrumb pathname={pathname} routeLabels={copy.layout.routes} />
-
-                    {/* Right: actions */}
-                    <div className="flex items-center gap-2">
-
-                        {/* Tour button */}
-                        <button
-                            onClick={startTour}
-                            title="Ver tour del dashboard"
-                            className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            <HelpCircle className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
-                        </button>
-
-                        {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            title={theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
-                            className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            {theme === 'dark'
-                                ? <Sun className="size-[18px] text-amber-400" />
-                                : <Moon className="size-[18px] text-violet-400" />}
-                        </button>
-
-                        {/* Notification bell */}
-                        <div className="relative" ref={notifWrapperRef}>
-                            <button
-                                onClick={handleToggleNotifications}
-                                className="relative rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                title={copy.layout.notificationTitle}
-                            >
-                                <Bell className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
-                                {unreadCount > 0 && (
-                                    <motion.span
-                                        animate={{ scale: [1, 1.3, 1] }}
-                                        transition={{ repeat: Infinity, repeatDelay: 3, duration: 0.4 }}
-                                        className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white"
-                                    >
-                                        {Math.min(unreadCount, 9)}
-                                    </motion.span>
-                                )}
-                            </button>
-
-                            <AnimatePresence>
-                                {notifOpen && (
-                                    <NotificationPanel
-                                        clearLabel={copy.layout.clearAll}
-                                        emptyHint={copy.layout.notificationEmptyHint}
-                                        emptyTitle={copy.layout.notificationEmpty}
-                                        justNowLabel={copy.layout.justNow}
-                                        locale={copy.locale}
-                                        notifications={notifications}
-                                        recentLabel={copy.layout.recentLabel}
-                                        title={copy.layout.notificationTitle}
-                                        onClear={clearNotifications}
-                                    />
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="mx-1 h-6 w-px" style={{ background: 'var(--color-border)' }} />
-
-                        {/* User pill */}
-                        <div
-                            className="flex items-center gap-2.5 rounded-xl border px-3 py-1.5 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
-                            style={{ borderColor: 'var(--color-border)' }}
-                        >
-                            <div
-                                className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white shadow-sm"
-                                style={{ background: 'var(--color-purple)' }}
-                            >
-                                {user ? getInitials(user.name) : 'U'}
-                            </div>
-                            <div className="leading-tight">
-                                <p className="text-sm font-semibold leading-none" style={{ color: 'var(--color-text)' }}>
-                                    {user?.name || t('sidebar.user')}
-                                </p>
-                                <p className="mt-0.5 text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                                    {userRole === 1 ? t('sidebar.admin') : t('sidebar.user')}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Logout */}
-                        <button
-                            onClick={handleLogout}
-                            title={t('header.logout')}
-                            className="rounded-xl p-2 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20"
-                        >
-                            <LogOut className="size-4" style={{ color: 'var(--color-pink)' }} />
-                        </button>
-                    </div>
-                </header>
-
-                {/* ── Mobile header ── */}
-                <div
-                    className="sticky top-0 z-30 flex h-14 items-center border-b px-4 backdrop-blur-sm md:hidden"
-                    style={{
-                        borderColor: 'var(--color-border)',
-                        background: 'rgba(var(--rgb-bg), 0.85)',
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => setSidebarOpen(true)}
-                        className="-ml-1 rounded-xl p-2 nav-item-idle"
-                        aria-label={t('header.openMenu')}
-                    >
-                        <Menu className="size-5" />
-                    </button>
-
-                    <span
-                        className="ml-3 text-base font-bold"
-                        style={{ color: 'var(--color-purple)' }}
-                    >
-                        Smartur
-                    </span>
-
-                    <div className="ml-auto flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={handleToggleNotifications}
-                            className="relative rounded-xl p-2 transition-colors nav-item-idle"
-                            aria-label={copy.layout.notificationTitle}
-                        >
-                            <Bell className="size-[18px]" />
-                            {unreadCount > 0 && (
-                                <span className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-                                    {Math.min(unreadCount, 9)}
-                                </span>
-                            )}
-                        </button>
-                        <div
-                            className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white shadow"
-                            style={{ background: 'var(--color-purple)' }}
-                        >
-                            {user ? getInitials(user.name) : 'U'}
-                        </div>
-                    </div>
-                </div>
+                <DashboardHeader
+                    copy={copy}
+                    handleLogout={handleLogout}
+                    handleToggleNotifications={handleToggleNotifications}
+                    lang={lang}
+                    notifOpen={notifOpen}
+                    onOpenSidebar={() => setSidebarOpen(true)}
+                    notifWrapperRef={notifWrapperRef}
+                    notifications={notifications}
+                    pathname={pathname}
+                    startTour={startTour}
+                    t={t}
+                    theme={theme}
+                    toggleTheme={toggleTheme}
+                    unreadCount={unreadCount}
+                    user={user}
+                    userRole={userRole}
+                />
 
                 {/* ── Main content ── */}
                 <main

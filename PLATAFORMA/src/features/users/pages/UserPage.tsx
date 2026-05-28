@@ -22,6 +22,7 @@ export const UserPage = () => {
         users, isLoading, error, totalPages,
         createUser, updateUser, deleteUser,
         role, setRole,
+        isActive, setIsActive,
         search: urlSearch, setSearch: setUrlSearch,
     } = useUser();
 
@@ -127,6 +128,8 @@ export const UserPage = () => {
                         onViewDetail={(id) => { setSelectedId(id); setIsDetailModalOpen(true); }}
                         role={role}
                         setRole={setRole}
+                        isActive={isActive}
+                        setIsActive={setIsActive}
                     />
                 )}
             </div>

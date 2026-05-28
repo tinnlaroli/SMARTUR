@@ -4,7 +4,7 @@ import {
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
     Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
 } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
@@ -30,7 +30,7 @@ const MENU_GROUP_KEYS = [
 const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
     const navigate = useNavigate();
@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { user, clearUser } = useUserPreferences();
     const userRole = user?.role_id || 2;
 
-    const allItems: MenuItem[] = [
+    const allItems = useMemo<MenuItem[]>(() => [
         { id: 'home',           label: t('sidebar.home'),           icon: Home,       path: '/dashboard',                 end: true, roles: [1] },
         { id: 'users',          label: t('sidebar.users'),          icon: Users,      path: '/dashboard/usuarios',                   roles: [1] },
         { id: 'companies',      label: t('sidebar.companies'),      icon: Building2,  path: '/dashboard/companias',                  roles: [1] },
@@ -55,13 +55,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit, path: '/dashboard/ml',                       roles: [1] },
         { id: 'notifications',  label: t('sidebar.notifications'),  icon: Bell,       path: '/dashboard/notificaciones',             roles: [1] },
         { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,   path: '/dashboard/configuracion',              roles: [1] },
-    ];
+    ], [t]);
 
-    const itemMap = Object.fromEntries(allItems.map((i) => [i.id, i]));
-    const filteredGroups = MENU_GROUP_KEYS.map((g) => ({
-        label: t(g.labelKey),
-        items: g.items.map((id) => itemMap[id]).filter((i) => i && i.roles.includes(userRole)),
-    })).filter((g) => g.items.length > 0);
+    const itemMap = useMemo(() => Object.fromEntries(allItems.map((i) => [i.id, i])), [allItems]);
+    const filteredGroups = useMemo(() =>
+        MENU_GROUP_KEYS.map((g) => ({
+            label: t(g.labelKey),
+            items: g.items.map((id) => itemMap[id]).filter((i) => i && i.roles.includes(userRole)),
+        })).filter((g) => g.items.length > 0),
+        [t, userRole, itemMap],
+    );
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -328,4 +331,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </>
 
     );
-}
+});
+
+export default Sidebar;

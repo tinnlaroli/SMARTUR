@@ -19,13 +19,15 @@ export function useUser() {
     const search = searchParams.get('search') || '';
     const roleParam = searchParams.get('role');
     const role = roleParam ? Number(roleParam) : undefined;
+    const isActive = searchParams.get('is_active') || 'true';
 
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const data = await userServices.findAll(page, limit, search, role);
+            const activeFilter = isActive === 'all' ? undefined : isActive === 'true';
+            const data = await userServices.findAll(page, limit, search, role, activeFilter);
 
             setUsers(data.users);
             setTotalPages(data.totalPages);
@@ -34,7 +36,7 @@ export function useUser() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit, search, role]);
+    }, [page, limit, search, role, isActive]);
 
     useEffect(() => {
         fetchUsers();
@@ -115,6 +117,14 @@ export function useUser() {
         });
     };
 
+    const setIsActive = (value: string) => {
+        setSearchParams((prev) => {
+            prev.set('is_active', value);
+            prev.set('page', '1');
+            return prev;
+        });
+    };
+
     const setRole = (roleId: number | undefined) => {
         setSearchParams((prev) => {
             if (roleId !== undefined) {
@@ -142,5 +152,7 @@ export function useUser() {
         setSearch,
         role,
         setRole,
+        isActive,
+        setIsActive,
     };
 }

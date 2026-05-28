@@ -2,9 +2,9 @@ import { api } from '../../../shared/api/axiosClient';
 import type { CreateUserDTO, UpdateUserDTO, User, UserResponse, UserDetailResponse, UserSession, UserRecommendationSession } from '../types/types';
 
 export const userServices = {
-    findAll: async (page: number, limit: number, search?: string, role?: number): Promise<UserResponse> => {
+    findAll: async (page: number, limit: number, search?: string, role?: number, is_active?: boolean): Promise<UserResponse> => {
         const response = await api.get('/users', {
-            params: { page, limit, search: search || undefined, role: role || undefined },
+            params: { page, limit, search: search || undefined, role: role || undefined, is_active },
         });
         return response.data;
     },

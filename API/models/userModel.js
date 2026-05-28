@@ -5,7 +5,7 @@ import { normalizeEmail } from '../validators/userValidators.js';
 const SALT_ROUNDS = 10;
 
 class User {
-    static async findAll(page = 1, limit = 50, search = '', role = null) {
+    static async findAll(page = 1, limit = 50, search = '', role = null, is_active = null) {
         const offset = (page - 1) * limit;
 
         const values = [];
@@ -21,6 +21,12 @@ class User {
         if (role) {
             conditions.push(`role_id = $${index}`);
             values.push(role);
+            index++;
+        }
+
+        if (is_active !== null) {
+            conditions.push(`is_active = $${index}`);
+            values.push(is_active);
             index++;
         }
 

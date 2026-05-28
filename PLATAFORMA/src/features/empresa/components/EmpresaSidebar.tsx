@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
 } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { useAuthModal } from '../../auth/context/AuthModalContext';
@@ -26,7 +26,7 @@ const MENU_GROUPS: { groupKey: string; items: string[] }[] = [
 const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
-export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
+const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
     const navigate = useNavigate();
@@ -34,18 +34,21 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
     const { t } = useLanguage();
     const { user, clearUser } = useUserPreferences();
 
-    const allItems: MenuItem[] = [
+    const allItems = useMemo<MenuItem[]>(() => [
         { id: 'home', label: 'Inicio', icon: Home, path: '/empresa/dashboard', end: true },
         { id: 'services', label: 'Mis servicios', icon: Wrench, path: '/empresa/servicios' },
         { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/empresa/analytics' },
         { id: 'profile', label: 'Perfil', icon: UserCircle, path: '/empresa/perfil' },
         { id: 'settings', label: 'Configuración', icon: Settings, path: '/empresa/configuracion' },
-    ];
+    ], []);
 
-    const filteredGroups = MENU_GROUPS.map((g) => ({
-        groupKey: g.groupKey,
-        items: g.items.map((id) => allItems.find((i) => i.id === id)).filter(Boolean) as MenuItem[],
-    })).filter((g) => g.items.length > 0);
+    const filteredGroups = useMemo(() =>
+        MENU_GROUPS.map((g) => ({
+            groupKey: g.groupKey,
+            items: g.items.map((id) => allItems.find((i) => i.id === id)).filter(Boolean) as MenuItem[],
+        })).filter((g) => g.items.length > 0),
+        [allItems],
+    );
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -293,4 +296,6 @@ export default function EmpresaSidebar({ isOpen, onClose }: SidebarProps) {
             {legalModal && <TermsModal type={legalModal} onClose={() => setLegalModal(null)} />}
         </>
     );
-}
+});
+
+export default EmpresaSidebar;

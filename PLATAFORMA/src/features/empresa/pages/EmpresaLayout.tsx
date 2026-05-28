@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
@@ -161,6 +161,8 @@ export function EmpresaLayout() {
         return () => document.removeEventListener('mousedown', handleOutside);
     }, [notifOpen]);
 
+    const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+
     const handleToggleNotifications = () => {
         setNotifOpen((current) => {
             const next = !current;
@@ -189,7 +191,7 @@ export function EmpresaLayout() {
 
     return (
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
-            <EmpresaSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <EmpresaSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                 <header
