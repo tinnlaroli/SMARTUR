@@ -152,13 +152,13 @@ const authLimiter = rateLimit({
     },
 });
 
-// 4. OTP: 3 intentos / 5 min por email — bloquea brute-force de códigos de 6 dígitos
+// 4. OTP: 3 intentos / 5 min por email — bloquea brute-force de códigos
 const otpLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 3,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => `otp:${(req.body?.email ?? req.ip ?? '').toLowerCase()}`,
+    keyGenerator: (req) => `otp:${(req.body?.email ?? 'anon').toLowerCase()}`,
     skipSuccessfulRequests: true,
     message: {
         error: 'Demasiados intentos de verificación. Intenta de nuevo en 5 minutos.',
