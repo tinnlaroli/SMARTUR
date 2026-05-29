@@ -1,11 +1,9 @@
 ---
 /**
- * RegisterEmpresaModal — <dialog> modal para el registro público de empresas turísticas.
- * Se activa con: document.getElementById('register-empresa-modal').showModal()
- *
- * POSTea a: PUBLIC_API_URL/auth/register-empresa
- * Sectores hardcodeados (espejo de bd.sql seed):
- *   1 → Hotelería  |  2 → Restaurantes  |  3 → Turismo de naturaleza
+ * RegisterEmpresaModal — registro público de empresas turísticas.
+ * Validaciones en tiempo real, reglas de contraseña visibles,
+ * checkbox de términos obligatorio, modal de términos anidado,
+ * botón deshabilitado hasta que todo esté correcto.
  */
 import { ui, defaultLang } from "../i18n/ui";
 
@@ -18,11 +16,8 @@ const t = ui[lang];
 const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
 ---
 
-<dialog
-  id="register-empresa-modal"
-  aria-labelledby="rem-title"
-  class="rem-dialog"
->
+<!-- ── Modal principal ─────────────────────────────────────── -->
+<dialog id="register-empresa-modal" aria-labelledby="rem-title" class="rem-dialog">
   <div class="rem-inner">
 
     <!-- Header -->
@@ -31,12 +26,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         <h3 id="rem-title" class="rem-title">{t["register.title"]}</h3>
         <p class="rem-subtitle">{t["register.description"]}</p>
       </div>
-      <button
-        type="button"
-        id="rem-close"
-        class="rem-close-btn"
-        aria-label={t["register.closeAriaLabel"]}
-      >
+      <button type="button" id="rem-close" class="rem-close-btn" aria-label={t["register.closeAriaLabel"]}>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -57,27 +47,15 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       <!-- Row 1: nombre + email -->
       <div class="rem-row">
         <div class="rem-field">
-          <label for="rem-name">
-            {t["register.yourName"]}
-            <span class="req" aria-hidden="true">*</span>
-          </label>
-          <input
-            id="rem-name" name="name" type="text" autocomplete="name"
-            placeholder={t["register.yourName"]} required
-            class="rem-input"
-          />
+          <label for="rem-name">{t["register.yourName"]} <span class="req" aria-hidden="true">*</span></label>
+          <input id="rem-name" name="name" type="text" autocomplete="name"
+            placeholder={t["register.yourName"]} required class="rem-input" />
           <span class="rem-field-error" id="err-name" hidden></span>
         </div>
         <div class="rem-field">
-          <label for="rem-email">
-            {t["register.email"]}
-            <span class="req" aria-hidden="true">*</span>
-          </label>
-          <input
-            id="rem-email" name="email" type="email" autocomplete="email"
-            placeholder={t["register.emailPlaceholder"]} required
-            class="rem-input"
-          />
+          <label for="rem-email">{t["register.email"]} <span class="req" aria-hidden="true">*</span></label>
+          <input id="rem-email" name="email" type="email" autocomplete="email"
+            placeholder={t["register.emailPlaceholder"]} required class="rem-input" />
           <span class="rem-field-error" id="err-email" hidden></span>
         </div>
       </div>
@@ -85,34 +63,29 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       <!-- Row 2: contraseña + confirmar -->
       <div class="rem-row">
         <div class="rem-field">
-          <label for="rem-password">
-            {t["register.password"]}
-            <span class="req" aria-hidden="true">*</span>
-          </label>
+          <label for="rem-password">{t["register.password"]} <span class="req" aria-hidden="true">*</span></label>
           <div class="rem-input-wrap">
-            <input
-              id="rem-password" name="password" type="password" autocomplete="new-password"
-              placeholder={t["register.passwordPlaceholder"]} required minlength="8"
-              class="rem-input"
-            />
+            <input id="rem-password" name="password" type="password" autocomplete="new-password"
+              placeholder={t["register.passwordPlaceholder"]} required class="rem-input" />
             <button type="button" class="rem-eye-btn" data-target="rem-password" aria-label={t["register.showPasswordAriaLabel"]}>
               <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               <svg class="eye-hide hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
             </button>
           </div>
+          <!-- Reglas de contraseña -->
+          <div class="rem-pass-rules" id="rem-pass-rules" aria-live="polite">
+            <span id="rule-len"  class="rem-rule rem-rule--fail">✕ {t["register.passRuleLength"]}</span>
+            <span id="rule-upper" class="rem-rule rem-rule--fail">✕ {t["register.passRuleUpper"]}</span>
+            <span id="rule-lower" class="rem-rule rem-rule--fail">✕ {t["register.passRuleLower"]}</span>
+            <span id="rule-num"  class="rem-rule rem-rule--fail">✕ {t["register.passRuleNumber"]}</span>
+          </div>
           <span class="rem-field-error" id="err-password" hidden></span>
         </div>
         <div class="rem-field">
-          <label for="rem-confirm">
-            {t["register.confirmPassword"]}
-            <span class="req" aria-hidden="true">*</span>
-          </label>
+          <label for="rem-confirm">{t["register.confirmPassword"]} <span class="req" aria-hidden="true">*</span></label>
           <div class="rem-input-wrap">
-            <input
-              id="rem-confirm" name="confirm" type="password" autocomplete="new-password"
-              placeholder={t["register.confirmPlaceholder"]} required
-              class="rem-input"
-            />
+            <input id="rem-confirm" name="confirm" type="password" autocomplete="new-password"
+              placeholder={t["register.confirmPlaceholder"]} required class="rem-input" />
             <button type="button" class="rem-eye-btn" data-target="rem-confirm" aria-label={t["register.showPasswordAriaLabel"]}>
               <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               <svg class="eye-hide hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -124,25 +97,16 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
 
       <!-- Nombre empresa -->
       <div class="rem-field">
-        <label for="rem-company">
-          {t["register.businessName"]}
-          <span class="req" aria-hidden="true">*</span>
-        </label>
-        <input
-          id="rem-company" name="companyName" type="text"
-          placeholder={t["register.companyPlaceholder"]} required
-          class="rem-input"
-        />
+        <label for="rem-company">{t["register.businessName"]} <span class="req" aria-hidden="true">*</span></label>
+        <input id="rem-company" name="companyName" type="text"
+          placeholder={t["register.companyPlaceholder"]} required class="rem-input" />
         <span class="rem-field-error" id="err-company" hidden></span>
       </div>
 
       <!-- Row 3: sector + teléfono -->
       <div class="rem-row">
         <div class="rem-field">
-          <label for="rem-sector">
-            {t["register.tourismSector"]}
-            <span class="req" aria-hidden="true">*</span>
-          </label>
+          <label for="rem-sector">{t["register.tourismSector"]} <span class="req" aria-hidden="true">*</span></label>
           <select id="rem-sector" name="id_sector" required class="rem-input rem-select">
             <option value="" disabled selected>{t["register.selectPlaceholder"]}</option>
             <option value="1">{t["register.sectorHoteleria"]}</option>
@@ -153,35 +117,40 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         </div>
         <div class="rem-field">
           <label for="rem-phone">{t["register.phone"]}</label>
-          <input
-            id="rem-phone" name="phone" type="tel" autocomplete="tel"
-            placeholder={t["register.phonePlaceholder"]}
-            class="rem-input"
-          />
+          <input id="rem-phone" name="phone" type="tel" autocomplete="tel"
+            placeholder={t["register.phonePlaceholder"]} maxlength="10" inputmode="numeric"
+            class="rem-input" />
+          <span class="rem-field-error" id="err-phone" hidden></span>
         </div>
       </div>
 
+      <!-- Términos — checkbox obligatorio -->
+      <div class="rem-terms-row">
+        <input type="checkbox" id="rem-terms" name="terms" class="rem-checkbox" />
+        <label for="rem-terms" class="rem-terms-label">
+          {t["register.acceptTerms"]}
+          <button type="button" id="rem-open-terms" class="rem-terms-link">
+            {t["register.termsOfUse"]}
+          </button>
+          de SMARTUR.
+        </label>
+      </div>
+      <span class="rem-field-error" id="err-terms" hidden></span>
+
       <!-- Submit -->
-      <button type="submit" id="rem-submit" class="rem-btn">
+      <button type="submit" id="rem-submit" class="rem-btn" disabled>
         <span id="rem-btn-label">{t["register.submit"]}</span>
         <svg id="rem-spinner" class="rem-spinner hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="40" stroke-dashoffset="15"/>
         </svg>
       </button>
-
-      <p class="rem-legal">
-        {t["register.acceptTerms"]}
-        <a href="#" style="color: var(--color-purple);">{t["register.termsOfUse"]}</a>
-        de SMARTUR.
-      </p>
     </form>
 
-    <!-- OTP verification step -->
+    <!-- OTP step -->
     <div id="rem-otp-step" hidden class="rem-otp-box">
       <div class="rem-otp-icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M22 7l-10 7L2 7"/>
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/>
         </svg>
       </div>
       <h4 class="rem-otp-title">{t["register.otpTitle"]}</h4>
@@ -207,35 +176,60 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       </p>
     </div>
 
-    <!-- Success state (after OTP verified) -->
+    <!-- Success -->
     <div id="rem-success" hidden class="rem-success-box">
       <div class="rem-success-icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22 4 12 14.01 9 11.01"/>
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
       </div>
       <h4 class="rem-success-title">{t["register.successTitle"]}</h4>
       <p class="rem-success-text">{t["register.successMessage"]}</p>
       <a id="rem-portal-link" href="#" class="rem-portal-btn">
         {t["register.portalLink"]}
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
 
   </div>
 </dialog>
 
+<!-- ── Modal de Términos (anidado) ────────────────────────── -->
+<dialog id="rem-terms-modal" aria-labelledby="terms-title" class="rem-terms-dialog">
+  <div class="rem-terms-inner">
+    <div class="rem-terms-header">
+      <h3 id="terms-title" class="rem-terms-title">{t["register.termsTitle"]}</h3>
+      <button type="button" id="rem-terms-close-x" class="rem-close-btn" aria-label={t["register.closeAriaLabel"]}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="rem-terms-body">
+      <p><strong>1. Aceptación</strong><br/>Al registrarte en SMARTUR como empresa turística, aceptas estos términos y te comprometes a cumplirlos. Si no estás de acuerdo, no completes el registro.</p>
+      <p><strong>2. Uso de la plataforma</strong><br/>Tu cuenta es personal e intransferible. Eres responsable de toda la actividad realizada con tus credenciales. Debes mantener la información de tu empresa actualizada y verídica.</p>
+      <p><strong>3. Contenido</strong><br/>Garantizas que los servicios, imágenes y descripciones que publiques son auténticos y no infringen derechos de terceros. SMARTUR puede moderar o eliminar contenido que viole estas normas.</p>
+      <p><strong>4. Verificación</strong><br/>El equipo SMARTUR revisará tu registro en un plazo de 24 horas. Nos reservamos el derecho de rechazar o suspender cuentas que no cumplan nuestros estándares de calidad o que proporcionen información falsa.</p>
+      <p><strong>5. Privacidad</strong><br/>Tus datos serán tratados conforme a nuestra Política de Privacidad. No compartimos tu información personal con terceros sin tu consentimiento, excepto cuando lo exija la ley.</p>
+      <p><strong>6. Propiedad intelectual</strong><br/>SMARTUR y su tecnología son propiedad de sus desarrolladores. No puedes copiar, modificar ni distribuir el software sin autorización expresa.</p>
+      <p><strong>7. Responsabilidad</strong><br/>SMARTUR actúa como intermediario entre turistas y empresas. No somos responsables de las transacciones, calidad de servicios o disputas entre usuarios y empresas registradas.</p>
+      <p><strong>8. Modificaciones</strong><br/>Podemos actualizar estos términos en cualquier momento. Te notificaremos por correo y el uso continuado de la plataforma implica aceptación de los cambios.</p>
+      <p class="rem-terms-date">Última actualización: enero 2025 · SMARTUR — Las Altas Montañas, Veracruz</p>
+    </div>
+    <div class="rem-terms-footer">
+      <button type="button" id="rem-terms-accept" class="rem-btn rem-btn--terms">
+        {t["register.termsClose"]}
+      </button>
+    </div>
+  </div>
+</dialog>
+
 <style>
-  /* Garantiza que [hidden] nunca sea sobreescrito por display:flex/grid de las clases */
   [hidden] { display: none !important; }
 
-  /* ── Dialog base ───────────────────────── */
+  /* ── Dialog base ─────────────────────────────── */
   .rem-dialog {
     width: min(680px, calc(100% - 2rem));
-    max-width: calc(100% - 2rem);
     max-height: min(92dvh, 92vh);
     overflow-y: auto;
     scrollbar-width: thin;
@@ -243,428 +237,432 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     border: 1px solid rgba(var(--rgb-text), 0.1);
     background: var(--color-bg);
     padding: 0;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
-
-    /* reset browser default positioning */
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
     margin: auto;
   }
+  .rem-dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); }
 
-  .rem-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(6px);
+  /* ── Terms dialog ────────────────────────────── */
+  .rem-terms-dialog {
+    width: min(560px, calc(100% - 2rem));
+    max-height: min(85dvh, 85vh);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(var(--rgb-text), 0.1);
+    background: var(--color-bg);
+    padding: 0;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+    margin: auto;
   }
+  .rem-terms-dialog::backdrop { background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); }
 
-  .rem-inner {
-    padding: 2rem 2.25rem;
+  .rem-terms-inner { padding: 1.75rem 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .rem-terms-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .rem-terms-title { font-size: 1.1rem; font-weight: 800; color: var(--color-text); margin: 0; }
 
-    @media (--mq-phone) {
-      padding: 1.5rem 1.25rem;
-    }
-
-    @media (--mq-phone-sm) {
-      padding: 1.25rem 1rem;
-    }
+  .rem-terms-body {
+    display: flex; flex-direction: column; gap: 1rem;
+    font-size: 0.8125rem; color: var(--color-text-alt); line-height: 1.65;
+    max-height: 50vh; overflow-y: auto; scrollbar-width: thin;
+    padding-right: 0.25rem;
   }
+  .rem-terms-body p { margin: 0; }
+  .rem-terms-body strong { color: var(--color-text); }
+  .rem-terms-date { font-size: 0.7rem; opacity: 0.55; margin-top: 0.5rem; }
 
-  /* ── Header ─────────────────────────────── */
-  .rem-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
+  .rem-terms-footer { display: flex; justify-content: flex-end; }
+  .rem-btn--terms { width: auto; padding-inline: 2rem; margin-top: 0; }
 
-  .rem-title {
-    font-size: 1.375rem;
-    font-weight: 800;
-    color: var(--color-text);
-    margin: 0 0 0.25rem;
-    line-height: 1.2;
-  }
+  /* ── Inner ───────────────────────────────────── */
+  .rem-inner { padding: 2rem 2.25rem; }
 
-  .rem-subtitle {
-    font-size: 0.8125rem;
-    color: var(--color-text-alt);
-    margin: 0;
-    line-height: 1.5;
-  }
+  /* ── Header ──────────────────────────────────── */
+  .rem-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+  .rem-title { font-size: 1.375rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem; line-height: 1.2; }
+  .rem-subtitle { font-size: 0.8125rem; color: var(--color-text-alt); margin: 0; line-height: 1.5; }
 
   .rem-close-btn {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(var(--rgb-text), 0.1);
-    background: transparent;
-    color: var(--color-text-alt);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-
-    &:hover {
-      background: rgba(var(--rgb-text), 0.06);
-      color: var(--color-text);
-    }
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; border-radius: 0.75rem;
+    border: 1px solid rgba(var(--rgb-text), 0.1); background: transparent;
+    color: var(--color-text-alt); cursor: pointer; transition: background 0.15s, color 0.15s;
+    &:hover { background: rgba(var(--rgb-text), 0.06); color: var(--color-text); }
   }
 
-  /* ── Error banner ───────────────────────── */
+  /* ── Error banner ────────────────────────────── */
   .rem-error-box {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: rgba(220, 38, 38, 0.07);
-    border: 1px solid rgba(220, 38, 38, 0.25);
-    border-radius: 0.875rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.8125rem;
-    color: #dc2626;
-    margin-bottom: 1.25rem;
-    line-height: 1.4;
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(220,38,38,0.07); border: 1px solid rgba(220,38,38,0.25);
+    border-radius: 0.875rem; padding: 0.75rem 1rem;
+    font-size: 0.8125rem; color: #dc2626; margin-bottom: 1.25rem; line-height: 1.4;
   }
-
   .rem-icon-alert { flex-shrink: 0; }
 
-  /* ── Form ───────────────────────────────── */
-  .rem-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+  /* ── Form ────────────────────────────────────── */
+  .rem-form { display: flex; flex-direction: column; gap: 1rem; }
 
   .rem-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.875rem;
-
-    @media (--mq-phone) {
-      grid-template-columns: 1fr;
-    }
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;
+    @media (max-width: 540px) { grid-template-columns: 1fr; }
   }
 
-  .rem-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .rem-field label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text);
-    letter-spacing: 0.01em;
-  }
-
+  .rem-field { display: flex; flex-direction: column; gap: 0.375rem; }
+  .rem-field label { font-size: 0.75rem; font-weight: 600; color: var(--color-text); letter-spacing: 0.01em; }
   .req { color: #dc2626; margin-left: 0.1em; }
 
-  /* input wrapper for password toggle */
-  .rem-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .rem-input-wrap .rem-input {
-    padding-right: 2.75rem;
-    width: 100%;
-  }
+  .rem-input-wrap { position: relative; display: flex; align-items: center; }
+  .rem-input-wrap .rem-input { padding-right: 2.75rem; width: 100%; }
 
   .rem-eye-btn {
-    position: absolute;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    color: var(--color-text-alt);
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    opacity: 0.6;
-    transition: opacity 0.15s;
-
+    position: absolute; right: 0.75rem; background: none; border: none;
+    color: var(--color-text-alt); cursor: pointer; padding: 0;
+    display: flex; align-items: center; opacity: 0.6; transition: opacity 0.15s;
     &:hover { opacity: 1; }
   }
 
   .rem-input {
-    width: 100%;
-    background: var(--color-bg-alt);
+    width: 100%; background: var(--color-bg-alt);
     border: 1px solid rgba(var(--rgb-text), 0.12);
-    color: var(--color-text);
-    border-radius: 0.75rem;
-    padding: 0.65rem 0.875rem;
-    font-size: 0.875rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box;
-    font-family: inherit;
-
+    color: var(--color-text); border-radius: 0.75rem;
+    padding: 0.65rem 0.875rem; font-size: 0.875rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; font-family: inherit;
     &::placeholder { opacity: 0.45; }
-
-    &:focus {
-      border-color: rgba(var(--rgb-purple-accent), 0.55);
-      box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1);
-    }
-
-    &[aria-invalid="true"] {
-      border-color: rgba(220, 38, 38, 0.5);
-      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
-    }
+    &:focus { border-color: rgba(var(--rgb-purple-accent), 0.55); box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1); }
+    &[aria-invalid="true"] { border-color: rgba(220,38,38,0.5); box-shadow: 0 0 0 3px rgba(220,38,38,0.08); }
+    &[aria-valid="true"] { border-color: rgba(34,197,94,0.5); }
   }
 
   .rem-select {
-    appearance: none;
-    cursor: pointer;
+    appearance: none; cursor: pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.875rem center;
-    padding-right: 2.25rem;
+    background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.25rem;
   }
 
-  /* Per-field inline error */
-  .rem-field-error {
-    font-size: 0.7rem;
-    color: #dc2626;
-    margin-top: -0.1rem;
-  }
+  .rem-field-error { font-size: 0.7rem; color: #dc2626; margin-top: -0.1rem; }
 
-  /* ── Submit ─────────────────────────────── */
-  .rem-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background: var(--color-purple);
-    color: #fff;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    padding: 0.875rem 1.5rem;
-    border-radius: 100px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
+  /* ── Password rules ──────────────────────────── */
+  .rem-pass-rules {
+    display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem;
     margin-top: 0.25rem;
-    font-family: inherit;
-    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .rem-rule {
+    font-size: 0.7rem; font-weight: 500; transition: color 0.2s;
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .rem-rule--fail { color: rgba(var(--rgb-text), 0.4); }
+  .rem-rule--ok   { color: #16a34a; }
 
-    &:hover {
-      opacity: 0.88;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(var(--rgb-purple-accent), 0.3);
-    }
-
-    &:active { transform: translateY(0); }
-    &:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  /* ── Terms row ───────────────────────────────── */
+  .rem-terms-row {
+    display: flex; align-items: flex-start; gap: 0.625rem;
+    padding: 0.75rem 0.875rem;
+    background: rgba(var(--rgb-purple-accent), 0.05);
+    border: 1px solid rgba(var(--rgb-purple-accent), 0.15);
+    border-radius: 0.875rem;
   }
 
-  .rem-spinner {
-    animation: rem-spin 0.75s linear infinite;
+  .rem-checkbox {
+    flex-shrink: 0; width: 1.1rem; height: 1.1rem; margin-top: 0.1rem;
+    accent-color: var(--color-purple); cursor: pointer;
   }
 
-  @keyframes rem-spin { to { transform: rotate(360deg); } }
-
-  .hidden { display: none !important; }
-
-  /* ── Legal ──────────────────────────────── */
-  .rem-legal {
-    font-size: 0.7rem;
-    color: var(--color-text-alt);
-    text-align: center;
-    opacity: 0.6;
-    margin-top: -0.25rem;
+  .rem-terms-label {
+    font-size: 0.8rem; color: var(--color-text-alt); line-height: 1.5;
+    cursor: default;
   }
 
-  /* ── OTP step ────────────────────────────── */
-  .rem-otp-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1.25rem;
-    padding: 1.5rem 0 0.5rem;
-  }
-
-  .rem-otp-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4.5rem;
-    height: 4.5rem;
-    border-radius: 50%;
-    background: rgba(var(--rgb-purple-accent), 0.1);
-    color: var(--color-purple);
-  }
-
-  .rem-otp-title {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: var(--color-text);
-    margin: 0;
-  }
-
-  .rem-otp-text {
-    font-size: 0.85rem;
-    color: var(--color-text-alt);
-    margin: 0;
-    max-width: 32ch;
-    line-height: 1.5;
-  }
-
-  .rem-otp-inputs {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-
-  .rem-otp-digit {
-    width: 3rem;
-    height: 3.5rem;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    font-family: monospace;
-    background: var(--color-bg-alt);
-    border: 2px solid rgba(var(--rgb-text), 0.12);
-    color: var(--color-text);
-    border-radius: 0.75rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box;
-
-    &:focus {
-      border-color: rgba(var(--rgb-purple-accent), 0.55);
-      box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1);
-    }
-
-    &[aria-invalid="true"] {
-      border-color: rgba(220, 38, 38, 0.5);
-      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
-    }
-  }
-
-  .rem-otp-error-txt {
-    font-size: 0.8rem;
-    color: #dc2626;
-    margin: 0;
-  }
-
-  .rem-otp-hint {
-    font-size: 0.775rem;
-    color: var(--color-text-alt);
-    margin: 0;
-    opacity: 0.7;
-  }
-
-  .rem-otp-login-link {
-    color: var(--color-purple);
-    text-decoration: underline;
+  .rem-terms-link {
+    background: none; border: none; padding: 0;
+    color: var(--color-purple); font-size: inherit; font-family: inherit;
+    font-weight: 600; cursor: pointer; text-decoration: underline;
     text-underline-offset: 2px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font: inherit;
-    padding: 0;
-
     &:hover { opacity: 0.75; }
   }
 
-  /* ── Success ────────────────────────────── */
-  .rem-success-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
-    padding: 1.5rem 0 0.5rem;
+  /* ── Submit ──────────────────────────────────── */
+  .rem-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    background: var(--color-purple); color: #fff;
+    font-size: 0.9375rem; font-weight: 700; padding: 0.875rem 1.5rem;
+    border-radius: 100px; border: none; cursor: pointer;
+    width: 100%; margin-top: 0.25rem; font-family: inherit;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    &:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(var(--rgb-purple-accent), 0.3); }
+    &:active:not(:disabled) { transform: translateY(0); }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 
-  .rem-success-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 5rem;
-    height: 5rem;
-    border-radius: 50%;
-    background: rgba(var(--rgb-purple-accent), 0.1);
-    color: var(--color-purple);
-  }
+  .rem-spinner { animation: rem-spin 0.75s linear infinite; }
+  @keyframes rem-spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
 
-  .rem-success-title {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--color-text);
-    margin: 0;
+  /* ── OTP step ────────────────────────────────── */
+  .rem-otp-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.25rem; padding: 1.5rem 0 0.5rem; }
+  .rem-otp-icon { display: flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; background: rgba(var(--rgb-purple-accent), 0.1); color: var(--color-purple); }
+  .rem-otp-title { font-size: 1.2rem; font-weight: 800; color: var(--color-text); margin: 0; }
+  .rem-otp-text { font-size: 0.85rem; color: var(--color-text-alt); margin: 0; max-width: 32ch; line-height: 1.5; }
+  .rem-otp-inputs { display: flex; gap: 0.5rem; justify-content: center; }
+  .rem-otp-digit {
+    width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 700;
+    font-family: monospace; background: var(--color-bg-alt);
+    border: 2px solid rgba(var(--rgb-text), 0.12); color: var(--color-text);
+    border-radius: 0.75rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
+    &:focus { border-color: rgba(var(--rgb-purple-accent), 0.55); box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1); }
+    &[aria-invalid="true"] { border-color: rgba(220,38,38,0.5); box-shadow: 0 0 0 3px rgba(220,38,38,0.08); }
   }
+  .rem-otp-error-txt { font-size: 0.8rem; color: #dc2626; margin: 0; }
+  .rem-otp-hint { font-size: 0.775rem; color: var(--color-text-alt); margin: 0; opacity: 0.7; }
+  .rem-otp-login-link { color: var(--color-purple); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: none; font: inherit; padding: 0; &:hover { opacity: 0.75; } }
 
-  .rem-success-text {
-    font-size: 0.875rem;
-    color: var(--color-text-alt);
-    margin: 0;
-    max-width: 36ch;
-    line-height: 1.6;
-  }
-
+  /* ── Success ─────────────────────────────────── */
+  .rem-success-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 1.5rem 0 0.5rem; }
+  .rem-success-icon { display: flex; align-items: center; justify-content: center; width: 5rem; height: 5rem; border-radius: 50%; background: rgba(var(--rgb-purple-accent), 0.1); color: var(--color-purple); }
+  .rem-success-title { font-size: 1.25rem; font-weight: 800; color: var(--color-text); margin: 0; }
+  .rem-success-text { font-size: 0.875rem; color: var(--color-text-alt); margin: 0; max-width: 36ch; line-height: 1.6; }
   .rem-portal-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--color-purple);
-    color: #fff;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    padding: 0.75rem 1.75rem;
-    border-radius: 100px;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.15s;
-    margin-top: 0.25rem;
-
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--color-purple); color: #fff; font-size: 0.9375rem; font-weight: 700;
+    padding: 0.75rem 1.75rem; border-radius: 100px; text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s; margin-top: 0.25rem;
     &:hover { opacity: 0.88; transform: translateY(-1px); }
   }
 </style>
 
-<script define:vars={{ apiUrl, submitText: t["register.submit"], sendingText: t["register.sending"], errName: t["register.errorNameRequired"], errEmail: t["register.errorEmailInvalid"], errPassMin: t["register.errorPasswordMin"], errPassFormat: t["register.errorPasswordFormat"], errPassMismatch: t["register.errorPasswordMismatch"], errCompany: t["register.errorCompanyRequired"], errSector: t["register.errorSectorRequired"], errGeneric: t["register.errorGeneric"], errConnection: t["register.errorConnection"], otpVerifyText: t["register.otpVerify"], otpVerifySending: t["register.otpSending"], otpTitle: t["register.otpTitle"], otpMessage: t["register.otpMessage"] }}>
-  const dialog   = document.getElementById('register-empresa-modal');
-  const form     = document.getElementById('rem-form');
-  const errBox   = document.getElementById('rem-error');
-  const errTxt   = document.getElementById('rem-error-text');
-  const otpStep  = document.getElementById('rem-otp-step');
-  const otpBtn   = document.getElementById('rem-otp-submit');
-  const otpLbl   = document.getElementById('rem-otp-label');
-  const otpSpin  = document.getElementById('rem-otp-spinner');
-  const otpErr   = document.getElementById('rem-otp-error');
-  const success  = document.getElementById('rem-success');
-  const submit   = document.getElementById('rem-submit');
-  const btnLbl   = document.getElementById('rem-btn-label');
-  const spinner  = document.getElementById('rem-spinner');
-  const link     = document.getElementById('rem-portal-link');
-  const closeBtn = document.getElementById('rem-close');
+<script define:vars={{
+  apiUrl,
+  submitText:      t["register.submit"],
+  sendingText:     t["register.sending"],
+  errName:         t["register.errorNameRequired"],
+  errNameLetters:  t["register.errorNameOnlyLetters"],
+  errEmail:        t["register.errorEmailInvalid"],
+  errPassMin:      t["register.errorPasswordMin"],
+  errPassFormat:   t["register.errorPasswordFormat"],
+  errPassMismatch: t["register.errorPasswordMismatch"],
+  errCompany:      t["register.errorCompanyRequired"],
+  errSector:       t["register.errorSectorRequired"],
+  errPhone:        t["register.errorPhoneFormat"],
+  errTerms:        t["register.termsRequired"],
+  errGeneric:      t["register.errorGeneric"],
+  errConnection:   t["register.errorConnection"],
+  otpVerifyText:   t["register.otpVerify"],
+  otpVerifySending:t["register.otpSending"],
+}}>
+
+  /* ─────────── Referencias ─────────── */
+  const dialog    = document.getElementById('register-empresa-modal');
+  const termsDialog = document.getElementById('rem-terms-modal');
+  const form      = document.getElementById('rem-form');
+  const errBox    = document.getElementById('rem-error');
+  const errTxt    = document.getElementById('rem-error-text');
+  const otpStep   = document.getElementById('rem-otp-step');
+  const otpBtn    = document.getElementById('rem-otp-submit');
+  const otpLbl    = document.getElementById('rem-otp-label');
+  const otpSpin   = document.getElementById('rem-otp-spinner');
+  const otpErr    = document.getElementById('rem-otp-error');
+  const success   = document.getElementById('rem-success');
+  const submit    = document.getElementById('rem-submit');
+  const btnLbl    = document.getElementById('rem-btn-label');
+  const spinner   = document.getElementById('rem-spinner');
+  const link      = document.getElementById('rem-portal-link');
+  const closeBtn  = document.getElementById('rem-close');
+  const termsChk  = document.getElementById('rem-terms');
+  const openTermsBtn = document.getElementById('rem-open-terms');
+  const termsCloseX  = document.getElementById('rem-terms-close-x');
+  const termsAccept  = document.getElementById('rem-terms-accept');
 
   let registeredEmail = '';
 
   const plataformaUrl = (document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl
     || 'http://2.24.112.25').replace(/\/+$/, '');
 
-  /* ── Reset modal on close / open ─── */
-  function resetModal() {
-    form.reset();
-    form.hidden = false;
-    success.hidden = true;
-    otpStep.hidden = true;
-    errBox.hidden = true;
-    otpErr.hidden = true;
-    setLoading(false);
-    setOtpLoading(false);
-    clearAllErrors();
-    registeredEmail = '';
-    /* clear OTP inputs */
-    document.querySelectorAll('.rem-otp-digit').forEach(inp => inp.value = '');
+  /* ─────────── Validadores por campo ─────────── */
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const NAME_RE  = /^[a-zA-ZÀ-ÿ\s]+$/;
+  const PHONE_RE = /^\d{10}$/;
+
+  function passStrength(v) {
+    return {
+      len:   v.length >= 8,
+      upper: /[A-Z]/.test(v),
+      lower: /[a-z]/.test(v),
+      num:   /[0-9]/.test(v),
+    };
   }
 
-  dialog?.addEventListener('close', resetModal);
-  dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  function updatePassRules(v) {
+    const s = passStrength(v);
+    const map = { len: 'rule-len', upper: 'rule-upper', lower: 'rule-lower', num: 'rule-num' };
+    const labels = { len: t_passLen, upper: t_passUpper, lower: t_passLower, num: t_passNum };
+    for (const [key, id] of Object.entries(map)) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const ok = s[key];
+      el.className = `rem-rule ${ok ? 'rem-rule--ok' : 'rem-rule--fail'}`;
+      el.textContent = (ok ? '✓ ' : '✕ ') + labels[key];
+    }
+    return s.len && s.upper && s.lower && s.num;
+  }
 
-  /* ── Password toggle ─── */
+  /* ─────────── Estado de validación global ─────────── */
+  const validity = { name: false, email: false, password: false, confirm: false, company: false, sector: false, phone: true, terms: false };
+
+  function revalidateSubmit() {
+    const allOk = Object.values(validity).every(Boolean);
+    submit.disabled = !allOk;
+  }
+
+  /* ─────────── Helpers de error ─────────── */
+  function setFieldError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (msg) {
+      el.textContent = msg;
+      el.hidden = false;
+      const inp = el.closest('.rem-field')?.querySelector('.rem-input');
+      if (inp) { inp.setAttribute('aria-invalid', 'true'); inp.removeAttribute('aria-valid'); }
+    } else {
+      el.hidden = true;
+      const inp = el.closest('.rem-field')?.querySelector('.rem-input');
+      if (inp) { inp.removeAttribute('aria-invalid'); inp.setAttribute('aria-valid', 'true'); }
+    }
+  }
+
+  function clearAllErrors() {
+    errBox.hidden = true;
+    ['name','email','password','confirm','company','sector','phone','terms'].forEach(k => setFieldError(`err-${k}`, ''));
+    document.querySelectorAll('.rem-input[aria-valid]').forEach(i => i.removeAttribute('aria-valid'));
+    document.querySelectorAll('.rem-input[aria-invalid]').forEach(i => i.removeAttribute('aria-invalid'));
+  }
+
+  function showGlobalError(msg) {
+    errTxt.textContent = msg;
+    errBox.hidden = false;
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ─────────── Validación en tiempo real ─────────── */
+  document.getElementById('rem-name')?.addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    if (!NAME_RE.test(v) && v.length > 0) {
+      setFieldError('err-name', errNameLetters);
+      validity.name = false;
+    } else if (v.length < 2) {
+      setFieldError('err-name', v.length === 0 ? '' : errName);
+      validity.name = false;
+    } else {
+      setFieldError('err-name', '');
+      validity.name = true;
+    }
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-name')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    if (!NAME_RE.test(v) && v.length > 0) { setFieldError('err-name', errNameLetters); validity.name = false; }
+    else if (v.length < 2) { setFieldError('err-name', errName); validity.name = false; }
+    else { setFieldError('err-name', ''); validity.name = true; }
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-email')?.addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    validity.email = EMAIL_RE.test(v);
+    if (!validity.email && v.length > 0) setFieldError('err-email', errEmail);
+    else setFieldError('err-email', '');
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-email')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    validity.email = EMAIL_RE.test(v);
+    setFieldError('err-email', validity.email ? '' : errEmail);
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-password')?.addEventListener('input', (e) => {
+    const v = e.target.value;
+    const allRulesOk = updatePassRules(v);
+    validity.password = allRulesOk;
+    setFieldError('err-password', '');
+    // Re-check confirm
+    const confirm = document.getElementById('rem-confirm')?.value || '';
+    if (confirm.length > 0) {
+      validity.confirm = v === confirm;
+      setFieldError('err-confirm', validity.confirm ? '' : errPassMismatch);
+    }
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-password')?.addEventListener('blur', (e) => {
+    const v = e.target.value;
+    const s = passStrength(v);
+    if (!s.len) { setFieldError('err-password', errPassMin); validity.password = false; }
+    else if (!s.upper || !s.lower || !s.num) { setFieldError('err-password', errPassFormat); validity.password = false; }
+    else { setFieldError('err-password', ''); validity.password = true; }
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-confirm')?.addEventListener('input', (e) => {
+    const pass = document.getElementById('rem-password')?.value || '';
+    validity.confirm = e.target.value === pass;
+    setFieldError('err-confirm', validity.confirm ? '' : (e.target.value.length > 0 ? errPassMismatch : ''));
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-confirm')?.addEventListener('blur', (e) => {
+    const pass = document.getElementById('rem-password')?.value || '';
+    validity.confirm = e.target.value === pass && e.target.value.length > 0;
+    setFieldError('err-confirm', validity.confirm ? '' : errPassMismatch);
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-company')?.addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    validity.company = v.length >= 2;
+    if (!validity.company && v.length > 0) setFieldError('err-company', errCompany);
+    else setFieldError('err-company', '');
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-company')?.addEventListener('blur', (e) => {
+    const v = e.target.value.trim();
+    validity.company = v.length >= 2;
+    setFieldError('err-company', validity.company ? '' : errCompany);
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-sector')?.addEventListener('change', (e) => {
+    validity.sector = !!e.target.value;
+    setFieldError('err-sector', validity.sector ? '' : errSector);
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-phone')?.addEventListener('input', (e) => {
+    // Solo dígitos
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const v = e.target.value;
+    if (v.length === 0) { validity.phone = true; setFieldError('err-phone', ''); }
+    else if (v.length < 10) { validity.phone = false; setFieldError('err-phone', errPhone); }
+    else { validity.phone = true; setFieldError('err-phone', ''); }
+    revalidateSubmit();
+  });
+
+  document.getElementById('rem-phone')?.addEventListener('blur', (e) => {
+    const v = e.target.value;
+    if (v.length > 0 && !PHONE_RE.test(v)) { validity.phone = false; setFieldError('err-phone', errPhone); }
+    else { validity.phone = true; setFieldError('err-phone', ''); }
+    revalidateSubmit();
+  });
+
+  termsChk?.addEventListener('change', () => {
+    validity.terms = termsChk.checked;
+    setFieldError('err-terms', validity.terms ? '' : errTerms);
+    revalidateSubmit();
+  });
+
+  /* ─────────── Password toggle ─────────── */
   document.querySelectorAll('.rem-eye-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const input = document.getElementById(btn.dataset.target);
@@ -675,7 +673,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     });
   });
 
-  /* ── OTP input auto-focus and auto-advance ─── */
+  /* ─────────── OTP inputs ─────────── */
   document.querySelectorAll('.rem-otp-digit').forEach((inp, idx, arr) => {
     inp.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 1);
@@ -688,14 +686,44 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     inp.addEventListener('paste', function (e) {
       e.preventDefault();
       const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
-      paste.split('').forEach((c, i) => { if (arr[i]) { arr[i].value = c; } });
+      paste.split('').forEach((c, i) => { if (arr[i]) arr[i].value = c; });
       if (paste.length) arr[Math.min(paste.length, 5)].focus();
     });
   });
 
-  /* ── Helpers ─── */
+  /* ─────────── Términos modal ─────────── */
+  openTermsBtn?.addEventListener('click', () => { termsDialog?.showModal(); });
+  termsCloseX?.addEventListener('click', () => termsDialog?.close());
+  termsAccept?.addEventListener('click', () => {
+    termsDialog?.close();
+    if (termsChk) { termsChk.checked = true; validity.terms = true; setFieldError('err-terms', ''); revalidateSubmit(); }
+  });
+  termsDialog?.addEventListener('click', (e) => { if (e.target === termsDialog) termsDialog.close(); });
+
+  /* ─────────── Reset modal ─────────── */
+  function resetModal() {
+    form.reset();
+    form.hidden = false; success.hidden = true; otpStep.hidden = true;
+    errBox.hidden = true; otpErr.hidden = true;
+    submit.disabled = true;
+    setLoading(false); setOtpLoading(false); clearAllErrors();
+    registeredEmail = '';
+    Object.keys(validity).forEach(k => { validity[k] = k === 'phone'; });
+    document.querySelectorAll('.rem-otp-digit').forEach(inp => inp.value = '');
+    // Reset pass rules
+    ['rule-len','rule-upper','rule-lower','rule-num'].forEach(id => {
+      const el = document.getElementById(id); if (!el) return;
+      el.className = 'rem-rule rem-rule--fail';
+    });
+  }
+
+  dialog?.addEventListener('close', resetModal);
+  dialog?.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  closeBtn?.addEventListener('click', () => dialog.close());
+
+  /* ─────────── Loading helpers ─────────── */
   function setLoading(on) {
-    submit.disabled = on;
+    submit.disabled = on || !Object.values(validity).every(Boolean);
     spinner.classList.toggle('hidden', !on);
     btnLbl.textContent = on ? sendingText : submitText;
   }
@@ -706,143 +734,49 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     otpLbl.textContent = on ? otpVerifySending : otpVerifyText;
   }
 
-  function showGlobalError(msg) {
-    errTxt.textContent = msg;
-    errBox.hidden = false;
-    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  function hideGlobalError() { errBox.hidden = true; }
-
-  function setFieldError(id, msg) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (msg) {
-      el.textContent = msg;
-      el.hidden = false;
-      const input = el.closest('.rem-field')?.querySelector('.rem-input');
-      if (input) input.setAttribute('aria-invalid', 'true');
-    } else {
-      el.hidden = true;
-      const input = el.closest('.rem-field')?.querySelector('.rem-input');
-      if (input) input.removeAttribute('aria-invalid');
-    }
-  }
-
-  function clearAllErrors() {
-    hideGlobalError();
-    ['name', 'email', 'password', 'confirm', 'company', 'sector'].forEach((k) =>
-      setFieldError(`err-${k}`, '')
-    );
-  }
-
-  /* ── Inline real-time validation on blur ─── */
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  document.getElementById('rem-name')?.addEventListener('blur', (e) => {
-    const v = e.target.value.trim();
-    setFieldError('err-name', v.length < 2 ? errName : '');
-  });
-
-  document.getElementById('rem-email')?.addEventListener('blur', (e) => {
-    const v = e.target.value.trim();
-    setFieldError('err-email', !EMAIL_RE.test(v) ? errEmail : '');
-  });
-
-  document.getElementById('rem-password')?.addEventListener('blur', (e) => {
-    const v = e.target.value;
-    if (v.length < 8) {
-      setFieldError('err-password', errPassMin);
-    } else if (!/[A-Z]/.test(v) || !/[a-z]/.test(v) || !/[0-9]/.test(v)) {
-      setFieldError('err-password', errPassFormat);
-    } else {
-      setFieldError('err-password', '');
-    }
-  });
-
-  document.getElementById('rem-confirm')?.addEventListener('blur', (e) => {
-    const pass = document.getElementById('rem-password')?.value || '';
-    setFieldError('err-confirm', e.target.value !== pass ? errPassMismatch : '');
-  });
-
-  document.getElementById('rem-company')?.addEventListener('blur', (e) => {
-    const v = e.target.value.trim();
-    setFieldError('err-company', v.length < 2 ? errCompany : '');
-  });
-
-  /* ── Close button ─── */
-  closeBtn?.addEventListener('click', () => dialog.close());
-
-  /* ── Login link in OTP step ─── */
-  document.getElementById('rem-login-link')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    dialog.close();
-    window.location.href = plataformaUrl + '/empresa/dashboard';
-  });
-
-  /* ── Register form submit ─── */
+  /* ─────────── Submit ─────────── */
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    clearAllErrors();
 
-    const data = Object.fromEntries(new FormData(form));
+    // Validación final antes de enviar
     let hasError = false;
+    const name = document.getElementById('rem-name').value.trim();
+    const email = document.getElementById('rem-email').value.trim();
+    const password = document.getElementById('rem-password').value;
+    const confirm = document.getElementById('rem-confirm').value;
+    const companyName = document.getElementById('rem-company').value.trim();
+    const id_sector = document.getElementById('rem-sector').value;
+    const phone = document.getElementById('rem-phone').value;
 
-    if (!data.name?.trim() || data.name.trim().length < 2) {
-      setFieldError('err-name', errName);
-      hasError = true;
-    }
-    if (!EMAIL_RE.test(data.email?.trim())) {
-      setFieldError('err-email', errEmail);
-      hasError = true;
-    }
-    if (!data.password || data.password.length < 8) {
-      setFieldError('err-password', errPassMin);
-      hasError = true;
-    } else if (!/[A-Z]/.test(data.password) || !/[a-z]/.test(data.password) || !/[0-9]/.test(data.password)) {
-      setFieldError('err-password', errPassFormat);
-      hasError = true;
-    }
-    if (data.confirm !== data.password) {
-      setFieldError('err-confirm', errPassMismatch);
-      hasError = true;
-    }
-    if (!data.companyName?.trim() || data.companyName.trim().length < 2) {
-      setFieldError('err-company', errCompany);
-      hasError = true;
-    }
-    if (!data.id_sector) {
-      setFieldError('err-sector', errSector);
-      hasError = true;
-    }
+    if (!NAME_RE.test(name) || name.length < 2) { setFieldError('err-name', !NAME_RE.test(name) ? errNameLetters : errName); hasError = true; }
+    if (!EMAIL_RE.test(email)) { setFieldError('err-email', errEmail); hasError = true; }
+    const s = passStrength(password);
+    if (!s.len) { setFieldError('err-password', errPassMin); hasError = true; }
+    else if (!s.upper || !s.lower || !s.num) { setFieldError('err-password', errPassFormat); hasError = true; }
+    if (confirm !== password) { setFieldError('err-confirm', errPassMismatch); hasError = true; }
+    if (companyName.length < 2) { setFieldError('err-company', errCompany); hasError = true; }
+    if (!id_sector) { setFieldError('err-sector', errSector); hasError = true; }
+    if (phone.length > 0 && !PHONE_RE.test(phone)) { setFieldError('err-phone', errPhone); hasError = true; }
+    if (!termsChk?.checked) { setFieldError('err-terms', errTerms); hasError = true; }
     if (hasError) return;
 
     setLoading(true);
+    errBox.hidden = true;
     try {
       const res = await fetch(`${apiUrl}/auth/register-empresa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: data.name.trim(),
-          email: data.email.trim().toLowerCase(),
-          password: data.password,
-          companyName: data.companyName.trim(),
-          phone: data.phone?.trim() || undefined,
-          id_sector: Number(data.id_sector),
+          name, email: email.toLowerCase(), password,
+          companyName, phone: phone || undefined, id_sector: Number(id_sector),
         }),
       });
       if (!res.ok) {
-        // Nunca exponer mensajes del servidor — previene enumeración de emails (OWASP A01)
-        if (res.status === 400) {
-          showGlobalError(errGeneric);
-        } else {
-          showGlobalError(errConnection);
-        }
+        showGlobalError(res.status === 400 ? errGeneric : errConnection);
         return;
       }
-      registeredEmail = data.email.trim().toLowerCase();
-      form.hidden = true;
-      otpStep.hidden = false;
+      registeredEmail = email.toLowerCase();
+      form.hidden = true; otpStep.hidden = false;
       document.getElementById('rem-otp-0').focus();
     } catch (_) {
       showGlobalError(errConnection);
@@ -851,21 +785,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     }
   });
 
-  /* ── OTP submit ─── */
+  /* ─────────── OTP submit ─────────── */
   otpBtn?.addEventListener('click', async () => {
-    const digits = [];
-    document.querySelectorAll('.rem-otp-digit').forEach(inp => digits.push(inp.value));
-    const otp = digits.join('');
-
-    if (otp.length !== 6) {
-      otpErr.textContent = otpMessage;
-      otpErr.hidden = false;
-      return;
-    }
-
-    otpErr.hidden = true;
-    setOtpLoading(true);
-
+    const otp = [...document.querySelectorAll('.rem-otp-digit')].map(i => i.value).join('');
+    if (otp.length !== 6) { otpErr.textContent = 'Ingresa los 6 dígitos del código.'; otpErr.hidden = false; return; }
+    otpErr.hidden = true; setOtpLoading(true);
     try {
       const res = await fetch(`${apiUrl}/auth/verify-email-otp`, {
         method: 'POST',
@@ -873,28 +797,34 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         body: JSON.stringify({ email: registeredEmail, otp }),
       });
       const json = await res.json();
-
       if (!res.ok) {
-        // Mensaje neutral — no revela si el email existe o no
         otpErr.textContent = res.status === 410
           ? 'El código ha expirado. Vuelve al paso anterior y regístrate de nuevo.'
           : 'Código incorrecto. Revisa tu correo o solicita un nuevo registro.';
         otpErr.hidden = false;
-        /* clear OTP inputs on error */
         document.querySelectorAll('.rem-otp-digit').forEach(inp => inp.value = '');
         document.getElementById('rem-otp-0').focus();
         return;
       }
-
-      otpStep.hidden = true;
-      success.hidden = false;
+      otpStep.hidden = true; success.hidden = false;
       var encUser = json.user ? btoa(JSON.stringify(json.user)) : '';
       window.location.href = plataformaUrl + '/empresa/dashboard#token=' + encodeURIComponent(json.token) + '&user=' + encodeURIComponent(encUser);
     } catch (_) {
-      otpErr.textContent = errConnection;
-      otpErr.hidden = false;
+      otpErr.textContent = errConnection; otpErr.hidden = false;
     } finally {
       setOtpLoading(false);
     }
   });
+
+  /* ─────────── Login link ─────────── */
+  document.getElementById('rem-login-link')?.addEventListener('click', (e) => {
+    e.preventDefault(); dialog.close();
+    window.location.href = plataformaUrl + '/empresa/dashboard';
+  });
+
+  // Labels de reglas (necesarios dentro del script)
+  const t_passLen   = document.getElementById('rule-len')?.textContent?.slice(2)   || '';
+  const t_passUpper = document.getElementById('rule-upper')?.textContent?.slice(2) || '';
+  const t_passLower = document.getElementById('rule-lower')?.textContent?.slice(2) || '';
+  const t_passNum   = document.getElementById('rule-num')?.textContent?.slice(2)   || '';
 </script>
