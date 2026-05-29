@@ -168,13 +168,14 @@ const NotificationPanel = ({
 
 /* ── Layout header ──────────────────────────────────────────────────── */
 const DashboardHeader = memo(function DashboardHeader({
-    copy, handleLogout, handleToggleNotifications, lang, notifOpen, notifWrapperRef,
+    copy, handleLogout, handleToggleNotifications, notifOpen, notifWrapperRef,
     notifications, onOpenSidebar, pathname, startTour, t, theme, toggleTheme, unreadCount, user, userRole,
+    clearNotifications,
 }: {
     copy: ReturnType<typeof getDashboardText>;
+    clearNotifications: () => void;
     handleLogout: () => void;
     handleToggleNotifications: () => void;
-    lang: string;
     notifOpen: boolean;
     notifWrapperRef: React.RefObject<HTMLDivElement | null>;
     notifications: ToastNotification[];
@@ -264,7 +265,7 @@ const DashboardHeader = memo(function DashboardHeader({
                             className="flex size-7 items-center justify-center rounded-lg text-xs font-bold text-white shadow-sm"
                             style={{ background: 'var(--color-purple)' }}
                         >
-                            {user ? getInitials(user.name) : 'U'}
+                            {user ? getInitials(user.name ?? '') : 'U'}
                         </div>
                         <div className="leading-tight">
                             <p className="text-sm font-semibold leading-none" style={{ color: 'var(--color-text)' }}>
@@ -325,7 +326,7 @@ const DashboardHeader = memo(function DashboardHeader({
                         className="flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white shadow"
                         style={{ background: 'var(--color-purple)' }}
                     >
-                        {user ? getInitials(user.name) : 'U'}
+                        {user ? getInitials(user.name ?? '') : 'U'}
                     </div>
                 </div>
             </div>
@@ -387,9 +388,9 @@ export default function AppLayout() {
             <div className="flex min-w-0 flex-1 flex-col">
                 <DashboardHeader
                     copy={copy}
+                    clearNotifications={clearNotifications}
                     handleLogout={handleLogout}
                     handleToggleNotifications={handleToggleNotifications}
-                    lang={lang}
                     notifOpen={notifOpen}
                     onOpenSidebar={() => setSidebarOpen(true)}
                     notifWrapperRef={notifWrapperRef}
