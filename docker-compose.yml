@@ -113,7 +113,7 @@ services:
       args:
         VITE_API_URL: /api/v2
         VITE_MODELO_URL: http://modelo:8000
-        VITE_BUSINESS_URL: /
+        VITE_BUSINESS_URL: http://${VPS_IP:-localhost}:4321/
     container_name: smartur-plataforma
     restart: unless-stopped
     environment:
