@@ -1,10 +1,10 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
     Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
 } from 'lucide-react';
-import { memo, useState, useMemo } from 'react';
+import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
@@ -34,10 +34,17 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const { openModal } = useAuthModal();
     const { t } = useLanguage();
     const { user, clearUser } = useUserPreferences();
     const userRole = user?.role_id || 2;
+
+    // Cierra el sidebar en mobile al cambiar de ruta
+    useEffect(() => {
+        if (isOpen) onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
 
     const allItems = useMemo<MenuItem[]>(() => [
         { id: 'home',           label: t('sidebar.home'),           icon: Home,       path: '/dashboard',                 end: true, roles: [1] },

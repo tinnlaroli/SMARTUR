@@ -122,6 +122,12 @@ services:
       VITE_MODELO_URL: http://modelo:8000
     depends_on:
       - api
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:5173/ || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     networks:
       - smartur-net
 
@@ -141,6 +147,12 @@ services:
       PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}/
     depends_on:
       - api
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:4321/ || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     networks:
       - smartur-net
 

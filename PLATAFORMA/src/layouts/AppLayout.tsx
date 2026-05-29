@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import Sidebar from './Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
@@ -409,7 +410,9 @@ export default function AppLayout() {
                     style={{ background: 'var(--color-bg-alt)' }}
                 >
                     <div className="mx-auto h-full w-full max-w-400">
-                        <Outlet />
+                        <ErrorBoundary title="Error en el módulo">
+                            <Outlet />
+                        </ErrorBoundary>
                     </div>
                 </main>
             </div>

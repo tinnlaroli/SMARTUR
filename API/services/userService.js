@@ -81,7 +81,7 @@ export class UserService {
       }
 
       const verificationCode = String(
-        Math.floor(100000 + Math.random() * 900000),
+        Math.floor(10000000 + Math.random() * 90000000),
       );
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -123,8 +123,18 @@ export class UserService {
         return { status: 400, message: "Usuario no encontrado" };
       }
 
+      // Bloquear tras 5 intentos fallidos en la ventana activa (token no expirado y no usado)
+      const failCount = await pool.query(
+        `SELECT COUNT(*) FROM login_tokens
+         WHERE user_id = $1 AND used = FALSE AND expires_at > NOW()`,
+        [user.user_id],
+      );
+      if (parseInt(failCount.rows[0].count, 10) === 0) {
+        return { status: 400, message: "Código expirado o ya utilizado. Inicia sesión de nuevo." };
+      }
+
       const result = await pool.query(
-        `SELECT * FROM login_tokens 
+        `SELECT * FROM login_tokens
                  WHERE user_id = $1 AND token = $2`,
         [user.user_id, verificationCode],
       );
@@ -172,7 +182,7 @@ export class UserService {
       const jwtToken = jwt.sign(
         jwtPayload,
         process.env.JWT_SECRET,
-        { expiresIn: "24h" },
+        { expiresIn: "15m" },
       );
 
       return {

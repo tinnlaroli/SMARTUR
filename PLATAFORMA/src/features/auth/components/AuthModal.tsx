@@ -89,7 +89,7 @@ export const AuthModal: React.FC = () => {
                             </div>
 
                             <p className={`mt-8 text-center text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
-                                © 2024 Smartur. Todos los derechos reservados.
+                                © {new Date().getFullYear()} Smartur. Todos los derechos reservados.
                             </p>
                         </motion.div>
                     </div>

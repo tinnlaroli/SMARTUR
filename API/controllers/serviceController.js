@@ -137,7 +137,7 @@ class ServicesController {
             const payload = { id: user.user_id, email: user.email, role_id: user.role_id };
             if (user.role_id === 3 && user.id_company != null) payload.id_company = user.id_company;
 
-            const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+            const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
             const newRefresh = generateRefreshToken();
             await storeRefreshToken(user.user_id, newRefresh);
 

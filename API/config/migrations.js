@@ -249,6 +249,12 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
             );
             CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);`,
     },
+    {
+        name: 'v16_user_interaction_fk',
+        sql: `ALTER TABLE user_interaction
+              ADD COLUMN IF NOT EXISTS place_kind VARCHAR(10) NOT NULL DEFAULT 'poi'
+                CHECK (place_kind IN ('poi','svc'));`,
+    },
 ];
 
 export async function runMigrations() {

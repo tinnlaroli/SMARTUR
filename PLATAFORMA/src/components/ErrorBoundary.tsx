@@ -36,11 +36,8 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, info: ErrorInfo) {
-        // En producción Sentry captura esto automáticamente.
-        // En desarrollo imprimimos el stack completo.
-        if (import.meta.env.DEV) {
-            console.error('[ErrorBoundary]', error, info.componentStack);
-        }
+        console.error('[ErrorBoundary]', error.message, info.componentStack);
+        // TODO: Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
     }
 
     handleReset = () => {

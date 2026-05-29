@@ -110,6 +110,13 @@ api.interceptors.response.use(
             }
         }
 
+        if (error.response?.status >= 500) {
+            console.error(
+                `[API] ${error.config?.method?.toUpperCase()} ${error.config?.url} → ${error.response.status}`,
+                error.response.data,
+            );
+        }
+
         return Promise.reject(error);
     },
 );

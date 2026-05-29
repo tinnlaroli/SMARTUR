@@ -151,10 +151,25 @@ const authLimiter = rateLimit({
         error: 'Demasiados intentos. Intenta de nuevo en 1 minuto.',
     },
 });
+
+// 4. OTP: 3 intentos / 5 min por email — bloquea brute-force de códigos de 6 dígitos
+const otpLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => `otp:${(req.body?.email ?? req.ip ?? '').toLowerCase()}`,
+    skipSuccessfulRequests: true,
+    message: {
+        error: 'Demasiados intentos de verificación. Intenta de nuevo en 5 minutos.',
+    },
+});
+
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
 app.use('/api/v2/auth/register-empresa', authLimiter);
 app.use('/api/v2/auth/verify-email-otp', authLimiter);
+app.use('/api/v2/auth/verify-email-otp', otpLimiter);
 app.use('/api/v2/auth/refresh', authLimiter);
 
 // ─────────────────────────────────────────────────────────────────────────────

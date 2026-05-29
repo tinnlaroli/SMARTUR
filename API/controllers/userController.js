@@ -451,7 +451,7 @@ class UserController {
           role_id: user.role_id,
         },
         process.env.JWT_SECRET,
-        { expiresIn: "24h" },
+        { expiresIn: "15m" },
       );
 
       // Fire-and-forget: record device session + issue refresh token
