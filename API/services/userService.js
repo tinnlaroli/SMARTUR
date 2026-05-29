@@ -81,7 +81,7 @@ export class UserService {
       }
 
       const verificationCode = String(
-        Math.floor(10000000 + Math.random() * 90000000),
+        Math.floor(100000 + Math.random() * 900000),
       );
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 

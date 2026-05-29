@@ -137,13 +137,13 @@ export async function sendEmailVerification(to, code) {
       ${heading('Verificación de acceso')}
       ${paragraph('Introduce este código para completar el inicio de sesión.')}
       ${codeBlock(code)}
-      ${paragraph(`Válido por <strong style="color:${TEXT};">15 minutos</strong>. Si no reconoces esta actividad, ignora este correo.`)}`;
+      ${paragraph(`Válido por <strong style="color:${TEXT};">5 minutos</strong>. Si no reconoces esta actividad, ignora este correo.`)}`;
 
     await deliver({
         to,
         subject: 'Código de verificación — SMARTUR',
         title: 'Verificación de acceso',
-        text: `Verificación de acceso\n\nCódigo: ${code}\n\nVálido 15 minutos.\n\nSMARTUR`,
+        text: `Verificación de acceso\n\nCódigo: ${code}\n\nVálido 5 minutos.\n\nSMARTUR`,
         html: content,
     });
 }
