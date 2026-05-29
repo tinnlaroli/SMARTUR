@@ -160,14 +160,13 @@ export class UserService {
         user.is_active = true;
       }
 
-      // Para usuarios empresa (role_id=3), incluir id_company en el JWT
       const jwtPayload = {
         id: user.user_id,
         email: user.email,
         role_id: user.role_id,
       };
-      if (user.role_id === 3 && user.id_company != null) {
-        jwtPayload.id_company = user.id_company;
+      if (user.role_id === 3) {
+        jwtPayload.id_company = user.id_company ?? null;
       }
 
       const jwtToken = jwt.sign(

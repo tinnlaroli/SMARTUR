@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
     Bell, Send, Users, Building2, Globe,
     CheckCircle2, AlertCircle, Loader2,
@@ -51,7 +51,7 @@ export function NotificacionesPage() {
     const [loading, setLoading] = useState(false);
     const [error,   setError]   = useState<string | null>(null);
     const [history, setHistory] = useState<HistoryEntry[]>([]);
-    let nextId = 0;
+    const nextIdRef = useRef(0);
 
     const TARGET_OPTIONS: {
         value:       Target;
@@ -88,7 +88,7 @@ export function NotificacionesPage() {
             const { successCount, failureCount } = res.data;
 
             setHistory(prev => [{
-                id:    Date.now() + nextId++,
+                id:    Date.now() + nextIdRef.current++,
                 sentAt: new Date(),
                 title:  sentTitle,
                 body:   sentBody,

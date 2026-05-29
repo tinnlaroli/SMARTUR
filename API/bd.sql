@@ -283,12 +283,11 @@ CREATE TABLE service_certification (
     is_active BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE login_tokens (
-  user_id INT,
+CREATE TABLE IF NOT EXISTS login_tokens (
+  user_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
   token VARCHAR(100) NOT NULL,
   expires_at TIMESTAMP NOT NULL,
-  used BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (user_id) REFERENCES "user"(user_id)
+  used BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE password_reset_tokens (

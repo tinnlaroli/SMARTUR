@@ -46,8 +46,8 @@ const DashboardLoader = ({ label }: { label: string }) => (
 );
 
 export function EmpresaDashboardPage() {
-    const { user } = useUserPreferences();
-    const copy = getDashboardText('es');
+    const { user, lang } = useUserPreferences();
+    const copy = getDashboardText(lang);
 
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);

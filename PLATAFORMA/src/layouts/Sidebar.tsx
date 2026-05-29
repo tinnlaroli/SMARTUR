@@ -68,6 +68,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         clearUser();
         openModal('login');
         navigate('/');

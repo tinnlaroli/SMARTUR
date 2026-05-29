@@ -192,6 +192,63 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );`,
     },
+    {
+        name: 'v10_login_tokens',
+        sql: `CREATE TABLE IF NOT EXISTS login_tokens (
+              user_id    INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+              token      VARCHAR(100) NOT NULL,
+              expires_at TIMESTAMP NOT NULL,
+              used       BOOLEAN DEFAULT FALSE
+            );`,
+    },
+    {
+        name: 'v11_security_events',
+        sql: `CREATE TABLE IF NOT EXISTS security_events (
+              id          SERIAL PRIMARY KEY,
+              event_type  VARCHAR(100) NOT NULL,
+              user_email  VARCHAR(100),
+              ip_address  VARCHAR(50),
+              severity    VARCHAR(20) DEFAULT 'INFO',
+              created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_security_events_created_at ON security_events(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_security_events_type ON security_events(event_type);`,
+    },
+    {
+        name: 'v12_company_status_and_owner',
+        sql: `ALTER TABLE company
+              ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending','active','suspended')),
+              ADD COLUMN IF NOT EXISTS owner_user_id INT REFERENCES "user"(user_id) ON DELETE SET NULL;`,
+    },
+    {
+        name: 'v13_user_id_company',
+        sql: `ALTER TABLE "user"
+              ADD COLUMN IF NOT EXISTS id_company INT REFERENCES company(id_company) ON DELETE SET NULL;`,
+    },
+    {
+        name: 'v14_device_token',
+        sql: `CREATE TABLE IF NOT EXISTS device_token (
+              id          SERIAL PRIMARY KEY,
+              user_id     INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+              token       TEXT NOT NULL,
+              platform    VARCHAR(10) NOT NULL DEFAULT 'android',
+              updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+              UNIQUE (user_id, platform)
+            );
+            CREATE INDEX IF NOT EXISTS idx_device_token_user ON device_token(user_id);`,
+    },
+    {
+        name: 'v15_refresh_tokens',
+        sql: `CREATE TABLE IF NOT EXISTS refresh_tokens (
+              id          SERIAL PRIMARY KEY,
+              user_id     INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+              token_hash  TEXT NOT NULL,
+              expires_at  TIMESTAMPTZ NOT NULL,
+              revoked     BOOLEAN NOT NULL DEFAULT FALSE
+            );
+            CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);`,
+    },
 ];
 
 export async function runMigrations() {

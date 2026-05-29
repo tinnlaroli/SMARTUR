@@ -82,8 +82,9 @@ class ServicesController {
             await logSecurityEvent('LOGIN_FAIL', email ?? null, ip, 'WARN');
             return res.status(result.status).json({ message: result.message, error: result.error });
         } catch (error) {
+            console.error('Error en loginController:', error);
             await logSecurityEvent('LOGIN_FAIL', req.body?.email ?? null, ip, 'WARN').catch(() => {});
-            return res.status(500).json({ message: 'Error del servidor', error: error.message });
+            return res.status(500).json({ message: 'Error del servidor' });
         }
     }
 
@@ -111,8 +112,9 @@ class ServicesController {
                 user: result.data.user,
             });
         } catch (error) {
+            console.error('Error en verifyTwoStepVerificationCodeController:', error);
             await logSecurityEvent('MFA_DENIED', req.body?.email ?? null, ip, 'WARN').catch(() => {});
-            res.status(500).json({ error: error.message });
+            res.status(500).json({ message: 'Error del servidor' });
         }
     }
 

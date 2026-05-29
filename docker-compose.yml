@@ -87,7 +87,7 @@ services:
       AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
       KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
       KAGGLE_KEY: ${KAGGLE_KEY:-}
-      CORS_ORIGINS: "http://localhost:5173,http://localhost:3000,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4000"
+      CORS_ORIGINS: "http://plataforma:5173,http://api:3000,http://localhost:5173,http://localhost:3000,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4000"
     volumes:
       - modelo_data:/app/data
       - modelo_models:/app/models
@@ -95,11 +95,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'python', '-c', 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8000/docs", timeout=5)']
+      test: ['CMD', 'python', '-c', 'import urllib.request,json; r=urllib.request.urlopen("http://127.0.0.1:8000/health",timeout=5); d=json.loads(r.read()); exit(0 if d.get("status")=="ok" else 1)']
       interval: 30s
       timeout: 10s
       retries: 10
-      start_period: 1800s
+      start_period: 120s
     networks:
       - smartur-net
 
@@ -140,7 +140,7 @@ services:
     environment:
       PUBLIC_TOURIST_APP_URL: http://${VPS_IP:-localhost}/
     depends_on:
-      - plataforma
+      - api
     networks:
       - smartur-net
 

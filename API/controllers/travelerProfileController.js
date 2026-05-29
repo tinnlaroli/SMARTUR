@@ -56,10 +56,7 @@ export class TravelerProfileController {
             });
         } catch (error) {
             console.error('Error fetching traveler profiles:', error);
-            res.status(500).json({
-                message: 'Error interno del servidor',
-                error: error.message,
-            });
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
 
@@ -71,16 +68,16 @@ export class TravelerProfileController {
             if (!travelerProfile) {
                 return res.status(404).json({ message: 'Traveler Profile no encontrado' });
             }
+            if (travelerProfile.user_id !== req.user.id && req.user.role_id !== 1) {
+                return res.status(403).json({ message: 'No autorizado' });
+            }
             res.status(200).json({
                 message: 'Traveler Profile obtenido exitosamente',
                 travelerProfile: serializeTravelerProfile(travelerProfile),
             });
         } catch (error) {
             console.error('Error fetching traveler profile:', error);
-            res.status(500).json({
-                message: 'Error interno del servidor',
-                error: error.message,
-            });
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
 
@@ -94,22 +91,23 @@ export class TravelerProfileController {
             });
         } catch (error) {
             console.error('Error creating traveler profile:', error);
-            res.status(500).json({
-                message: 'Error interno del servidor',
-                error: error.message,
-            });
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
 
     static async updateTravelerProfileController(req, res) {
         try {
+            const existing = await TravelerProfile.findTravelerProfileById(req.params.id_profile);
+            if (!existing) {
+                return res.status(404).json({ message: 'Traveler Profile no encontrado' });
+            }
+            if (existing.user_id !== req.user.id && req.user.role_id !== 1) {
+                return res.status(403).json({ message: 'No autorizado' });
+            }
             const updatedProfile = await TravelerProfile.updateTravelerProfile(
                 req.params.id_profile,
                 req.body
             );
-            if (!updatedProfile) {
-                return res.status(404).json({ message: 'Traveler Profile no encontrado' });
-            }
             const travelerProfile = await TravelerProfile.findTravelerProfileById(req.params.id_profile);
             res.json({
                 message: 'Traveler Profile actualizado exitosamente',
@@ -117,10 +115,7 @@ export class TravelerProfileController {
             });
         } catch (error) {
             console.error('Error updating traveler profile:', error);
-            res.status(500).json({
-                message: 'Error interno del servidor',
-                error: error.message,
-            });
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
 
@@ -148,7 +143,7 @@ export class TravelerProfileController {
             });
         } catch (error) {
             console.error('Error deleting traveler profile:', error);
-            res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
 

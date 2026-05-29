@@ -89,7 +89,7 @@ class EmpresaController {
             });
         } catch (error) {
             console.error('Error en registerEmpresa:', error);
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            return res.status(500).json({ message: 'Error del servidor. Intenta de nuevo más tarde.' });
         }
     }
 
@@ -123,7 +123,8 @@ class EmpresaController {
 
             return res.json({ company: result.rows[0] });
         } catch (error) {
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            console.error('Error en getProfile:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
         }
     }
 
@@ -158,7 +159,8 @@ class EmpresaController {
             );
             return res.json({ message: 'Perfil actualizado.' });
         } catch (error) {
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            console.error('Error en updateProfile:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
         }
     }
 
@@ -209,7 +211,7 @@ class EmpresaController {
             return res.json({ message: 'Email verificado correctamente.' });
         } catch (error) {
             console.error('Error en verifyEmail:', error);
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            return res.status(500).json({ message: 'Error del servidor.' });
         }
     }
 
@@ -300,7 +302,7 @@ class EmpresaController {
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('Error en verifyEmailOTP:', error);
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            return res.status(500).json({ message: 'Error del servidor.' });
         } finally {
             client.release();
         }
@@ -354,7 +356,8 @@ class EmpresaController {
             );
             return res.json({ services: result.rows, total });
         } catch (error) {
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            console.error('Error en getServices:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
         }
     }
 
@@ -462,7 +465,7 @@ class EmpresaController {
             });
         } catch (error) {
             console.error('Error en getAnalytics:', error);
-            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+            return res.status(500).json({ message: 'Error del servidor.' });
         }
     }
 

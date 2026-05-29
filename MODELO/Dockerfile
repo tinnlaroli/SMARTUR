@@ -14,11 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY data/ ./data/
-COPY models/ ./models/
-COPY src/ ./src/
+RUN addgroup --system --gid 1001 modelgroup \
+    && adduser --system --uid 1001 --ingroup modelgroup modeluser
+
+COPY --chown=modeluser:modelgroup data/ ./data/
+COPY --chown=modeluser:modelgroup models/ ./models/
+COPY --chown=modeluser:modelgroup src/ ./src/
 
 WORKDIR /app/src
+
+USER modeluser
 
 EXPOSE 8000
 
