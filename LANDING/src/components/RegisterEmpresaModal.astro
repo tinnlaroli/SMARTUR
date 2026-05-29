@@ -201,6 +201,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         </svg>
       </button>
       <p id="rem-otp-error" class="rem-otp-error-txt" hidden></p>
+      <p class="rem-otp-hint">
+        ¿Ya tienes cuenta?
+        <a id="rem-login-link" href="#" class="rem-otp-login-link">Inicia sesión en el portal</a>
+      </p>
     </div>
 
     <!-- Success state (after OTP verified) -->
@@ -545,6 +549,26 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     margin: 0;
   }
 
+  .rem-otp-hint {
+    font-size: 0.775rem;
+    color: var(--color-text-alt);
+    margin: 0;
+    opacity: 0.7;
+  }
+
+  .rem-otp-login-link {
+    color: var(--color-purple);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font: inherit;
+    padding: 0;
+
+    &:hover { opacity: 0.75; }
+  }
+
   /* ── Success ────────────────────────────── */
   .rem-success-box {
     display: flex;
@@ -749,6 +773,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   /* ── Close button ─── */
   closeBtn?.addEventListener('click', () => dialog.close());
 
+  /* ── Login link in OTP step ─── */
+  document.getElementById('rem-login-link')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    dialog.close();
+    window.location.href = plataformaUrl + '/empresa/dashboard';
+  });
+
   /* ── Register form submit ─── */
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -800,9 +831,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
           id_sector: Number(data.id_sector),
         }),
       });
-      const json = await res.json();
       if (!res.ok) {
-        showGlobalError(json.message || errGeneric);
+        // Nunca exponer mensajes del servidor — previene enumeración de emails (OWASP A01)
+        if (res.status === 400) {
+          showGlobalError(errGeneric);
+        } else {
+          showGlobalError(errConnection);
+        }
         return;
       }
       registeredEmail = data.email.trim().toLowerCase();
@@ -840,7 +875,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       const json = await res.json();
 
       if (!res.ok) {
-        otpErr.textContent = json.message || errGeneric;
+        // Mensaje neutral — no revela si el email existe o no
+        otpErr.textContent = res.status === 410
+          ? 'El código ha expirado. Vuelve al paso anterior y regístrate de nuevo.'
+          : 'Código incorrecto. Revisa tu correo o solicita un nuevo registro.';
         otpErr.hidden = false;
         /* clear OTP inputs on error */
         document.querySelectorAll('.rem-otp-digit').forEach(inp => inp.value = '');

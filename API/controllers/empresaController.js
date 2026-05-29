@@ -59,7 +59,11 @@ class EmpresaController {
                 [trimmedEmail],
             );
             if (existingUser.rowCount > 0) {
-                return res.status(409).json({ message: 'El email ya está registrado.' });
+                // Anti-enumeración OWASP: respuesta idéntica al caso exitoso
+                // No se envía OTP — el flujo fallará silenciosamente en la verificación
+                return res.status(201).json({
+                    message: 'OTP enviado al correo. Verifica tu email para completar el registro.',
+                });
             }
 
             const existingPending = await pool.query(
