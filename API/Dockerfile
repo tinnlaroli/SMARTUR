@@ -8,12 +8,10 @@ FROM node:22-alpine AS deps
 
 WORKDIR /app
 
-RUN npm install -g pnpm@latest
-
 # Copiar manifiestos para aprovechar cache de capas
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 
-RUN pnpm install --frozen-lockfile --prod
+RUN npm install --omit=dev --no-audit --prefer-offline
 
 # ── Etapa 2: Imagen Final ──────────────────────────────────
 FROM node:22-alpine AS runner
