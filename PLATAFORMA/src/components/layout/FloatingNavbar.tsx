@@ -345,7 +345,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                             <button
                                 key={item.target}
                                 onClick={() => handleMobileLinkClick(item.target)}
-                                className="text-4xl font-black tracking-tighter transition-colors"
+                                className="text-2xl font-black tracking-tighter transition-colors sm:text-4xl"
                                 style={{
                                     transitionDelay: `${idx * 0.1}s`,
                                     color: activeSection === item.target ? 'var(--color-pink)' : 'var(--color-text)'

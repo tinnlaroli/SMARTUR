@@ -104,7 +104,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               itemCount: contents.length,
               itemBuilder: (_, i) {
                 double localDelta = i - _pageOffset;
-                double parallaxOffset = localDelta * 150; 
+                final screenW = MediaQuery.sizeOf(context).width;
+                double parallaxOffset = localDelta * (screenW * 0.35);
                 double itemOpacity = (1.0 - (localDelta.abs() * 1.5)).clamp(0.0, 1.0);
                 
                 return Opacity(
@@ -116,31 +117,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildImageAsset(contents[i].imagePath, height: 380),
+                          _buildImageAsset(
+                            contents[i].imagePath,
+                            height: (MediaQuery.sizeOf(context).height * 0.38).clamp(200.0, 380.0),
+                          ),
                           const Spacer(),
                           Text(
                             contents[i].title,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 32, 
+                              fontSize: (MediaQuery.sizeOf(context).width < 360 ? 24.0 : MediaQuery.sizeOf(context).width < 400 ? 28.0 : 32.0),
                               fontWeight: FontWeight.bold,
                               color: scheme.onSurface,
                               height: 1.2,
                               fontFamily: 'CalSans',
                             ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             contents[i].description,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16, 
+                              fontSize: MediaQuery.sizeOf(context).width < 360 ? 14.0 : 16.0,
                               color: scheme.onSurfaceVariant,
                               height: 1.5,
                               fontFamily: 'Outfit',
                             ),
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 120), 
+                          SizedBox(height: (MediaQuery.sizeOf(context).height * 0.13).clamp(80.0, 120.0)),
                         ],
                       ),
                     ),

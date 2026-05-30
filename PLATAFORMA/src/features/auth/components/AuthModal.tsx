@@ -66,7 +66,7 @@ export const AuthModal: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className={`relative w-full max-w-md overflow-hidden rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl ${
+                            className={`relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md overflow-hidden rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl ${
                                 isDark ? 'border border-zinc-800 bg-zinc-900' : 'border border-zinc-200 bg-white'
                             }`}
                         >

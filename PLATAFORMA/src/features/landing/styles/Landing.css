@@ -250,7 +250,19 @@
 
 @media (max-width: 767px) {
   .sy-hero-home .title {
-    font-size: 3.15rem;
+    font-size: 2.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .sy-hero-home .title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .sy-hero-home .title {
+    font-size: 1.875rem;
   }
 }
 
@@ -264,6 +276,13 @@
 @media (max-width: 767px) {
   .sy-hero-home .subtitle {
     font-size: var(--font-size-md);
+    margin: 1.25rem 0 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .sy-hero-home .subtitle {
+    font-size: 0.9rem;
   }
 }
 

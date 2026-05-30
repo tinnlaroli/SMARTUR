@@ -341,7 +341,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                   // Right mosaic thumbnails
                   if (widget.galleryUrls.length > 1)
                     Positioned(
-                      top: 130,
+                      top: (MediaQuery.sizeOf(context).height * 0.14).clamp(100.0, 150.0),
                       right: 16,
                       child: _RightMosaic(galleryUrls: widget.galleryUrls),
                     ),
@@ -551,7 +551,7 @@ class _BottomContent extends StatelessWidget {
               const SizedBox(height: 10),
 
               SizedBox(
-                height: 140,
+                height: (MediaQuery.sizeOf(context).height * 0.17).clamp(120.0, 160.0),
                 child: TabBarView(
                   children: [
                     _TabText(

@@ -143,7 +143,7 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
             <div
                 ref={innerRef}
                 className="sy-rect-inner"
-                style={{ position: 'relative', height: '100dvh', minHeight: 400, overflow: 'hidden' }}
+                style={{ position: 'relative', height: '100dvh', minHeight: 'clamp(500px, 100dvh, 100dvh)', overflow: 'hidden' }}
             >
                 {SECTIONS.map((section, idx) => (
                     <div

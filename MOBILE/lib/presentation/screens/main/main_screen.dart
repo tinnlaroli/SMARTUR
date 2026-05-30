@@ -177,7 +177,9 @@ class _NavBarItem extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 16.0 : 12.0,
+          horizontal: isSelected
+              ? (MediaQuery.sizeOf(context).width < 360 ? 10.0 : 16.0)
+              : (MediaQuery.sizeOf(context).width < 360 ? 8.0 : 12.0),
           vertical: 10.0,
         ),
         decoration: BoxDecoration(

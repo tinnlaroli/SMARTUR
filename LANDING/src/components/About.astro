@@ -453,12 +453,14 @@ const {
       transition: all 0.4s ease;
 
       @media (--mq-phone) {
-        /* Move dot to the left vertical line */
-        /* Distance = padding of card + margin of line = 1.5rem + 1.5rem = 3rem. Plus half of 12px width = 6px */
-        left: calc(-3rem - 6px); 
+        left: calc(-3rem - 6px);
         top: 0.25rem;
         right: auto;
         transform: none;
+      }
+
+      @media (--mq-phone-sm) {
+        left: calc(-2.5rem - 6px);
       }
     }
 

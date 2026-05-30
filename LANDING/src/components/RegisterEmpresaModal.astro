@@ -411,6 +411,28 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     border-radius: 0.75rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
     &:focus { border-color: rgba(var(--rgb-purple-accent), 0.55); box-shadow: 0 0 0 3px rgba(var(--rgb-purple-accent), 0.1); }
     &[aria-invalid="true"] { border-color: rgba(220,38,38,0.5); box-shadow: 0 0 0 3px rgba(220,38,38,0.08); }
+
+    @media (max-width: 400px) {
+      width: 2.625rem;
+      height: 3.125rem;
+      font-size: 1.25rem;
+    }
+
+    @media (max-width: 360px) {
+      width: 2.25rem;
+      height: 2.875rem;
+      font-size: 1.125rem;
+      border-radius: 0.5rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .rem-otp-inputs { gap: 0.375rem; }
+  }
+
+  @media (max-width: 360px) {
+    .rem-otp-inputs { gap: 0.25rem; }
+    .rem-inner { padding: 1.5rem 1rem; }
   }
   .rem-otp-error-txt { font-size: 0.8rem; color: #dc2626; margin: 0; }
   .rem-otp-hint { font-size: 0.775rem; color: var(--color-text-alt); margin: 0; opacity: 0.7; }
