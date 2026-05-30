@@ -266,7 +266,14 @@ class SmarturContextModel:
 
         return result
 
-    def train(self, reviews_df):
+    def train(self, reviews_df, df_biz_extra=None, dynamic_override=True):
+        if df_biz_extra is not None:
+            biz_ids_extra = df_biz_extra['business_id'].unique()
+            self.df_biz = pd.concat([
+                self.df_biz[~self.df_biz['business_id'].isin(biz_ids_extra)],
+                df_biz_extra
+            ], ignore_index=True)
+            print(f"[RF] Añadidos {len(df_biz_extra)} negocios extra (Rest-Mex)")
         train_df = reviews_df.merge(self.df_biz, on='business_id', suffixes=('_user', '_biz'))
 
         # 1. Pipeline de Item
@@ -288,16 +295,36 @@ class SmarturContextModel:
         y = train_df['stars_user']
 
         # Profundidad dinámica: evita sobreajuste con datasets pequeños (26 POIs locales)
+        # Se omite si dynamic_override=False (usado por grid search)
         n_items = len(train_df['business_id'].unique())
-        max_depth = 12 if n_items > 5000 else (7 if n_items > 500 else 4)
-        n_est = min(200, max(50, n_items * 5))
-        self.model.set_params(max_depth=max_depth, n_estimators=n_est)
+        if dynamic_override:
+            max_depth = 12 if n_items > 5000 else (7 if n_items > 500 else 4)
+            n_est = min(200, max(50, n_items * 5))
+            self.model.set_params(max_depth=max_depth, n_estimators=n_est)
+        else:
+            max_depth = self.model.max_depth
+            n_est = self.model.n_estimators
 
         print(f"RF (True ML Contextual): entrenando sobre {X.shape[0]} interacciones con {X.shape[1]} variables cruzadas.")
         print(f"  max_depth={max_depth}, n_estimators={n_est}, n_items={n_items}")
         print(f"Features en red: {self.features}")
 
         self.model.fit(X, y)
+
+        # ── Feature importances ────────────────────────────────────────────
+        fi = pd.DataFrame({
+            'feature': self.features,
+            'importance': self.model.feature_importances_,
+        }).sort_values('importance', ascending=False)
+        print(f"\nFeature Importances (top 20):\n{fi.head(20).to_string(index=False)}\n")
+        fi.to_json(os.path.join(_MODELS, 'rf_feature_importances.json'), orient='records', indent=2)
+
+        # ── Hyperparameters ────────────────────────────────────────────────
+        import json as _json
+        hp = {k: str(v) for k, v in self.model.get_params().items()}
+        with open(os.path.join(_MODELS, 'rf_hyperparams.json'), 'w') as _f:
+            _json.dump(hp, _f, indent=2)
+        print(f"Hyperparams: {hp}")
 
         os.makedirs(_MODELS, exist_ok=True)
         joblib.dump({

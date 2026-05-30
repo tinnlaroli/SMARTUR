@@ -1,9 +1,13 @@
 import pandas as pd
 import json
 import os
+import sys
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA = os.path.join(_DIR, '..', 'data')
+sys.path.insert(0, _DIR)
+
+from data_cleaner import is_tourism_business, clean_businesses, clean_reviews
 
 
 def _parse_bool_attr(attributes, key):
@@ -63,7 +67,7 @@ def filtrar_yelp(limite_registros=100000):
         for line in f:
             biz = json.loads(line)
             cat = str(biz.get('categories', ''))
-            if any(term in cat for term in ['Tourism', 'Hotels', 'Restaurants', 'Local Services']):
+            if is_tourism_business(cat):
                 # Extraer atributos enriquecidos del negocio
                 attrs = biz.get('attributes') or {}
                 biz['price_level'] = _parse_price_level(attrs)
@@ -105,9 +109,18 @@ def filtrar_yelp(limite_registros=100000):
 
     df_rev = pd.DataFrame(reviews)
 
+    print("\nLimpiando negocios...")
+    df_biz = clean_businesses(df_biz)
+
+    print("\nLimpiando reviews...")
+    valid_biz = set(df_biz['business_id'])
+    df_rev = clean_reviews(df_rev, valid_biz_ids=valid_biz)
+
     df_biz.to_csv(os.path.join(_DATA, 'data_negocios_limpio.csv'), index=False)
     df_rev.to_csv(os.path.join(_DATA, 'data_reviews_limpio.csv'), index=False)
-    print("Listo. CSVs creados en data/.")
+    print("\nListo. CSVs limpios creados en data/.")
+    print(f"  Negocios: {len(df_biz)}")
+    print(f"  Reviews: {len(df_rev)}")
     print(f"  Columnas enriquecidas: price_level, is_accessible, outdoor, is_good_for_kids, is_romantic")
 
 

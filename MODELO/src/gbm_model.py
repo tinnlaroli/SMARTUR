@@ -2,9 +2,11 @@
 Tercer algoritmo ML: Gradient Boosting contextual (mismas features que RF).
 Complementa CF+KNN y Random Forest en la comparativa de modelos.
 """
+import json
 import os
 import joblib
 import numpy as np
+import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
 from rf_model import SmarturContextModel, _DATA, _MODELS, _compute_dist_km
@@ -24,7 +26,14 @@ class SmarturGbmModel(SmarturContextModel):
             random_state=42,
         )
 
-    def train(self, reviews_df):
+    def train(self, reviews_df, df_biz_extra=None):
+        if df_biz_extra is not None:
+            biz_ids_extra = df_biz_extra['business_id'].unique()
+            self.df_biz = pd.concat([
+                self.df_biz[~self.df_biz['business_id'].isin(biz_ids_extra)],
+                df_biz_extra
+            ], ignore_index=True)
+            print(f"[GBM] Añadidos {len(df_biz_extra)} negocios extra (Rest-Mex)")
         train_df = reviews_df.merge(self.df_biz, on='business_id', suffixes=('_user', '_biz'))
         self._extract_top_categories(train_df)
 
@@ -43,6 +52,19 @@ class SmarturGbmModel(SmarturContextModel):
             f"con {X.shape[1]} variables."
         )
         self.model.fit(X, y)
+
+        # ── Feature importances ────────────────────────────────────────────
+        fi = pd.DataFrame({
+            'feature': self.features,
+            'importance': self.model.feature_importances_,
+        }).sort_values('importance', ascending=False)
+        fi.to_json(os.path.join(_MODELS, 'gbm_feature_importances.json'), orient='records', indent=2)
+
+        # ── Hyperparameters ────────────────────────────────────────────────
+        hp = {k: str(v) for k, v in self.model.get_params().items()}
+        with open(os.path.join(_MODELS, 'gbm_hyperparams.json'), 'w') as _f:
+            json.dump(hp, _f, indent=2)
+        print(f"[GBM] Feature importances + hyperparams guardados. Top: {fi.head(1)['feature'].values[0]}")
 
         os.makedirs(_MODELS, exist_ok=True)
         joblib.dump(

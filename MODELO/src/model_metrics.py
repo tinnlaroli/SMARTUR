@@ -19,6 +19,9 @@ DEFAULT_METRICS = {
     'local_blend': {'rf': 0.55, 'gbm': 0.45},
     'algorithms': {},
     'ranking': {},
+    'error_distribution': {},
+    'prediction_distribution': {},
+    'data_quality': {},
 }
 
 
@@ -124,6 +127,39 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alph
         'algorithms': metrics,
         'sample_size': len(actuals),
     }
+
+    # Enrich with error_distribution, prediction_distribution, data_quality
+    _actuals = np.asarray(actuals, dtype=float)
+    errors_abs = np.abs(_actuals - hybrid_preds)
+    ed = {}
+    for t in [0.5, 1.0, 1.5, 2.0]:
+        key = f'within_{str(t).replace(".", "_")}'
+        ed[key] = round(float((errors_abs <= t).mean() * 100), 1)
+    result['error_distribution'] = ed
+
+    actual_buckets = []
+    pred_buckets = []
+    for star in range(1, 6):
+        actual_buckets.append([star, int((_actuals == star).sum())])
+        pred_buckets.append([
+            star,
+            int(((hybrid_preds >= star - 0.5) & (hybrid_preds < star + 0.5)).sum()),
+        ])
+    result['prediction_distribution'] = {
+        'actual_buckets': actual_buckets,
+        'predicted_buckets': pred_buckets,
+    }
+
+    if engine is not None:
+        result['data_quality'] = {
+            'total_interactions': int(len(engine.train_data)) if hasattr(engine, 'train_data') and engine.train_data is not None else 0,
+            'total_test': int(len(engine.test_data)) if hasattr(engine, 'test_data') and engine.test_data is not None else 0,
+            'users_count': int(engine.user_item_matrix.shape[0]) if engine and engine.user_item_matrix is not None else 0,
+            'businesses_count': int(engine.user_item_matrix.shape[1]) if engine and engine.user_item_matrix is not None else 0,
+            'top_categories': getattr(rf_model, 'top_categories', [])[:10],
+            'features_count': len(getattr(rf_model, 'features', [])),
+        }
+
     return result
 
 
