@@ -165,6 +165,18 @@ const otpLimiter = rateLimit({
     },
 });
 
+// 5. Contacto: 5 req / 10 min por IP — evita spam en formulario público
+const contactLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Demasiados mensajes enviados. Intenta de nuevo en 10 minutos.',
+    },
+});
+app.use('/api/v2/contact', contactLimiter);
+
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
 app.use('/api/v2/auth/register-empresa', authLimiter);

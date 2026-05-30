@@ -124,6 +124,11 @@ const seo = seoMetadata[currentLang];
     <meta property="og:title" content={seo.ogTitle} />
     <meta property="og:description" content={seo.ogDescription} />
     <meta property="og:locale" content={seo.locale} />
+    <meta property="og:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'http://2.24.112.25:4321'}/image-1.jpg`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={seo.ogTitle} />
+    <meta property="og:url" content={import.meta.env.PUBLIC_SITE_URL || 'http://2.24.112.25:4321'} />
 
     <!-- Fonts - Vibrant Design System -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -137,14 +142,9 @@ const seo = seoMetadata[currentLang];
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content={t("layout.twitterCardTitle")}
-    />
-    <meta
-      name="twitter:description"
-      content={t("layout.twitterCardDesc")}
-    />
+    <meta name="twitter:title" content={t("layout.twitterCardTitle")} />
+    <meta name="twitter:description" content={t("layout.twitterCardDesc")} />
+    <meta name="twitter:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'http://2.24.112.25:4321'}/image-1.jpg`} />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
