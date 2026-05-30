@@ -9,6 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/constants/api_constants.dart';
 import '../../core/constants/env_config.dart';
 import '../../core/utils/profile_photo_validation.dart';
+import 'notification_service.dart';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
@@ -159,6 +160,8 @@ class AuthService {
     await _storage.delete(key: _userEmailKey);
     await _storage.delete(key: _userPhotoUrlKey);
     await _storage.delete(key: _userAvatarIconKey);
+    // Permitir que el próximo login vuelva a registrar el token FCM
+    NotificationService.reset();
   }
 
   // ── User data persistence ──────────────────────────────────────────────

@@ -7,22 +7,25 @@ import '../../core/constants/api_constants.dart';
 
 /// Maneja notificaciones push via Firebase Cloud Messaging.
 ///
-/// Uso:
-/// ```dart
-/// await NotificationService.init(context: context);
-/// ```
+/// Flujo de dos etapas:
+/// 1. [setup] — llamar en main() después de Firebase.initializeApp().
+///    Solicita permisos, obtiene token y configura listeners de sistema.
+///    NO requiere auth — seguro antes del login.
+/// 2. [registerWithApi] — llamar en MainScreen después del primer frame.
+///    Registra el token en la API SMARTUR (requiere sesión activa).
 class NotificationService {
-  static bool _initialized = false;
+  static bool _setupDone = false;
+  static bool _registered = false;
+  static String? _cachedToken;
 
-  /// Inicializa Firebase + FCM, solicita permisos y registra el token en la API.
-  /// Debe llamarse después de un login exitoso.
-  static Future<void> init({BuildContext? context}) async {
-    if (_initialized) return;
+  /// Etapa 1: permisos + token + listeners globales.
+  /// Llamar en main() después de Firebase.initializeApp().
+  static Future<void> setup() async {
+    if (_setupDone) return;
 
     try {
       final messaging = FirebaseMessaging.instance;
 
-      // Solicitar permiso (Android 13+, iOS)
       final settings = await messaging.requestPermission(
         alert: true,
         badge: true,
@@ -32,45 +35,64 @@ class NotificationService {
       if (settings.authorizationStatus != AuthorizationStatus.authorized &&
           settings.authorizationStatus != AuthorizationStatus.provisional) {
         debugPrint('[FCM] Permiso de notificaciones denegado.');
+        _setupDone = true;
         return;
       }
 
-      // Obtener y registrar el token
-      final token = await messaging.getToken();
-      if (token != null) {
-        await _registerToken(token, 'android');
-      }
+      _cachedToken = await messaging.getToken();
+      debugPrint('[FCM] Token obtenido: ${_cachedToken?.substring(0, 20)}...');
 
-      // Escuchar renovaciones de token
+      // Renovaciones automáticas de token — se registran cuando haya sesión
       messaging.onTokenRefresh.listen((newToken) {
-        _registerToken(newToken, 'android');
+        _cachedToken = newToken;
+        if (_registered) _registerToken(newToken, 'android');
       });
 
-      // Mensajes en primer plano — mostrar snack si hay contexto
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('[FCM] Mensaje en primer plano: ${message.notification?.title}');
-        if (context != null && context.mounted) {
-          _showForegroundBanner(context, message);
-        }
-      });
+      // Handler para mensajes con la app cerrada (top-level, sin contexto)
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // Mensaje en segundo plano (app abierta desde notificación)
+      // Registro en app abierta desde notificación
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint('[FCM] App abierta desde notificación: ${message.notification?.title}');
       });
 
-      // Handler para mensajes cuando la app está cerrada
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-      _initialized = true;
-      debugPrint('[FCM] Inicializado correctamente. Token: ${token?.substring(0, 20)}...');
+      _setupDone = true;
+      debugPrint('[FCM] Setup completado.');
     } catch (e) {
-      debugPrint('[FCM] Error inicializando: $e');
+      debugPrint('[FCM] Error en setup: $e');
     }
   }
 
+  /// Etapa 2: registro del token en API + banners en primer plano.
+  /// Llamar en MainScreen.initState() después del primer frame.
+  static Future<void> registerWithApi({BuildContext? context}) async {
+    if (!_setupDone) await setup();
+    if (_registered) return;
+
+    // Registrar token en la API (requiere sesión activa)
+    if (_cachedToken != null) {
+      await _registerToken(_cachedToken!, 'android');
+    }
+
+    // Listener de mensajes en primer plano con contexto para banners
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('[FCM] Mensaje en primer plano: ${message.notification?.title}');
+      if (context != null && context.mounted) {
+        _showForegroundBanner(context, message);
+      }
+    });
+
+    _registered = true;
+    debugPrint('[FCM] Registro con API completado.');
+  }
+
+  /// Reset completo — llamar en logout para que el próximo login vuelva a registrar.
+  static void reset() {
+    _registered = false;
+  }
+
   /// Registra/actualiza el token en la API SMARTUR.
-  /// Reintenta hasta 3 veces con backoff exponencial (1s, 2s, 4s) ante fallos transitorios.
+  /// Reintenta hasta 3 veces con backoff exponencial (1s, 2s, 4s).
   static Future<void> _registerToken(String token, String platform) async {
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -91,7 +113,6 @@ class NotificationService {
     debugPrint('[FCM] No se pudo registrar el token tras $maxAttempts intentos.');
   }
 
-  /// Muestra un banner in-app cuando llega un mensaje en primer plano.
   static void _showForegroundBanner(BuildContext context, RemoteMessage message) {
     final notification = message.notification;
     if (notification == null) return;

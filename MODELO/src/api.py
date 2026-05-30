@@ -1,5 +1,8 @@
+import asyncio
 import logging
 import os
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 
@@ -19,6 +22,7 @@ from fusion import recommend_hybrid
 import json
 from pathlib import Path
 from poi_repository import fetch_pois, get_poi_connection, fetch_traveler_profile
+from restmex_repository import fetch_restmex_data
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("smartur-api")
@@ -30,75 +34,128 @@ lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP 
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
 _scheduler      = None   # APScheduler instance — module-level so endpoints can read/update it
+_restmex_cache  = None   # tuple of (reviews_df, biz_df)
+_training_in_progress = False   # True mientras se entrena en background al arrancar
+
+def _get_restmex_data():
+    global _restmex_cache
+    if _restmex_cache is None:
+        _restmex_cache = fetch_restmex_data()
+    return _restmex_cache
+
+def _merge_restmex(train_data, peso=0.3):
+    reviews, biz = _get_restmex_data()
+    if reviews is not None and len(reviews) > 100:
+        tile_count = max(1, int(peso * len(train_data) / len(reviews)))
+        tiles = [reviews] * tile_count
+        train_data = pd.concat([train_data] + tiles, ignore_index=True)
+        logger.info(f"Rest-Mex: {len(reviews)} reseñas x{tile_count}")
+        return train_data, biz
+    return train_data, None
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Carga los modelos pesados una sola vez al iniciar la API."""
-    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores
-    if os.getenv("SKIP_MODEL_BOOT") == "1":
-        logger.warning("SKIP_MODEL_BOOT=1: saltando carga de modelos en arranque")
-        yield
-        return
+def _load_or_train_models(do_train: bool = False) -> None:
+    """
+    Carga los modelos desde disco. Si do_train=True y alguno falta, lo entrena.
+    Diseñado para ejecutarse en un ThreadPoolExecutor (CPU-bound).
+    """
+    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
+
     try:
-        logger.info("Cargando Motor de Pearson + SVD (Engine)...")
+        logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
         engine = SmarturEngine()
         engine.prepare_pearson_matrix()
+        engine.train_data, restmex_biz = _merge_restmex(engine.train_data)
 
-        logger.info("Cargando Modelo de Contexto (Random Forest)...")
+        logger.info("[boot] Cargando Modelo de Contexto (Random Forest)...")
         context_model = SmarturContextModel()
         if not context_model.load():
-            logger.info("Modelo RF no encontrado, entrenando ahora por única vez...")
-            context_model.train(engine.train_data)
+            if do_train:
+                logger.info("[boot] Modelo RF no encontrado — entrenando en segundo plano...")
+                context_model.train(engine.train_data, df_biz_extra=restmex_biz)
+            else:
+                context_model = None
 
-        logger.info("Cargando Gradient Boosting (GBM)...")
+        logger.info("[boot] Cargando Gradient Boosting (GBM)...")
         from gbm_model import SmarturGbmModel
         gbm_model = SmarturGbmModel()
         if not gbm_model.load():
-            logger.info("Modelo GBM no encontrado, entrenando ahora por única vez...")
-            gbm_model.train(engine.train_data)
+            if do_train:
+                logger.info("[boot] Modelo GBM no encontrado — entrenando en segundo plano...")
+                gbm_model.train(engine.train_data, df_biz_extra=restmex_biz)
+            else:
+                gbm_model = None
 
-        # ── LightFM (cold-start matrix factorization) ──────────────────────
-        logger.info("Cargando LightFM (cold-start WARP factorization)...")
+        logger.info("[boot] Cargando LightFM (cold-start WARP)...")
         try:
             from lightfm_model import SmarturLightFMModel
             lightfm_model = SmarturLightFMModel()
             if not lightfm_model.load():
-                logger.info("Modelo LightFM no encontrado, entrenando en arranque...")
-                ok = lightfm_model.train(engine.train_data, context_model.df_biz)
-                if not ok:
+                if do_train and context_model is not None:
+                    ok = lightfm_model.train(engine.train_data, context_model.df_biz)
+                    if not ok:
+                        lightfm_model = None
+                else:
                     lightfm_model = None
-                    logger.warning("LightFM no disponible (¿falta instalar la librería?).")
         except Exception as lfm_err:
             lightfm_model = None
-            logger.warning(f"LightFM no disponible: {lfm_err}")
+            logger.warning(f"[boot] LightFM no disponible: {lfm_err}")
 
-        # ── ContentModel (TF-IDF fallback) ────────────────────────────────
-        logger.info("Cargando ContentModel (TF-IDF fallback)...")
+        logger.info("[boot] Cargando ContentModel (TF-IDF)...")
         try:
             from content_model import SmarturContentModel
             content_model_cb = SmarturContentModel()
-            content_model_cb.fit(context_model.df_biz)
+            if context_model is not None:
+                content_model_cb.fit(context_model.df_biz)
         except Exception as cm_err:
             content_model_cb = None
-            logger.warning(f"ContentModel no disponible: {cm_err}")
+            logger.warning(f"[boot] ContentModel no disponible: {cm_err}")
 
-        # ── Quality scores (inference boost from service_evaluation) ──────────
         try:
             from poi_repository import fetch_quality_scores
             quality_scores = fetch_quality_scores()
-            logger.info(f"[init] Quality scores cargados: {len(quality_scores)} servicios evaluados")
-        except Exception as qs_err:
+            logger.info(f"[boot] Quality scores: {len(quality_scores)} servicios")
+        except Exception:
             quality_scores = {}
-            logger.warning(f"[init] Quality scores no disponibles: {qs_err}")
 
-        lfm_status = "LightFM✓" if lightfm_model is not None else "LightFM✗"
-        cm_status  = "ContentModel✓" if content_model_cb is not None else "ContentModel✗"
-        logger.info(f"SMARTUR v4 listo (RF + GBM + SVD/CF + {lfm_status} + {cm_status}).")
+        lfm_st = "LightFM✓" if lightfm_model else "LightFM✗"
+        cm_st  = "ContentModel✓" if content_model_cb else "ContentModel✗"
+        logger.info(f"[boot] SMARTUR v4 listo (RF + GBM + SVD/CF + {lfm_st} + {cm_st}).")
     except Exception as e:
-        logger.error(f"Error crítico en el arranque: {e}")
-        # Falla rápido y ruidosamente; previene iniciar en un estado degradado "zombie"
-        raise RuntimeError(f"Boot abortado: Los modelos no pudieron cargar ({e})")
+        logger.error(f"[boot] Error cargando modelos: {e}")
+    finally:
+        _training_in_progress = False
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Arranque no bloqueante: carga modelos desde disco (ms) y, si falta alguno,
+    lanza el entrenamiento en un hilo separado sin bloquear el servidor.
+    """
+    global _training_in_progress
+
+    if os.getenv("SKIP_MODEL_BOOT") == "1":
+        logger.warning("SKIP_MODEL_BOOT=1: saltando carga de modelos en arranque")
+        yield
+        return
+
+    # Intentar cargar modelos desde disco sin entrenar (rápido)
+    _load_or_train_models(do_train=False)
+
+    # Si algún modelo no está listo, entrenar en background (no bloquea el API)
+    models_ready = (
+        engine is not None and
+        context_model is not None and
+        gbm_model is not None
+    )
+    if not models_ready:
+        logger.info("[boot] Modelos faltantes — iniciando entrenamiento en hilo de fondo. "
+                    "API disponible en modo degradado.")
+        _training_in_progress = True
+        loop = asyncio.get_event_loop()
+        executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="smartur-train")
+        loop.run_in_executor(executor, _load_or_train_models, True)
 
     # ── Scheduled nightly retraining ─────────────────────────────────────
     # APScheduler runs _run_full_training() every day at 02:00 UTC so that
@@ -176,14 +233,15 @@ def health():
     """
     return {
         "status": "ok",
-        "engine_ready":   engine is not None and engine.user_item_matrix is not None,
-        "rf_ready":       context_model is not None and getattr(context_model, 'is_fitted', False),
-        "gbm_ready":      gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
-        "svd_ready":      engine is not None and hasattr(engine, 'user_latent'),
-        "lightfm_ready":  lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
-        "content_ready":  content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
-        "users_count":    engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
-        "skip_model_boot": os.getenv("SKIP_MODEL_BOOT") == "1",
+        "engine_ready":        engine is not None and engine.user_item_matrix is not None,
+        "rf_ready":            context_model is not None and getattr(context_model, 'is_fitted', False),
+        "gbm_ready":           gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
+        "svd_ready":           engine is not None and hasattr(engine, 'user_latent'),
+        "lightfm_ready":       lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
+        "content_ready":       content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
+        "users_count":         engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
+        "training_in_progress": _training_in_progress,
+        "skip_model_boot":     os.getenv("SKIP_MODEL_BOOT") == "1",
     }
 
 
@@ -365,7 +423,11 @@ def get_metrics():
     Priority:
       1. DB table ml_model_metrics (most recent row)
       2. models/algorithm_metrics.json (written by _run_full_training)
+    Includes feature_importances, hyperparameters, and training_history.
     """
+    _BASE = Path(_MODELS)
+    data = {}
+
     # 1. Try DB first
     try:
         _persist_metrics_to_db  # ensure helper is defined (imported below function)
@@ -386,26 +448,111 @@ def get_metrics():
         finally:
             conn.close()
         if row:
-            return row[0]  # psycopg2 returns jsonb as dict automatically
+            data = row[0]  # psycopg2 returns jsonb as dict automatically
     except Exception as db_err:
         logger.warning(f"[metrics] DB fallback: {db_err}")
 
     # 2. Fall back to JSON file in the models volume
-    metrics_path = Path(_MODELS) / "algorithm_metrics.json"
-    if not metrics_path.exists():
-        raise HTTPException(status_code=404, detail="No hay métricas almacenadas todavía.")
-    try:
-        with open(metrics_path, encoding="utf-8") as f:
-            data = json.load(f)
-        # Reject placeholder content written before first real training
-        if "status" in data and "note" in data and len(data) == 2:
-            raise HTTPException(status_code=404, detail="Métricas aún no calculadas. Llama a /train primero.")
-        return data
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error leyendo métricas: {e}")
-        raise HTTPException(status_code=500, detail="Error al leer métricas.")
+    if not data:
+        metrics_path = _BASE / "algorithm_metrics.json"
+        if not metrics_path.exists():
+            raise HTTPException(status_code=404, detail="No hay métricas almacenadas todavía.")
+        try:
+            with open(metrics_path, encoding="utf-8") as f:
+                data = json.load(f)
+            if "status" in data and "note" in data and len(data) == 2:
+                raise HTTPException(status_code=404, detail="Métricas aún no calculadas. Llama a /train primero.")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error leyendo métricas: {e}")
+            raise HTTPException(status_code=500, detail="Error al leer métricas.")
+
+    # 3. Enrich with feature importances and hyperparameters
+    fi_path = _BASE / "rf_feature_importances.json"
+    if fi_path.exists():
+        try:
+            with open(fi_path) as f:
+                data["feature_importances"] = json.load(f)
+        except Exception as e:
+            logger.warning(f"[metrics] No se pudieron cargar feature importances: {e}")
+
+    hp_path = _BASE / "rf_hyperparams.json"
+    if hp_path.exists():
+        try:
+            with open(hp_path) as f:
+                data["hyperparameters"] = json.load(f)
+        except Exception as e:
+            logger.warning(f"[metrics] No se pudieron cargar hyperparams: {e}")
+
+    # 4. Enrich with GBM feature importances and hyperparams
+    gbm_fi_path = _BASE / "gbm_feature_importances.json"
+    if gbm_fi_path.exists():
+        try:
+            with open(gbm_fi_path) as f:
+                data["gbm_feature_importances"] = json.load(f)
+        except Exception as e:
+            logger.warning(f"[metrics] No se pudieron cargar GBM feature importances: {e}")
+
+    gbm_hp_path = _BASE / "gbm_hyperparams.json"
+    if gbm_hp_path.exists():
+        try:
+            with open(gbm_hp_path) as f:
+                data["gbm_hyperparameters"] = json.load(f)
+        except Exception as e:
+            logger.warning(f"[metrics] No se pudieron cargar GBM hyperparams: {e}")
+
+    # 5. Enrich with training history
+    history_path = _BASE / "training_history.json"
+    if history_path.exists():
+        try:
+            with open(history_path) as f:
+                data["training_history"] = json.load(f)
+        except Exception as e:
+            logger.warning(f"[metrics] No se pudo cargar training history: {e}")
+
+    return data
+
+
+def _enrich_metrics(actuals, preds, engine_obj, context_model):
+    """Adds error_distribution, prediction_distribution, and data_quality to a metrics dict."""
+    import numpy as np
+    actuals = np.asarray(actuals, dtype=float)
+    preds = np.asarray(preds, dtype=float)
+    errors_abs = np.abs(actuals - preds)
+
+    # Error distribution
+    ed = {}
+    for t in [0.5, 1.0, 1.5, 2.0]:
+        ed[f'within_{str(t).replace(".", "_")}'] = round(float((errors_abs <= t).mean() * 100), 1)
+    error_distribution = ed
+
+    # Prediction distribution (actual vs predicted counts per star level)
+    actual_buckets = []
+    pred_buckets = []
+    for star in range(1, 6):
+        actual_buckets.append([star, int((actuals == star).sum())])
+        pred_buckets.append([star, int(((preds >= star - 0.5) & (preds < star + 0.5)).sum())])
+    prediction_distribution = {
+        'actual_buckets': actual_buckets,
+        'predicted_buckets': pred_buckets,
+    }
+
+    # Data quality
+    data_quality = {
+        'total_interactions': int(len(engine_obj.train_data)) if hasattr(engine_obj, 'train_data') and engine_obj.train_data is not None else 0,
+        'total_test': int(len(engine_obj.test_data)) if hasattr(engine_obj, 'test_data') and engine_obj.test_data is not None else 0,
+        'users_count': int(engine_obj.user_item_matrix.shape[0]) if engine_obj and engine_obj.user_item_matrix is not None else 0,
+        'businesses_count': int(engine_obj.user_item_matrix.shape[1]) if engine_obj and engine_obj.user_item_matrix is not None else 0,
+        'top_categories': getattr(context_model, 'top_categories', [])[:10],
+        'features_count': len(getattr(context_model, 'features', [])),
+    }
+
+    return {
+        'error_distribution': error_distribution,
+        'prediction_distribution': prediction_distribution,
+        'data_quality': data_quality,
+    }
 
 
 def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dict:
@@ -494,13 +641,16 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
         candidates = {k: algorithms[k]['rmse'] for k in ('cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')}
         best_algorithm = min(candidates, key=candidates.get)
 
-        return {
+        result = {
             'best_algorithm': best_algorithm,
             'best_alpha':     best_alpha if best_algorithm == 'hybrid_cf_rf' else 0.2,
             'local_blend':    {'rf': 1.0, 'gbm': 0.0},
             'algorithms':     algorithms,
             'sample_size':    len(actuals),
         }
+        enrich = _enrich_metrics(actuals, hybrid_preds, engine_obj, rf_model)
+        result.update(enrich)
+        return result
     except Exception as exc:
         logger.error(f"[metrics] Error calculando métricas: {exc}")
         return dict(DEFAULT_METRICS)
@@ -534,6 +684,42 @@ def _persist_metrics_to_db(metrics_json: dict) -> bool:
     except Exception as exc:
         logger.error(f"[train] No se pudo persistir métricas en DB: {exc}")
         return False
+
+
+def _compute_enrich_from_engine(engine_obj, rf_model):
+    """Computes enrichment metrics using a sample of test data."""
+    import numpy as np
+    from math import sqrt
+    from sklearn.metrics import mean_absolute_error, mean_squared_error
+    from cf import predict_cf_pearson
+    from evaluate import _infer_user_context
+
+    try:
+        test_data = getattr(engine_obj, 'test_data', None)
+        if test_data is None or len(test_data) == 0:
+            return {}
+        sample = test_data.sample(min(800, len(test_data)), random_state=42)
+        contexts = {uid: _infer_user_context(uid, engine_obj) for uid in sample['user_id'].unique()}
+        actuals, preds = [], []
+        for _, row in sample.iterrows():
+            try:
+                p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine_obj)
+                ctx = contexts.get(row['user_id'])
+                p_rf = float(rf_model.predict_with_context([row['business_id']], user_context=ctx)[0])
+                if np.isnan(p_rf):
+                    continue
+                if np.isnan(p_cf):
+                    p_cf = p_rf
+                hybrid = 0.2 * p_cf + 0.8 * p_rf
+                actuals.append(row['stars'])
+                preds.append(hybrid)
+            except Exception:
+                continue
+        if len(actuals) < 30:
+            return {}
+        return _enrich_metrics(actuals, preds, engine_obj, rf_model)
+    except Exception:
+        return {}
 
 
 def _run_full_training():
@@ -585,18 +771,25 @@ def _run_full_training():
         except Exception as exc:
             logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
 
+        # ── 1c. Merge Rest-Mex 2022 ──────────────────────────────────────────
+        try:
+            engine.train_data, restmex_biz = _merge_restmex(engine.train_data)
+        except Exception as exc:
+            restmex_biz = None
+            logger.warning(f"[train] Rest-Mex no disponible: {exc}")
+
         # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
         logger.info("[train] Actualizando matriz de Pearson + SVD...")
         engine.prepare_pearson_matrix()
 
         # ── 3. Retrain RF ────────────────────────────────────────────────────
         logger.info("[train] Reentrenando Random Forest...")
-        context_model.train(engine.train_data)
+        context_model.train(engine.train_data, df_biz_extra=restmex_biz)
 
         # ── 4. Retrain GBM ───────────────────────────────────────────────────
         if gbm_model is not None:
             logger.info("[train] Reentrenando Gradient Boosting...")
-            gbm_model.train(engine.train_data)
+            gbm_model.train(engine.train_data, df_biz_extra=restmex_biz)
         else:
             logger.warning("[train] GBM no cargado — solo RF+CF en comparativa.")
 
@@ -621,6 +814,16 @@ def _run_full_training():
             metrics = compare_algorithms(engine, context_model, gbm_model, sample_size=800)
         else:
             metrics = _compute_simple_metrics(engine, context_model)
+
+        # ── 5b. Enrich with error_dist, data_quality, prediction_distribution ──
+        # If compare_algorithms was used, re-derive from its internal arrays
+        # Otherwise the enrichments are already in metrics (from _compute_simple_metrics)
+        if gbm_model is not None and 'error_distribution' not in metrics:
+            try:
+                enrich = _compute_enrich_from_engine(engine, context_model)
+                metrics.update(enrich)
+            except Exception as exc:
+                logger.warning(f"[train] Enrichment no disponible: {exc}")
 
         # ── 6. Ranking metrics (NDCG@5, Precision@5, Hit Rate@10) ────────────
         # Prefer local SMARTUR evaluation when we have enough real interactions;
@@ -655,6 +858,40 @@ def _run_full_training():
         _rmse_val  = metrics.get('algorithms', {}).get(_best_algo, {}).get('rmse')
         _rmse_str  = f"{_rmse_val:.4f}" if isinstance(_rmse_val, (int, float)) else '—'
         logger.info(f"[train] Métricas guardadas — mejor algoritmo: {_best_algo} (RMSE={_rmse_str})")
+
+        # ── 7b. Append to training history ──────────────────────────────────
+        try:
+            from datetime import datetime, timezone
+            history_path = Path(_MODELS) / "training_history.json"
+            history = []
+            if history_path.exists():
+                with open(history_path) as _fh:
+                    history = json.load(_fh)
+            entry = {
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'best_algorithm': _best_algo,
+                'sample_size': metrics.get('sample_size', 0),
+            }
+            best_key = metrics.get('best_algorithm', '')
+            best_rmse = metrics.get('algorithms', {}).get(best_key, {}).get('rmse')
+            best_mae = metrics.get('algorithms', {}).get(best_key, {}).get('mae')
+            if best_rmse is not None:
+                entry['rmse'] = round(float(best_rmse), 4)
+            if best_mae is not None:
+                entry['mae'] = round(float(best_mae), 4)
+            if 'error_distribution' in metrics:
+                entry['error_within_1'] = metrics['error_distribution'].get('within_1_0', 0)
+            if 'ranking' in metrics:
+                entry['ndcg'] = metrics['ranking'].get('ndcg', 0)
+                entry['hit_rate'] = metrics['ranking'].get('hit_rate', 0)
+            history.append(entry)
+            # Keep last 20 entries
+            history = history[-20:]
+            with open(history_path, 'w') as _fh:
+                json.dump(history, _fh, indent=2, ensure_ascii=False)
+            logger.info(f"[train] Training history actualizado ({len(history)} entradas)")
+        except Exception as h_err:
+            logger.warning(f"[train] No se pudo persistir training history: {h_err}")
 
         # ── 8. Persist to DB (only if we have real algorithm data) ──────────
         if not metrics.get('algorithms'):
@@ -701,7 +938,8 @@ def train_rf():
         raise HTTPException(status_code=503, detail="Modelos no cargados.")
     try:
         logger.info("Forzando entrenamiento del modelo Random Forest...")
-        context_model.train(engine.train_data)
+        _, restmex_biz = _get_restmex_data()
+        context_model.train(engine.train_data, df_biz_extra=restmex_biz)
         return {"status": "ok", "message": "Modelo entrenado y guardado correctamente."}
     except Exception as e:
         logger.error(f"Error entrenando modelo: {e}")

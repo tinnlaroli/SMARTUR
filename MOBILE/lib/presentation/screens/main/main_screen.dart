@@ -37,10 +37,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 420),
       value: 0,
     );
-    // Inicializar FCM después del primer frame para tener acceso al contexto.
-    // NotificationService._initialized evita doble inicialización entre sesiones.
+    // Etapa 2: registrar token en API + activar banners en primer plano.
+    // Se llama después del primer frame para tener contexto disponible.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) NotificationService.init(context: context);
+      if (mounted) NotificationService.registerWithApi(context: context);
     });
   }
 

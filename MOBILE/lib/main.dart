@@ -10,6 +10,7 @@ import 'core/settings/app_settings.dart';
 import 'core/settings/app_settings_scope.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
+import 'data/services/notification_service.dart';
 import 'presentation/screens/auth/onboarding_screen.dart';
 import 'presentation/screens/auth/welcome_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
@@ -19,6 +20,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Inicializar Firebase (requerido por firebase_messaging y google_sign_in ^7.x)
   await Firebase.initializeApp();
+  // Etapa 1: permisos + token FCM sin necesitar auth ni contexto
+  await NotificationService.setup();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool seenOnboarding = prefs.getBool('onboarding_seen') ?? false;
 
