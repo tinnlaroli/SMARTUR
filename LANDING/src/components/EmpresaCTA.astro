@@ -154,22 +154,11 @@ const ICONS: Record<string, string> = {
         <p class="u-text ec-subtitle">{t.subtitle}</p>
 
         <div class="cta-row">
-          <button type="button" id="open-register-empresa" class="ec-cta-btn">
-            {t.cta}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+          <button type="button" id="open-register-empresa" class="ec-cta-btn" aria-label={t.cta}>
+            <span>
+              <span>{t.cta}</span>
+              <span aria-hidden="true">{t.cta}</span>
+            </span>
           </button>
           <p class="ec-cta-note">{t.ctaNote}</p>
         </div>
@@ -283,37 +272,78 @@ const ICONS: Record<string, string> = {
     }
   }
 
+  /* Botón con efecto clip-path — mismo estilo que btn-primary-alt de Button.astro */
   .ec-cta-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: var(--color-purple);
-    color: var(--color-white);
+    --text-color: var(--color-white);
+    --bg-color: var(--color-purple);
+    --hover-bg-color: var(--color-white);
+    --hover-text-color: var(--color-purple);
+
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 100px;
+    white-space: nowrap;
     font-size: var(--font-size-sm);
     font-weight: 700;
-    padding: 0.85rem 1.75rem;
-    border-radius: 100px;
-    border: none;
-    cursor: pointer;
-    width: fit-content;
-    transition:
-      opacity 0.2s var(--ease-standard),
-      transform 0.2s var(--ease-standard),
-      box-shadow 0.2s var(--ease-standard);
 
-    &:hover {
-      opacity: 0.88;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(var(--rgb-purple-accent), 0.3);
+    > span {
+      display: block;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        border-radius: 99px;
+        border: 2px solid var(--bg-color);
+        z-index: 2;
+      }
+
+      > span {
+        color: var(--text-color);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.9375em 1.75em;
+        line-height: 1.25;
+        background: var(--bg-color);
+
+        @media (--mq-phone) {
+          padding: 0.75em 1.25em;
+          font-size: 0.875rem;
+        }
+
+        &:first-child {
+          transition: clip-path 0.6s var(--ease-out-cubic);
+          color: var(--hover-text-color);
+          background: var(--hover-bg-color);
+          z-index: 2;
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          justify-content: center;
+          clip-path: inset(50% round 99px);
+        }
+      }
     }
 
-    &:active {
-      transform: translateY(0);
+    &:hover > span > span:first-child,
+    &:focus > span > span:first-child {
+      clip-path: inset(-100% 0 round 99px);
     }
 
     @media (--mq-phone) {
       width: 100%;
-      justify-content: center;
+      display: block;
+      > span > span { justify-content: center; }
     }
   }
 

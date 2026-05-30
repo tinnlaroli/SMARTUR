@@ -328,7 +328,13 @@ const {
 
         &.is-active,
         &:global(.is-active) {
-          color: var(--color-pink) !important;
+          color: var(--color-purple) !important;
+
+          &::before {
+            transform: scaleX(1);
+            transform-origin: left;
+            background: var(--color-purple);
+          }
         }
       }
     }

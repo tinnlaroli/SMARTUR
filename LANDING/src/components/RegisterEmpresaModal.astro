@@ -351,7 +351,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     font-size: 0.7rem; font-weight: 500; transition: color 0.2s;
     display: flex; align-items: center; gap: 0.25rem;
   }
-  .rem-rule--fail { color: rgba(var(--rgb-text), 0.4); }
+  .rem-rule--fail { color: #dc2626; }
   .rem-rule--ok   { color: #16a34a; }
 
   /* ── Terms row ───────────────────────────────── */
@@ -543,26 +543,24 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   }
 
   /* ─────────── Validación en tiempo real ─────────── */
-  document.getElementById('rem-name')?.addEventListener('input', (e) => {
-    const v = e.target.value.trim();
-    if (!NAME_RE.test(v) && v.length > 0) {
-      setFieldError('err-name', errNameLetters);
-      validity.name = false;
-    } else if (v.length < 2) {
-      setFieldError('err-name', v.length === 0 ? '' : errName);
-      validity.name = false;
-    } else {
-      setFieldError('err-name', '');
-      validity.name = true;
-    }
+  // Nombre: bloquear caracteres inválidos en tiempo real (sin mostrar mensaje de error por ello)
+  const nameInput = document.getElementById('rem-name');
+  nameInput?.addEventListener('beforeinput', (e) => {
+    if (e.data && /[^a-zA-ZÀ-ÿ\s]/.test(e.data)) e.preventDefault();
+  });
+  nameInput?.addEventListener('input', (e) => {
+    // Limpieza extra para paste con caracteres inválidos
+    const cleaned = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
+    if (cleaned !== e.target.value) e.target.value = cleaned;
+    const v = cleaned.trim();
+    validity.name = v.length >= 2;
+    setFieldError('err-name', (v.length > 0 && !validity.name) ? errName : '');
     revalidateSubmit();
   });
-
-  document.getElementById('rem-name')?.addEventListener('blur', (e) => {
+  nameInput?.addEventListener('blur', (e) => {
     const v = e.target.value.trim();
-    if (!NAME_RE.test(v) && v.length > 0) { setFieldError('err-name', errNameLetters); validity.name = false; }
-    else if (v.length < 2) { setFieldError('err-name', errName); validity.name = false; }
-    else { setFieldError('err-name', ''); validity.name = true; }
+    validity.name = v.length >= 2;
+    setFieldError('err-name', validity.name ? '' : errName);
     revalidateSubmit();
   });
 
@@ -701,6 +699,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   termsDialog?.addEventListener('click', (e) => { if (e.target === termsDialog) termsDialog.close(); });
 
   /* ─────────── Reset modal ─────────── */
+  // Texto inicial de cada regla (leído del DOM antes de cualquier interacción)
+  const ruleInitial = {
+    'rule-len':   document.getElementById('rule-len')?.textContent  || '',
+    'rule-upper': document.getElementById('rule-upper')?.textContent || '',
+    'rule-lower': document.getElementById('rule-lower')?.textContent || '',
+    'rule-num':   document.getElementById('rule-num')?.textContent  || '',
+  };
+
   function resetModal() {
     form.reset();
     form.hidden = false; success.hidden = true; otpStep.hidden = true;
@@ -710,11 +716,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     registeredEmail = '';
     Object.keys(validity).forEach(k => { validity[k] = k === 'phone'; });
     document.querySelectorAll('.rem-otp-digit').forEach(inp => inp.value = '');
-    // Reset pass rules
-    ['rule-len','rule-upper','rule-lower','rule-num'].forEach(id => {
-      const el = document.getElementById(id); if (!el) return;
+    // Restaurar reglas de contraseña a estado inicial
+    for (const [id, text] of Object.entries(ruleInitial)) {
+      const el = document.getElementById(id);
+      if (!el) continue;
       el.className = 'rem-rule rem-rule--fail';
-    });
+      el.textContent = text;
+    }
   }
 
   dialog?.addEventListener('close', resetModal);
@@ -822,9 +830,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     window.location.href = plataformaUrl + '/empresa/dashboard';
   });
 
-  // Labels de reglas (necesarios dentro del script)
-  const t_passLen   = document.getElementById('rule-len')?.textContent?.slice(2)   || '';
-  const t_passUpper = document.getElementById('rule-upper')?.textContent?.slice(2) || '';
-  const t_passLower = document.getElementById('rule-lower')?.textContent?.slice(2) || '';
-  const t_passNum   = document.getElementById('rule-num')?.textContent?.slice(2)   || '';
+  // Labels para updatePassRules (extraídos del texto inicial ya capturado en ruleInitial)
+  const t_passLen   = ruleInitial['rule-len'].slice(2);
+  const t_passUpper = ruleInitial['rule-upper'].slice(2);
+  const t_passLower = ruleInitial['rule-lower'].slice(2);
+  const t_passNum   = ruleInitial['rule-num'].slice(2);
 </script>
