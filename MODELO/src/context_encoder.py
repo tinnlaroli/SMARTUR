@@ -198,7 +198,8 @@ class ContextEncoder:
         names += [f'user_group_{g}' for g in self.group_types]
         names += [
             'user_requires_accessibility', 'user_pref_outdoor',
-            'user_wants_tours', 'user_needs_hotel', 'user_pref_food'
+            'user_wants_tours', 'user_needs_hotel', 'user_pref_food',
+            'user_has_visited_region',
         ]
         return names
 

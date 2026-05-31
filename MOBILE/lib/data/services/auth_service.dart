@@ -25,19 +25,10 @@ class AuthService {
   static const _userPhotoUrlKey = 'user_photo_url';
   static const _userAvatarIconKey = 'user_avatar_icon_key';
 
-  static final _googleSignIn = GoogleSignIn.instance;
-
-  // Garantiza que initialize() se llame exactamente una vez y sea awaited
-  // antes de cualquier llamada a authenticate(). Evita el race condition
-  // que causaba error [16] (CANCELED) cuando authenticate() se lanzaba
-  // antes de que initialize() completara.
-  static Future<void>? _gsInitFuture;
-  static Future<void> _ensureGoogleSignInReady() {
-    _gsInitFuture ??= _googleSignIn.initialize(
-      serverClientId: EnvConfig.googleServerClientId,
-    );
-    return _gsInitFuture!;
-  }
+  static final _googleSignIn = GoogleSignIn(
+    serverClientId: EnvConfig.googleServerClientId,
+    scopes: ['email', 'profile'],
+  );
 
   AuthService();
 
@@ -366,18 +357,14 @@ class AuthService {
 
   Future<Map<String, dynamic>?> loginWithGoogle({bool rememberMe = false}) async {
     try {
-      // Asegurar que initialize() haya completado antes de authenticate()
-      await _ensureGoogleSignInReady();
-
       // Limpiar credential cacheado para forzar selector de cuenta
       try { await _googleSignIn.signOut(); } catch (_) {}
 
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate(
-        scopeHint: ['email', 'profile'],
-      );
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) throw AuthCancelledException();
 
       final GoogleSignInAuthentication googleAuth =
-          googleUser.authentication;
+          await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
