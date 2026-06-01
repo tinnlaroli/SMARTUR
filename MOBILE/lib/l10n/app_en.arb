@@ -360,5 +360,11 @@
   "latencyMs": "{ms} ms",
   "@latencyMs": { "placeholders": { "ms": {} } },
 
-  "homeOfflineBanner": "No connection. Enable internet to view the map."
+  "homeOfflineBanner": "No connection. Enable internet to view the map.",
+  "onboardingTitle1": "Your adventure starts here",
+  "onboardingDesc1": "Explore the most magical corners of the High Mountains with routes designed for the modern explorer.",
+  "onboardingTitle2": "Intelligence that knows you",
+  "onboardingDesc2": "We analyze your preferences so every recommendation feels written just for you.",
+  "onboardingTitle3": "Live the authentic",
+  "onboardingDesc3": "Connect with local guides and support regional tourism while creating unforgettable memories."
 }

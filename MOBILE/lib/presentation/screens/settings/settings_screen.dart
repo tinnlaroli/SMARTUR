@@ -5,6 +5,7 @@ import '../../../core/settings/app_settings_scope.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/update_service.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
 import '../../widgets/privacy_policy_modal.dart';
@@ -22,6 +23,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final AuthService _authService = AuthService();
   ThemeMode _themeMode = ThemeMode.system;
   String _language = 'Sistema';
+  String _appVersion = '…';
+  bool _checkingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    UpdateService.currentVersion().then((v) {
+      if (mounted) setState(() => _appVersion = v);
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -206,14 +217,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // ── Información ─────────────────────────────────────────────
           _buildSectionHeader(l10n.infoSection),
           ListTile(
-            leading: Icon(Icons.info_outline,
-                color: scheme.onSurfaceVariant),
+            leading: Icon(Icons.info_outline, color: scheme.onSurfaceVariant),
             title: Text(l10n.appVersion,
                 style: const TextStyle(fontFamily: 'Outfit')),
-            trailing: Text('v1.0.0',
+            trailing: Text('v$_appVersion',
                 style: TextStyle(
-                    fontFamily: 'Outfit',
-                    color: scheme.onSurfaceVariant)),
+                    fontFamily: 'Outfit', color: scheme.onSurfaceVariant)),
+          ),
+          ListTile(
+            leading: _checkingUpdate
+                ? const SizedBox(
+                    width: 24, height: 24,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: SmarturStyle.purple))
+                : const Icon(Icons.system_update_outlined,
+                    color: SmarturStyle.purple),
+            title: const Text('Buscar actualización',
+                style: TextStyle(fontFamily: 'Outfit')),
+            trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+            onTap: _checkingUpdate ? null : _checkForUpdate,
           ),
           ListTile(
             leading: Icon(Icons.description_outlined,
@@ -263,6 +285,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       ),
     );
+  }
+
+  // ── Buscar Actualización ─────────────────────────────────────────────────
+
+  Future<void> _checkForUpdate() async {
+    setState(() => _checkingUpdate = true);
+    final result = await UpdateService.check(forceRefresh: true);
+    if (!mounted) return;
+    setState(() => _checkingUpdate = false);
+    if (result.hasUpdate) {
+      UpdateService.showUpdateDialog(context, result.latestVersion);
+    } else {
+      SmarturNotifications.showSuccess(
+          context, 'SMARTUR v${result.currentVersion} está al día.');
+    }
   }
 
   // ── Helpers UI ──────────────────────────────────────────────────────────

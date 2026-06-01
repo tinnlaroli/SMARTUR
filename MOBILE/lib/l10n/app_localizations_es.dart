@@ -1019,4 +1019,61 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get sessionRevokeError =>
       'No se pudo cerrar la sesión. Inténtalo de nuevo.';
+
+  @override
+  String get noSessionsRegistered => 'Sin sesiones registradas';
+
+  @override
+  String get defaultDevice => 'Dispositivo';
+
+  @override
+  String get sessionRevokeTooltip => 'Cerrar sesión';
+
+  @override
+  String get sessionCreatedSince => 'Desde';
+
+  @override
+  String get recoGuidedTours => 'Tours guiados';
+
+  @override
+  String get recoNeedHotel => 'Necesito hotel';
+
+  @override
+  String get recoFoodOptions => 'Opciones de comida';
+
+  @override
+  String get recoAccessible => 'Accesible';
+
+  @override
+  String get recoOutdoor => 'Al aire libre';
+
+  @override
+  String latencyMs(Object ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get homeOfflineBanner =>
+      'Sin conexión. Activa el internet para ver el mapa.';
+
+  @override
+  String get onboardingTitle1 => 'Tu aventura comienza aquí';
+
+  @override
+  String get onboardingDesc1 =>
+      'Explora los rincones más mágicos de las Altas Montañas con rutas diseñadas para el explorador moderno.';
+
+  @override
+  String get onboardingTitle2 => 'Inteligencia que te conoce';
+
+  @override
+  String get onboardingDesc2 =>
+      'Analizamos tus preferencias para que cada recomendación se sienta escrita solo para ti.';
+
+  @override
+  String get onboardingTitle3 => 'Vive lo auténtico';
+
+  @override
+  String get onboardingDesc3 =>
+      'Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables.';
 }

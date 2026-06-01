@@ -9,40 +9,32 @@ import '../../core/constants/api_constants.dart';
 ///
 /// Flujo de dos etapas:
 /// 1. [setup] — llamar en main() después de Firebase.initializeApp().
-///    Solicita permisos, obtiene token y configura listeners de sistema.
-///    NO requiere auth — seguro antes del login.
-/// 2. [registerWithApi] — llamar en MainScreen después del primer frame.
-///    Registra el token en la API SMARTUR (requiere sesión activa).
+///    Configura listeners globales sin pedir permisos al usuario.
+/// 2. [registerWithApi] — llamar en MainScreen después del login.
+///    Pide permisos (primera vez), obtiene token y lo registra en API.
 class NotificationService {
   static bool _setupDone = false;
   static bool _registered = false;
   static String? _cachedToken;
 
-  /// Etapa 1: permisos + token + listeners globales.
-  /// Llamar en main() después de Firebase.initializeApp().
+  /// Etapa 1: inicializa listeners de sistema sin pedir permisos al usuario.
+  /// Los permisos se solicitan en [registerWithApi] — ya dentro de la app tras el login.
   static Future<void> setup() async {
     if (_setupDone) return;
 
     try {
       final messaging = FirebaseMessaging.instance;
 
-      final settings = await messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-
-      if (settings.authorizationStatus != AuthorizationStatus.authorized &&
-          settings.authorizationStatus != AuthorizationStatus.provisional) {
-        debugPrint('[FCM] Permiso de notificaciones denegado.');
-        _setupDone = true;
-        return;
+      // Obtener token solo si los permisos ya fueron concedidos previamente
+      // (segunda apertura). Si no, se piden en registerWithApi tras el login.
+      final current = await messaging.getNotificationSettings();
+      if (current.authorizationStatus == AuthorizationStatus.authorized ||
+          current.authorizationStatus == AuthorizationStatus.provisional) {
+        _cachedToken = await messaging.getToken();
       }
-
-      _cachedToken = await messaging.getToken();
       debugPrint('[FCM] Token obtenido: ${_cachedToken?.substring(0, 20)}...');
 
-      // Renovaciones automáticas de token — se registran cuando haya sesión
+      // Renovaciones automáticas de token
       messaging.onTokenRefresh.listen((newToken) {
         _cachedToken = newToken;
         if (_registered) _registerToken(newToken, 'android');
@@ -63,11 +55,25 @@ class NotificationService {
     }
   }
 
-  /// Etapa 2: registro del token en API + banners en primer plano.
-  /// Llamar en MainScreen.initState() después del primer frame.
+  /// Etapa 2: pide permisos (primera vez), obtiene token y lo registra en API.
+  /// Llamar en MainScreen.initState() después del primer frame — ya dentro de la app.
   static Future<void> registerWithApi({BuildContext? context}) async {
     if (!_setupDone) await setup();
     if (_registered) return;
+
+    // Solicitar permisos aquí — el usuario ya completó el login
+    if (_cachedToken == null) {
+      try {
+        final messaging = FirebaseMessaging.instance;
+        final settings = await messaging.requestPermission(
+          alert: true, badge: true, sound: true,
+        );
+        if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+            settings.authorizationStatus == AuthorizationStatus.provisional) {
+          _cachedToken = await messaging.getToken();
+        }
+      } catch (_) {}
+    }
 
     // Registrar token en la API (requiere sesión activa)
     if (_cachedToken != null) {
@@ -91,8 +97,6 @@ class NotificationService {
     _registered = false;
   }
 
-  /// Registra/actualiza el token en la API SMARTUR.
-  /// Reintenta hasta 3 veces con backoff exponencial (1s, 2s, 4s).
   static Future<void> _registerToken(String token, String platform) async {
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {

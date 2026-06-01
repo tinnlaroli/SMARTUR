@@ -360,5 +360,11 @@
   "latencyMs": "{ms} ms",
   "@latencyMs": { "placeholders": { "ms": {} } },
 
-  "homeOfflineBanner": "Sin conexión. Activa el internet para ver el mapa."
+  "homeOfflineBanner": "Sin conexión. Activa el internet para ver el mapa.",
+  "onboardingTitle1": "Tu aventura comienza aquí",
+  "onboardingDesc1": "Explora los rincones más mágicos de las Altas Montañas con rutas diseñadas para el explorador moderno.",
+  "onboardingTitle2": "Inteligencia que te conoce",
+  "onboardingDesc2": "Analizamos tus preferencias para que cada recomendación se sienta escrita solo para ti.",
+  "onboardingTitle3": "Vive lo auténtico",
+  "onboardingDesc3": "Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables."
 }

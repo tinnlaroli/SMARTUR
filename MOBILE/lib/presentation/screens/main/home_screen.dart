@@ -13,6 +13,7 @@ import '../../../core/theme/style_guide.dart';
 import '../../../core/constants/env_config.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/update_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
@@ -141,6 +142,8 @@ class HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _isLoadingContent = false);
       await _loadWeatherForSelectedCity();
       await _loadHeaderAvatar();
+      // Passive update check — shows dialog only once per session, never blocks
+      if (mounted) UpdateService.checkAndPromptIfNeeded(context);
     });
   }
 

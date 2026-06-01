@@ -1030,4 +1030,61 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get sessionRevokeError =>
       'Impossible de fermer la session. Veuillez réessayer.';
+
+  @override
+  String get noSessionsRegistered => 'Aucune session enregistrée';
+
+  @override
+  String get defaultDevice => 'Appareil';
+
+  @override
+  String get sessionRevokeTooltip => 'Fermer la session';
+
+  @override
+  String get sessionCreatedSince => 'Depuis';
+
+  @override
+  String get recoGuidedTours => 'Visites guidées';
+
+  @override
+  String get recoNeedHotel => 'Besoin d\'hôtel';
+
+  @override
+  String get recoFoodOptions => 'Options alimentaires';
+
+  @override
+  String get recoAccessible => 'Accessible';
+
+  @override
+  String get recoOutdoor => 'Plein air';
+
+  @override
+  String latencyMs(Object ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get homeOfflineBanner =>
+      'Pas de connexion. Activez Internet pour voir la carte.';
+
+  @override
+  String get onboardingTitle1 => 'Votre aventure commence ici';
+
+  @override
+  String get onboardingDesc1 =>
+      'Explorez les coins les plus magiques des Hautes Montagnes avec des itinéraires conçus pour l\'explorateur moderne.';
+
+  @override
+  String get onboardingTitle2 => 'L\'intelligence qui vous connaît';
+
+  @override
+  String get onboardingDesc2 =>
+      'Nous analysons vos préférences pour que chaque recommandation vous soit personnellement destinée.';
+
+  @override
+  String get onboardingTitle3 => 'Vivez l\'authentique';
+
+  @override
+  String get onboardingDesc3 =>
+      'Connectez-vous avec des guides locaux et soutenez le tourisme régional tout en créant des souvenirs inoubliables.';
 }

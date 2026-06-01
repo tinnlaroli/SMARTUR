@@ -360,5 +360,11 @@
   "latencyMs": "{ms} ms",
   "@latencyMs": { "placeholders": { "ms": {} } },
 
-  "homeOfflineBanner": "Pas de connexion. Activez Internet pour voir la carte."
+  "homeOfflineBanner": "Pas de connexion. Activez Internet pour voir la carte.",
+  "onboardingTitle1": "Votre aventure commence ici",
+  "onboardingDesc1": "Explorez les coins les plus magiques des Hautes Montagnes avec des itinéraires conçus pour l'explorateur moderne.",
+  "onboardingTitle2": "L'intelligence qui vous connaît",
+  "onboardingDesc2": "Nous analysons vos préférences pour que chaque recommandation vous soit personnellement destinée.",
+  "onboardingTitle3": "Vivez l'authentique",
+  "onboardingDesc3": "Connectez-vous avec des guides locaux et soutenez le tourisme régional tout en créant des souvenirs inoubliables."
 }

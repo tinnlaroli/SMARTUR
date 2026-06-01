@@ -1015,4 +1015,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sessionRevokeError =>
       'Could not close the session. Please try again.';
+
+  @override
+  String get noSessionsRegistered => 'No sessions registered';
+
+  @override
+  String get defaultDevice => 'Device';
+
+  @override
+  String get sessionRevokeTooltip => 'Close session';
+
+  @override
+  String get sessionCreatedSince => 'Since';
+
+  @override
+  String get recoGuidedTours => 'Guided tours';
+
+  @override
+  String get recoNeedHotel => 'Need hotel';
+
+  @override
+  String get recoFoodOptions => 'Food options';
+
+  @override
+  String get recoAccessible => 'Accessible';
+
+  @override
+  String get recoOutdoor => 'Outdoor';
+
+  @override
+  String latencyMs(Object ms) {
+    return '$ms ms';
+  }
+
+  @override
+  String get homeOfflineBanner =>
+      'No connection. Enable internet to view the map.';
+
+  @override
+  String get onboardingTitle1 => 'Your adventure starts here';
+
+  @override
+  String get onboardingDesc1 =>
+      'Explore the most magical corners of the High Mountains with routes designed for the modern explorer.';
+
+  @override
+  String get onboardingTitle2 => 'Intelligence that knows you';
+
+  @override
+  String get onboardingDesc2 =>
+      'We analyze your preferences so every recommendation feels written just for you.';
+
+  @override
+  String get onboardingTitle3 => 'Live the authentic';
+
+  @override
+  String get onboardingDesc3 =>
+      'Connect with local guides and support regional tourism while creating unforgettable memories.';
 }

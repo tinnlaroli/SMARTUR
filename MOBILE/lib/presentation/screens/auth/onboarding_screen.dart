@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
 import '../../../core/theme/style_guide.dart';
 import 'welcome_screen.dart';
@@ -92,6 +93,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final contents = getOnboardingContents(l10n);
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SmarturBackground(

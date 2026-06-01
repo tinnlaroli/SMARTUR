@@ -2009,6 +2009,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo cerrar la sesión. Inténtalo de nuevo.'**
   String get sessionRevokeError;
+
+  /// No description provided for @noSessionsRegistered.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sesiones registradas'**
+  String get noSessionsRegistered;
+
+  /// No description provided for @defaultDevice.
+  ///
+  /// In es, this message translates to:
+  /// **'Dispositivo'**
+  String get defaultDevice;
+
+  /// No description provided for @sessionRevokeTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get sessionRevokeTooltip;
+
+  /// No description provided for @sessionCreatedSince.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde'**
+  String get sessionCreatedSince;
+
+  /// No description provided for @recoGuidedTours.
+  ///
+  /// In es, this message translates to:
+  /// **'Tours guiados'**
+  String get recoGuidedTours;
+
+  /// No description provided for @recoNeedHotel.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesito hotel'**
+  String get recoNeedHotel;
+
+  /// No description provided for @recoFoodOptions.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones de comida'**
+  String get recoFoodOptions;
+
+  /// No description provided for @recoAccessible.
+  ///
+  /// In es, this message translates to:
+  /// **'Accesible'**
+  String get recoAccessible;
+
+  /// No description provided for @recoOutdoor.
+  ///
+  /// In es, this message translates to:
+  /// **'Al aire libre'**
+  String get recoOutdoor;
+
+  /// No description provided for @latencyMs.
+  ///
+  /// In es, this message translates to:
+  /// **'{ms} ms'**
+  String latencyMs(Object ms);
+
+  /// No description provided for @homeOfflineBanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión. Activa el internet para ver el mapa.'**
+  String get homeOfflineBanner;
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu aventura comienza aquí'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingDesc1.
+  ///
+  /// In es, this message translates to:
+  /// **'Explora los rincones más mágicos de las Altas Montañas con rutas diseñadas para el explorador moderno.'**
+  String get onboardingDesc1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In es, this message translates to:
+  /// **'Inteligencia que te conoce'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingDesc2.
+  ///
+  /// In es, this message translates to:
+  /// **'Analizamos tus preferencias para que cada recomendación se sienta escrita solo para ti.'**
+  String get onboardingDesc2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In es, this message translates to:
+  /// **'Vive lo auténtico'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingDesc3.
+  ///
+  /// In es, this message translates to:
+  /// **'Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables.'**
+  String get onboardingDesc3;
 }
 
 class _AppLocalizationsDelegate
