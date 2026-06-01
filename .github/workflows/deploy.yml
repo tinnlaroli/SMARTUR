@@ -38,9 +38,9 @@ jobs:
             # Restaura los cambios locales de producción
             git stash pop || true
 
-            # Rebuild solo los servicios de aplicación
+            # Rebuild servicios de aplicación (modelo solo si su código cambió)
             docker compose -f docker-compose.yml up -d --build \
-              --no-deps api plataforma landing nginx
+              --no-deps api plataforma landing nginx modelo
 
             # Limpia imágenes huérfanas
             docker image prune -f
