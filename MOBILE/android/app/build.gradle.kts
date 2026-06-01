@@ -8,7 +8,9 @@ plugins {
 }
 
 android {
-    namespace = "mx.smartur.app"
+    // namespace = Kotlin source package (must match MainActivity.kt package declaration)
+    // applicationId = Android package ID visible on device/Play Store
+    namespace = "com.example.app_smartur"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
