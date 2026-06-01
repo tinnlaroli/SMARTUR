@@ -40,7 +40,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       EMAIL_USER: ${EMAIL_USER:-smarturutcv@gmail.com}
       EMAIL_PASS: ${EMAIL_PASS}
-      FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4321
+      FRONTEND_URL: http://plataforma:5173,http://landing:4321,http://localhost:5173,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4321,https://smartur.online,https://www.smartur.online,http://smartur.online
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
@@ -87,7 +87,7 @@ services:
       AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
       KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
       KAGGLE_KEY: ${KAGGLE_KEY:-}
-      CORS_ORIGINS: "http://plataforma:5173,http://api:3000,http://localhost:5173,http://localhost:3000,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4000"
+      CORS_ORIGINS: "http://plataforma:5173,http://api:3000,http://localhost:5173,http://localhost:3000,http://${VPS_IP:-localhost},http://${VPS_IP:-localhost}:5173,http://${VPS_IP:-localhost}:4000,https://smartur.online,https://www.smartur.online,http://smartur.online"
     volumes:
       - modelo_data:/app/data
       - modelo_models:/app/models
