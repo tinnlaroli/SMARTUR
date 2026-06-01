@@ -223,7 +223,6 @@ export const MLObservabilityPage = () => {
     const sessions       = data?.daily_sessions ?? [];
     const ctr            = data?.ctr_30d;
     const hasAlgorithms  = metrics != null && Object.keys(metrics.algorithms ?? {}).length > 0;
-    const ranking        = metrics?.ranking;
     const localBlend     = metrics?.local_blend;
 
     const bestRmse = hasAlgorithms
