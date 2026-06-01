@@ -29,14 +29,14 @@ export default function Form() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 p-8 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen bg-zinc-950 p-4 md:p-8 flex flex-col items-center justify-center relative overflow-hidden">
             {/* Logout Button (Top Right) */}
-            <button 
+            <button
                 onClick={handleLogout}
-                className="absolute top-8 right-8 z-20 flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 group"
+                className="absolute top-4 right-4 md:top-8 md:right-8 z-20 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 group"
             >
-                <LogOut className="size-4 transition-transform group-hover:-translate-x-1" />
-                <span className="text-sm font-semibold">{t('header.logout')}</span>
+                <LogOut className="size-3.5 md:size-4 transition-transform group-hover:-translate-x-1" />
+                <span className="text-xs md:text-sm font-semibold">{t('header.logout')}</span>
             </button>
 
             {/* Background elements */}
@@ -45,20 +45,20 @@ export default function Form() {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
             </div>
 
-            <div className="z-10 w-full max-w-2xl text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="mx-auto size-20 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/20 rotate-3">
-                    <ClipboardList className="size-10 text-white" />
+            <div className="z-10 w-full max-w-2xl text-center space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 pt-12 md:pt-0">
+                <div className="mx-auto size-16 md:size-20 bg-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/20 rotate-3">
+                    <ClipboardList className="size-8 md:size-10 text-white" />
                 </div>
-                
-                <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight">
+
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
                     {t('form.page.titlePrefix')} <span className="text-violet-400">{t('form.page.titleHighlight')}</span>
                 </h1>
-                
-                <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mx-auto">
+
+                <p className="text-base md:text-xl text-zinc-400 leading-relaxed max-w-lg mx-auto px-2">
                     {t('form.page.subtitle')}
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 pt-2 md:pt-4">
                     <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex flex-col items-center gap-2">
                         <LayoutGrid className="size-5 text-violet-400" />
                         <span className="text-sm font-medium text-zinc-300 italic">{t('form.page.badge1')}</span>

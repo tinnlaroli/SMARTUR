@@ -187,10 +187,10 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
         <>
             <div ref={navRef} className="fixed top-0 left-0 right-0 z-[100] pt-3">
 
-                    <div className="mx-auto px-4 max-w-[1400px]">
+                    <div className="mx-auto px-2 sm:px-4 max-w-[1400px]">
                         <div
                             ref={bgRef}
-                            className="relative flex items-center justify-between gap-9 px-7 py-2 rounded-[50px]"
+                            className="relative flex items-center justify-between gap-3 sm:gap-9 px-3 sm:px-7 py-2 rounded-[50px]"
                             style={{
                                 background: 'rgba(var(--rgb-bg), 0.88)',
                                 backdropFilter: 'blur(20px)',
@@ -211,7 +211,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                 }}
                                 className="flex-shrink-0"
                                 >
-                                    <img src={logoSrc} alt="SMARTUR" className="h-9 w-auto transition-all duration-300" />
+                                    <img src={logoSrc} alt="SMARTUR" className="h-7 sm:h-9 w-auto transition-all duration-300" />
                                 </a>
 
                             {/* Desktop Menu */}

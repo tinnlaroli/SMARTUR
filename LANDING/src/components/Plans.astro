@@ -127,6 +127,10 @@ const { title, subtitle, items } = Astro.props;
     border-radius: 1rem;
     max-width: 20rem;
     width: 100%;
+
+    @media (--mq-phone-sm) {
+      max-width: 100%;
+    }
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     position: relative;
     padding: 2px;

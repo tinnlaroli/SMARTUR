@@ -31,7 +31,7 @@ function KpiCard({
 }) {
     return (
         <div
-            className="rounded-2xl border p-4 flex items-center gap-4"
+            className="rounded-xl md:rounded-2xl border p-3 md:p-4 flex items-center gap-3 md:gap-4"
             style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
         >
             <div
@@ -41,7 +41,7 @@ function KpiCard({
                 <Icon className="size-5" style={{ color: accent }} />
             </div>
             <div className="min-w-0">
-                <p className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                <p className="text-lg md:text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
                     {value}
                 </p>
                 <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-alt)' }}>
@@ -291,7 +291,7 @@ export const MLObservabilityPage = () => {
     }
 
     return (
-        <div className="flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden" id="ml-module">
+        <div className="flex h-[calc(100vh-7rem)] md:h-[calc(100vh-9rem)] flex-col gap-3 md:gap-4 overflow-hidden" id="ml-module">
 
             {/* Header */}
             <div className="flex shrink-0 items-start justify-between">
@@ -491,7 +491,7 @@ export const MLObservabilityPage = () => {
                 </div>
 
                 {/* KPI Strip */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
                     {isLoading ? (
                         Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
                     ) : (

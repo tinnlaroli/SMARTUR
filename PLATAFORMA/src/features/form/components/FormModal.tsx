@@ -81,20 +81,20 @@ export function FormModal({ isOpen, onClose }: FormModalProps) {
             
             {/* Modal Card */}
             <div
-                className={`relative w-full max-w-4xl max-h-[85vh] overflow-hidden rounded-3xl shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col ${
+                className={`relative w-full max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[92vh] md:max-h-[85vh] overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col ${
                     isDark ? 'border border-zinc-800 bg-zinc-900' : 'border border-zinc-200 bg-white'
                 }`}
             >
-                <button 
+                <button
                     onClick={onClose}
-                    className={`absolute top-6 right-6 z-10 rounded-full p-2 transition-colors ${
+                    className={`absolute top-3 right-3 md:top-6 md:right-6 z-10 rounded-full p-1.5 md:p-2 transition-colors ${
                         isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white' : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900'
                     }`}
                 >
-                    <X className="size-6" />
+                    <X className="size-5 md:size-6" />
                 </button>
 
-                <div ref={scrollRef} className="p-6 md:p-8 overflow-y-auto">
+                <div ref={scrollRef} className="p-4 md:p-6 lg:p-8 overflow-y-auto">
                     <ProgressIndicator currentStep={currentStep + 1} totalSteps={totalSteps} isStep4Loading={isStep4Loading} />
 
                     <div className="mt-8">

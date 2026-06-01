@@ -99,12 +99,12 @@ const BENEFITS = [
 
     {/* Feature Grid */}
     <div
-      class="grid tech-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16"
+      class="grid tech-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-16"
     >
       {
         BENEFITS.map((feature, index) => (
           <div
-            class="feature-card group reveal-fade-up relative p-8 rounded-3xl border 
+            class="feature-card group reveal-fade-up relative p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl border
                  hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 ease-out overflow-hidden flex flex-col items-center text-center md:items-start md:text-left"
             style={`animation-delay: ${300 + index * 100}ms`}
           >
