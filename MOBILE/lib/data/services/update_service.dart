@@ -124,8 +124,10 @@ class UpdateService {
       client.close();
     }
 
-    await SharePlus.instance.shareXFiles(
-      [XFile(filePath, mimeType: 'application/vnd.android.package-archive')],
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(filePath, mimeType: 'application/vnd.android.package-archive')],
+      ),
     );
   }
 
