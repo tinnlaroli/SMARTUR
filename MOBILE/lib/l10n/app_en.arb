@@ -361,6 +361,8 @@
   "@latencyMs": { "placeholders": { "ms": {} } },
 
   "homeOfflineBanner": "No connection. Enable internet to view the map.",
+  "welcomeGreeting": "Welcome",
+  "recoPreloadedBannerDesc": "Pre-filled based on your saved preferences",
   "onboardingTitle1": "Your adventure starts here",
   "onboardingDesc1": "Explore the most magical corners of the High Mountains with routes designed for the modern explorer.",
   "onboardingTitle2": "Intelligence that knows you",

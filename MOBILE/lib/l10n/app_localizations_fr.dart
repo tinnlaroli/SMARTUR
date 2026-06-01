@@ -1068,6 +1068,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Pas de connexion. Activez Internet pour voir la carte.';
 
   @override
+  String get welcomeGreeting => 'Bienvenue';
+
+  @override
+  String get recoPreloadedBannerDesc =>
+      'Pré-rempli selon vos préférences enregistrées';
+
+  @override
   String get onboardingTitle1 => 'Votre aventure commence ici';
 
   @override

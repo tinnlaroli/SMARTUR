@@ -374,7 +374,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Precargamos respuestas basadas en tus preferencias guardadas',
+                      AppLocalizations.of(context)!.recoPreloadedBannerDesc,
                       style: TextStyle(
                         fontFamily: 'Outfit', fontSize: 11,
                         color: scheme.onSurface.withValues(alpha: 0.75),
@@ -841,7 +841,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
               final rec = entry.value as Map<String, dynamic>;
               final itemId = (rec['item_id'] ?? '').toString();
               final place = widget.findPlace(itemId);
-              final name = place?.name ?? rec['title'] ?? rec['name'] ?? 'Destino ${i + 1}';
+              final name = place?.name ?? rec['title'] ?? rec['name'] ?? AppLocalizations.of(context)!.recommendationNumber(i + 1);
               final vote = _votes[itemId];
 
               return Padding(
@@ -1019,7 +1019,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
     final scheme = Theme.of(context).colorScheme;
     final place = widget.place;
     final rec = widget.rec;
-    final name = place?.name ?? rec['title'] ?? rec['name'] ?? 'Destino ${widget.index + 1}';
+    final name = place?.name ?? rec['title'] ?? rec['name'] ?? AppLocalizations.of(context)!.recommendationNumber(widget.index + 1);
     final score = (rec['score'] as num?)?.toDouble() ?? 0.0;
     final tags = (rec['reason_tags'] as List?)?.map((t) => t.toString()).toList() ?? [];
     final city = place?.city ?? '';
@@ -1529,7 +1529,7 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
                 color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : Colors.white,
                 size: 20),
               const SizedBox(width: 10),
-              Text('Descubrir mis destinos',
+              Text(AppLocalizations.of(context)!.recoTitle,
                 style: TextStyle(
                   fontFamily: 'Outfit', fontSize: 16, fontWeight: FontWeight.w700,
                   color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : Colors.white,

@@ -1057,6 +1057,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Sin conexión. Activa el internet para ver el mapa.';
 
   @override
+  String get welcomeGreeting => 'Bienvenido';
+
+  @override
+  String get recoPreloadedBannerDesc =>
+      'Precargamos respuestas basadas en tus preferencias guardadas';
+
+  @override
   String get onboardingTitle1 => 'Tu aventura comienza aquí';
 
   @override

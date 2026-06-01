@@ -361,6 +361,8 @@
   "@latencyMs": { "placeholders": { "ms": {} } },
 
   "homeOfflineBanner": "Sem conexão. Ative a internet para ver o mapa.",
+  "welcomeGreeting": "Bem-vindo",
+  "recoPreloadedBannerDesc": "Pré-preenchido com base nas suas preferências salvas",
   "onboardingTitle1": "Sua aventura começa aqui",
   "onboardingDesc1": "Explore os cantos mais mágicos das Altas Montanhas com rotas projetadas para o explorador moderno.",
   "onboardingTitle2": "Inteligência que te conhece",

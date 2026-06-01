@@ -7,26 +7,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1076586296171:android:ac7c34ca09713628d0922e",
+        "mobilesdk_app_id": "1:1076586296171:android:6833575cf5a9e7c0d0922e",
         "android_client_info": {
-          "package_name": "com.example.app_smartur"
+          "package_name": "mx.smartur.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1076586296171-lclsh25g74gccl0k38ggce5ucj4avtqj.apps.googleusercontent.com",
+          "client_id": "1076586296171-8sl5e8dtnh896cfl0kgctqa0ko507ld8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.app_smartur",
-            "certificate_hash": "9c0a7011a67cf1b7e26196838c650c9f28506a43"
+            "package_name": "mx.smartur.app",
+            "certificate_hash": "764063ad57de5fc87cb6b0625068cbbf92ea497d"
           }
         },
         {
-          "client_id": "1076586296171-mjrj2cn0gfuotadae4sitd94bgq3h1rv.apps.googleusercontent.com",
+          "client_id": "1076586296171-eclsopm9r2fsfpno530og567r8iubk70.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.app_smartur",
-            "certificate_hash": "764063ad57de5fc87cb6b0625068cbbf92ea497d"
+            "package_name": "mx.smartur.app",
+            "certificate_hash": "ed94c9cb16c76c6011485241fab4b77184aed9f5"
+          }
+        },
+        {
+          "client_id": "1076586296171-u04qpqbqn6c4nd7eme83mhskg932kla4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mx.smartur.app",
+            "certificate_hash": "9c0a7011a67cf1b7e26196838c650c9f28506a43"
           }
         },
         {

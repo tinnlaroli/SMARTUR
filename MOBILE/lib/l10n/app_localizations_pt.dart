@@ -1062,6 +1062,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sem conexão. Ative a internet para ver o mapa.';
 
   @override
+  String get welcomeGreeting => 'Bem-vindo';
+
+  @override
+  String get recoPreloadedBannerDesc =>
+      'Pré-preenchido com base nas suas preferências salvas';
+
+  @override
   String get onboardingTitle1 => 'Sua aventura começa aqui';
 
   @override

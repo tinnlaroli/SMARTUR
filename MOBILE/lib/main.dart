@@ -18,7 +18,6 @@ import 'presentation/widgets/smartur_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializar Firebase (requerido por firebase_messaging y google_sign_in ^7.x)
   await Firebase.initializeApp();
   // Etapa 1: permisos + token FCM sin necesitar auth ni contexto
   await NotificationService.setup();
@@ -185,6 +184,8 @@ class _SplashGate extends StatefulWidget {
 
 class _SplashGateState extends State<_SplashGate> {
   bool _showLoader = true;
+  bool _loaderAnimDone = false;
+  bool _sessionReady = false;
   bool? _hasSession;
   String? _userName;
   StreamSubscription<void>? _sessionExpiredSub;
@@ -194,6 +195,8 @@ class _SplashGateState extends State<_SplashGate> {
     super.initState();
     if (!widget.seenOnboarding) {
       _showLoader = false;
+      _sessionReady = true;
+      _loaderAnimDone = true;
     }
     _checkSession();
 
@@ -232,14 +235,24 @@ class _SplashGateState extends State<_SplashGate> {
     // 1. Verificación local rápida (expiry, token presente)
     final hasLocal = await auth.hasSession();
     if (!hasLocal) {
-      if (mounted) setState(() { _hasSession = false; _userName = null; });
+      if (mounted) setState(() {
+        _hasSession = false;
+        _userName = null;
+        _sessionReady = true;
+        if (_loaderAnimDone) _showLoader = false;
+      });
       return;
     }
 
     // 2. Validación contra el servidor (detecta tokens revocados / secreto rotado)
     final isValid = await auth.validateTokenWithServer();
     if (!isValid) {
-      if (mounted) setState(() { _hasSession = false; _userName = null; });
+      if (mounted) setState(() {
+        _hasSession = false;
+        _userName = null;
+        _sessionReady = true;
+        if (_loaderAnimDone) _showLoader = false;
+      });
       return;
     }
 
@@ -248,6 +261,8 @@ class _SplashGateState extends State<_SplashGate> {
       setState(() {
         _hasSession = true;
         _userName = name;
+        _sessionReady = true;
+        if (_loaderAnimDone) _showLoader = false;
       });
     }
   }
@@ -267,7 +282,10 @@ class _SplashGateState extends State<_SplashGate> {
           Positioned.fill(
             child: SmartURLoader(
               key: const ValueKey('loader'),
-              onFinished: () => setState(() => _showLoader = false),
+              onFinished: () => setState(() {
+                _loaderAnimDone = true;
+                if (_sessionReady) _showLoader = false;
+              }),
             ),
           ),
       ],

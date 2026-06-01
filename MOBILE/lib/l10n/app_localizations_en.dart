@@ -1053,6 +1053,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'No connection. Enable internet to view the map.';
 
   @override
+  String get welcomeGreeting => 'Welcome';
+
+  @override
+  String get recoPreloadedBannerDesc =>
+      'Pre-filled based on your saved preferences';
+
+  @override
   String get onboardingTitle1 => 'Your adventure starts here';
 
   @override

@@ -2076,6 +2076,18 @@ abstract class AppLocalizations {
   /// **'Sin conexión. Activa el internet para ver el mapa.'**
   String get homeOfflineBanner;
 
+  /// No description provided for @welcomeGreeting.
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenido'**
+  String get welcomeGreeting;
+
+  /// No description provided for @recoPreloadedBannerDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Precargamos respuestas basadas en tus preferencias guardadas'**
+  String get recoPreloadedBannerDesc;
+
   /// No description provided for @onboardingTitle1.
   ///
   /// In es, this message translates to:

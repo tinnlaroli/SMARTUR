@@ -231,7 +231,7 @@ class HomeScreenState extends State<HomeScreen> {
     _welcomeShownOnce = true;
 
     final name = widget.userName;
-    const greeting = 'Bienvenido';
+    final greeting = AppLocalizations.of(context)!.welcomeGreeting;
     final message = (name != null && name.isNotEmpty)
         ? '$greeting, $name 👋'
         : '$greeting 👋';
