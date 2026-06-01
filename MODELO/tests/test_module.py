@@ -7,7 +7,7 @@ def test_engine_instantiation():
     try:
         # Esto probaría cargar CSVs si estuviera en entorno con datos,
         # pero para CI genérico, capturamos excepciones de FileNotFoundError si no hay data.
-        engine = SmarturEngine()
+        engine = SmarturEngine(data_source='mexico')
         assert engine is not None
     except FileNotFoundError:
         # En CI vacío sin los CSV, nos basta con que el archivo se haya importado bien.

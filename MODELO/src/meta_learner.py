@@ -2,14 +2,14 @@
 SMARTUR Meta-Learner v1 — Stacked Generalization for Blend Weights.
 
 En lugar de pesos fijos por tipo de ítem, un modelo de stacking
-aprende directamente la función f(pred_cf, pred_rf, ..., user_features) → rating.
+aprende directamente la función f(pred_cf, pred_rf, ..., user_features) -> rating.
 
 Arquitectura:
   Level 0: CF, RF, LightFM, ContentModel, GBM (predictions como features)
   Level 1: HistGradientBoostingRegressor (meta-modelo)
 
 Entrenamiento: nightly en _run_full_training(), sample de engine.test_data.
-Inferencia: predict_score() → score final sin weights manuales.
+Inferencia: predict_score() -> score final sin weights manuales.
 """
 
 import json
@@ -62,7 +62,7 @@ def _extract_item_type_ohe(item_type: str) -> List[float]:
 class MetaBlender:
     """Stacked meta-learner for blend weights.
 
-    Train: collects base model predictions + features, fits HGBR → rating.
+    Train: collects base model predictions + features, fits HGBR -> rating.
     Predict: given user + item_ids + model predictions, outputs final score.
     """
 

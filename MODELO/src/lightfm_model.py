@@ -313,7 +313,7 @@ class SmarturLightFMModel:
         return result
 
     def _build_biz_lookup(self, biz_df: pd.DataFrame) -> dict:
-        """Returns a {business_id_str → row_dict} lookup."""
+        """Returns a {business_id_str -> row_dict} lookup."""
         if biz_df is None or biz_df.empty:
             return {}
         df = biz_df.copy()
@@ -346,7 +346,7 @@ class SmarturLightFMModel:
         if str_uid in self._known_users:
             return self._predict_warm(str_uid, item_ids)
 
-        # Cold-start without context → neutral scores based on item popularity
+        # Cold-start without context -> neutral scores based on item popularity
         return self._predict_cold_item_bias(item_ids)
 
     def _predict_warm(self, user_id: str, item_ids: list) -> list:

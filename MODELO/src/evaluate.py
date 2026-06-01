@@ -402,7 +402,7 @@ def evaluar_ranking_local(
 def evaluar_modelo(sample_size=1000):
     print("=== Evaluacion SMARTUR v3 ===\n")
 
-    engine = SmarturEngine()
+    engine = SmarturEngine(data_source='mexico')
     engine.prepare_pearson_matrix()
 
     context_model = SmarturContextModel()

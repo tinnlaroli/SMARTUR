@@ -14,7 +14,7 @@ import pandas as pd
 
 _logger = logging.getLogger('smartur-api')
 
-# Mapeo tipo de turismo → términos de búsqueda para el query del usuario
+# Mapeo tipo de turismo -> términos de búsqueda para el query del usuario
 _TURISMO_QUERY = {
     'naturaleza':   'park hiking nature waterfall volcano mountain viewpoint botanical outdoor',
     'aventura':     'adventure hiking active volcano mountain rafting biking nature park',
@@ -59,7 +59,7 @@ class SmarturContentModel:
                 cats = str(row.get('categories', '') or '')
                 parts = [cats]
 
-                # Numeric attributes → pseudo-words
+                # Numeric attributes -> pseudo-words
                 price = int(row.get('price_level', 2) or 2)
                 parts.append(f'price_{price}')
                 if int(row.get('is_accessible', 0) or 0):
@@ -108,7 +108,7 @@ class SmarturContentModel:
             query_text = self._build_query(user_context)
             query_vec = self._tfidf.transform([query_text])
 
-            # Build index from item_id → matrix row
+            # Build index from item_id -> matrix row
             id_to_row = {iid: i for i, iid in enumerate(self._item_ids)}
 
             scores = []
@@ -118,7 +118,7 @@ class SmarturContentModel:
                     scores.append(3.0)
                     continue
                 sim = float(cosine_similarity(query_vec, self._item_matrix[row_idx])[0, 0])
-                # Map cosine sim [0, 1] → [1, 5]: 0 sim → 1.0, perfect sim → 5.0
+                # Map cosine sim [0, 1] -> [1, 5]: 0 sim -> 1.0, perfect sim -> 5.0
                 scores.append(float(np.clip(1.0 + sim * 4.0, 1.0, 5.0)))
 
             return scores
@@ -133,7 +133,7 @@ class SmarturContentModel:
 
         parts = []
 
-        # Tourism types → pseudo-words
+        # Tourism types -> pseudo-words
         tipos = user_context.get('tiposTurismo', [])
         if isinstance(tipos, str):
             tipos = [tipos]
@@ -142,7 +142,7 @@ class SmarturContentModel:
             if q:
                 parts.append(q)
 
-        # Boolean prefs → pseudo-words
+        # Boolean prefs -> pseudo-words
         if user_context.get('pref_outdoor', False):
             parts.append('outdoor nature park hiking')
         if user_context.get('wants_tours', False):

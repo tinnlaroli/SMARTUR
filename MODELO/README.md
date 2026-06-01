@@ -1,21 +1,22 @@
 # SMARTUR - Sistema de Recomendación Híbrido (v4 True ML Contextual)
 
-SMARTUR es un sistema de recomendación híbrido de grado industrial que combina **Filtrado Colaborativo (Pearson + KNN)** con una arquitectura **True Machine Learning Contextual (Random Forest de Interacciones Cruzadas)** para generar sugerencias personalizadas hiper-precisas usando el dataset real de Yelp.
+SMARTUR es un sistema de recomendación híbrido de grado industrial que combina **Filtrado Colaborativo (Pearson + KNN)** con una arquitectura **True Machine Learning Contextual (Random Forest de Interacciones Cruzadas)** para generar sugerencias personalizadas hiper-precisas usando datos turísticos mexicanos (REST-MEX 2025/2022 + POIs curados de Puebla y Veracruz).
 
 ## Novedades de la versión v4
 
 - **Generación de Contextos Sintéticos**: El Random Forest ya no usa reglas estáticas (sistemas expertos). Ahora entrena simulando millones de perfiles de turistas virtuales, descubriendo por sí solo el impacto de buscar "restaurantes caros para turistas solos" vs "lugares con rampa para familias".
 - **Filtros de Poda Duros**: Restricciones infalibles para cuando el turista pide un hotel (`needs_hotel`) o pide que no haya lugares de comida (`pref_food=false`).
 - **Nuevos Metadatos de Yelp**: Extrae nativamente `GoodForKids` y determina el ambiente (`Ambience` romántico/íntimo).
+- **Datos Mexicanos**: El dataset por defecto ahora es `data_reviews_mexico.csv` / `data_negocios_mexico.csv` con 248K reseñas de REST-MEX 2025/2022 + 54 POIs curados de Puebla y Veracruz. Yelp disponible como fallback via `SmarturEngine(data_source='yelp')`.
 
 ## Estructura
 
 ```bash
 MODELO/
-├── data/                    # CSVs procesados + JSON originales de Yelp
+├── data/                    # CSVs procesados + REST-MEX raw + GMaps scrapes
 ├── models/                  # Modelos entrenados (.joblib)
 ├── src/                     # Motor de recomendación
-│   ├── engine.py            # Pearson + KNN (matriz de utilidad)
+│   ├── engine.py            # Pearson + KNN (matriz de utilidad). data_source='mexico' por defecto
 │   ├── cf.py                # Predicción CF por vecinos
 │   ├── rf_model.py          # Cerebro ML (Simulador Sintético + RF Cruzado)
 │   ├── context_encoder.py   # Transformador JSON React -> Vector Numérico
@@ -23,9 +24,14 @@ MODELO/
 │   ├── evaluate.py          # Evaluación RMSE/MAE + Ranking Metrics (NDCG, Precision)
 │   ├── optimize_alpha.py    # Grid search para α óptimo
 │   ├── api.py               # API REST (FastAPI)
-│   └── pre_procesamiento.py # NLP y Extracción de JSON Yelp → CSV
+│   ├── seed_pois_mexico.py  # Genera seed data: REST-MEX + 54 POIs curados → data_*_mexico.csv
+│   ├── pre_procesamiento_mexico.py # Unifica fuentes mexicanas, corrige dtypes
+│   ├── descargar_gmaps.py   # HTTP scraper Google Maps (sin API key)
+│   ├── descargar_opendata.py # CKAN datamx.io + HTTP open data
+│   └── pre_procesamiento.py # (legacy) NLP y Extracción de JSON Yelp → CSV
 ├── tests/                   # Tests
-├── descargar_yelp.py        # Descarga automatizada del dataset
+├── restmex_repository.py   # Cargador REST-MEX 2025/2022
+├── descargar_yelp.py        # Descarga automatizada del dataset Yelp (legacy)
 └── requirements.txt         # Dependencias
 ```
 
@@ -33,13 +39,20 @@ MODELO/
 
 ```bash
 cd src
-# Si cambiaste los datos extraídos o es la primera vez:
-python pre_procesamiento.py
+# Primera vez: generar seed data mexicano (REST-MEX 2025/2022 + POIs curados)
+python seed_pois_mexico.py
+python pre_procesamiento_mexico.py
+
+# (Opcional) Scrape Google Maps para más datos
+python descargar_gmaps.py
+python pre_procesamiento_mexico.py  # re-ejecutar para fusionar GMaps
 
 # Levantar el servidor 
 # (Entrenará automáticamente el Random Forest v4 si no detecta el pre-compilado en /models)
 python api.py
 ```
+
+Para usar datos Yelp (legacy): `SmarturEngine(data_source='yelp')` en api.py.
 
 Swagger UI disponible en: `http://localhost:8000/docs`
 

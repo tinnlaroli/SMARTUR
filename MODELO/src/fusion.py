@@ -1,5 +1,5 @@
 """
-SMARTUR Fusion v4: Pipeline de dos etapas (Retrieval → Ranking).
+SMARTUR Fusion v4: Pipeline de dos etapas (Retrieval -> Ranking).
 
 Fase A (Retrieval):
   1. Pool amplio de ~200 candidatos vía KNN/Pearson
@@ -221,7 +221,7 @@ def recommend_hybrid(
     else:
         # Fallback desarrollo: candidatos Yelp KNN
         if engine is None:
-            return []   # no local POIs and no engine → cannot recommend
+            return []   # no local POIs and no engine -> cannot recommend
         candidate_ids = engine.get_candidate_pool(user_id, top_n=200)
         biz_candidates = engine.df_biz[engine.df_biz['business_id'].isin(candidate_ids)]
         effective_alpha = alpha
@@ -285,7 +285,7 @@ def recommend_hybrid(
     for biz_id in final_ids:
         # CF / SVD signal
         if biz_id in local_id_set:
-            score_cf = 4.0          # local POI → proxy positive signal
+            score_cf = 4.0          # local POI -> proxy positive signal
         elif biz_id in matrix_col_set:
             score_cf = predict_cf_pearson(user_id, biz_id, engine)
         else:
@@ -295,15 +295,15 @@ def recommend_hybrid(
         score_lfm = lfm_map.get(biz_id, 3.0)
 
         # Blending weights:
-        #   Cold-start user → lean on LightFM (feature-based) + RF (content)
-        #   Warm user       → balanced: LightFM + CF + RF
+        #   Cold-start user -> lean on LightFM (feature-based) + RF (content)
+        #   Warm user       -> balanced: LightFM + CF + RF
         if lfm_map:
             if is_cold_start:
                 final_score = 0.60 * score_lfm + 0.40 * score_rf
             else:
                 final_score = 0.30 * score_lfm + 0.30 * score_cf + 0.40 * score_rf
         else:
-            # LightFM not available → classic blend
+            # LightFM not available -> classic blend
             final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
 
         # Quality boost from admin service_evaluation (service_evaluation.total_score).

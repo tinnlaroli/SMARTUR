@@ -15,7 +15,7 @@ from evaluate import _infer_user_context
 def optimize(sample_size=1000):
     print("=== Optimizacion de alpha para SMARTUR v2 ===\n")
 
-    engine = SmarturEngine()
+    engine = SmarturEngine(data_source='mexico')
     engine.prepare_pearson_matrix()
 
     context_model = SmarturContextModel()

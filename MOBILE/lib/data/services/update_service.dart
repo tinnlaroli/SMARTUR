@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:open_file_plus/open_file_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UpdateService {
   static const _apiUrl =
@@ -97,8 +97,9 @@ class UpdateService {
     return false;
   }
 
-  /// Downloads the APK to the app cache directory and opens the system
-  /// package installer. [onProgress] receives 0.0–1.0 as bytes arrive.
+  /// Downloads the APK to cache and opens Android's system package installer
+  /// via share_plus (handles FileProvider for Android 7+ internally).
+  /// [onProgress] receives 0.0–1.0 as bytes arrive.
   static Future<void> downloadAndInstall({
     void Function(double progress)? onProgress,
   }) async {
@@ -123,7 +124,9 @@ class UpdateService {
       client.close();
     }
 
-    await OpenFile.open(filePath);
+    await SharePlus.instance.shareXFiles(
+      [XFile(filePath, mimeType: 'application/vnd.android.package-archive')],
+    );
   }
 
   static void showUpdateDialog(BuildContext context, String latestVersion) {
@@ -184,7 +187,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         children: [
           Text(
             'La versión ${widget.latestVersion} de SMARTUR está disponible.\n'
-            'Se descargará e instalará directamente en el app.',
+            'Se descargará e instalará desde el app.',
             style: const TextStyle(fontFamily: 'Outfit', fontSize: 14, height: 1.5),
           ),
           if (isDownloading) ...[
@@ -199,7 +202,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
             Text(
               _progress! < 1.0
                   ? 'Descargando... ${(_progress! * 100).toStringAsFixed(0)}%'
-                  : 'Abriendo instalador...',
+                  : 'Preparando instalador...',
               style: const TextStyle(
                   fontFamily: 'Outfit', fontSize: 12, color: Colors.grey),
             ),

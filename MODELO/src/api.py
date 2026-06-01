@@ -63,9 +63,12 @@ def _load_or_train_models(do_train: bool = False) -> None:
 
     try:
         logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
-        engine = SmarturEngine()
+        engine = SmarturEngine(data_source='mexico')
         engine.prepare_pearson_matrix()
-        engine.train_data, restmex_biz = _merge_restmex(engine.train_data)
+        # Seed data (seed_pois_mexico.py) ya incluye REST-MEX 2025/2022.
+        # No llamar _merge_restmex para evitar duplicar 208K reseñas con
+        # business_ids inconsistentes (idx%40 genera 40 IDs por Town+Type).
+        restmex_biz = None
 
         logger.info("[boot] Cargando Modelo de Contexto (Random Forest)...")
         context_model = SmarturContextModel()
@@ -735,8 +738,8 @@ def _run_full_training():
         from poi_repository import fetch_real_interactions, fetch_evaluation_scores
 
         # ── 1. Merge real DB interactions (if any accumulated) ───────────────
-        # Threshold lowered 50→10 so early adopters immediately influence training.
-        # Weight scaled adaptively (3× min → 10× max) to compensate for the 266K
+        # Threshold lowered 50->10 so early adopters immediately influence training.
+        # Weight scaled adaptively (3× min -> 10× max) to compensate for the 266K
         # Yelp corpus — without this, SMARTUR signals are drowned out.
         _MIN_REAL = 10
         try:
@@ -771,12 +774,8 @@ def _run_full_training():
         except Exception as exc:
             logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
 
-        # ── 1c. Merge Rest-Mex 2022 ──────────────────────────────────────────
-        try:
-            engine.train_data, restmex_biz = _merge_restmex(engine.train_data)
-        except Exception as exc:
-            restmex_biz = None
-            logger.warning(f"[train] Rest-Mex no disponible: {exc}")
+        # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
+        restmex_biz = None
 
         # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
         logger.info("[train] Actualizando matriz de Pearson + SVD...")

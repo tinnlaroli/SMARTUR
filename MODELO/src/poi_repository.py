@@ -155,12 +155,12 @@ def fetch_real_interactions(min_events: int = 1) -> pd.DataFrame:
     Builds a user-item implicit rating matrix from live SMARTUR interaction data.
 
     Signal weighting:
-      explicit star rating (user_rating)  → raw value 1-5 (dominates when present)
-      favorite (user_favorite)             → +4.0
-      visit    (user_visit)                → +2.5
-      detail_open (user_interaction)       → +0.4 per open, capped at 5
-      dwell    (user_interaction)          → +0.03 per second up to 120 s
-      skip     (user_interaction)          → -0.5 per skip, capped at 3
+      explicit star rating (user_rating)  -> raw value 1-5 (dominates when present)
+      favorite (user_favorite)             -> +4.0
+      visit    (user_visit)                -> +2.5
+      detail_open (user_interaction)       -> +0.4 per open, capped at 5
+      dwell    (user_interaction)          -> +0.03 per second up to 120 s
+      skip     (user_interaction)          -> -0.5 per skip, capped at 3
 
     Returns DataFrame[user_id, item_id, implicit_score] clipped to [1, 5].
     Returns empty DataFrame on failure so callers can fall back gracefully.
@@ -253,7 +253,7 @@ def fetch_evaluation_scores() -> pd.DataFrame:
     This gives the models a signal that well-evaluated tourist services should
     be ranked higher, even for cold-start users.
 
-    Mapping:  total_score >= 80 → 4.5  |  total_score >= 60 → 3.5  |  else → 2.5
+    Mapping:  total_score >= 80 -> 4.5  |  total_score >= 60 -> 3.5  |  else -> 2.5
 
     Returns DataFrame[user_id, business_id, stars]. Returns empty on error.
     """

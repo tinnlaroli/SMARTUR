@@ -116,7 +116,7 @@ class ContextEncoder:
         features['user_pref_outdoor'] = 1 if context.get('pref_outdoor', False) else 0
         features['user_wants_tours'] = 1 if context.get('wants_tours', False) else 0
         features['user_needs_hotel'] = 1 if context.get('needs_hotel', False) else 0
-        # has_visited_region: repeat visitor → prefer lesser-known spots (exploratory signal)
+        # has_visited_region: repeat visitor -> prefer lesser-known spots (exploratory signal)
         features['user_has_visited_region'] = 1 if context.get('has_visited_region', False) else 0
 
         # pref_food by default is true (assume they want to see restaurants unless explicitly false)
@@ -134,6 +134,7 @@ class ContextEncoder:
             'user_wants_tours': 0,
             'user_needs_hotel': 0,
             'user_pref_food': 1,
+            'user_has_visited_region': 0,
         }
         for t in self.tourism_types:
             features[f'user_tur_{t}'] = 0

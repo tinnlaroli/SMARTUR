@@ -55,7 +55,7 @@ def predict_cf_pearson(user_id, item_id, engine, k=20):
         user_mean = float(engine.train_data['stars'].mean())
 
     if sim_sum == 0:
-        # No KNN neighbors rated this item → try SVD dot-product for a better estimate
+        # No KNN neighbors rated this item -> try SVD dot-product for a better estimate
         if hasattr(engine, 'user_latent') and hasattr(engine, 'item_latent'):
             u = engine.user_index.get(user_id)
             it = engine.item_index.get(item_id)

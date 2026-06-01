@@ -6,7 +6,7 @@ from fusion import recommend_hybrid
 def ejecutar_smartur():
     print("=== Iniciando SMARTUR v2 ===")
 
-    engine = SmarturEngine()
+    engine = SmarturEngine(data_source='mexico')
     engine.prepare_pearson_matrix()
 
     context_model = SmarturContextModel()

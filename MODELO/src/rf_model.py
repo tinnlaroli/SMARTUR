@@ -59,9 +59,10 @@ class SmarturContextModel:
     El modelo aprende las interacciones dinámicamente mediante la inyección de 
     datos de contexto de usuario sintéticos durante el entrenamiento.
     """
-    def __init__(self, business_path=None):
+    def __init__(self, business_path=None, data_source='mexico'):
         if business_path is None:
-            business_path = os.path.join(_DATA, 'data_negocios_limpio.csv')
+            file_name = 'data_negocios_mexico.csv' if data_source == 'mexico' else 'data_negocios_limpio.csv'
+            business_path = os.path.join(_DATA, file_name)
         self.df_biz = pd.read_csv(business_path)
         self.model = RandomForestRegressor(
             n_estimators=200, max_depth=12, min_samples_leaf=5, n_jobs=-1
@@ -241,6 +242,7 @@ class SmarturContextModel:
         result['user_needs_hotel']            = _infer_pref(hotel_rx)
         result['user_pref_food']              = _infer_pref(food_rx, default=1)  # food pref is common
         result['user_requires_accessibility'] = 0  # cannot infer from ratings; keep neutral
+        result['user_has_visited_region'] = 0      # cannot infer from ratings; keep neutral
 
         # 6. Match features (ahora correlacionados con ratings reales)
         result['budget_delta'] = (result['user_budget'] - result.get('price_level', 2)).abs()

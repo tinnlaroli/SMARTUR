@@ -17,18 +17,21 @@ class SmarturEngine:
     y genera una matriz matemática optimizada de Utilidad Esparcida (User-Item Sparse Matrix).
     """
 
-    def __init__(self, reviews_path=None, business_path=None):
+    def __init__(self, reviews_path=None, business_path=None, data_source='mexico'):
         """
         Inicializa el motor cargando los datos de disco y particionando para entrenamiento/test.
         
         Args:
             reviews_path (str, opcional): Ruta al CSV que contiene las reseñas (interacciones).
             business_path (str, opcional): Ruta al CSV que contiene los detalles de los negocios.
+            data_source (str): 'mexico' (default) para datos mexicanos, 'yelp' para Yelp dataset legacy.
         """
         if reviews_path is None:
-            reviews_path = os.path.join(_DATA, 'data_reviews_limpio.csv')
+            file_name = 'data_reviews_mexico.csv' if data_source == 'mexico' else 'data_reviews_limpio.csv'
+            reviews_path = os.path.join(_DATA, file_name)
         if business_path is None:
-            business_path = os.path.join(_DATA, 'data_negocios_limpio.csv')
+            file_name = 'data_negocios_mexico.csv' if data_source == 'mexico' else 'data_negocios_limpio.csv'
+            business_path = os.path.join(_DATA, file_name)
 
         self.df = pd.read_csv(reviews_path)
         self.train_data, self.test_data = train_test_split(
@@ -119,7 +122,7 @@ class SmarturEngine:
                 # Factorizar sobre la matriz centrada para mantener coherencia con KNN
                 self.user_latent = svd.fit_transform(self.matrix_centered)  # (n_u, k)
                 self.item_latent = svd.components_.T                         # (n_i, k)
-                # Mapeos de ID → índice en la matriz de factores latentes
+                # Mapeos de ID -> índice en la matriz de factores latentes
                 self.user_index = {uid: i for i, uid in enumerate(self.user_item_matrix_index)}
                 self.item_index = {iid: i for i, iid in enumerate(self.user_item_matrix_columns)}
                 explained = svd.explained_variance_ratio_.sum()

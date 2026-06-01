@@ -120,26 +120,26 @@ def clean_businesses(df_biz):
         before_cat = len(df_biz)
         tourism_mask = df_biz['categories'].apply(is_tourism_business)
         df_biz = df_biz[tourism_mask].copy()
-        print(f"  Filtro turístico: {before_cat} → {len(df_biz)} negocios")
+        print(f"  Filtro turístico: {before_cat} -> {len(df_biz)} negocios")
     else:
         print(f"  [WARN] No hay columna 'categories', saltando filtro turístico")
 
     if 'review_count' in df_biz.columns:
         before_rc = len(df_biz)
         df_biz = df_biz[df_biz['review_count'] > 0]
-        print(f"  review_count > 0: {before_rc} → {len(df_biz)}")
+        print(f"  review_count > 0: {before_rc} -> {len(df_biz)}")
 
     if 'is_open' in df_biz.columns:
         before_open = len(df_biz)
         df_biz = df_biz[df_biz['is_open'] == 1]
-        print(f"  is_open == 1: {before_open} → {len(df_biz)}")
+        print(f"  is_open == 1: {before_open} -> {len(df_biz)}")
 
     if 'categories' in df_biz.columns:
         before_nan = len(df_biz)
         df_biz = df_biz[df_biz['categories'].notna() & (df_biz['categories'] != '')]
-        print(f"  categories no nulas: {before_nan} → {len(df_biz)}")
+        print(f"  categories no nulas: {before_nan} -> {len(df_biz)}")
 
-    print(f"  Total limpieza negocios: {initial} → {len(df_biz)}")
+    print(f"  Total limpieza negocios: {initial} -> {len(df_biz)}")
     return df_biz.reset_index(drop=True)
 
 
@@ -151,20 +151,20 @@ def clean_reviews(df_rev, valid_biz_ids=None):
     if 'stars' in df_rev.columns:
         before_stars = len(df_rev)
         df_rev = df_rev[(df_rev['stars'] >= 1) & (df_rev['stars'] <= 5)]
-        print(f"  stars ∈ [1,5]: {before_stars} → {len(df_rev)}")
+        print(f"  stars ∈ [1,5]: {before_stars} -> {len(df_rev)}")
 
     if 'text' in df_rev.columns:
         before_text = len(df_rev)
         df_rev = df_rev[df_rev['text'].notna() & (df_rev['text'].str.strip() != '')]
         df_rev = df_rev[df_rev['text'].str.len() >= 20]
-        print(f"  text >= 20 chars: {before_text} → {len(df_rev)}")
+        print(f"  text >= 20 chars: {before_text} -> {len(df_rev)}")
 
     if valid_biz_ids is not None:
         before_biz = len(df_rev)
         df_rev = df_rev[df_rev['business_id'].isin(valid_biz_ids)]
-        print(f"  business_id válido: {before_biz} → {len(df_rev)}")
+        print(f"  business_id válido: {before_biz} -> {len(df_rev)}")
 
-    print(f"  Total limpieza reviews: {initial} → {len(df_rev)}")
+    print(f"  Total limpieza reviews: {initial} -> {len(df_rev)}")
     return df_rev.reset_index(drop=True)
 
 
@@ -172,20 +172,20 @@ def clean_restmex(df):
     initial = len(df)
 
     df = df.dropna(subset=['Title', 'Opinion', 'Polarity', 'Attraction'])
-    print(f"  Drop nulos: {initial} → {len(df)}")
+    print(f"  Drop nulos: {initial} -> {len(df)}")
 
     before_dup = len(df)
     df = df.drop_duplicates(subset=['Title', 'Opinion'])
-    print(f"  Drop duplicados: {before_dup} → {len(df)}")
+    print(f"  Drop duplicados: {before_dup} -> {len(df)}")
 
     df = df[(df['Opinion'].str.len() >= 20)]
-    print(f"  Opinion >= 20 chars: → {len(df)}")
+    print(f"  Opinion >= 20 chars: -> {len(df)}")
 
     df = df[(df['Polarity'] >= 1) & (df['Polarity'] <= 5)]
-    print(f"  Polarity ∈ [1,5]: → {len(df)}")
+    print(f"  Polarity ∈ [1,5]: -> {len(df)}")
 
     df = df[df['Attraction'].isin(['Hotel', 'Restaurant', 'Attractive'])]
-    print(f"  Attraction válido: → {len(df)}")
-    print(f"  Total limpieza Rest-Mex: {initial} → {len(df)}")
+    print(f"  Attraction válido: -> {len(df)}")
+    print(f"  Total limpieza Rest-Mex: {initial} -> {len(df)}")
 
     return df.reset_index(drop=True)
