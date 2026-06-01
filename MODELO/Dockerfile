@@ -17,9 +17,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN addgroup --system --gid 1001 modelgroup \
     && adduser --system --uid 1001 --ingroup modelgroup modeluser
 
-COPY --chown=modeluser:modelgroup data/ ./data/
-COPY --chown=modeluser:modelgroup models/ ./models/
+# Seed dirs — fuera de los paths que montan los volúmenes.
+# El entrypoint copia a /app/data y /app/models si aún no existen.
+COPY --chown=modeluser:modelgroup data/ ./data_seed/
+COPY --chown=modeluser:modelgroup models/ ./models_seed/
 COPY --chown=modeluser:modelgroup src/ ./src/
+
+# Directorios destino (pueden ser sobreescritos por volúmenes)
+RUN mkdir -p /app/data /app/models && \
+    chown modeluser:modelgroup /app/data /app/models
+
+COPY --chown=modeluser:modelgroup entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 WORKDIR /app/src
 
@@ -27,4 +36,4 @@ USER modeluser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/entrypoint.sh"]

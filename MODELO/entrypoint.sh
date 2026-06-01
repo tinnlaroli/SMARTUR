@@ -1,36 +1,28 @@
 #!/bin/sh
-set -e
+# Siembra archivos del imagen al volumen si no existen.
 
-DATA_DIR="/app/data"
-MODELS_DIR="/app/models"
-BUNDLED_MODELS="/app/_bundled/models"
-REVIEWS_CSV="$DATA_DIR/data_reviews_limpio.csv"
-BUSINESS_CSV="$DATA_DIR/data_negocios_limpio.csv"
+SEED_DATA=/app/data_seed
+SEED_MODELS=/app/models_seed
+DATA=/app/data
+MODELS=/app/models
 
-mkdir -p "$DATA_DIR" "$MODELS_DIR"
+echo "[entrypoint] Verificando archivos de datos y modelos..."
 
-if [ -d "$BUNDLED_MODELS" ] && [ -z "$(ls -A "$MODELS_DIR" 2>/dev/null)" ]; then
-  echo "[bootstrap] Sembrando artefactos base en models/"
-  cp -r "$BUNDLED_MODELS/." "$MODELS_DIR/"
-fi
+for f in data_reviews_mexico.csv data_negocios_mexico.csv; do
+    if [ ! -f "$DATA/$f" ] && [ -f "$SEED_DATA/$f" ]; then
+        echo "[entrypoint] Copiando $f al volumen..."
+        cp "$SEED_DATA/$f" "$DATA/$f"
+    fi
+done
 
-if [ "${AUTO_BOOTSTRAP:-1}" = "1" ]; then
-  if [ ! -f "$REVIEWS_CSV" ] || [ ! -f "$BUSINESS_CSV" ]; then
-    echo "[bootstrap] Datos de entrenamiento no encontrados."
-    echo "[bootstrap] Paso 1/2: descargando dataset Yelp..."
-    python /app/descargar_yelp.py
-    echo "[bootstrap] Paso 2/2: preprocesando datos..."
-    python pre_procesamiento.py
-    echo "[bootstrap] Datos listos."
-  else
-    echo "[bootstrap] CSVs de entrenamiento ya presentes."
-  fi
-else
-  if [ ! -f "$REVIEWS_CSV" ] || [ ! -f "$BUSINESS_CSV" ]; then
-    echo "[bootstrap] ERROR: faltan CSVs en $DATA_DIR y AUTO_BOOTSTRAP=0" >&2
-    exit 1
-  fi
-fi
+for f in rf_model.joblib rf_context_yelp.joblib gbm_context_yelp.joblib \
+          scalers_and_encoders.pkl user_cog_df.csv user_cog_sim.npy users_list.npy \
+          algorithm_metrics.json; do
+    if [ ! -f "$MODELS/$f" ] && [ -f "$SEED_MODELS/$f" ]; then
+        echo "[entrypoint] Copiando $f al volumen..."
+        cp "$SEED_MODELS/$f" "$MODELS/$f"
+    fi
+done
 
-echo "[bootstrap] Iniciando API (entrena RF/GBM en primer arranque si faltan modelos)..."
+echo "[entrypoint] Listo — iniciando API..."
 exec uvicorn api:app --host 0.0.0.0 --port 8000
