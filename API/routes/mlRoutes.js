@@ -153,9 +153,9 @@ router.post('/ml/recommend/:userId', verifyToken, async (req, res) => {
             [
                 userId,
                 alpha,
-                data.best_algorithm ?? 'hybrid',
+                'hybrid',
                 latencyMs,
-                JSON.stringify(data),
+                JSON.stringify({ recommendations: data.recommendations, alpha: data.alpha }),
             ],
         );
 
