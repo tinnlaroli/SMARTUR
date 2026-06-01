@@ -7,8 +7,8 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
-    BarChart2, AlertCircle, RefreshCw, Activity, Play, Target, Trophy,
-    Crosshair, CheckCircle2, XCircle, Info, Clock4, Loader2,
+    BarChart2, AlertCircle, RefreshCw, Activity, Play,
+    CheckCircle2, XCircle, Clock4, Loader2,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
@@ -689,82 +689,6 @@ export const MLObservabilityPage = () => {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-
-                {/* Ranking metrics panel */}
-                {!isLoading && ranking && (ranking.ndcg != null || ranking.precision != null || ranking.hit_rate != null) && (
-                    <div
-                        className="rounded-2xl border p-5"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                    >
-                        <div className="flex items-center gap-2 mb-4">
-                            <Trophy className="size-4" style={{ color: DASHBOARD_COLORS.warning }} />
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                {copy.rankingTitle}
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3 mb-4">
-                            {ranking.ndcg != null && (
-                                <div
-                                    className="rounded-2xl border p-4 flex flex-col gap-1"
-                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
-                                >
-                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.purple}18` }}>
-                                        <Target className="size-3.5" style={{ color: DASHBOARD_COLORS.purple }} />
-                                    </div>
-                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
-                                        {ranking.ndcg.toFixed(3)}
-                                    </p>
-                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingNdcg}</p>
-                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingNdcgSub}</p>
-                                </div>
-                            )}
-                            {ranking.precision != null && (
-                                <div
-                                    className="rounded-2xl border p-4 flex flex-col gap-1"
-                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
-                                >
-                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.cyan}18` }}>
-                                        <Crosshair className="size-3.5" style={{ color: DASHBOARD_COLORS.cyan }} />
-                                    </div>
-                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
-                                        {ranking.precision.toFixed(3)}
-                                    </p>
-                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingPrecision}</p>
-                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingPrecisionSub}</p>
-                                </div>
-                            )}
-                            {ranking.hit_rate != null && (
-                                <div
-                                    className="rounded-2xl border p-4 flex flex-col gap-1"
-                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
-                                >
-                                    <div className="flex size-7 items-center justify-center rounded-xl mb-1" style={{ background: `${DASHBOARD_COLORS.success}18` }}>
-                                        <Zap className="size-3.5" style={{ color: DASHBOARD_COLORS.success }} />
-                                    </div>
-                                    <p className="text-xl font-black tabular-nums" style={{ color: 'var(--color-text)' }}>
-                                        {(ranking.hit_rate * 100).toFixed(1)}%
-                                    </p>
-                                    <p className="text-[11px] font-semibold" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingHitRate}</p>
-                                    <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{copy.rankingHitRateSub}</p>
-                                </div>
-                            )}
-                        </div>
-                        {/* Explain why NDCG = 0 is expected */}
-                        {ranking.ndcg === 0 && ranking.precision === 0 && (
-                            <div
-                                className="flex items-start gap-2 rounded-xl px-4 py-3 text-xs"
-                                style={{
-                                    background: `${DASHBOARD_COLORS.warning}12`,
-                                    border: `1px solid ${DASHBOARD_COLORS.warning}30`,
-                                    color: 'var(--color-text-alt)',
-                                }}
-                            >
-                                <Info className="size-3.5 shrink-0 mt-0.5" style={{ color: DASHBOARD_COLORS.warning }} />
-                                {copy.rankingZeroNote}
-                            </div>
-                        )}
                     </div>
                 )}
 
