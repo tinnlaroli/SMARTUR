@@ -14,26 +14,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN addgroup --system --gid 1001 modelgroup \
-    && adduser --system --uid 1001 --ingroup modelgroup modeluser
+# Seed dirs — fuera de los paths montados por los volúmenes.
+# El entrypoint (root) copia a /app/data y /app/models si no existen.
+COPY data/ ./data_seed/
+COPY models/ ./models_seed/
+COPY src/ ./src/
 
-# Seed dirs — fuera de los paths que montan los volúmenes.
-# El entrypoint copia a /app/data y /app/models si aún no existen.
-COPY --chown=modeluser:modelgroup data/ ./data_seed/
-COPY --chown=modeluser:modelgroup models/ ./models_seed/
-COPY --chown=modeluser:modelgroup src/ ./src/
+# Directorios destino con permisos amplios para que root los pueda poblar
+RUN mkdir -p /app/data /app/models && chmod 777 /app/data /app/models
 
-# Directorios destino (pueden ser sobreescritos por volúmenes)
-RUN mkdir -p /app/data /app/models && \
-    chown modeluser:modelgroup /app/data /app/models
-
-COPY --chown=modeluser:modelgroup entrypoint.sh /app/entrypoint.sh
+COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 WORKDIR /app/src
 
-USER modeluser
-
 EXPOSE 8000
 
+# Corre como root para poder escribir en los volúmenes Docker
+# (los volúmenes son propiedad de root; modeluser no tendría permisos de escritura)
 ENTRYPOINT ["/app/entrypoint.sh"]
