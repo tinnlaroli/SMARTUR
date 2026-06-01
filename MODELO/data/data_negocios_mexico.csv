@@ -1,0 +1,178 @@
+business_id,name,address,city,state,postal_code,latitude,longitude,stars,review_count,is_open,attributes,categories,hours,price_level,is_accessible,outdoor,is_good_for_kids,is_romantic
+af0982fe49a6,Ajijic (Attractive),,Ajijic,Jalisco,,20.303,-103.258,4.5,483,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+879723d00d27,Ajijic (Hotel),,Ajijic,Jalisco,,20.303,-103.258,4.1,554,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+1530bc55ee6e,Ajijic (Restaurant),,Ajijic,Jalisco,,20.303,-103.258,4.4,2715,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+6e33fed3dc46,Atlixco (Attractive),,Atlixco,Puebla,,19.0,-99.0,4.2,198,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+9197437821ab,Atlixco (Hotel),,Atlixco,Puebla,,19.0,-99.0,3.8,128,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+b08067c8e932,Atlixco (Restaurant),,Atlixco,Puebla,,19.0,-99.0,4.6,1118,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+97e5306d46b8,Bacalar (Attractive),,Bacalar,QuintanaRoo,,18.678,-88.392,4.6,2162,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+30aaefe5a7c6,Bacalar (Hotel),,Bacalar,QuintanaRoo,,18.678,-88.392,4.4,2439,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+bb1c5590af71,Bacalar (Restaurant),,Bacalar,QuintanaRoo,,18.678,-88.392,4.6,6221,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+91e51534b1cf,Bernal (Attractive),,Bernal,Queretaro,,20.739,-99.942,4.2,36,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+36e7eb0ab14c,Bernal (Hotel),,Bernal,Queretaro,,20.739,-99.942,3.7,284,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+472cc2d03578,Bernal (Restaurant),,Bernal,Queretaro,,20.739,-99.942,4.2,932,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+62cdaa0251ec,Chiapa_de_Corzo (Attractive),,Chiapa_de_Corzo,Chiapas,,19.0,-99.0,4.5,635,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+07572223edd7,Chiapa_de_Corzo (Hotel),,Chiapa_de_Corzo,Chiapas,,19.0,-99.0,3.3,96,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+7e517303cc68,Chiapa_de_Corzo (Restaurant),,Chiapa_de_Corzo,Chiapas,,19.0,-99.0,4.1,229,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+9c6b8401d6e3,Cholula (Attractive),,Cholula,Puebla,,19.064,-98.303,4.6,1486,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+635ba399db64,Cholula (Hotel),,Cholula,Puebla,,19.064,-98.303,4.9,15,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+01b0ef93f925,Cholula (Restaurant),,Cholula,Puebla,,19.064,-98.303,4.2,1289,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+f7d77878bf1a,Coatepec (Attractive),,Coatepec,Veracruz,,19.455,-96.959,4.6,236,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+8ac6e8a97076,Coatepec (Hotel),,Coatepec,Veracruz,,19.455,-96.959,4.3,193,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+fac777b3454b,Coatepec (Restaurant),,Coatepec,Veracruz,,19.455,-96.959,4.2,389,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+807974060133,Creel (Attractive),,Creel,Chihuahua,,19.0,-99.0,4.4,412,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+b1fa713b368c,Creel (Hotel),,Creel,Chihuahua,,19.0,-99.0,4.3,778,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+4cf31eabde68,Creel (Restaurant),,Creel,Chihuahua,,19.0,-99.0,4.0,596,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+fac67d8eeb09,Cuatro_Cienegas (Attractive),,Cuatro_Cienegas,Coahuila,,19.0,-99.0,4.4,484,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+6835ce5ca27b,Cuatro_Cienegas (Hotel),,Cuatro_Cienegas,Coahuila,,19.0,-99.0,4.5,80,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+8f6def48d30d,Cuatro_Cienegas (Restaurant),,Cuatro_Cienegas,Coahuila,,19.0,-99.0,3.6,224,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+48b398a1b97c,Cuetzalan (Attractive),,Cuetzalan,Puebla,,19.0,-99.0,4.4,298,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+185e619c5bde,Cuetzalan (Hotel),,Cuetzalan,Puebla,,19.0,-99.0,4.3,251,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+b2c88ab28f68,Cuetzalan (Restaurant),,Cuetzalan,Puebla,,19.0,-99.0,4.2,447,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+275dfc757d39,Dolores_Hidalgo (Attractive),,Dolores_Hidalgo,Guanajuato,,19.0,-99.0,4.4,391,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+1204a8d6c0be,Dolores_Hidalgo (Hotel),,Dolores_Hidalgo,Guanajuato,,19.0,-99.0,3.2,51,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+7da4e7416331,Dolores_Hidalgo (Restaurant),,Dolores_Hidalgo,Guanajuato,,19.0,-99.0,4.3,467,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+4688acee22b9,Huasca_de_Ocampo (Attractive),,Huasca_de_Ocampo,Hidalgo,,20.203,-98.576,4.3,1072,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+4790b8b359f6,Huasca_de_Ocampo (Hotel),,Huasca_de_Ocampo,Hidalgo,,20.203,-98.576,3.7,263,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+4c876d343ba8,Huasca_de_Ocampo (Restaurant),,Huasca_de_Ocampo,Hidalgo,,20.203,-98.576,4.4,174,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+24af30de5d71,Isla_Mujeres (Attractive),,Isla_Mujeres,QuintanaRoo,,21.256,-86.748,4.5,7286,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+5e6431aa85ee,Isla_Mujeres (Hotel),,Isla_Mujeres,QuintanaRoo,,21.256,-86.748,4.3,8853,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+8dd9e4d11857,Isla_Mujeres (Restaurant),,Isla_Mujeres,QuintanaRoo,,21.256,-86.748,4.7,13687,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+bd98eedf451b,Ixtapan_de_la_Sal (Attractive),,Ixtapan_de_la_Sal,Estado_de_Mexico,,19.0,-99.0,4.2,352,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+f7de7c7da682,Ixtapan_de_la_Sal (Hotel),,Ixtapan_de_la_Sal,Estado_de_Mexico,,19.0,-99.0,3.8,790,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+9f9407422ef7,Ixtapan_de_la_Sal (Restaurant),,Ixtapan_de_la_Sal,Estado_de_Mexico,,19.0,-99.0,4.4,554,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+7e9322eddec3,Izamal (Attractive),,Izamal,Yucatan,,20.929,-89.019,4.4,709,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+a2a64885b139,Izamal (Hotel),,Izamal,Yucatan,,20.929,-89.019,4.4,422,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+9eede84aa312,Izamal (Restaurant),,Izamal,Yucatan,,20.929,-89.019,4.4,910,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+44f4994603b6,Loreto (Attractive),,Loreto,Baja_CaliforniaSur,,26.013,-111.349,4.7,1490,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+7b5a798d7d06,Loreto (Hotel),,Loreto,Baja_CaliforniaSur,,26.013,-111.349,4.5,1548,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+41f5d757836a,Loreto (Restaurant),,Loreto,Baja_CaliforniaSur,,26.013,-111.349,4.5,2487,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+40d4c354eda6,Malinalco (Attractive),,Malinalco,Estado_de_Mexico,,18.95,-99.5,4.5,390,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+4ef0d0eedbc8,Malinalco (Hotel),,Malinalco,Estado_de_Mexico,,18.95,-99.5,4.3,109,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+8a2457608f79,Malinalco (Restaurant),,Malinalco,Estado_de_Mexico,,18.95,-99.5,4.5,930,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+012c67dee661,Mazunte (Attractive),,Mazunte,Oaxaca,,19.0,-99.0,4.6,644,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+547e08a81ca4,Mazunte (Hotel),,Mazunte,Oaxaca,,19.0,-99.0,4.7,269,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+40d949bda284,Mazunte (Restaurant),,Mazunte,Oaxaca,,19.0,-99.0,4.3,553,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+574d5d78b0dc,Metepec (Attractive),,Metepec,Estado_de_Mexico,,19.252,-99.604,4.3,116,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+b0b27ffcf74e,Metepec (Hotel),,Metepec,Estado_de_Mexico,,19.252,-99.604,4.0,171,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+da90bee20154,Metepec (Restaurant),,Metepec,Estado_de_Mexico,,19.252,-99.604,4.6,3245,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+d11d36427a74,Orizaba (Attractive),,Orizaba,Veracruz,,19.0,-99.0,4.5,1315,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+d3b4ea4aab23,Orizaba (Hotel),,Orizaba,Veracruz,,19.0,-99.0,4.0,566,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+976779302ffa,Orizaba (Restaurant),,Orizaba,Veracruz,,19.0,-99.0,4.2,640,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+41b4d9326e78,Palenque (Attractive),,Palenque,Chiapas,,17.509,-91.982,4.7,4026,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+86182e4be6b0,Palenque (Hotel),,Palenque,Chiapas,,17.509,-91.982,4.3,3845,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+5162d8777004,Palenque (Restaurant),,Palenque,Chiapas,,17.509,-91.982,4.2,1641,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+e795f850dd03,Parras (Attractive),,Parras,Coahuila,,19.0,-99.0,4.3,374,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+b3c42c98068f,Parras (Hotel),,Parras,Coahuila,,19.0,-99.0,3.9,39,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+ced258827478,Parras (Restaurant),,Parras,Coahuila,,19.0,-99.0,4.1,540,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+5d9bf4b3046d,Patzcuaro (Attractive),,Patzcuaro,Michoacan,,19.516,-101.609,4.3,1374,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+c50973700e70,Patzcuaro (Hotel),,Patzcuaro,Michoacan,,19.516,-101.609,4.6,1744,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+611a0b7ffc85,Patzcuaro (Restaurant),,Patzcuaro,Michoacan,,19.516,-101.609,4.3,1336,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+3d7721be3a14,Real_de_Catorce (Attractive),,Real_de_Catorce,San_Luis_Potosi,,23.69,-100.886,4.5,410,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+c451a8f8d4db,Real_de_Catorce (Hotel),,Real_de_Catorce,San_Luis_Potosi,,23.69,-100.886,3.8,21,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+eeb5f7de7221,Real_de_Catorce (Restaurant),,Real_de_Catorce,San_Luis_Potosi,,23.69,-100.886,4.4,329,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+f07824b8d9fc,San_Cristobal_de_las_Casas (Attractive),,San_Cristobal_de_las_Casas,Chiapas,,16.737,-92.6376,4.4,2385,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+87a8b68b894a,San_Cristobal_de_las_Casas (Hotel),,San_Cristobal_de_las_Casas,Chiapas,,16.737,-92.6376,4.3,4415,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+09a5ce2bf371,San_Cristobal_de_las_Casas (Restaurant),,San_Cristobal_de_las_Casas,Chiapas,,16.737,-92.6376,4.6,6260,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+8ef6453075fb,Sayulita (Attractive),,Sayulita,Nayarit,,20.869,-105.439,4.2,1465,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+fc80cc59d118,Sayulita (Hotel),,Sayulita,Nayarit,,20.869,-105.439,4.5,1171,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+f50dca25ecf3,Sayulita (Restaurant),,Sayulita,Nayarit,,20.869,-105.439,4.5,4701,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+ca45a23ef9fc,Tapalpa (Attractive),,Tapalpa,Jalisco,,19.944,-103.759,4.5,234,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+3482c2843d41,Tapalpa (Hotel),,Tapalpa,Jalisco,,19.944,-103.759,4.4,203,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+7703150a505e,Tapalpa (Restaurant),,Tapalpa,Jalisco,,19.944,-103.759,3.9,288,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+6a0a20db32fe,Taxco (Attractive),,Taxco,Guerrero,,18.556,-99.605,4.5,1608,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+4a9f7ac5b16f,Taxco (Hotel),,Taxco,Guerrero,,18.556,-99.605,3.7,922,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+94bfd76dc701,Taxco (Restaurant),,Taxco,Guerrero,,18.556,-99.605,4.2,1671,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+0603cc4e52bf,Teotihuacan (Attractive),,Teotihuacan,Estado_de_Mexico,,19.692,-98.843,4.8,4156,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+44178309c925,Teotihuacan (Hotel),,Teotihuacan,Estado_de_Mexico,,19.692,-98.843,4.2,123,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+5fbe93c9fa09,Teotihuacan (Restaurant),,Teotihuacan,Estado_de_Mexico,,19.692,-98.843,4.1,1531,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+3a319bde4221,Tepotzotlan (Attractive),,Tepotzotlan,Estado_de_Mexico,,19.0,-99.0,4.7,250,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+1f4bc618e4d9,Tepotzotlan (Hotel),,Tepotzotlan,Estado_de_Mexico,,19.0,-99.0,3.8,409,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+8f535a24d91d,Tepotzotlan (Restaurant),,Tepotzotlan,Estado_de_Mexico,,19.0,-99.0,4.1,354,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+8c832c5a7459,Tepoztlan (Attractive),,Tepoztlan,Morelos,,18.985,-99.1,4.5,802,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+f8d242a1c80b,Tepoztlan (Hotel),,Tepoztlan,Morelos,,18.985,-99.1,4.1,1009,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+501d1b51b3d5,Tepoztlan (Restaurant),,Tepoztlan,Morelos,,18.985,-99.1,4.2,1634,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+eebe7a49d9a1,Tequila (Attractive),,Tequila,Jalisco,,20.882,-103.836,4.5,834,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+c079bd93a7b8,Tequila (Hotel),,Tequila,Jalisco,,20.882,-103.836,4.1,250,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+bf6d017bcec5,Tequila (Restaurant),,Tequila,Jalisco,,20.882,-103.836,4.4,1566,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+e45688667d16,Tequisquiapan (Attractive),,Tequisquiapan,Queretaro,,20.522,-99.892,4.7,746,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+1c6a58484123,Tequisquiapan (Hotel),,Tequisquiapan,Queretaro,,20.522,-99.892,3.8,616,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+54a7210830a0,Tequisquiapan (Restaurant),,Tequisquiapan,Queretaro,,20.522,-99.892,4.2,2265,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+685246268aaf,Tlaquepaque (Attractive),,Tlaquepaque,Jalisco,,20.64,-103.31,4.6,415,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+451228061ec5,Tlaquepaque (Hotel),,Tlaquepaque,Jalisco,,20.64,-103.31,4.1,1222,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+fa42aedff206,Tlaquepaque (Restaurant),,Tlaquepaque,Jalisco,,20.64,-103.31,4.1,2404,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+b71331e32418,TodosSantos (Attractive),,TodosSantos,Baja_CaliforniaSur,,23.447,-110.223,4.6,1238,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+b76d32a6503a,TodosSantos (Hotel),,TodosSantos,Baja_CaliforniaSur,,23.447,-110.223,4.8,133,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+f34fed6eede3,TodosSantos (Restaurant),,TodosSantos,Baja_CaliforniaSur,,23.447,-110.223,4.4,3229,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+d04a09c8489d,Tulum (Attractive),,Tulum,QuintanaRoo,,20.2114,-87.4654,4.5,23993,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+970089b6d4b1,Tulum (Hotel),,Tulum,QuintanaRoo,,20.2114,-87.4654,4.5,11999,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+601a1556c325,Tulum (Restaurant),,Tulum,QuintanaRoo,,20.2114,-87.4654,4.7,9353,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+9f19214531da,Valladolid (Attractive),,Valladolid,Yucatan,,20.69,-88.201,4.5,2882,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+3cdc3d55299b,Valladolid (Hotel),,Valladolid,Yucatan,,20.69,-88.201,4.3,2673,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+7037be5d0bd8,Valladolid (Restaurant),,Valladolid,Yucatan,,20.69,-88.201,4.5,6082,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+90dca8594e8b,Valle_de_Bravo (Attractive),,Valle_de_Bravo,Estado_de_Mexico,,19.193,-100.131,4.4,787,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+3d5d1423f5a3,Valle_de_Bravo (Hotel),,Valle_de_Bravo,Estado_de_Mexico,,19.193,-100.131,4.2,2415,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+c9eb57227d11,Valle_de_Bravo (Restaurant),,Valle_de_Bravo,Estado_de_Mexico,,19.193,-100.131,4.4,2757,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+0bebf1b7389a,Xilitla (Attractive),,Xilitla,San_Luis_Potosi,,19.0,-99.0,4.7,948,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+34349c484bdb,Xilitla (Hotel),,Xilitla,San_Luis_Potosi,,19.0,-99.0,4.3,161,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+deaf72e9260e,Xilitla (Restaurant),,Xilitla,San_Luis_Potosi,,19.0,-99.0,4.1,349,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+774a55f90b89,Zacatlan (Attractive),,Zacatlan,Puebla,,19.0,-99.0,4.5,799,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+de222c070584,Zacatlan (Hotel),,Zacatlan,Puebla,,19.0,-99.0,4.0,180,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+b597b0c9dc52,Zacatlan (Restaurant),,Zacatlan,Puebla,,19.0,-99.0,4.0,623,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+63bef66cfcdf,Rest-MEX 2022 (Attractive),,México,,,19.0,-99.0,4.0,1,1,,"Parks, Museums, Landmarks & Historical Buildings, Tours, culture, nature, park, museum, history, monument, hiking, viewpoint, landmark",,2,0,0,0,0
+73d33f51c32e,Rest-MEX 2022 (Hotel),,México,,,19.0,-99.0,4.0,1,1,,"Hotels, Hotels & Travel, Bed & Breakfast, Lodging, accommodation, hotel, resort, hostal",,2,0,0,0,0
+e0b82efb09e2,Rest-MEX 2022 (Restaurant),,México,,,19.0,-99.0,4.0,1,1,,"Restaurants, Food, Mexican, Cafes, gastronomy, restaurant, food, local food, coffee, bar",,2,0,0,0,0
+78294db48c40,Catedral de Puebla,,Puebla,Puebla,,19.0427,-98.1985,4.7,8500,1,,"Museums, Landmarks & Historical Buildings, culture, history, cathedral, religion, architecture",,2,1,1,1,0
+0099dc62086d,Capilla del Rosario,,Puebla,Puebla,,19.0433,-98.1975,4.8,3200,1,,"Museums, Landmarks & Historical Buildings, culture, history, religion, art, architecture",,1,1,1,1,0
+b98f88784518,Zócalo de Puebla,,Puebla,Puebla,,19.043,-98.198,4.6,12000,1,,"Landmarks & Historical Buildings, Parks, culture, zocalo, plaza",,1,1,1,1,0
+d307e9f786e3,Museo Internacional del Barroco,,Puebla,Puebla,,19.0,-98.2,4.5,4500,1,,"Museums, Art Galleries, Arts & Entertainment, culture, museum, art",,2,1,1,1,0
+d4b0fbc38632,Africam Safari,,Puebla,Puebla,,18.933,-98.133,4.6,15000,1,,"Zoos, Parks, nature, park, wildlife, hiking",,3,1,1,1,0
+a2db0806f564,Valle de Piedras Encimadas,,Zacatlán,Puebla,,19.933,-97.983,4.5,1200,1,,"Parks, Hiking, nature, park, hiking, mountain, viewpoint",,2,1,1,1,0
+c80a6d9355bf,Pueblo Mágico de Zacatlán,,Zacatlán,Puebla,,19.935,-97.96,4.5,3000,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, architecture",,2,1,1,1,0
+967e74d725eb,Cholula Pirámide,,Cholula,Puebla,,19.063,-98.303,4.7,11000,1,,"Landmarks & Historical Buildings, Museums, culture, history, monument, pyramid, archaeology, religion",,2,1,1,1,0
+781e6de664c6,Santuario de los Remedios,,Cholula,Puebla,,19.0635,-98.3035,4.6,5000,1,,"Landmarks & Historical Buildings, religion, church, culture, history, architecture",,1,1,1,1,0
+d42c0267d1e9,Ex Hacienda de Chautla,,San Martín Texmelucan,Puebla,,19.27,-98.38,4.4,1500,1,,"Landmarks & Historical Buildings, Parks, nature, park, history, hacienda, lake",,2,1,1,1,0
+f2cb56861d70,Cantona Zona Arqueológica,,Tepeyahualco,Puebla,,19.57,-97.48,4.5,2000,1,,"Landmarks & Historical Buildings, Museums, culture, history, archaeology, ruins, monument",,2,1,1,1,0
+d4bca07f2be2,Teleférico de Orizaba,,Orizaba,Veracruz,,18.851,-97.098,4.6,4800,1,,"Active Life, Tours, adventure, hiking, viewpoint, mountain",,2,1,1,1,0
+1e8180ef61ee,Palacio de Hierro de Orizaba,,Orizaba,Veracruz,,18.852,-97.099,4.7,7800,1,,"Museums, Landmarks & Historical Buildings, culture, history, architecture, museum, monument",,2,1,1,1,0
+95657e6ca3ba,Paseo del Río Orizaba,,Orizaba,Veracruz,,18.85,-97.1,4.5,3500,1,,"Parks, Hiking, nature, park, river, walking, hiking",,1,1,1,1,0
+703d744b603f,Cerro del Borrego,,Orizaba,Veracruz,,18.86,-97.09,4.4,2500,1,,"Parks, Hiking, nature, park, hiking, mountain, viewpoint",,1,1,1,1,0
+c1f191141072,Museo de Arte del Estado de Veracruz,,Orizaba,Veracruz,,18.853,-97.1,4.5,2000,1,,"Museums, Art Galleries, culture, museum, art, history",,2,1,1,1,0
+2bcd3db161ca,Ex Convento de San Juan Bautista,,Orizaba,Veracruz,,18.855,-97.095,4.4,1500,1,,"Museums, Landmarks & Historical Buildings, culture, history, convento, religion, architecture",,2,1,1,1,0
+ddc60fc9936f,Cascada de Texolo,,Teocelo,Veracruz,,19.383,-96.967,4.7,3200,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, park, ecoturismo",,1,1,1,1,0
+1e1815eee2f1,Cascada El Salto,,Coatepec,Veracruz,,19.45,-96.95,4.5,1800,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, ecoturismo, selva",,1,1,1,1,0
+f1c2301d8e87,Mirador de Coatepec,,Coatepec,Veracruz,,19.455,-96.959,4.4,1200,1,,"Landmarks & Historical Buildings, viewpoint, nature, mirador, mountain, coffee",,1,1,1,1,0
+1b8cc1aa6df3,Cascada de Xico,,Xico,Veracruz,,19.43,-97.0,4.6,2200,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, ecoturismo",,1,1,1,1,0
+838e5a6b4ef7,Museo de Antropología de Xalapa,,Xalapa,Veracruz,,19.547,-96.926,4.7,5600,1,,"Museums, culture, museum, anthropology, archaeology, history, art",,2,1,1,1,0
+aa18ab373c6f,Pico de Orizaba (Volcán),,Tlachichuca,Puebla,,19.03,-97.27,4.8,3500,1,,"Parks, Hiking, Active Life, nature, volcano, mountain, hiking, adventure, camping",,3,1,1,1,0
+53cf17006900,Pueblo Mágico de Cuetzalan,,Cuetzalan,Puebla,,20.017,-97.517,4.6,4000,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, nature, cascada, ecoturismo",,2,1,1,1,0
+202b82d14d12,Cascada Las Brisas,,Cuetzalan,Puebla,,20.01,-97.52,4.5,1500,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, ecoturismo, adventure",,1,1,1,1,0
+b284117a665f,Zona Arqueológica Yohualichan,,Cuetzalan,Puebla,,20.025,-97.51,4.4,1800,1,,"Landmarks & Historical Buildings, Museums, culture, history, archaeology, ruins",,2,1,1,1,0
+202be69282ad,Pueblo Mágico de Chignahuapan,,Chignahuapan,Puebla,,19.833,-98.033,4.5,2500,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, religion, artesania",,2,1,1,1,0
+93b8c4e4eefb,Laguna de Chignahuapan,,Chignahuapan,Puebla,,19.84,-98.03,4.4,1800,1,,"Parks, Lakes, nature, lake, laguna, park, hiking, camping",,1,1,1,1,0
+b83f765acfdd,Pueblo Mágico de Atlixco,,Atlixco,Puebla,,18.908,-98.435,4.5,3500,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, gastronomy, market",,2,1,1,1,0
+cfa5d9d291da,Cerro de San Miguel (Atlixco),,Atlixco,Puebla,,18.907,-98.44,4.6,2800,1,,"Parks, Hiking, viewpoint, nature, hiking, mountain, mirador",,1,1,1,1,0
+6fec1acc206a,Pueblo Mágico de Tetela de Ocampo,,Tetela de Ocampo,Puebla,,19.817,-97.8,4.4,1500,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, nature, cascada",,2,1,1,1,0
+76f1ec175d3e,Pueblo Mágico de Xicotepec,,Xicotepec,Puebla,,20.267,-97.95,4.4,2000,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, nature, coffee, mirador",,2,1,1,1,0
+e99f158cab28,Pueblo Mágico Coatepec,,Coatepec,Veracruz,,19.455,-96.959,4.5,3500,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, coffee, nature, cascada",,2,1,1,1,0
+855260de4c54,Pueblo Mágico Papantla,,Papantla,Veracruz,,20.45,-97.32,4.5,4000,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, archaeology, artesania",,2,1,1,1,0
+219e7f4d05f2,El Tajín Zona Arqueológica,,Papantla,Veracruz,,20.448,-97.378,4.7,12000,1,,"Landmarks & Historical Buildings, Museums, culture, history, archaeology, ruins, pyramid, monument",,3,1,1,1,0
+94e2df35aece,Pueblo Mágico de Zozocolco,,Zozocolco,Veracruz,,20.133,-97.567,4.3,1000,1,,"Landmarks & Historical Buildings, culture, history, pueblo magico, nature, cascada, ecoturismo",,2,1,1,1,0
+50dfac318916,El Mural de los Poblanos,,Puebla,Puebla,,19.042,-98.196,4.5,3500,1,,"Restaurants, Food, Mexican, Traditional Mexican, gastronomy, restaurant, mole, local food",,3,0,1,0,1
+38b0752ca978,La Casita Poblana,,Puebla,Puebla,,19.043,-98.197,4.4,2500,1,,"Restaurants, Food, Mexican, Traditional Mexican, gastronomy, restaurant, mole, local food",,2,0,1,0,1
+5cf191da7db0,Cemitas La Poblanita,,Puebla,Puebla,,19.041,-98.199,4.3,2000,1,,"Restaurants, Food, Mexican, street food, restaurant, local food, antojitos",,1,0,1,0,1
+4182996c9e80,Café de la Parroquia,,Veracruz,Veracruz,,19.2,-96.133,4.4,6000,1,,"Cafes, Restaurants, Food, Mexican, coffee, cafe, gastronomy, mariscos, local food",,2,0,1,0,1
+3cfb2bb4b8f7,La Parroquia de Veracruz,,Veracruz,Veracruz,,19.198,-96.132,4.5,8000,1,,"Cafes, Restaurants, Food, Mexican, coffee, cafe, gastronomy, mariscos, local food",,2,0,1,0,1
+e8123d1ba28c,Hotel Cartesiano Puebla,,Puebla,Puebla,,19.041,-98.2,4.6,1500,1,,"Hotels, Hotels & Travel, Bed & Breakfast, accommodation, hotel, boutique",,3,1,0,0,1
+48ee02d2abbf,La Purificadora,,Puebla,Puebla,,19.0435,-98.1975,4.5,1200,1,,"Hotels, Hotels & Travel, accommodation, hotel, boutique",,4,1,0,0,1
+edd6e63abb2e,Hotel Mesón del Molino,,Atlixco,Puebla,,18.907,-98.433,4.4,800,1,,"Hotels, Bed & Breakfast, accommodation, hotel, hacienda",,2,1,0,0,1
+e9525be64139,Hotel Mocambo,,Veracruz,Veracruz,,19.18,-96.12,4.3,3500,1,,"Hotels, Hotels & Travel, accommodation, hotel, resort, beach",,3,1,0,0,1
+ab0daa0d6c9c,Hotel Boutique Posada del Ángel,,Xalapa,Veracruz,,19.545,-96.925,4.4,600,1,,"Hotels, Hotels & Travel, Bed & Breakfast, accommodation, hotel, boutique",,2,1,0,0,1
+1b6d2a7822d0,Hotel Posada San Alejandro,,Orizaba,Veracruz,,18.851,-97.1,4.2,500,1,,"Hotels, accommodation, hotel",,2,1,0,0,1
+2ef312861596,Balneario Agua Azul,,Chignahuapan,Puebla,,19.83,-98.04,4.3,1200,1,,"Active Life, Parks, nature, adventure, swimming, waterfall, camping",,2,1,1,1,0
+bc45455d3d30,Cascada La Gloria,,Tetela de Ocampo,Puebla,,19.82,-97.79,4.5,1000,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, adventure, ecoturismo",,1,1,1,1,0
+4b6a000bf183,Cascada El Encanto,,Coatepec,Veracruz,,19.46,-96.96,4.5,1500,1,,"Parks, Hiking, nature, waterfall, cascada, hiking, park, ecoturismo",,1,1,1,1,0
+f9c505b6fd74,Parque Ecológico El Haya,,Xalapa,Veracruz,,19.54,-96.92,4.4,2000,1,,"Parks, Hiking, nature, park, botanical garden, hiking, ecoturismo",,1,1,1,1,0
+2d53ba88e099,Mercado de Sabores Poblanos,,Puebla,Puebla,,19.041,-98.195,4.3,3000,1,,"Restaurants, Food, Markets, gastronomy, market, local food, restaurant, food",,2,0,1,0,1
+88e511ab703f,Gran Café del Portal,,Veracruz,Veracruz,,19.199,-96.134,4.3,3500,1,,"Cafes, Restaurants, Food, coffee, cafe, gastronomy, local food",,2,0,1,0,1
+3610df533e18,Museo Nacional de la Mascarada,,San Martín Texmelucan,Puebla,,19.285,-98.432,4.3,800,1,,"Museums, culture, museum, art, history",,2,1,1,1,0

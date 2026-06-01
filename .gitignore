@@ -52,6 +52,13 @@ logs/
 # Docker
 *.override.yml
 
-# Modelos ML entrenados (generados en VPS, no se versionan)
+# Modelos ML — archivos grandes que no van en git
 MODELO/src/models/
-MODELO/data/
+MODELO/data/yelp_academic_dataset_business.json
+MODELO/data/yelp_academic_dataset_review.json
+MODELO/data/data_reviews_limpio.csv
+MODELO/data/data_negocios_limpio.csv
+MODELO/data/restmex_2022_train.xlsx
+MODELO/data/gmaps/
+MODELO/data/opendata/
+MODELO/data/Rest-Mex_2025_Train_DataSet/
