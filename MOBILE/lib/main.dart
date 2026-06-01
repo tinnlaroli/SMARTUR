@@ -18,9 +18,24 @@ import 'presentation/widgets/smartur_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // Etapa 1: permisos + token FCM sin necesitar auth ni contexto
-  await NotificationService.setup();
+
+  // Catch unhandled Flutter framework errors so the app never shows a blank screen
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('[main] Firebase init failed (FCM unavailable): $e');
+  }
+
+  try {
+    await NotificationService.setup();
+  } catch (e) {
+    debugPrint('[main] NotificationService setup failed: $e');
+  }
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool seenOnboarding = prefs.getBool('onboarding_seen') ?? false;
 
