@@ -93,7 +93,17 @@ const attrs =
     position: relative;
     overflow: hidden;
     border-radius: 100px;
-    white-space: nowrap; /* Prevent text wrapping */
+    white-space: nowrap;
+    transition: transform 0.15s var(--ease-out-cubic);
+    will-change: transform;
+
+    &:active {
+      transform: scale(0.97) translateY(1px);
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+    }
 
     &[data-sy-reveal] {
       clip-path: inset(0 100% 0 0 round 100px);

@@ -92,6 +92,24 @@ svg {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
+  animation: blob-drift 20s ease-in-out infinite alternate;
+}
+
+.pblob:nth-child(2) { animation-duration: 25s; animation-delay: -8s; }
+.pblob:nth-child(3) { animation-duration: 22s; animation-delay: -15s; }
+.pblob:nth-child(4) { animation-duration: 28s; animation-delay: -4s; }
+.pblob:nth-child(5) { animation-duration: 24s; animation-delay: -12s; }
+.pblob:nth-child(6) { animation-duration: 30s; animation-delay: -20s; }
+
+@keyframes blob-drift {
+  0%   { transform: scale(1)    translate(0, 0); }
+  33%  { transform: scale(1.06) translate(2%, 3%); }
+  66%  { transform: scale(0.95) translate(-2%, 1%); }
+  100% { transform: scale(1.04) translate(1%, -2%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pblob { animation: none !important; }
 }
 
 .pblob-cyan-tr   { width: 280px; height: 280px; background: rgba(var(--rgb-cyan-accent), 0.08);   top: -5%;  right: 8%; }
@@ -113,6 +131,74 @@ header { position: relative; z-index: 9999; }
 
 /* El contenido principal queda encima de los blobs pero debajo del header */
 #smooth-wrapper, main { position: relative; z-index: 1; }
+
+/* ─── Overdrive: CSS scroll-driven reading progress bar ─── */
+@supports (animation-timeline: scroll()) {
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-cyan) 0%,
+      var(--color-purple) 50%,
+      var(--color-pink) 100%
+    );
+    transform-origin: left;
+    z-index: 10000;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes scroll-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  /* Blob parallax via scroll-driven animation */
+  .pblob-cyan-tr {
+    animation: blob-drift 20s ease-in-out infinite alternate,
+               blob-parallax-slow linear both;
+    animation-timeline: auto, scroll(root block);
+  }
+  .pblob-pink-ml, .pblob-pink-br {
+    animation: blob-drift 25s ease-in-out infinite alternate,
+               blob-parallax-med linear both;
+    animation-timeline: auto, scroll(root block);
+    animation-delay: -8s, 0s;
+  }
+  .pblob-purple-mr, .pblob-purple-bc {
+    animation: blob-drift 22s ease-in-out infinite alternate,
+               blob-parallax-fast linear both;
+    animation-timeline: auto, scroll(root block);
+    animation-delay: -15s, 0s;
+  }
+
+  @keyframes blob-parallax-slow {
+    from { translate: 0 0; }
+    to   { translate: 0 -18vh; }
+  }
+  @keyframes blob-parallax-med {
+    from { translate: 0 0; }
+    to   { translate: 0 -28vh; }
+  }
+  @keyframes blob-parallax-fast {
+    from { translate: 0 0; }
+    to   { translate: 0 -38vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before { display: none; }
+    .pblob-cyan-tr,
+    .pblob-pink-ml, .pblob-pink-br,
+    .pblob-purple-mr, .pblob-purple-bc {
+      animation: none !important;
+    }
+  }
+}
 
 main section,
 section,

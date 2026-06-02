@@ -16,9 +16,27 @@
     padding-right: var(--container-offset);
     max-width: 100%;
   }
+
+  /* Mobile section rhythm */
+  section {
+    padding-block: clamp(2.5rem, 8vw, 4rem);
+  }
 }
 
-/* Touch devices: avoid hover-only layout shifts */
+/* ── Touch targets: 44×44px minimum ── */
+@media (pointer: coarse) {
+  a, button, [role="button"], input[type="submit"], .btn, .toggle {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  nav a {
+    padding-block: 0.75rem;
+    padding-inline: 0.5rem;
+  }
+}
+
+/* Touch devices: disable hover-only layout shifts */
 @media (hover: none) and (pointer: coarse) {
   .plan:hover,
   .testimonial-card:hover,

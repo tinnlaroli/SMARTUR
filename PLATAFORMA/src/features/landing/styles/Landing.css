@@ -4,8 +4,28 @@
 /* ─── Typography ─────────────────────────────────────── */
 .landing-heading {
   font-family: var(--font-heading);
-  letter-spacing: -0.05em;
+  letter-spacing: var(--letter-spacing-display);
+  line-height: var(--line-height-display);
   font-weight: 900;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+
+.landing-heading-xl { font-size: var(--font-size-display-xl); }
+.landing-heading-lg { font-size: var(--font-size-display-lg); }
+.landing-heading-md { font-size: var(--font-size-display-md); }
+.landing-heading-sm { font-size: var(--font-size-display-sm); }
+
+.landing-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.landing-body {
+  line-height: var(--line-height-body);
+  font-size: var(--font-size-base);
 }
 
 /* ─── Navbar Premium ─────────────────────────────────── */
@@ -50,11 +70,17 @@
   border: none;
   background: none;
   padding: 0;
-  transition: transform 0.3s var(--ease-out-back);
+  transition: transform 0.15s var(--ease-out-cubic);
+  will-change: transform;
+}
+
+.btn-premium:hover {
+  transform: translateY(-1px);
 }
 
 .btn-premium:active {
-  transform: scale(0.95);
+  transform: scale(0.97) translateY(1px);
+  transition-duration: 0.08s;
 }
 
 .btn-premium>span {
@@ -690,6 +716,24 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
+  animation: blob-drift 20s ease-in-out infinite alternate;
+}
+
+.pblob:nth-child(2) { animation-duration: 25s; animation-delay: -8s; }
+.pblob:nth-child(3) { animation-duration: 22s; animation-delay: -15s; }
+.pblob:nth-child(4) { animation-duration: 28s; animation-delay: -4s; }
+.pblob:nth-child(5) { animation-duration: 24s; animation-delay: -12s; }
+.pblob:nth-child(6) { animation-duration: 30s; animation-delay: -20s; }
+
+@keyframes blob-drift {
+  0%   { transform: scale(1)    translate(0, 0); }
+  33%  { transform: scale(1.06) translate(2%, 3%); }
+  66%  { transform: scale(0.95) translate(-2%, 1%); }
+  100% { transform: scale(1.04) translate(1%, -2%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pblob { animation: none !important; }
 }
 
 .pblob-pink-tr   { width: 280px; height: 280px; background: rgba(var(--rgb-pink-primary), 0.08);  top: -5%;  right: 8%; }
@@ -723,4 +767,57 @@ footer,
 
 @media (prefers-reduced-motion: reduce) {
   .pblob { filter: none; opacity: 0.04; }
+}
+
+/* ─── Overdrive: scroll-driven progress bar + blob parallax ─── */
+@supports (animation-timeline: scroll()) {
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(to right, var(--color-pink), var(--color-purple), var(--color-cyan));
+    transform-origin: left;
+    z-index: 10000;
+    animation: plat-scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes plat-scroll-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  .pblob-pink-tr  { animation: blob-drift 20s ease-in-out infinite alternate, blob-par-s linear both; animation-timeline: auto, scroll(root block); }
+  .pblob-pink-bl  { animation: blob-drift 25s ease-in-out infinite alternate, blob-par-m linear both; animation-timeline: auto, scroll(root block); animation-delay: -8s, 0s; }
+  .pblob-purple-ml, .pblob-purple-br { animation: blob-drift 22s ease-in-out infinite alternate, blob-par-f linear both; animation-timeline: auto, scroll(root block); animation-delay: -15s, 0s; }
+
+  @keyframes blob-par-s { from { translate: 0 0; } to { translate: 0 -18vh; } }
+  @keyframes blob-par-m { from { translate: 0 0; } to { translate: 0 -28vh; } }
+  @keyframes blob-par-f { from { translate: 0 0; } to { translate: 0 -38vh; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before { display: none; }
+    .pblob-pink-tr, .pblob-pink-bl, .pblob-purple-ml, .pblob-purple-br { animation: none !important; }
+  }
+}
+
+/* ─── Touch targets ─── */
+@media (pointer: coarse) {
+  a, button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  nav a {
+    padding-block: 0.75rem;
+    padding-inline: 0.5rem;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn-premium:hover,
+  .bridge-action:hover,
+  .testimonial-card:hover,
+  .step-card:hover {
+    transform: none;
+  }
 }

@@ -32,14 +32,14 @@
   }
 }
 
-/* Engineering micro-interactions: consistent reveal for cards/sections */
+/* ── Fade-up reveal ── */
 [data-sy-reveal="fade"] {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(28px);
   will-change: opacity, transform;
   transition-property: opacity, transform;
-  transition-duration: 0.6s;
-  transition-timing-function: var(--ease-standard);
+  transition-duration: 0.7s;
+  transition-timing-function: var(--ease-out-expo);
 
   &.is-in {
     opacity: 1;
@@ -47,8 +47,59 @@
   }
 }
 
+/* ── Stagger siblings: each nth-child gets a delay offset ── */
+[data-sy-reveal="fade"]:nth-child(2) { transition-delay: 0.08s; }
+[data-sy-reveal="fade"]:nth-child(3) { transition-delay: 0.16s; }
+[data-sy-reveal="fade"]:nth-child(4) { transition-delay: 0.24s; }
+[data-sy-reveal="fade"]:nth-child(5) { transition-delay: 0.32s; }
+[data-sy-reveal="fade"]:nth-child(6) { transition-delay: 0.40s; }
+
+/* ── Fade-left (for content that enters from the side) ── */
+[data-sy-reveal="fade-left"] {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition-property: opacity, transform;
+  transition-duration: 0.7s;
+  transition-timing-function: var(--ease-out-expo);
+
+  &.is-in {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+[data-sy-reveal="fade-right"] {
+  opacity: 0;
+  transform: translateX(32px);
+  transition-property: opacity, transform;
+  transition-duration: 0.7s;
+  transition-timing-function: var(--ease-out-expo);
+
+  &.is-in {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Scale-in for cards / featured elements ── */
+[data-sy-reveal="scale"] {
+  opacity: 0;
+  transform: scale(0.94) translateY(16px);
+  transition-property: opacity, transform;
+  transition-duration: 0.6s;
+  transition-timing-function: var(--ease-out-quart);
+
+  &.is-in {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-sy-reveal="fade"],
+  [data-sy-reveal="fade-left"],
+  [data-sy-reveal="fade-right"],
+  [data-sy-reveal="scale"],
   [data-sy-reveal="lines"],
   [data-sy-reveal="words"] {
     transition: none !important;

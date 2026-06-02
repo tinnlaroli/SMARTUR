@@ -126,30 +126,11 @@ const t = useTranslations(lang);
   }
 
   .title {
-    --fs: 4.8rem;
-    --lh: 1.1;
-    --fw: 700;
+    --fs: var(--font-size-display-xl);
+    --lh: var(--line-height-display);
+    --fw: 900;
+    --ls: var(--letter-spacing-display);
     color: var(--color-text);
-
-    @media (--mq-desktop-lg) {
-      --fs: 4.2rem;
-    }
-
-    @media (--mq-tablet) {
-      --fs: 3.8rem;
-    }
-
-    @media (--mq-phone) {
-      --fs: 2.75rem;
-    }
-
-    @media (--mq-phone-sm) {
-      --fs: 2rem;
-    }
-
-    @media (--mq-phone-xs) {
-      --fs: 1.75rem;
-    }
   }
 
   /* Hero elements initially hidden — animated by GSAP */
