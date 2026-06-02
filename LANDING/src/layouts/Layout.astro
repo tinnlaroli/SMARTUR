@@ -175,6 +175,14 @@ const seo = seoMetadata[currentLang];
   </head>
   <body class="is-loading" data-tab-away={t("tab.away")} data-tab-away-fallback={t("layout.tabAwayFallback")}>
     <PageLoader label={t("loader.ariaLabel")} />
+    <div class="page-blobs" aria-hidden="true">
+      <div class="pblob pblob-cyan-tr"></div>
+      <div class="pblob pblob-pink-ml"></div>
+      <div class="pblob pblob-purple-mr"></div>
+      <div class="pblob pblob-cyan-bl"></div>
+      <div class="pblob pblob-pink-br"></div>
+      <div class="pblob pblob-purple-bc"></div>
+    </div>
     <a href="#main" class="skip-link">{t("accessibility.skip-to-content")}</a>
     <Header
       logoUrl="/"

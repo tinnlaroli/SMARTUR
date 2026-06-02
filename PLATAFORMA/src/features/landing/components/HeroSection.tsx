@@ -149,8 +149,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             }
         };
 
-        // Global listener for site load - Fallback since we don't have the custom event yet
-        const heroTimer = setTimeout(animateHero, 1000);
+        // Listen for loader completion event
+        const handleLoaded = () => animateHero();
+        window.addEventListener('smartur:loaded', handleLoaded, { once: true });
+
+        // Fallback: if loader already finished before this mounted (instant navigation)
+        if (!document.body.classList.contains('is-loading')) {
+            setTimeout(animateHero, 80);
+        }
 
         // Initialize 3D on desktop only — matches lg:flex breakpoint (1024px+)
         let cleanup3D: (() => void) | undefined;
@@ -163,7 +169,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
         }
 
         return () => {
-            clearTimeout(heroTimer);
+            window.removeEventListener('smartur:loaded', handleLoaded);
             if (cleanup3D) cleanup3D();
         };
     }, []);

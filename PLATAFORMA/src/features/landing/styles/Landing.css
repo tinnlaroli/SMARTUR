@@ -676,3 +676,50 @@
 .scroll-indicator:hover {
   opacity: 0.7;
 }
+
+/* ─── Blob background layer ─── */
+.page-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pblob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+}
+
+.pblob-pink-tr   { width: 700px; height: 700px; background: rgba(var(--rgb-pink-primary), 0.11);  top: -8%;  right: -8%; }
+.pblob-purple-ml { width: 650px; height: 650px; background: rgba(var(--rgb-purple-accent), 0.10); top: 20%;  left: -10%; }
+.pblob-cyan-mr   { width: 600px; height: 600px; background: rgba(var(--rgb-cyan-accent), 0.09);   top: 42%;  right: 5%; }
+.pblob-pink-bl   { width: 700px; height: 700px; background: rgba(var(--rgb-pink-primary), 0.09);  top: 60%;  left: -5%; }
+.pblob-purple-br { width: 650px; height: 650px; background: rgba(var(--rgb-purple-accent), 0.10); top: 75%;  right: -6%; }
+.pblob-cyan-bc   { width: 500px; height: 500px; background: rgba(var(--rgb-cyan-accent), 0.08);   top: 88%;  left: 25%; }
+
+[data-theme="dark"] .pblob-pink-tr   { background: rgba(var(--rgb-pink-primary), 0.15); }
+[data-theme="dark"] .pblob-purple-ml { background: rgba(var(--rgb-purple-accent), 0.14); }
+[data-theme="dark"] .pblob-cyan-mr   { background: rgba(var(--rgb-cyan-accent), 0.13); }
+[data-theme="dark"] .pblob-pink-bl   { background: rgba(var(--rgb-pink-primary), 0.12); }
+[data-theme="dark"] .pblob-purple-br { background: rgba(var(--rgb-purple-accent), 0.13); }
+[data-theme="dark"] .pblob-cyan-bc   { background: rgba(var(--rgb-cyan-accent), 0.11); }
+
+/* Contenido encima de los blobs */
+.relative.min-h-screen > *:not(.page-blobs) { position: relative; z-index: 1; }
+
+/* Todas las secciones transparentes */
+main section,
+section { background: transparent !important; }
+footer  { background: transparent !important; }
+
+@media (max-width: 768px) {
+  .pblob { filter: blur(100px); }
+  .pblob-pink-tr, .pblob-purple-ml, .pblob-pink-bl, .pblob-purple-br { width: 400px; height: 400px; }
+  .pblob-cyan-mr, .pblob-cyan-bc { width: 350px; height: 350px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pblob { filter: none; opacity: 0.04; }
+}

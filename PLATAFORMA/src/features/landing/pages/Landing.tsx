@@ -173,6 +173,15 @@ export default function Landing() {
         <div className="relative min-h-screen bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
             {loading && <SmartURLoader onFinished={() => setLoading(false)} />}
 
+            <div className="page-blobs" aria-hidden="true">
+              <div className="pblob pblob-pink-tr" />
+              <div className="pblob pblob-purple-ml" />
+              <div className="pblob pblob-cyan-mr" />
+              <div className="pblob pblob-pink-bl" />
+              <div className="pblob pblob-purple-br" />
+              <div className="pblob pblob-cyan-bc" />
+            </div>
+
             {!isStandalonePwa && (
                 <div className="relative overflow-x-hidden">
                     <FloatingNavbar 
