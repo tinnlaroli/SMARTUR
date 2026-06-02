@@ -112,7 +112,8 @@ body > *:not(.page-blobs) { position: relative; z-index: 1; }
 main section,
 section,
 footer,
-.section { background: transparent !important; }
+.section,
+.sy-hero-home { background: transparent !important; }
 
 @media (max-width: 768px) {
   .pblob { filter: blur(80px); }
