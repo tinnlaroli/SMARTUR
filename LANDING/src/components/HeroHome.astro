@@ -15,6 +15,7 @@ const { lang = defaultLang, title, subtitle, cta } = Astro.props;
 const t = useTranslations(lang);
 ---
 
+<script>document.documentElement.classList.add('js-ready');</script>
 <div class="sy-hero-home" id="hero-section">
   <!-- Background shimmer for post-load animation -->
   <div class="hero-shimmer"></div>
@@ -133,24 +134,26 @@ const t = useTranslations(lang);
     color: var(--color-text);
   }
 
-  /* Hero elements initially hidden — animated by GSAP */
-  .hero-title {
+  /* Hero animation initial state set by GSAP in JS — not CSS.
+     CSS hides only when .js-ready is present (set by script before paint).
+     Without JS, content is fully visible for crawlers and no-JS users. */
+  .js-ready .hero-title {
     opacity: 0;
     transform: translateY(40px);
   }
 
-  .hero-subtitle {
+  .js-ready .hero-subtitle {
     opacity: 0;
     transform: translateY(30px);
     filter: blur(8px);
   }
 
-  .hero-cta {
+  .js-ready .hero-cta {
     opacity: 0;
     transform: scale(0.7);
   }
 
-  .hero-video-wrap {
+  .js-ready .hero-video-wrap {
     opacity: 0;
     transform: translateX(80px) scale(0.92);
   }

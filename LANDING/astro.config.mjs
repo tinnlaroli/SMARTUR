@@ -2,12 +2,31 @@
 import { defineConfig, fontProviders } from "astro/config";
 import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
+import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "http://localhost",
+  site: "https://smartur.online",
   base: "/",
-  integrations: [react(), tailwind()],
+  integrations: [react(), tailwind(), sitemap({
+    i18n: {
+      defaultLocale: "es",
+      locales: {
+        es: "es-MX",
+        en: "en-US",
+        fr: "fr-FR",
+        pt: "pt-BR",
+      },
+    },
+    serialize(item) {
+      return {
+        ...item,
+        lastmod: new Date().toISOString().split('T')[0],
+        changefreq: item.url === 'https://smartur.online/' ? 'weekly' : 'monthly',
+        priority: item.url === 'https://smartur.online/' ? 1.0 : 0.8,
+      };
+    },
+  })],
   scopedStyleStrategy: "where",
   vite: {
     build: {
