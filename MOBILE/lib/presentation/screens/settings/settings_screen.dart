@@ -307,23 +307,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // ── Helpers UI ──────────────────────────────────────────────────────────
-
-  Widget _buildSectionHeader(String title) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'Outfit',
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-          color: scheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
 
   // ── Idioma ──────────────────────────────────────────────────────────────
 

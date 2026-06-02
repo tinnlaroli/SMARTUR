@@ -169,7 +169,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         _prefsWereLoaded = false;
         return;
       }
-      bool changed = false;
       final age = p['age'] as int?;
       if (age != null) {
         String range;
@@ -179,7 +178,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         else if (age < 55) range = '45-54';
         else if (age < 65) range = '55-64';
         else               range = '65+';
-        if (range != _ageRange) { _ageRange = range; changed = true; }
+        if (range != _ageRange) _ageRange = range;
       }
       final interests = (p['interests'] as List?)?.cast<String>() ?? [];
       final mappedTypes = <String>{};
@@ -191,28 +190,23 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         _selectedTypes
           ..clear()
           ..addAll(mappedTypes);
-        changed = true;
       }
       if (interests.any((e) => e.toLowerCase().contains('gastro'))) {
         _prefFood = true;
-        changed = true;
       }
       if (interests.any((e) {
         final v = e.toLowerCase();
         return v.contains('natur') || v.contains('avent');
       })) {
         _prefOutdoor = true;
-        changed = true;
       }
       final budget = _mapActivityToBudget(p['activity_level'] as int?);
       if (budget != null && budget != _budget) {
         _budget = budget;
-        changed = true;
       }
       final group = _mapTravelTypeToGroup(p['travel_type']?.toString());
       if (group != null && group != _groupType) {
         _groupType = group;
-        changed = true;
       }
       final preferredPlace = p['preferred_place']?.toString().toLowerCase();
       if (preferredPlace != null &&
@@ -222,9 +216,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               preferredPlace.contains('forest') ||
               preferredPlace.contains('natur'))) {
         _prefOutdoor = true;
-        changed = true;
       }
-      if (p['has_accessibility'] == true) { _reqAccesibilidad = true; changed = true; }
+      if (p['has_accessibility'] == true) _reqAccesibilidad = true;
       _prefsWereLoaded = true;
     } catch (_) {
       if (mounted) {

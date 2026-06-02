@@ -367,7 +367,6 @@ class _SessionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     if (sessions.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(

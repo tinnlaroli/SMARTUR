@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/motion/smartur_motion.dart';
-import '../../core/motion/smartur_routes.dart';
 import '../../core/theme/style_guide.dart';
 
 export '../../core/motion/smartur_routes.dart'
