@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SEOHelmet } from '../shared/components/SEOHelmet';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import Sidebar from './Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -381,7 +382,8 @@ export default function AppLayout() {
     const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
     return (
-        
+        <>
+        <SEOHelmet noindex title="Panel" />
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
             <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
@@ -419,6 +421,6 @@ export default function AppLayout() {
             </div>
 
         </div>
-        
+        </>
     );
 }

@@ -2,19 +2,36 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="image.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google-site-verification" content="XkhhFJUQntUbRcnxirHrfxc9bwGFdOLx71tjWAHtwPk" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <title>SMARTUR | Turismo con IA en las Altas Montañas, Veracruz</title>
     <meta
       name="description"
-      content="SMARTUR: recomendaciones de viaje con inteligencia artificial para el turismo en las Altas Montañas de Veracruz. Rutas personalizadas, joyas ocultas y apoyo a MiPyMEs locales."
+      content="Descubre qué hacer en Veracruz con SMARTUR. Recomendaciones de hoteles, tours y restaurantes en las Altas Montañas personalizadas por IA."
     />
+    <link rel="canonical" href="https://app.smartur.online/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SMARTUR" />
     <meta property="og:title" content="SMARTUR | Turismo con IA en Veracruz" />
     <meta
       property="og:description"
-      content="Descubre Veracruz con rutas personalizadas por IA: cultura, naturaleza y negocios locales verificados en la región de las Altas Montañas."
+      content="Descubre qué hacer en Veracruz y las Altas Montañas con SMARTUR. Rutas personalizadas por IA: cultura, naturaleza y negocios locales verificados."
     />
+    <meta property="og:image" content="https://smartur.online/image-1.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:url" content="https://app.smartur.online/" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SMARTUR | Turismo con IA en Veracruz" />
+    <meta name="twitter:description" content="Descubre qué hacer en Veracruz y las Altas Montañas con SMARTUR. Recomendaciones personalizadas con IA." />
+    <meta name="twitter:image" content="https://smartur.online/image-1.jpg" />
     <script>
       (function() {
         try {
@@ -32,15 +49,26 @@
         } catch(e) { console.warn('hash init error', e); }
       })();
     </script>
-    <!-- Fonts - Vibrant Design System -->
+    <!-- Fonts — non-blocking preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.cdnfonts.com/css/cal-sans" rel="stylesheet">
+    <link
+      rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <link
+      rel="preload" as="style"
+      href="https://fonts.cdnfonts.com/css/cal-sans"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.cdnfonts.com/css/cal-sans" rel="stylesheet" />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

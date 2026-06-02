@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SEOHelmet } from '../../../shared/components/SEOHelmet';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
@@ -190,6 +191,8 @@ export function EmpresaLayout() {
             : t('empresa.layout.inicio');
 
     return (
+        <>
+        <SEOHelmet noindex title="Portal Empresa" />
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
             <EmpresaSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
@@ -340,5 +343,6 @@ export function EmpresaLayout() {
                 </main>
             </div>
         </div>
+        </>
     );
 }
