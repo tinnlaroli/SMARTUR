@@ -32,8 +32,9 @@ jobs:
             # Guarda cambios locales (ej: docker-compose.yml de producción)
             git stash
 
-            # Baja los últimos cambios
-            git pull origin main
+            # Sincroniza forzado con origin/main (evita divergencia por commits locales)
+            git fetch origin
+            git reset --hard origin/main
 
             # Restaura los cambios locales de producción
             git stash pop || true
