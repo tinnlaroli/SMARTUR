@@ -437,7 +437,7 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
 
         tl.to(percentRef.current, { opacity: 0, duration: 0.3 }, assembleStart);
         tl.to(".smartur-loader-overlay", {
-            backgroundColor: "rgba(255, 255, 255, 0)",
+            opacity: 0,
             duration: 0.8,
             ease: "power2.inOut",
           }, assembleStart + 0.3);

@@ -508,9 +508,10 @@ export default function SmartURLoader({ label, onFinished } = {}) {
         // Desvanecer el texto del porcentaje
         tl.to(percentRef.current, { opacity: 0, duration: 0.3 }, assembleStart);
 
+        // Fade out to transparent — respects current bg color (CSS var)
         tl.to(
           ".smartur-loader-overlay",
-          { backgroundColor: "rgba(255,255,255,0)", duration: 0.4, ease: "power2.inOut" },
+          { opacity: 0, duration: 0.4, ease: "power2.inOut" },
           assembleStart + 0.1,
         );
 
