@@ -679,5 +679,14 @@ const {
     }
   }
 
-  customElements.define("sy-head", Header);
+  // Initialize the Header class for the nav.navbar element
+  document.addEventListener('DOMContentLoaded', () => {
+    const navbar = document.querySelector('nav.navbar');
+    if (navbar && !navbar.__headerInitialized) {
+      Object.setPrototypeOf(navbar, Header.prototype);
+      Header.call(navbar);
+      navbar.connectedCallback();
+      navbar.__headerInitialized = true;
+    }
+  });
 </script>
