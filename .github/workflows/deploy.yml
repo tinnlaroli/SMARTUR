@@ -29,6 +29,10 @@ jobs:
             # Asegura que estamos en main
             git checkout main 2>/dev/null || true
 
+            # Inyecta Firebase service account desde GitHub Secret
+            sed -i '/^FIREBASE_SERVICE_ACCOUNT=/d' .env
+            echo "FIREBASE_SERVICE_ACCOUNT=${{ secrets.FIREBASE_SERVICE_ACCOUNT_B64 }}" >> .env
+
             # Guarda cambios locales (ej: docker-compose.yml de producción)
             git stash
 
