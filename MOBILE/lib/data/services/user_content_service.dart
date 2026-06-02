@@ -12,7 +12,8 @@ import 'auth_service.dart';
 
 class UserContentException implements Exception {
   final String message;
-  UserContentException(this.message);
+  final String code;
+  UserContentException(this.message, {this.code = 'content.unknown'});
   @override
   String toString() => message;
 }

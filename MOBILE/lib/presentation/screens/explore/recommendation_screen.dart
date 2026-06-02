@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/constants/api_constants.dart';
@@ -17,6 +21,7 @@ import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../../core/utils/notifications.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_loader.dart';
 import 'detail_view_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -35,36 +40,35 @@ class RecommendationScreen extends StatefulWidget {
 
 class _TourType {
   final String id;
-  final String label;
   final IconData icon;
-  const _TourType(this.id, this.label, this.icon);
+  const _TourType(this.id, this.icon);
 }
 
 const _tourTypes = [
-  _TourType('cultural',     'Cultural',     Icons.museum_outlined),
-  _TourType('naturaleza',   'Naturaleza',   Icons.forest_outlined),
-  _TourType('gastronomico', 'Gastronómico', Icons.restaurant_menu_outlined),
-  _TourType('aventura',     'Aventura',     Icons.hiking_outlined),
-  _TourType('descanso',     'Descanso',     Icons.self_improvement_outlined),
-  _TourType('nocturno',     'Nocturno',     Icons.nightlife_outlined),
+  _TourType('cultural', Icons.museum_outlined),
+  _TourType('naturaleza', Icons.forest_outlined),
+  _TourType('gastronomico', Icons.restaurant_menu_outlined),
+  _TourType('aventura', Icons.hiking_outlined),
+  _TourType('descanso', Icons.self_improvement_outlined),
+  _TourType('nocturno', Icons.nightlife_outlined),
 ];
 
 // ── Budget model ─────────────────────────────────────────────────────────────
 // Tuple: (id, icon, color, label, subtitle)
 
 const _budgets = [
-  ('bajo',  Icons.savings_outlined,                  Color(0xFF10B981), 'Económico', 'Máx. \$500/día'),
-  ('medio', Icons.account_balance_wallet_outlined,   Color(0xFFF59E0B), 'Moderado',  '\$500–1500/día'),
-  ('alto',  Icons.diamond_outlined,                  Color(0xFF8B5CF6), 'Premium',   '\$1500+/día'),
+  ('bajo',  Icons.savings_outlined,                SmarturStyle.green),
+  ('medio', Icons.account_balance_wallet_outlined, SmarturStyle.orange),
+  ('alto',  Icons.diamond_outlined,                SmarturStyle.purple),
 ];
 
 // ── Group model ──────────────────────────────────────────────────────────────
 
 const _groups = [
-  ('solo',    Icons.person_outline,           'Solo'),
-  ('pareja',  Icons.favorite_border_rounded,  'Pareja'),
-  ('familia', Icons.family_restroom_outlined, 'Familia'),
-  ('amigos',  Icons.people_outline,           'Amigos'),
+  ('solo',    Icons.person_outline),
+  ('pareja',  Icons.favorite_border_rounded),
+  ('familia', Icons.family_restroom_outlined),
+  ('amigos',  Icons.people_outline),
 ];
 
 // ── Age ranges ───────────────────────────────────────────────────────────────
@@ -74,14 +78,63 @@ const _ageRanges = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _RecommendationScreenState extends State<RecommendationScreen> {
+  static const String _none = '__none__';
+
+  String _tourTypeLabel(AppLocalizations l10n, String id) {
+    switch (id) {
+      case 'cultural':
+        return l10n.recoTypeCultural;
+      case 'naturaleza':
+        return l10n.recoTypeNature;
+      case 'gastronomico':
+        return l10n.recoTypeGastronomy;
+      case 'aventura':
+        return l10n.recoTypeAdventure;
+      case 'descanso':
+        return l10n.recoTypeRelax;
+      case 'nocturno':
+        return l10n.recoTypeNight;
+      default:
+        return id;
+    }
+  }
+
+  (String, String) _budgetTexts(AppLocalizations l10n, String id) {
+    switch (id) {
+      case 'bajo':
+        return (l10n.recoBudgetLowLabel, l10n.recoBudgetLowSub);
+      case 'medio':
+        return (l10n.recoBudgetMediumLabel, l10n.recoBudgetMediumSub);
+      case 'alto':
+        return (l10n.recoBudgetHighLabel, l10n.recoBudgetHighSub);
+      default:
+        return (id, '');
+    }
+  }
+
+  String _groupLabel(AppLocalizations l10n, String id) {
+    switch (id) {
+      case 'solo':
+        return l10n.recoGroupSolo;
+      case 'pareja':
+        return l10n.recoGroupCouple;
+      case 'familia':
+        return l10n.recoGroupFamily;
+      case 'amigos':
+        return l10n.recoGroupFriends;
+      default:
+        return id;
+    }
+  }
+
   // ── Form state ────────────────────────────────────────────────────────────
-  final Set<String> _selectedTypes = {'cultural', 'gastronomico'};
-  String _budget = 'medio';
-  String _groupType = 'familia';
-  String _ageRange = '35-44';
+  final Set<String> _selectedTypes = <String>{};
+  String _budget = _none;
+  String _groupType = _none;
+  String _ageRange = _none;
   bool _wantsTours = false;
   bool _needsHotel = false;
-  bool _prefFood = true;
+  bool _prefFood = false;
   bool _reqAccesibilidad = false;
   bool _prefOutdoor = false;
 
@@ -91,6 +144,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   List<dynamic> _recommendations = [];
   int? _sessionId;
   bool _prefsWereLoaded = false; // true when profile pre-filled the form
+  bool _showSavedDiaryHint = false;
 
   // ── Place lookup map: item_id → Place ────────────────────────────────────
   Map<String, Place> _placesMap = {};
@@ -109,7 +163,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   Future<void> _loadProfile() async {
     try {
       final p = await ProfileService.fetchMyProfileForPreferences();
-      if (!mounted || p.isEmpty) return;
+      if (!mounted) return;
+      if (!_profileHasPreferences(p)) {
+        _clearFormSelections();
+        _prefsWereLoaded = false;
+        return;
+      }
       bool changed = false;
       final age = p['age'] as int?;
       if (age != null) {
@@ -123,16 +182,116 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         if (range != _ageRange) { _ageRange = range; changed = true; }
       }
       final interests = (p['interests'] as List?)?.cast<String>() ?? [];
-      final valid = interests.where((e) => _tourTypes.any((t) => t.id == e.toLowerCase())).toList();
-      if (valid.isNotEmpty) {
+      final mappedTypes = <String>{};
+      for (final interest in interests) {
+        final id = _mapInterestToTourId(interest);
+        if (id != null) mappedTypes.add(id);
+      }
+      if (mappedTypes.isNotEmpty) {
         _selectedTypes
           ..clear()
-          ..addAll(valid.map((e) => e.toLowerCase()));
+          ..addAll(mappedTypes);
+        changed = true;
+      }
+      if (interests.any((e) => e.toLowerCase().contains('gastro'))) {
+        _prefFood = true;
+        changed = true;
+      }
+      if (interests.any((e) {
+        final v = e.toLowerCase();
+        return v.contains('natur') || v.contains('avent');
+      })) {
+        _prefOutdoor = true;
+        changed = true;
+      }
+      final budget = _mapActivityToBudget(p['activity_level'] as int?);
+      if (budget != null && budget != _budget) {
+        _budget = budget;
+        changed = true;
+      }
+      final group = _mapTravelTypeToGroup(p['travel_type']?.toString());
+      if (group != null && group != _groupType) {
+        _groupType = group;
+        changed = true;
+      }
+      final preferredPlace = p['preferred_place']?.toString().toLowerCase();
+      if (preferredPlace != null &&
+          (preferredPlace.contains('mont') ||
+              preferredPlace.contains('play') ||
+              preferredPlace.contains('bosq') ||
+              preferredPlace.contains('forest') ||
+              preferredPlace.contains('natur'))) {
+        _prefOutdoor = true;
         changed = true;
       }
       if (p['has_accessibility'] == true) { _reqAccesibilidad = true; changed = true; }
-      if (changed) _prefsWereLoaded = true;
-    } catch (_) {}
+      _prefsWereLoaded = true;
+    } catch (_) {
+      if (mounted) {
+        _clearFormSelections();
+        _prefsWereLoaded = false;
+      }
+    }
+  }
+
+  bool _profileHasPreferences(Map<String, dynamic> p) {
+    if (p.isEmpty) return false;
+    final interests = (p['interests'] as List?)?.cast<String>() ?? [];
+    return interests.isNotEmpty ||
+        p['travel_type'] != null ||
+        p['age'] != null ||
+        p['activity_level'] != null ||
+        p['preferred_place'] != null ||
+        p['has_accessibility'] == true;
+  }
+
+  String? _mapInterestToTourId(String raw) {
+    final v = raw.toLowerCase().trim();
+    for (final t in _tourTypes) {
+      if (v == t.id || v.contains(t.id)) return t.id;
+    }
+    if (v.contains('cultur') || v.contains('museum') || v.contains('histor')) {
+      return 'cultural';
+    }
+    if (v.contains('natur') || v.contains('forest') || v.contains('eco')) {
+      return 'naturaleza';
+    }
+    if (v.contains('gastro') || v.contains('food') || v.contains('restaur')) {
+      return 'gastronomico';
+    }
+    if (v.contains('avent') || v.contains('hik') || v.contains('trek')) {
+      return 'aventura';
+    }
+    if (v.contains('descans') || v.contains('relax') || v.contains('spa')) {
+      return 'descanso';
+    }
+    if (v.contains('nocturn') || v.contains('night') || v.contains('fiesta')) {
+      return 'nocturno';
+    }
+    return null;
+  }
+
+  bool get _isFormReady =>
+      _selectedTypes.isNotEmpty &&
+      _budget != _none &&
+      _groupType != _none &&
+      _ageRange != _none;
+
+  String? _mapTravelTypeToGroup(String? raw) {
+    if (raw == null) return null;
+    final v = raw.toLowerCase();
+    if (v.contains('familiar') || v.contains('family')) return 'familia';
+    if (v.contains('romantic')) return 'pareja';
+    if (v.contains('mochil') || v.contains('backpacker') || v.contains('business')) return 'solo';
+    if (v.contains('aventura') || v.contains('adventure')) return 'amigos';
+    return null;
+  }
+
+  String? _mapActivityToBudget(int? level) {
+    if (level == null) return null;
+    if (level <= 2) return 'bajo';
+    if (level == 3) return 'medio';
+    return 'alto';
   }
 
   Future<void> _loadPlaces() async {
@@ -169,8 +328,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   }
 
   Future<void> _fetchRecommendations() async {
-    if (_selectedTypes.isEmpty) {
-      SmarturNotifications.showError(context, AppLocalizations.of(context)!.recoSelectAtLeastOne);
+    if (!_isFormReady) {
+      SmarturNotifications.showError(
+        context,
+        AppLocalizations.of(context)!.recoSelectAtLeastOneToContinue,
+      );
       return;
     }
 
@@ -193,10 +355,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         'alpha': 0.2,
         'top_n': 6,
         'context': {
-          'presupuesto_bucket': _budget,
-          'edad_range': _ageRange,
+          'presupuesto_bucket': _budget == _none ? null : _budget,
+          'edad_range': _ageRange == _none ? null : _ageRange,
           'tiposTurismo': _selectedTypes.toList(),
-          'group_type': _groupType,
+          'group_type': _groupType == _none ? null : _groupType,
           'wants_tours': _wantsTours,
           'needs_hotel': _needsHotel,
           'pref_food': _prefFood,
@@ -219,8 +381,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           setState(() {
             _recommendations = recs;
             _sessionId = sid;
+            _isFetching = false;
           });
-          if (recs.isNotEmpty) _showResults();
+          if (recs.isNotEmpty) {
+            unawaited(_showResults());
+          }
         }
       } else if (response.statusCode == 401) {
         if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
@@ -235,6 +400,18 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     }
   }
 
+  void _clearFormSelections() {
+    _selectedTypes.clear();
+    _budget = _none;
+    _groupType = _none;
+    _ageRange = _none;
+    _wantsTours = false;
+    _needsHotel = false;
+    _prefFood = false;
+    _reqAccesibilidad = false;
+    _prefOutdoor = false;
+  }
+
   void _recordFeedback(String itemId, {required int rankPos, required bool clicked}) {
     final sid = _sessionId;
     if (sid == null) return;
@@ -246,10 +423,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     );
   }
 
-  void _showResults() {
+  Future<void> _showResults() async {
     // Capture context before opening sheet so navigation works after the sheet is dismissed
     final navContext = context;
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -261,8 +438,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         onNavigateToPlace: (place, itemId) {
           Navigator.push(
             navContext,
-            MaterialPageRoute(
-              builder: (_) => DetailViewPage(
+            smarturDetailRoute(
+              DetailViewPage(
                 title: place.name,
                 heroTag: 'reco_$itemId',
                 heroImageUrl: place.imageUrl,
@@ -279,41 +456,85 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         },
       ),
     );
+    if (!navContext.mounted) return;
+    final hadSavedSession = _sessionId != null && _recommendations.isNotEmpty;
+    setState(() {
+      _clearFormSelections();
+      _recommendations = [];
+      _sessionId = null;
+    });
+    if (hadSavedSession) {
+      setState(() => _showSavedDiaryHint = true);
+      SmarturNotifications.showSuccess(
+        navContext,
+        AppLocalizations.of(navContext)!.recoSavedInDiary,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: scheme.surface.withValues(alpha: 0),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: scheme.surface.withValues(alpha: 0),
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: scheme.surface.withValues(alpha: 0),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: semantic.onImageText, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           AppLocalizations.of(context)!.recoTitle,
-          style: const TextStyle(fontFamily: 'CalSans', color: Colors.white, fontSize: 20),
+          style: TextStyle(fontFamily: 'CalSans', color: semantic.onImageText, fontSize: 20),
         ),
       ),
       body: SmarturBackgroundTop(
-        child: _isLoadingProfile
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : _buildBody(scheme),
+        child: Stack(
+          children: [
+            if (!_isLoadingProfile) _buildBody(scheme),
+            if (_isLoadingProfile)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: scheme.surface.withValues(alpha: 0.88),
+                  child: const Center(
+                    child: SmartURLoader(isMini: true, continuous: true),
+                  ),
+                ),
+              ),
+            if (_isFetching)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: scheme.scrim.withValues(alpha: 0.35),
+                  child: const Center(
+                    child: SmartURLoader(isMini: true, continuous: true),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBody(ColorScheme scheme) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, kToolbarHeight + 40, 16, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mq = MediaQuery.of(context);
+        final top = mq.padding.top + kToolbarHeight + 16;
+        final bottom = mq.padding.bottom + 24;
+        final maxW = constraints.maxWidth;
+        final hPad = maxW > 600 ? (maxW - 560) / 2 + 16 : 16.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(hPad, top, hPad, bottom),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight - top - bottom),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
           // ── Header ────────────────────────────────────────────────
           _GlassCard(
             child: Column(
@@ -356,6 +577,58 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             ),
           ),
 
+          // ── Saved in diary hint ───────────────────────────────────
+          if (_showSavedDiaryHint) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: SmarturStyle.green.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: SmarturStyle.green.withValues(alpha: 0.28),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Badge(
+                    label: const Text('1'),
+                    backgroundColor: SmarturStyle.green,
+                    child: const Icon(
+                      Icons.bookmark_rounded,
+                      color: SmarturStyle.green,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.recoSavedInDiary,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurface.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: scheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                    onPressed: () => setState(() => _showSavedDiaryHint = false),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // ── Preloaded preferences banner ──────────────────────────
           if (_prefsWereLoaded) ...[
             const SizedBox(height: 10),
@@ -397,7 +670,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               children: _tourTypes.map((t) {
                 final sel = _selectedTypes.contains(t.id);
                 return _SelectChip(
-                  label: t.label, icon: t.icon, selected: sel,
+                  label: _tourTypeLabel(AppLocalizations.of(context)!, t.id),
+                  icon: t.icon,
+                  selected: sel,
                   onTap: () => setState(() {
                     if (sel) _selectedTypes.remove(t.id);
                     else _selectedTypes.add(t.id);
@@ -414,14 +689,15 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             child: Row(
               children: _budgets.map((b) {
                 final sel = _budget == b.$1;
+                final texts = _budgetTexts(AppLocalizations.of(context)!, b.$1);
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: _BudgetButton(
                       icon: b.$2,
                       iconColor: b.$3,
-                      label: b.$4,
-                      sub: b.$5,
+                      label: texts.$1,
+                      sub: texts.$2,
                       selected: sel,
                       onTap: () => setState(() => _budget = b.$1),
                     ),
@@ -442,7 +718,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: _GroupButton(
-                      icon: g.$2, label: g.$3, selected: sel,
+                      icon: g.$2,
+                      label: _groupLabel(AppLocalizations.of(context)!, g.$1),
+                      selected: sel,
                       onTap: () => setState(() => _groupType = g.$1),
                     ),
                   ),
@@ -505,12 +783,36 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           // ── CTA ───────────────────────────────────────────────────
           _CTAButton(
             loading: _isFetching,
-            disabled: _selectedTypes.isEmpty,
+            disabled: false,
             onTap: _fetchRecommendations,
           ),
           const SizedBox(height: 12),
 
-          if (_selectedTypes.isEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: [
+              _RequiredStateChip(
+                label: AppLocalizations.of(context)!.recoTourismType,
+                done: _selectedTypes.isNotEmpty,
+              ),
+              _RequiredStateChip(
+                label: AppLocalizations.of(context)!.recoBudget,
+                done: _budget != _none,
+              ),
+              _RequiredStateChip(
+                label: AppLocalizations.of(context)!.recoWithWho,
+                done: _groupType != _none,
+              ),
+              _RequiredStateChip(
+                label: AppLocalizations.of(context)!.recoAgeRange,
+                done: _ageRange != _none,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (!_isFormReady)
             Center(
               child: Text(
                 AppLocalizations.of(context)!.recoSelectAtLeastOneToContinue,
@@ -521,8 +823,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-        ],
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -605,7 +910,8 @@ class _ResultsSheetState extends State<_ResultsSheet> {
       final place = _findPlace(id);
       return place?.name ?? r['title'] ?? r['name'] ?? id;
     }).join('\n• ');
-    final text = '🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• $names\n\n📱 Descúbrelos con SMARTUR';
+    final l10n = AppLocalizations.of(ctx)!;
+    final text = l10n.recoShareList(names);
     SharePlus.instance.share(ShareParams(text: text));
   }
 
@@ -645,6 +951,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -655,116 +962,222 @@ class _ResultsSheetState extends State<_ResultsSheet> {
         }
       },
       child: DraggableScrollableSheet(
-      controller: _sheetCtrl,
-      initialChildSize: 0.92,
-      minChildSize: 0.45,
-      maxChildSize: 0.95,
-      builder: (ctx, controller) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: scheme.surface.withValues(alpha: 0.96),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.15))),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                    color: scheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+        controller: _sheetCtrl,
+        initialChildSize: 0.92,
+        minChildSize: 0.45,
+        maxChildSize: 0.95,
+        builder: (ctx, controller) => ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: scheme.surface.withValues(alpha: 0.98),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border(
+                  top: BorderSide(color: scheme.outline.withValues(alpha: 0.12)),
                 ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: SmarturStyle.purple.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.auto_awesome_rounded,
-                            color: SmarturStyle.purple, size: 18),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: 0.18),
+                    blurRadius: 24,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: scheme.outlineVariant.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          SmarturStyle.purple.withValues(alpha: 0.14),
+                          SmarturStyle.orange.withValues(alpha: 0.08),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: SmarturStyle.purple.withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: scheme.surface.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: SmarturStyle.purple,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.recoNDestinations(widget.recommendations.length),
+                                style: SmarturStyle.calSansTitle.copyWith(fontSize: 22),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.recoPersonalizedByAI,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: scheme.onSurface.withValues(alpha: 0.55),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                l10n.recoResultsRankHint,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 10,
+                                  color: scheme.onSurface.withValues(alpha: 0.42),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.share_outlined, size: 20),
+                          tooltip: l10n.recoShareButton,
+                          onPressed: () => _shareRecommendations(ctx),
+                          color: scheme.onSurface.withValues(alpha: 0.55),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: controller,
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      itemCount: widget.recommendations.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 4),
+                      itemBuilder: (c, i) {
+                        final rec = widget.recommendations[i] as Map<String, dynamic>;
+                        final itemId = (rec['item_id'] ?? '').toString();
+                        final place = _findPlace(itemId);
+                        return _RecommendationCard(
+                          index: i,
+                          rec: rec,
+                          place: place,
+                          onLike: () {
+                            setState(() => _ratings[itemId] = true);
+                            widget.onFeedback(itemId, rankPos: i, clicked: true);
+                          },
+                          onDislike: () {
+                            setState(() => _ratings[itemId] = false);
+                            widget.onFeedback(itemId, rankPos: i, clicked: false);
+                          },
+                          onViewDestination: () {
+                            if (place != null) {
+                              Navigator.pop(ctx);
+                              widget.onNavigateToPlace(place, itemId);
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      12,
+                      16,
+                      12 + MediaQuery.paddingOf(ctx).bottom,
+                    ),
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      border: Border(
+                        top: BorderSide(color: scheme.outline.withValues(alpha: 0.1)),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: scheme.shadow.withValues(alpha: 0.06),
+                          blurRadius: 12,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              AppLocalizations.of(ctx)!.recoNDestinations(widget.recommendations.length),
-                              style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
+                            Icon(
+                              Icons.bookmark_added_rounded,
+                              size: 18,
+                              color: SmarturStyle.green.withValues(alpha: 0.9),
                             ),
-                            Text(
-                              AppLocalizations.of(ctx)!.recoPersonalizedByAI,
-                              style: TextStyle(
-                                fontFamily: 'Outfit', fontSize: 11,
-                                color: scheme.onSurface.withValues(alpha: 0.5),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n.recoSavedInDiary,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.onSurface.withValues(alpha: 0.72),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      // Share button
-                      IconButton(
-                        icon: const Icon(Icons.share_outlined),
-                        tooltip: AppLocalizations.of(ctx)!.recoShareButton,
-                        onPressed: () => _shareRecommendations(ctx),
-                        color: scheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => _tryClose(ctx),
-                        color: scheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        FilledButton.icon(
+                          onPressed: () => _tryClose(ctx),
+                          icon: const Icon(Icons.check_rounded, size: 18),
+                          label: Text(
+                            l10n.recoResultsDone,
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: SmarturStyle.purple,
+                            foregroundColor: scheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: ListView.builder(
-                    controller: controller,
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
-                    itemCount: widget.recommendations.length,
-                    itemBuilder: (c, i) {
-                      final rec = widget.recommendations[i] as Map<String, dynamic>;
-                      final itemId = (rec['item_id'] ?? '').toString();
-                      final place = _findPlace(itemId);
-                      return _RecommendationCard(
-                        index: i,
-                        rec: rec,
-                        place: place,
-                        onLike: () {
-                          setState(() => _ratings[itemId] = true);
-                          widget.onFeedback(itemId, rankPos: i, clicked: true);
-                        },
-                        onDislike: () {
-                          setState(() => _ratings[itemId] = false);
-                          widget.onFeedback(itemId, rankPos: i, clicked: false);
-                        },
-                        onViewDestination: () {
-                          if (place != null) {
-                            Navigator.pop(ctx);
-                            widget.onNavigateToPlace(place, itemId);
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-        ),   // DraggableScrollableSheet
-      ),     // PopScope
+      ),
     );
   }
 }
@@ -1017,6 +1430,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final place = widget.place;
     final rec = widget.rec;
     final name = place?.name ?? rec['title'] ?? rec['name'] ?? AppLocalizations.of(context)!.recommendationNumber(widget.index + 1);
@@ -1026,158 +1440,188 @@ class _RecommendationCardState extends State<_RecommendationCard> {
     final imageUrl = place?.imageUrl ?? '';
     final description = place?.shortDescription ?? '';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.12)),
+    final canOpen = widget.place != null;
+
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+      elevation: 0,
+      shadowColor: scheme.shadow.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(color: scheme.outline.withValues(alpha: 0.1)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Image ──────────────────────────────────────────────────
-          if (imageUrl.isNotEmpty)
-            Stack(
-              children: [
-                SizedBox(
-                  height: 160, width: double.infinity,
-                  child: Image.network(
-                    imageUrl, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: SmarturStyle.purple.withValues(alpha: 0.12),
-                      child: const Icon(Icons.landscape_outlined, color: Colors.white38, size: 40),
-                    ),
-                  ),
-                ),
-                Positioned(top: 10, right: 10, child: _ScoreBadge(score: score)),
-                Positioned(
-                  top: 10, left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text('#${widget.index + 1}',
-                      style: const TextStyle(fontFamily: 'CalSans', fontSize: 13, color: Colors.white)),
-                  ),
-                ),
-              ],
-            )
-          else
-            Container(
-              height: 80, width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  SmarturStyle.purple.withValues(alpha: 0.35),
-                  SmarturStyle.orange.withValues(alpha: 0.15),
-                ]),
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _ScoreBadge(score: score),
-                    const SizedBox(width: 8),
-                    Text('#${widget.index + 1}',
-                      style: const TextStyle(fontFamily: 'CalSans', fontSize: 18, color: Colors.white70)),
-                  ],
-                ),
-              ),
-            ),
-
-          // ── Content ────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name,
-                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 15),
-                  maxLines: 2),
-
-                if (city.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Row(children: [
-                    Icon(Icons.place_outlined, size: 12, color: scheme.onSurface.withValues(alpha: 0.4)),
-                    const SizedBox(width: 3),
-                    Text(city,
-                      style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
-                          color: scheme.onSurface.withValues(alpha: 0.5))),
-                  ]),
-                ],
-
-                if (description.isNotEmpty) ...[
-                  const SizedBox(height: 5),
-                  Text(description,
-                    style: TextStyle(fontFamily: 'Outfit', fontSize: 12, height: 1.4,
-                        color: scheme.onSurface.withValues(alpha: 0.65)),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
-                ],
-
-                if (tags.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Wrap(spacing: 5, runSpacing: 4,
-                    children: tags.take(4).map((t) => _TagChip(label: t)).toList()),
-                ],
-
-                const SizedBox(height: 10),
-
-                // ── Action row: like / dislike / ver destino ────────
-                Row(
-                  children: [
-                    // Thumbs up
-                    _FeedbackBtn(
-                      icon: Icons.thumb_up_rounded,
-                      active: _liked,
-                      activeColor: SmarturStyle.green,
-                      onTap: _handleLike,
-                    ),
-                    const SizedBox(width: 8),
-                    // Thumbs down
-                    _FeedbackBtn(
-                      icon: Icons.thumb_down_rounded,
-                      active: _disliked,
-                      activeColor: scheme.error,
-                      onTap: _handleDislike,
-                    ),
-                    const Spacer(),
-                    // Ver destino
-                    GestureDetector(
-                      onTap: widget.place != null ? widget.onViewDestination : null,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: widget.place != null
-                              ? SmarturStyle.purple
-                              : scheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: canOpen ? widget.onViewDestination : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (imageUrl.isNotEmpty)
+              Stack(
+                children: [
+                  SizedBox(
+                    height: 176,
+                    width: double.infinity,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        color: SmarturStyle.purple.withValues(alpha: 0.08),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: SmarturStyle.purple.withValues(alpha: 0.5),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(AppLocalizations.of(context)!.recoViewDestination,
-                              style: TextStyle(
-                                fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700,
-                                color: widget.place != null ? Colors.white : scheme.onSurface.withValues(alpha: 0.4),
-                              )),
-                            const SizedBox(width: 4),
-                            Icon(Icons.chevron_right_rounded,
-                              color: widget.place != null ? Colors.white : scheme.onSurface.withValues(alpha: 0.3),
-                              size: 16),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        color: SmarturStyle.purple.withValues(alpha: 0.12),
+                        child: Icon(
+                          Icons.landscape_outlined,
+                          color: semantic.onImageMuted,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            semantic.imageScrimStrong.withValues(alpha: 0.55),
                           ],
                         ),
                       ),
                     ),
+                  ),
+                  Positioned(top: 12, left: 12, child: _RankBadge(rank: widget.index + 1)),
+                  Positioned(top: 12, right: 12, child: _ScoreBadge(score: score)),
+                ],
+              )
+            else
+              Container(
+                height: 88,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      SmarturStyle.purple.withValues(alpha: 0.32),
+                      SmarturStyle.orange.withValues(alpha: 0.14),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _RankBadge(rank: widget.index + 1),
+                    const SizedBox(width: 10),
+                    _ScoreBadge(score: score),
                   ],
                 ),
-              ],
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: SmarturStyle.calSansTitle.copyWith(fontSize: 16),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (city.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.place_outlined,
+                          size: 13,
+                          color: scheme.onSurface.withValues(alpha: 0.45),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            city,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              color: scheme.onSurface.withValues(alpha: 0.55),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 12,
+                        height: 1.45,
+                        color: scheme.onSurface.withValues(alpha: 0.68),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (tags.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 5,
+                      children: tags.take(4).map((t) => _TagChip(label: t)).toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _FeedbackBtn(
+                        icon: Icons.thumb_up_rounded,
+                        active: _liked,
+                        activeColor: SmarturStyle.green,
+                        onTap: _handleLike,
+                      ),
+                      const SizedBox(width: 8),
+                      _FeedbackBtn(
+                        icon: Icons.thumb_down_rounded,
+                        active: _disliked,
+                        activeColor: scheme.error,
+                        onTap: _handleDislike,
+                      ),
+                      const Spacer(),
+                      if (canOpen)
+                        TextButton.icon(
+                          onPressed: widget.onViewDestination,
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                          label: Text(
+                            AppLocalizations.of(context)!.recoViewDestination,
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: SmarturStyle.purple,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1309,6 +1753,7 @@ class _SelectChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1323,11 +1768,11 @@ class _SelectChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 14,
-                color: selected ? Colors.white : scheme.onSurface.withValues(alpha: 0.6)),
+                color: selected ? semantic.onImageText : scheme.onSurface.withValues(alpha: 0.6)),
             const SizedBox(width: 6),
             Text(label,
               style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : scheme.onSurface)),
+                  color: selected ? semantic.onImageText : scheme.onSurface)),
           ],
         ),
       ),
@@ -1355,6 +1800,7 @@ class _BudgetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1370,14 +1816,14 @@ class _BudgetButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 22,
-                color: selected ? Colors.white : iconColor),
+                color: selected ? semantic.onImageText : iconColor),
             const SizedBox(height: 4),
             Text(label,
               style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : scheme.onSurface)),
+                  color: selected ? semantic.onImageText : scheme.onSurface)),
             Text(sub,
               style: TextStyle(fontFamily: 'Outfit', fontSize: 9,
-                  color: selected ? Colors.white.withValues(alpha: 0.7) : scheme.onSurface.withValues(alpha: 0.4)),
+                  color: selected ? semantic.onImageText.withValues(alpha: 0.7) : scheme.onSurface.withValues(alpha: 0.4)),
               textAlign: TextAlign.center),
           ],
         ),
@@ -1397,6 +1843,7 @@ class _GroupButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1412,11 +1859,11 @@ class _GroupButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 20,
-                color: selected ? Colors.white : scheme.onSurface.withValues(alpha: 0.7)),
+                color: selected ? semantic.onImageText : scheme.onSurface.withValues(alpha: 0.7)),
             const SizedBox(height: 3),
             Text(label,
               style: TextStyle(fontFamily: 'Outfit', fontSize: 11, fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : scheme.onSurface)),
+                  color: selected ? semantic.onImageText : scheme.onSurface)),
           ],
         ),
       ),
@@ -1459,6 +1906,52 @@ class _ToggleChip extends StatelessWidget {
               size: 14, color: value ? SmarturStyle.orange : scheme.onSurface.withValues(alpha: 0.3)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RequiredStateChip extends StatelessWidget {
+  final String label;
+  final bool done;
+
+  const _RequiredStateChip({required this.label, required this.done});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: done
+            ? SmarturStyle.green.withValues(alpha: 0.14)
+            : scheme.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: done
+              ? SmarturStyle.green.withValues(alpha: 0.35)
+              : scheme.error.withValues(alpha: 0.30),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 13,
+            color: done ? SmarturStyle.green : scheme.error,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: done ? SmarturStyle.green : scheme.error,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1508,31 +2001,32 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return AnimatedBuilder(
       animation: _gradCtrl,
       builder: (context, child) {
         final loading = widget.loading;
         final disabled = widget.disabled;
         final ca = _colorA.evaluate(_gradCtrl) ?? SmarturStyle.purple;
-        final cb = _colorB.evaluate(_gradCtrl) ?? const Color(0xFF9333EA);
+        final cb = _colorB.evaluate(_gradCtrl) ?? SmarturStyle.purple;
         Widget content;
         if (loading) {
-          content = const SizedBox(
+          content = SizedBox(
             width: 22, height: 22,
-            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+            child: CircularProgressIndicator(color: semantic.onImageText, strokeWidth: 2.5),
           );
         } else {
           content = Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.auto_awesome_rounded,
-                color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : Colors.white,
+                color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : semantic.onImageText,
                 size: 20),
               const SizedBox(width: 10),
               Text(AppLocalizations.of(context)!.recoTitle,
                 style: TextStyle(
                   fontFamily: 'Outfit', fontSize: 16, fontWeight: FontWeight.w700,
-                  color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : Colors.white,
+                  color: disabled ? scheme.onSurface.withValues(alpha: 0.3) : semantic.onImageText,
                 )),
             ],
           );
@@ -1563,12 +2057,50 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
   }
 }
 
+class _RankBadge extends StatelessWidget {
+  final int rank;
+  const _RankBadge({required this.rank});
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            SmarturStyle.purple.withValues(alpha: 0.92),
+            SmarturStyle.pink.withValues(alpha: 0.85),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: SmarturStyle.purple.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        '#$rank',
+        style: TextStyle(
+          fontFamily: 'CalSans',
+          fontSize: 14,
+          color: semantic.onImageText,
+        ),
+      ),
+    );
+  }
+}
+
 class _ScoreBadge extends StatelessWidget {
   final double score;
   const _ScoreBadge({required this.score});
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -1578,11 +2110,11 @@ class _ScoreBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 11),
+          Icon(Icons.auto_awesome_rounded, color: semantic.onImageText, size: 11),
           const SizedBox(width: 3),
           Text(score.toStringAsFixed(2),
-            style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800,
-                color: Colors.white, fontSize: 11)),
+            style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w800,
+                color: semantic.onImageText, fontSize: 11)),
         ],
       ),
     );

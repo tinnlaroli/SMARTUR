@@ -36,8 +36,8 @@ class AppSettingsNotifier extends ValueNotifier<AppSettings> {
     final dark = prefs.getBool(_darkModeKey);
     final themeMode = dark == null ? ThemeMode.system : (dark ? ThemeMode.dark : ThemeMode.light);
 
-    final languageName = prefs.getString(_languageKey);
-    final locale = languageName == null ? null : _localeFromLegacyLanguageName(languageName);
+    final languageStored = prefs.getString(_languageKey);
+    final locale = languageStored == null ? null : _localeFromStoredValue(languageStored);
 
     return AppSettingsNotifier._(
       prefs,
@@ -68,35 +68,25 @@ class AppSettingsNotifier extends ValueNotifier<AppSettings> {
     if (locale == null) {
       await _prefs.remove(_languageKey);
     } else {
-      await _prefs.setString(_languageKey, _legacyLanguageNameFromLocale(locale));
+      await _prefs.setString(_languageKey, locale.languageCode);
     }
   }
 
-  static Locale _localeFromLegacyLanguageName(String languageName) {
-    switch (languageName) {
+  static Locale _localeFromStoredValue(String value) {
+    switch (value) {
+      case 'en':
       case 'English':
         return const Locale('en');
+      case 'fr':
       case 'Français':
         return const Locale('fr');
+      case 'pt':
       case 'Português':
         return const Locale('pt');
+      case 'es':
       case 'Español':
       default:
         return const Locale('es');
-    }
-  }
-
-  static String _legacyLanguageNameFromLocale(Locale locale) {
-    switch (locale.languageCode) {
-      case 'en':
-        return 'English';
-      case 'fr':
-        return 'Français';
-      case 'pt':
-        return 'Português';
-      case 'es':
-      default:
-        return 'Español';
     }
   }
 }

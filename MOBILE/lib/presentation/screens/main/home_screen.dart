@@ -9,6 +9,8 @@ import 'package:local_auth_android/local_auth_android.dart';
 import 'package:http/http.dart' as http;
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/constants/env_config.dart';
 import '../../../core/utils/notifications.dart';
@@ -215,9 +217,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (!saved && mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => PreferencesScreen(userName: widget.userName),
-        ),
+        smarturFadeRoute(PreferencesScreen(userName: widget.userName)),
       );
     }
   }
@@ -529,9 +529,9 @@ class HomeScreenState extends State<HomeScreen> {
                     Navigator.pop(ctx);
                     Navigator.push(
                       ctx,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              PreferencesScreen(userName: widget.userName)),
+                      smarturFadeRoute(
+                        PreferencesScreen(userName: widget.userName),
+                      ),
                     );
                     return;
                   }
@@ -591,9 +591,9 @@ class HomeScreenState extends State<HomeScreen> {
                             Navigator.pop(ctx);
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: (_) => PreferencesScreen(
-                                      userName: widget.userName)),
+                              smarturFadeRoute(
+                                PreferencesScreen(userName: widget.userName),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -668,7 +668,7 @@ class HomeScreenState extends State<HomeScreen> {
                   Navigator.pop(ctx);
                   await Navigator.push<void>(
                     context,
-                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    smarturFadeRoute(const SettingsScreen()),
                   );
                   if (mounted) await refreshUserIdentity();
                 },
@@ -683,7 +683,7 @@ class HomeScreenState extends State<HomeScreen> {
                     if (mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (_) => WelcomeScreen()),
+                        smarturFadeRoute(const WelcomeScreen()),
                         (_) => false,
                       );
                     }
@@ -1455,14 +1455,8 @@ class HomeScreenState extends State<HomeScreen> {
     }
     Navigator.push(
       context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 350),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            _HomePlaceSwipeView(places: allPlaces, initialIndex: initialIndex),
-        transitionsBuilder: (context, anim, secondaryAnim, child) {
-          return FadeTransition(opacity: anim, child: child);
-        },
+      smarturDetailRoute(
+        _HomePlaceSwipeView(places: allPlaces, initialIndex: initialIndex),
       ),
     );
   }
@@ -1574,6 +1568,7 @@ class _PlaceCardState extends State<_PlaceCard>
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final place = widget.place;
     final isHero = widget.isHero;
 
@@ -1587,7 +1582,7 @@ class _PlaceCardState extends State<_PlaceCard>
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: semantic.imageScrimStrong.withValues(alpha: 0.20),
                 blurRadius: isHero ? 14 : 10,
                 offset: const Offset(0, 4),
               ),
@@ -1604,8 +1599,8 @@ class _PlaceCardState extends State<_PlaceCard>
                 place.imageUrl.isEmpty
                     ? Container(
                         color: scheme.outlineVariant,
-                        child: const Icon(Icons.image_not_supported_outlined,
-                            color: Colors.white54, size: 36),
+                        child: Icon(Icons.image_not_supported_outlined,
+                            color: semantic.onImageMuted, size: 36),
                       )
                     : CachedNetworkImage(
                         imageUrl: place.imageUrl,
@@ -1617,8 +1612,8 @@ class _PlaceCardState extends State<_PlaceCard>
                         ),
                         errorWidget: (_, __, ___) => Container(
                           color: scheme.outlineVariant,
-                          child: const Icon(Icons.image_not_supported_outlined,
-                              color: Colors.white54, size: 36),
+                          child: Icon(Icons.image_not_supported_outlined,
+                              color: semantic.onImageMuted, size: 36),
                         ),
                       ),
 
@@ -1632,12 +1627,16 @@ class _PlaceCardState extends State<_PlaceCard>
                           ? const [0.0, 0.3, 0.7, 1.0]
                           : const [0.0, 0.35, 1.0],
                       colors: isHero
-                          ? const [
-                              Color(0x00000000), Color(0x10000000),
-                              Color(0x80000000), Color(0xDD000000),
+                          ? [
+                              Colors.transparent,
+                              semantic.imageScrimSoft.withValues(alpha: 0.12),
+                              semantic.imageScrimStrong.withValues(alpha: 0.55),
+                              semantic.imageScrimStrong.withValues(alpha: 0.90),
                             ]
-                          : const [
-                              Color(0x05000000), Color(0x20000000), Color(0xCC000000),
+                          : [
+                              semantic.imageScrimSoft.withValues(alpha: 0.06),
+                              semantic.imageScrimSoft.withValues(alpha: 0.18),
+                              semantic.imageScrimStrong.withValues(alpha: 0.85),
                             ],
                     ),
                   ),
@@ -1660,13 +1659,13 @@ class _PlaceCardState extends State<_PlaceCard>
                           color: place.category.color.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2), width: 0.5),
+                              color: semantic.overlayBorder.withValues(alpha: 0.8), width: 0.5),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(place.category.icon,
-                                size: isHero ? 13 : 11, color: Colors.white),
+                                size: isHero ? 13 : 11, color: semantic.onImageText),
                             const SizedBox(width: 4),
                             Text(
                               place.category.label,
@@ -1675,7 +1674,7 @@ class _PlaceCardState extends State<_PlaceCard>
                                 fontFamily: 'Outfit',
                                 fontSize: isHero ? 10 : 9,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white, letterSpacing: 0.3,
+                                color: semantic.onImageText, letterSpacing: 0.3,
                               ),
                             ),
                           ],
@@ -1700,13 +1699,13 @@ class _PlaceCardState extends State<_PlaceCard>
                           decoration: BoxDecoration(
                             color: _liked
                                 ? SmarturStyle.pink.withValues(alpha: 0.85)
-                                : Colors.black.withValues(alpha: 0.30),
+                                : semantic.imageScrimStrong.withValues(alpha: 0.50),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                             size: isHero ? 18 : 15,
-                            color: Colors.white,
+                            color: semantic.onImageText,
                           ),
                         ),
                       ),
@@ -1724,12 +1723,15 @@ class _PlaceCardState extends State<_PlaceCard>
                         opacity: _heartOpacity.value,
                         child: Transform.scale(
                           scale: _heartScale.value,
-                          child: const Icon(
+                          child: Icon(
                             Icons.favorite_rounded,
-                            color: Colors.white,
+                            color: semantic.onImageText,
                             size: 80,
                             shadows: [
-                              Shadow(color: Colors.black26, blurRadius: 12),
+                              Shadow(
+                                color: semantic.imageScrimStrong.withValues(alpha: 0.70),
+                                blurRadius: 12,
+                              ),
                             ],
                           ),
                         ),
@@ -1753,7 +1755,7 @@ class _PlaceCardState extends State<_PlaceCard>
                         style: TextStyle(
                           fontFamily: 'CalSans',
                           fontSize: isHero ? 20.0 : 15.0,
-                          color: Colors.white,
+                          color: semantic.onImageText,
                           fontWeight: FontWeight.bold,
                           height: 1.15,
                         ),
@@ -1767,7 +1769,7 @@ class _PlaceCardState extends State<_PlaceCard>
                             maxLines: 2, overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 12,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: semantic.onImageText.withValues(alpha: 0.8),
                               height: 1.3,
                             ),
                           ),
@@ -1780,12 +1782,12 @@ class _PlaceCardState extends State<_PlaceCard>
                             place.rating.toStringAsFixed(1),
                             style: TextStyle(
                               fontFamily: 'Outfit', fontWeight: FontWeight.w800,
-                              fontSize: isHero ? 12 : 11, color: Colors.white,
+                              fontSize: isHero ? 12 : 11, color: semantic.onImageText,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Icon(Icons.location_on_outlined,
-                              size: isHero ? 13 : 11, color: Colors.white.withValues(alpha: 0.7)),
+                              size: isHero ? 13 : 11, color: semantic.onImageText.withValues(alpha: 0.7)),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
@@ -1794,7 +1796,7 @@ class _PlaceCardState extends State<_PlaceCard>
                               style: TextStyle(
                                 fontFamily: 'Outfit',
                                 fontSize: isHero ? 11 : 10,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: semantic.onImageText.withValues(alpha: 0.7),
                               ),
                             ),
                           ),

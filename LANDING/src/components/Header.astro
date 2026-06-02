@@ -111,6 +111,7 @@ const {
     max-width: 100%;
     box-sizing: border-box;
     transition: transform 0.3s var(--ease-out-cubic);
+    pointer-events: auto;
 
     /* When menu is open, disable the transform to avoid stacking context issues */
     :global(body.is-nav-opened) & {
@@ -164,6 +165,7 @@ const {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--color-border);
     transition: box-shadow 0.3s var(--ease-out-cubic);
+    pointer-events: auto;
 
     @media (--mq-tablet) {
       gap: 1.25rem;

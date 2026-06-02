@@ -14,6 +14,7 @@ import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
 import '../../widgets/smartur_user_avatar.dart';
+import '../../widgets/smartur_ui_kit.dart';
 
 /// Devuelve kind API (`svc` / `poi`) e id numérico desde [Place.id] tipo `svc_12`.
 ({String kind, int id})? _parsePlaceRef(String placeId) {
@@ -57,14 +58,27 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.communityDeletePost, style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
-        content: Text(l10n.communityDeletePostConfirm, style: const TextStyle(fontFamily: 'Outfit')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.communityDeletePost, style: const TextStyle(color: Colors.red))),
-        ],
-      ),
+      builder: (ctx) {
+        final s = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(l10n.communityDeletePost,
+              style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
+          content: Text(l10n.communityDeletePostConfirm,
+              style: const TextStyle(fontFamily: 'Outfit')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel, style: TextStyle(color: s.onSurfaceVariant)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.communityDeletePost,
+                  style: TextStyle(color: s.error, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm != true) return;
@@ -150,11 +164,20 @@ class _CommunityScreenState extends State<CommunityScreen> {
       ),
       body: SmarturBackgroundTop(
         child: _error != null && !_loading
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(_error!, textAlign: TextAlign.center),
-              ),
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SmarturEmptyState(
+                  icon: Icons.cloud_off_outlined,
+                  title: l10n.connectionError,
+                  subtitle: _error,
+                  action: FilledButton.icon(
+                    onPressed: _load,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(l10n.mapRetry),
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               color: SmarturStyle.purple,

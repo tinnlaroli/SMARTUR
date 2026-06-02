@@ -2123,6 +2123,329 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables.'**
   String get onboardingDesc3;
+
+  /// No description provided for @errorTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Error'**
+  String get errorTitle;
+
+  /// No description provided for @settingsCheckUpdate.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar actualización'**
+  String get settingsCheckUpdate;
+
+  /// No description provided for @settingsAppUpToDate.
+  ///
+  /// In es, this message translates to:
+  /// **'SMARTUR v{version} está al día.'**
+  String settingsAppUpToDate(Object version);
+
+  /// No description provided for @languageSpanish.
+  ///
+  /// In es, this message translates to:
+  /// **'Español'**
+  String get languageSpanish;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In es, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageFrench.
+  ///
+  /// In es, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// No description provided for @languagePortuguese.
+  ///
+  /// In es, this message translates to:
+  /// **'Português'**
+  String get languagePortuguese;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro'**
+  String get themeDark;
+
+  /// No description provided for @navAiShort.
+  ///
+  /// In es, this message translates to:
+  /// **'IA'**
+  String get navAiShort;
+
+  /// No description provided for @diaryAiSessionsEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin sesiones de recomendaciones'**
+  String get diaryAiSessionsEmptyTitle;
+
+  /// No description provided for @diaryAiSessionsEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Las sesiones generadas desde la app o desde la plataforma web aparecerán aquí.'**
+  String get diaryAiSessionsEmptySubtitle;
+
+  /// No description provided for @diaryMoreCount.
+  ///
+  /// In es, this message translates to:
+  /// **'+{count} más'**
+  String diaryMoreCount(Object count);
+
+  /// No description provided for @diarySessionDestinationsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} destinos de esta sesión'**
+  String diarySessionDestinationsCount(Object count);
+
+  /// No description provided for @diaryTapDestinationHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca un destino para ver más'**
+  String get diaryTapDestinationHint;
+
+  /// No description provided for @mapRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get mapRetry;
+
+  /// No description provided for @updateTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva versión disponible'**
+  String get updateTitle;
+
+  /// No description provided for @updateBody.
+  ///
+  /// In es, this message translates to:
+  /// **'La versión {version} de SMARTUR está disponible.\nSe descargará e instalará desde la app.'**
+  String updateBody(Object version);
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargando... {progress}%'**
+  String updateDownloading(Object progress);
+
+  /// No description provided for @updatePreparingInstaller.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando instalador...'**
+  String get updatePreparingInstaller;
+
+  /// No description provided for @updateDownloadError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al descargar. Verifica tu conexión e intenta de nuevo.'**
+  String get updateDownloadError;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Después'**
+  String get updateLater;
+
+  /// No description provided for @updateRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get updateRetry;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar ahora'**
+  String get updateNow;
+
+  /// No description provided for @imageShareTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Recomendaciones en {city}'**
+  String imageShareTitle(Object city);
+
+  /// No description provided for @imageShareSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Basado en mi perfil de viajero inteligente'**
+  String get imageShareSubtitle;
+
+  /// No description provided for @imageShareGeneratedBy.
+  ///
+  /// In es, this message translates to:
+  /// **'Generado por SMARTUR AI'**
+  String get imageShareGeneratedBy;
+
+  /// No description provided for @imageShareMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Mira lo que me recomienda SMARTUR en {city}!'**
+  String imageShareMessage(Object city);
+
+  /// No description provided for @commonPlaceFallback.
+  ///
+  /// In es, this message translates to:
+  /// **'Lugar'**
+  String get commonPlaceFallback;
+
+  /// No description provided for @recoTypeCultural.
+  ///
+  /// In es, this message translates to:
+  /// **'Cultural'**
+  String get recoTypeCultural;
+
+  /// No description provided for @recoTypeNature.
+  ///
+  /// In es, this message translates to:
+  /// **'Naturaleza'**
+  String get recoTypeNature;
+
+  /// No description provided for @recoTypeGastronomy.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastronómico'**
+  String get recoTypeGastronomy;
+
+  /// No description provided for @recoTypeAdventure.
+  ///
+  /// In es, this message translates to:
+  /// **'Aventura'**
+  String get recoTypeAdventure;
+
+  /// No description provided for @recoTypeRelax.
+  ///
+  /// In es, this message translates to:
+  /// **'Descanso'**
+  String get recoTypeRelax;
+
+  /// No description provided for @recoTypeNight.
+  ///
+  /// In es, this message translates to:
+  /// **'Nocturno'**
+  String get recoTypeNight;
+
+  /// No description provided for @recoBudgetLowLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Económico'**
+  String get recoBudgetLowLabel;
+
+  /// No description provided for @recoBudgetLowSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Máx. \$500/día'**
+  String get recoBudgetLowSub;
+
+  /// No description provided for @recoBudgetMediumLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Moderado'**
+  String get recoBudgetMediumLabel;
+
+  /// No description provided for @recoBudgetMediumSub.
+  ///
+  /// In es, this message translates to:
+  /// **'\$500–1500/día'**
+  String get recoBudgetMediumSub;
+
+  /// No description provided for @recoBudgetHighLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Premium'**
+  String get recoBudgetHighLabel;
+
+  /// No description provided for @recoBudgetHighSub.
+  ///
+  /// In es, this message translates to:
+  /// **'\$1500+/día'**
+  String get recoBudgetHighSub;
+
+  /// No description provided for @recoGroupSolo.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo'**
+  String get recoGroupSolo;
+
+  /// No description provided for @recoGroupCouple.
+  ///
+  /// In es, this message translates to:
+  /// **'Pareja'**
+  String get recoGroupCouple;
+
+  /// No description provided for @recoGroupFamily.
+  ///
+  /// In es, this message translates to:
+  /// **'Familia'**
+  String get recoGroupFamily;
+
+  /// No description provided for @recoGroupFriends.
+  ///
+  /// In es, this message translates to:
+  /// **'Amigos'**
+  String get recoGroupFriends;
+
+  /// No description provided for @recoShareList.
+  ///
+  /// In es, this message translates to:
+  /// **'🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con SMARTUR'**
+  String recoShareList(Object items);
+
+  /// No description provided for @detailShareMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con SMARTUR — Altas Montañas, Veracruz'**
+  String detailShareMessage(
+    Object title,
+    Object location,
+    Object description,
+    Object mapsUrl,
+  );
+
+  /// No description provided for @mapsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Maps'**
+  String get mapsLabel;
+
+  /// No description provided for @youAreHere.
+  ///
+  /// In es, this message translates to:
+  /// **'← Estás aquí'**
+  String get youAreHere;
+
+  /// No description provided for @recoSavedInDiary.
+  ///
+  /// In es, this message translates to:
+  /// **'Recomendaciones guardadas. Puedes revisarlas en Diario.'**
+  String get recoSavedInDiary;
+
+  /// No description provided for @recoResultsDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get recoResultsDone;
+
+  /// No description provided for @recoResultsRankHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ordenados por compatibilidad con tu perfil'**
+  String get recoResultsRankHint;
+
+  /// No description provided for @googleSignInReleaseConfig.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta versión de la app no tiene Google Sign-In configurado. El administrador debe registrar el SHA del keystore de release en Firebase.'**
+  String get googleSignInReleaseConfig;
 }
 
 class _AppLocalizationsDelegate

@@ -43,14 +43,43 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Decode Keystore
-        continue-on-error: true
+      - name: Validate release secrets
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          GOOGLE_SERVER_CLIENT_ID: ${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 --decode > android/app/smartur-release.jks
+          missing=""
+          [ -z "$API_BASE_URL" ] && missing="$missing API_BASE_URL"
+          [ -z "$GOOGLE_SERVER_CLIENT_ID" ] && missing="$missing GOOGLE_SERVER_CLIENT_ID"
+          [ -z "$KEYSTORE_BASE64" ] && missing="$missing KEYSTORE_BASE64"
+          [ -z "$KEY_ALIAS" ] && missing="$missing KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ] && missing="$missing KEY_PASSWORD"
+          [ -z "$KEYSTORE_PASSWORD" ] && missing="$missing KEYSTORE_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Faltan secrets de GitHub:$missing"
+            echo "GOOGLE_SERVER_CLIENT_ID = Web Client ID (tipo 3 en google-services.json)."
+            exit 1
           fi
+
+      - name: Decode Keystore
+        run: echo "$KEYSTORE_B64" | base64 --decode > android/app/smartur-release.jks
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Print release signing SHA-1 (for Firebase)
+        run: |
+          keytool -list -v \
+            -keystore android/app/smartur-release.jks \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KEYSTORE_PASSWORD" 2>/dev/null | grep -E "SHA1:|SHA256:" || true
+          echo "Registra esas huellas en Firebase → mx.smartur.app. Ver docs/GOOGLE_SIGNIN_RELEASE.md"
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Build APK (Release)
         run: |

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
@@ -535,8 +536,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                             Navigator.pop(context);
                                             Navigator.pushReplacement(
                                               context,
-                                              MaterialPageRoute(
-                                                builder: (_) => MainScreen(userName: savedName, isNewLogin: true),
+                                              smarturFadeRoute(
+                                                MainScreen(userName: savedName, isNewLogin: true),
                                               ),
                                             );
                                           } else {
@@ -609,8 +610,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       Navigator.pop(context);
                                       Navigator.pushReplacement(
                                         context,
-                                        MaterialPageRoute(
-                                          builder: (_) => MainScreen(
+                                        smarturFadeRoute(
+                                          MainScreen(
                                             userName: savedName,
                                             isNewLogin: true,
                                           ),
@@ -626,10 +627,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                     }
                                   } on AuthException catch (e) {
                                     if (context.mounted) {
-                                      SmarturNotifications.showError(
-                                        context,
-                                        e.message,
-                                      );
+                                      final msg = e.code == 'auth.google_release_config'
+                                          ? l10n.googleSignInReleaseConfig
+                                          : e.message;
+                                      SmarturNotifications.showError(context, msg);
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
@@ -663,9 +664,25 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Image.network(
-                                      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
-                                      height: 20,
+                                    Container(
+                                      width: 25,
+                                      height: 25,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: scheme.outlineVariant,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'G',
+                                        style: TextStyle(
+                                          color: SmarturStyle.purple,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'Outfit',
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
@@ -980,8 +997,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       if (token != null && context.mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const MainScreen(userName: null, isNewLogin: false),
+          smarturFadeRoute(
+            const MainScreen(userName: null, isNewLogin: false),
           ),
         );
       } else if (context.mounted) {

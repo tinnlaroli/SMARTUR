@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import 'core/motion/smartur_routes.dart';
 import 'core/theme/style_guide.dart';
+import 'core/theme/smartur_theme_extensions.dart';
 import 'core/settings/app_settings.dart';
 import 'core/settings/app_settings_scope.dart';
 import 'data/services/api_client.dart';
@@ -75,7 +77,26 @@ class SmarturApp extends StatelessWidget {
 }
 
 ThemeData _baseTheme(ColorScheme scheme) {
+  final isDark = scheme.brightness == Brightness.dark;
   return ThemeData(
+    extensions: <ThemeExtension<dynamic>>[
+      SmarturSemanticColors(
+        onImageText: Colors.white,
+        onImageMuted: isDark ? Colors.white70 : Colors.white60,
+        imageScrimSoft: isDark
+            ? Colors.black.withValues(alpha: 0.45)
+            : Colors.black.withValues(alpha: 0.25),
+        imageScrimStrong: isDark
+            ? Colors.black.withValues(alpha: 0.72)
+            : Colors.black.withValues(alpha: 0.55),
+        overlayBorder: Colors.white.withValues(alpha: isDark ? 0.22 : 0.16),
+        success: SmarturStyle.green,
+        warning: SmarturStyle.orange,
+        danger: SmarturStyle.pink,
+        info: SmarturStyle.blue,
+        panelBackground: scheme.surfaceContainerHighest,
+      ),
+    ],
     useMaterial3: true,
     fontFamily: 'Outfit',
     colorScheme: scheme,
@@ -141,6 +162,52 @@ ThemeData _baseTheme(ColorScheme scheme) {
         ),
       ),
     ),
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: SmarturPageTransitionsBuilder(),
+        TargetPlatform.iOS: SmarturPageTransitionsBuilder(),
+        TargetPlatform.macOS: SmarturPageTransitionsBuilder(),
+        TargetPlatform.windows: SmarturPageTransitionsBuilder(),
+        TargetPlatform.linux: SmarturPageTransitionsBuilder(),
+      },
+    ),
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: scheme.outline.withValues(alpha: 0.08)),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        minimumSize: const Size(double.infinity, 52),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        textStyle: const TextStyle(
+          fontFamily: 'CalSans',
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+    tabBarTheme: TabBarThemeData(
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelColor: SmarturStyle.purple,
+      unselectedLabelColor: scheme.onSurfaceVariant,
+      labelStyle: const TextStyle(
+        fontFamily: 'Outfit',
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+      ),
+      dividerColor: Colors.transparent,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: scheme.surfaceContainerHighest,
@@ -180,11 +247,6 @@ ThemeData _buildDarkTheme() {
     primary: SmarturStyle.purple,
     secondary: SmarturStyle.pink,
     brightness: Brightness.dark,
-    surface: const Color(0xFF121212),
-  ).copyWith(
-    surface: const Color(0xFF121212),
-    surfaceContainer: const Color(0xFF1E1E1E),
-    surfaceContainerHighest: const Color(0xFF242424),
   );
   return _baseTheme(scheme);
 }
@@ -212,6 +274,15 @@ class _SplashGateState extends State<_SplashGate> {
       _showLoader = false;
       _sessionReady = true;
       _loaderAnimDone = true;
+    } else {
+      // Si el loader o la red se cuelgan, no dejar la pantalla sin toques.
+      Future.delayed(const Duration(seconds: 12), () {
+        if (!mounted || !_showLoader) return;
+        setState(() {
+          _loaderAnimDone = true;
+          _showLoader = false;
+        });
+      });
     }
     _checkSession();
 
@@ -239,7 +310,7 @@ class _SplashGateState extends State<_SplashGate> {
     });
     // Navegar a WelcomeScreen limpiando el stack
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      smarturFadeRoute(const WelcomeScreen()),
       (_) => false,
     );
   }
@@ -290,17 +361,21 @@ class _SplashGateState extends State<_SplashGate> {
 
     return Stack(
       children: [
-        // Contenido real de la app (welcome / onboarding / main)
         destination,
-        // Loader como overlay a pantalla completa para continuidad perfecta
+        // Solo bloquea toques mientras corre la animación del loader.
+        // Tras onFinished, deja pasar los toques aunque la sesión siga validándose.
         if (shouldShowLoader)
           Positioned.fill(
-            child: SmartURLoader(
-              key: const ValueKey('loader'),
-              onFinished: () => setState(() {
-                _loaderAnimDone = true;
-                if (_sessionReady) _showLoader = false;
-              }),
+            child: IgnorePointer(
+              ignoring: _loaderAnimDone,
+              child: SmartURLoader(
+                key: const ValueKey('loader'),
+                showBackground: true,
+                onFinished: () => setState(() {
+                  _loaderAnimDone = true;
+                  if (_sessionReady) _showLoader = false;
+                }),
+              ),
             ),
           ),
       ],

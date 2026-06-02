@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
@@ -134,7 +135,10 @@ class _MapScreenState extends State<MapScreen> {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () { setState(() { _isLoading = true; _error = null; }); _loadPlaces(); },
-                child: const Text('Reintentar', style: TextStyle(fontFamily: 'Outfit')),
+                child: Text(
+                  l10n.mapRetry,
+                  style: const TextStyle(fontFamily: 'Outfit'),
+                ),
               ),
             ],
           ),
@@ -344,8 +348,8 @@ class _MapScreenState extends State<MapScreen> {
       child: GestureDetector(
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DetailViewPage(
+          smarturDetailRoute(
+            DetailViewPage(
               title: place.name,
               heroTag: 'map_${place.id}',
               heroImageUrl: place.imageUrl,

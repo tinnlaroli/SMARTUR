@@ -89,9 +89,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           color: scheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04), // Más suave para verse premium
-
-              blurRadius: 10,
+              color: scheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 12,
               offset: const Offset(0, -4),
             ),
           ],
@@ -427,10 +426,11 @@ class _NavBarItemIAState extends State<_NavBarItemIA>
               curve: Curves.easeOutCubic,
               clipBehavior: Clip.antiAlias,
               child: widget.isSelected
-                  ? const Padding(
+                  ? Padding(
                       padding: EdgeInsets.only(left: 8.0),
-                      child: Text('IA',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.navAiShort,
+                        style: const TextStyle(
                           fontFamily: 'Outfit', fontSize: 13, fontWeight: FontWeight.w700,
                           color: SmarturStyle.purple,
                         ),

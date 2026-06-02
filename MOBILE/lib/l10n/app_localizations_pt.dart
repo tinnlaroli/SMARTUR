@@ -1088,4 +1088,192 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get onboardingDesc3 =>
       'Conecte-se com guias locais e apoie o turismo regional enquanto cria memórias inesquecíveis.';
+
+  @override
+  String get errorTitle => 'Erro';
+
+  @override
+  String get settingsCheckUpdate => 'Buscar atualização';
+
+  @override
+  String settingsAppUpToDate(Object version) {
+    return 'SMARTUR v$version está atualizado.';
+  }
+
+  @override
+  String get languageSpanish => 'Espanhol';
+
+  @override
+  String get languageEnglish => 'Inglês';
+
+  @override
+  String get languageFrench => 'Francês';
+
+  @override
+  String get languagePortuguese => 'Português';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Escuro';
+
+  @override
+  String get navAiShort => 'IA';
+
+  @override
+  String get diaryAiSessionsEmptyTitle => 'Sem sessões de recomendações';
+
+  @override
+  String get diaryAiSessionsEmptySubtitle =>
+      'As sessões geradas no app ou na plataforma web aparecerão aqui.';
+
+  @override
+  String diaryMoreCount(Object count) {
+    return '+$count mais';
+  }
+
+  @override
+  String diarySessionDestinationsCount(Object count) {
+    return '$count destinos nesta sessão';
+  }
+
+  @override
+  String get diaryTapDestinationHint => 'Toque em um destino para ver mais';
+
+  @override
+  String get mapRetry => 'Tentar novamente';
+
+  @override
+  String get updateTitle => 'Nova versão disponível';
+
+  @override
+  String updateBody(Object version) {
+    return 'A versão $version do SMARTUR está disponível.\nEla será baixada e instalada pelo app.';
+  }
+
+  @override
+  String updateDownloading(Object progress) {
+    return 'Baixando... $progress%';
+  }
+
+  @override
+  String get updatePreparingInstaller => 'Preparando instalador...';
+
+  @override
+  String get updateDownloadError =>
+      'Erro ao baixar. Verifique sua conexão e tente novamente.';
+
+  @override
+  String get updateLater => 'Depois';
+
+  @override
+  String get updateRetry => 'Tentar novamente';
+
+  @override
+  String get updateNow => 'Atualizar agora';
+
+  @override
+  String imageShareTitle(Object city) {
+    return 'Minhas recomendações em $city';
+  }
+
+  @override
+  String get imageShareSubtitle =>
+      'Baseado no meu perfil de viajante inteligente';
+
+  @override
+  String get imageShareGeneratedBy => 'Gerado por SMARTUR AI';
+
+  @override
+  String imageShareMessage(Object city) {
+    return 'Veja o que o SMARTUR recomenda para mim em $city!';
+  }
+
+  @override
+  String get commonPlaceFallback => 'Lugar';
+
+  @override
+  String get recoTypeCultural => 'Cultural';
+
+  @override
+  String get recoTypeNature => 'Natureza';
+
+  @override
+  String get recoTypeGastronomy => 'Gastronômico';
+
+  @override
+  String get recoTypeAdventure => 'Aventura';
+
+  @override
+  String get recoTypeRelax => 'Descanso';
+
+  @override
+  String get recoTypeNight => 'Noturno';
+
+  @override
+  String get recoBudgetLowLabel => 'Econômico';
+
+  @override
+  String get recoBudgetLowSub => 'Máx. \$500/dia';
+
+  @override
+  String get recoBudgetMediumLabel => 'Moderado';
+
+  @override
+  String get recoBudgetMediumSub => '\$500–1500/dia';
+
+  @override
+  String get recoBudgetHighLabel => 'Premium';
+
+  @override
+  String get recoBudgetHighSub => '\$1500+/dia';
+
+  @override
+  String get recoGroupSolo => 'Solo';
+
+  @override
+  String get recoGroupCouple => 'Casal';
+
+  @override
+  String get recoGroupFamily => 'Família';
+
+  @override
+  String get recoGroupFriends => 'Amigos';
+
+  @override
+  String recoShareList(Object items) {
+    return '🌿 Meus destinos recomendados em Altas Montañas de Veracruz:\n\n• $items\n\n📱 Descubra com SMARTUR';
+  }
+
+  @override
+  String detailShareMessage(
+    Object title,
+    Object location,
+    Object description,
+    Object mapsUrl,
+  ) {
+    return 'Descubra $title em $location! 📍$description\nVer no Maps: $mapsUrl\n\nDescoberto com SMARTUR — Altas Montañas, Veracruz';
+  }
+
+  @override
+  String get mapsLabel => 'Maps';
+
+  @override
+  String get youAreHere => '← Você está aqui';
+
+  @override
+  String get recoSavedInDiary =>
+      'Recomendações salvas. Você pode revisá-las no Diário.';
+
+  @override
+  String get recoResultsDone => 'Concluir';
+
+  @override
+  String get recoResultsRankHint =>
+      'Ordenados por compatibilidade com o seu perfil';
+
+  @override
+  String get googleSignInReleaseConfig =>
+      'O Google Sign-In não está configurado nesta versão. Registre o SHA do keystore de release no Firebase.';
 }

@@ -8,6 +8,9 @@ import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_user_avatar.dart';
 import 'edit_profile_avatar_screen.dart';
+import '../../widgets/smartur_ui_kit.dart';
+import '../preferences/preferences_screen.dart';
+import '../explore/recommendation_screen.dart';
 import '../settings/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _photoUrl;
   String? _avatarIconKey;
   bool _loading = true;
+  bool _hasTravelPrefs = false;
 
   @override
   void initState() {
@@ -43,6 +47,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final profile = await _authService.getUserProfile();
       final interests = await ProfileService.getSavedInterests();
+      final prefs = await ProfileService.fetchMyProfileForPreferences();
+      final hasPrefs = interests.isNotEmpty ||
+          prefs['travel_type'] != null ||
+          prefs['age'] != null ||
+          prefs['activity_level'] != null;
 
       final name = profile?['name'] ??
           await _authService.getUserName() ??
@@ -63,6 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _email = email;
           _memberSince = memberSince;
           _interests = interests;
+          _hasTravelPrefs = hasPrefs;
           _photoUrl = profile?['photo_url'] as String?;
           _avatarIconKey = profile?['avatar_icon_key'] as String?;
         });
@@ -171,9 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () async {
                               await Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (_) => const SettingsScreen(),
-                                ),
+                                smarturFadeRoute(const SettingsScreen()),
                               );
                               _loadProfile();
                             },
@@ -249,6 +257,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const SizedBox(height: 12),
                               _buildEmptyInterestsHint(context, l10n),
                             ],
+                            const SizedBox(height: 24),
+                            _buildSection(l10n.manageAccount),
+                            const SizedBox(height: 12),
+                            _buildStatsRow(context, scheme, l10n),
+                            const SizedBox(height: 16),
+                            _buildQuickActions(context, scheme, l10n),
                             const SizedBox(height: 40),
                           ]),
                         ),
@@ -299,9 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const EditProfileAvatarScreen(),
-                    ),
+                    smarturFadeRoute(const EditProfileAvatarScreen()),
                   );
                   _loadProfile();
                 },
@@ -323,6 +335,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsRow(
+    BuildContext context,
+    ColorScheme scheme,
+    AppLocalizations l10n,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: _StatTile(
+            icon: Icons.favorite_outline,
+            value: '${_interests.length}',
+            label: l10n.myInterests,
+            scheme: scheme,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatTile(
+            icon: Icons.tune_rounded,
+            value: _hasTravelPrefs ? '✓' : '—',
+            label: l10n.myPreferences,
+            scheme: scheme,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions(
+    BuildContext context,
+    ColorScheme scheme,
+    AppLocalizations l10n,
+  ) {
+    return SmarturPanel(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          _ProfileActionTile(
+            icon: Icons.auto_awesome_rounded,
+            title: l10n.recoTitle,
+            subtitle: l10n.recoAiPersonalizedFor,
+            onTap: () {
+              Navigator.push(
+                context,
+                smarturFadeRoute(const RecommendationScreen()),
+              );
+            },
+          ),
+          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          _ProfileActionTile(
+            icon: Icons.tune_rounded,
+            title: l10n.myPreferences,
+            subtitle: _hasTravelPrefs
+                ? l10n.yourPreferences
+                : l10n.noPreferencesSaved,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                smarturFadeRoute(PreferencesScreen(userName: _name)),
+              );
+              _loadProfile();
+            },
+          ),
+          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          _ProfileActionTile(
+            icon: Icons.person_outline_rounded,
+            title: l10n.editProfile,
+            subtitle: l10n.editProfileSubtitle,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                smarturFadeRoute(const EditProfileAvatarScreen()),
+              );
+              _loadProfile();
+            },
+          ),
+          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          _ProfileActionTile(
+            icon: Icons.settings_outlined,
+            title: l10n.configuration,
+            subtitle: l10n.appPreferences,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                smarturFadeRoute(const SettingsScreen()),
+              );
+              _loadProfile();
+            },
           ),
         ],
       ),
@@ -397,6 +503,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final ColorScheme scheme;
+
+  const _StatTile({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: SmarturStyle.purple),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 10,
+              height: 1.2,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ProfileActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: SmarturStyle.purple.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: SmarturStyle.purple, size: 22),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 12,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: scheme.onSurfaceVariant,
+      ),
     );
   }
 }

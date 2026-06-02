@@ -10,6 +10,7 @@ import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../utils/diary_place_detail.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../explore/detail_view_page.dart';
 
@@ -82,21 +83,21 @@ class _DiaryScreenState extends State<DiaryScreen> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
-          bottom: TabBar(
-            indicatorColor: SmarturStyle.purple,
-            labelColor: SmarturStyle.purple,
-            unselectedLabelColor: scheme.onSurfaceVariant,
-            labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
+          bottom: smarturTabBar(
+            context,
             tabs: [
               Tab(text: l10n.favoritesTab),
               Tab(text: l10n.historyTab),
-              const Tab(
+              Tab(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.auto_awesome_rounded, size: 13),
-                    SizedBox(width: 4),
-                    Text('IA', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
+                    const Icon(Icons.auto_awesome_rounded, size: 13),
+                    const SizedBox(width: 4),
+                    Text(
+                      l10n.navAiShort,
+                      style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
+                    ),
                   ],
                 ),
               ),
@@ -155,21 +156,18 @@ class _FavoritesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (items.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(
         color: SmarturStyle.purple,
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 48),
-            Icon(Icons.favorite_border, size: 48, color: scheme.onSurface),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                AppLocalizations.of(context)!.noCategoryPlaces,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Outfit', color: scheme.onSurface),
-              ),
+            SmarturEmptyState(
+              icon: Icons.favorite_border_rounded,
+              title: l10n.favoritesTab,
+              subtitle: l10n.noCategoryPlaces,
+              iconColor: SmarturStyle.pink,
             ),
           ],
         ),
@@ -271,16 +269,10 @@ class _HistoryTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 48),
-            Icon(Icons.history, size: 48, color: scheme.onSurface),
-            const SizedBox(height: 16),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(l10n.noCategoryPlaces,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Outfit', color: scheme.onSurfaceVariant)),
-              ),
+            SmarturEmptyState(
+              icon: Icons.history_rounded,
+              title: l10n.historyTab,
+              subtitle: l10n.noCategoryPlaces,
             ),
           ],
         ),
@@ -377,34 +369,18 @@ class _SessionsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     if (sessions.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(
         color: SmarturStyle.purple,
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 48),
-            const Icon(Icons.auto_awesome_outlined, size: 48, color: SmarturStyle.purple),
-            const SizedBox(height: 16),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: [
-                    Text('Sin sesiones de recomendaciones',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'CalSans', fontSize: 16,
-                        color: scheme.onSurface,
-                      )),
-                    const SizedBox(height: 8),
-                    Text('Las sesiones generadas desde la app o desde la plataforma web aparecerán aquí.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontFamily: 'Outfit', fontSize: 12,
-                          color: scheme.onSurfaceVariant)),
-                  ],
-                ),
-              ),
+            SmarturEmptyState(
+              icon: Icons.auto_awesome_outlined,
+              title: l10n.diaryAiSessionsEmptyTitle,
+              subtitle: l10n.diaryAiSessionsEmptySubtitle,
+              iconColor: SmarturStyle.purple,
             ),
           ],
         ),
@@ -557,7 +533,7 @@ class _SessionCard extends StatelessWidget {
                 if (recs.length > 3)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: Text('+${recs.length - 3} más',
+                    child: Text(AppLocalizations.of(context)!.diaryMoreCount((recs.length - 3).toString()),
                       style: TextStyle(fontFamily: 'Outfit', fontSize: 10,
                           color: SmarturStyle.purple.withValues(alpha: 0.7))),
                   ),
@@ -688,9 +664,9 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${widget.recs.length} destinos de esta sesión',
+                            Text(AppLocalizations.of(context)!.diarySessionDestinationsCount(widget.recs.length.toString()),
                               style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
-                            Text('Toca un destino para ver más',
+                            Text(AppLocalizations.of(context)!.diaryTapDestinationHint,
                               style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
                                   color: scheme.onSurface.withValues(alpha: 0.5))),
                           ],
@@ -738,8 +714,8 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                               Navigator.pop(ctx);
                               Navigator.push(
                                 navContext,
-                                MaterialPageRoute(
-                                  builder: (_) => DetailViewPage(
+                                smarturDetailRoute(
+                                  DetailViewPage(
                                     title: place.name,
                                     heroTag: 'session_replay_$itemId',
                                     heroImageUrl: place.imageUrl,

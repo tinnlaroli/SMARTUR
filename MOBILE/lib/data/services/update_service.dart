@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:smartur/core/theme/smartur_theme_extensions.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
 class UpdateService {
+  static const _installChannel = MethodChannel('mx.smartur.app/installer');
+
   static const _apiUrl =
       'https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest';
   static const _downloadUrl =
@@ -97,8 +102,7 @@ class UpdateService {
     return false;
   }
 
-  /// Downloads the APK to cache and opens Android's system package installer
-  /// via share_plus (handles FileProvider for Android 7+ internally).
+  /// Downloads the APK and launches the system package installer (Android).
   /// [onProgress] receives 0.0–1.0 as bytes arrive.
   static Future<void> downloadAndInstall({
     void Function(double progress)? onProgress,
@@ -106,29 +110,53 @@ class UpdateService {
     final dir = await getTemporaryDirectory();
     final filePath = '${dir.path}/smartur-update.apk';
     final file = File(filePath);
+    if (await file.exists()) {
+      await file.delete();
+    }
 
     final client = http.Client();
     try {
       final request = http.Request('GET', Uri.parse(_downloadUrl));
       final response = await client.send(request);
+      if (response.statusCode != 200) {
+        throw HttpException('Download failed (${response.statusCode})');
+      }
+
       final total = response.contentLength ?? 0;
       var received = 0;
 
       final sink = file.openWrite();
-      await response.stream.map((chunk) {
-        received += chunk.length;
-        if (total > 0) onProgress?.call(received / total);
-        return chunk;
-      }).pipe(sink);
+      try {
+        await response.stream.map((chunk) {
+          received += chunk.length;
+          if (total > 0) onProgress?.call(received / total);
+          return chunk;
+        }).pipe(sink);
+      } finally {
+        await sink.close();
+      }
     } finally {
       client.close();
     }
 
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(filePath, mimeType: 'application/vnd.android.package-archive')],
-      ),
+    onProgress?.call(1.0);
+
+    if (!await file.exists() || await file.length() < 1024) {
+      throw const FileSystemException('Downloaded APK is missing or incomplete');
+    }
+
+    if (Platform.isAndroid) {
+      await _installChannel.invokeMethod<void>('installApk', {'path': filePath});
+      return;
+    }
+
+    final opened = await launchUrl(
+      Uri.parse(_downloadUrl),
+      mode: LaunchMode.externalApplication,
     );
+    if (!opened) {
+      throw const FileSystemException('Could not open update URL');
+    }
   }
 
   static void showUpdateDialog(BuildContext context, String latestVersion) {
@@ -171,16 +199,21 @@ class _UpdateDialogState extends State<_UpdateDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final isDownloading = _progress != null;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.system_update_rounded, color: Color(0xFF7C3AED)),
-          SizedBox(width: 8),
-          Text('Nueva versión disponible',
-              style: TextStyle(fontFamily: 'CalSans', fontSize: 18)),
+          Icon(Icons.system_update_rounded, color: scheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            l10n.updateTitle,
+            style: const TextStyle(fontFamily: 'CalSans', fontSize: 18),
+          ),
         ],
       ),
       content: Column(
@@ -188,57 +221,83 @@ class _UpdateDialogState extends State<_UpdateDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'La versión ${widget.latestVersion} de SMARTUR está disponible.\n'
-            'Se descargará e instalará desde el app.',
+            l10n.updateBody(widget.latestVersion),
             style: const TextStyle(fontFamily: 'Outfit', fontSize: 14, height: 1.5),
           ),
           if (isDownloading) ...[
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: _progress,
-              backgroundColor: const Color(0xFFEDE9FE),
-              color: const Color(0xFF7C3AED),
+              backgroundColor: scheme.primaryContainer,
+              color: scheme.primary,
               borderRadius: BorderRadius.circular(4),
             ),
             const SizedBox(height: 8),
             Text(
               _progress! < 1.0
-                  ? 'Descargando... ${(_progress! * 100).toStringAsFixed(0)}%'
-                  : 'Preparando instalador...',
-              style: const TextStyle(
-                  fontFamily: 'Outfit', fontSize: 12, color: Colors.grey),
+                  ? l10n.updateDownloading((_progress! * 100).toStringAsFixed(0))
+                  : l10n.updatePreparingInstaller,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
           if (_error) ...[
             const SizedBox(height: 12),
-            const Text(
-              'Error al descargar. Verifica tu conexión e intenta de nuevo.',
-              style: TextStyle(fontFamily: 'Outfit', fontSize: 12, color: Colors.red),
+            Text(
+              l10n.updateDownloadError,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 12,
+                color: semantic.danger,
+              ),
+            ),
+          ],
+          if (!isDownloading) ...[
+            const SizedBox(height: 20),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  l10n.updateLater,
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _startUpdate,
+                icon: Icon(
+                  _error ? Icons.refresh_rounded : Icons.download_rounded,
+                ),
+                label: Text(_error ? l10n.updateRetry : l10n.updateNow),
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
           ],
         ],
       ),
       actions: isDownloading && !_error
-          ? null
-          : [
-              if (!isDownloading)
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Después',
-                      style: TextStyle(color: Colors.grey)),
-                ),
-              FilledButton.icon(
-                onPressed: _startUpdate,
-                icon: Icon(
-                    _error ? Icons.refresh_rounded : Icons.download_rounded),
-                label: Text(_error ? 'Reintentar' : 'Actualizar ahora'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF7C3AED),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
+          ? [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.updateLater),
               ),
-            ],
+            ]
+          : null,
     );
   }
 }

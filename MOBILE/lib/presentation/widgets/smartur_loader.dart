@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../core/motion/smartur_motion.dart';
+
 // ══════════════════════════════════════════════════════════════════════════════
 // DIMENSIONES DEL VIEWPORT SVG
 // ══════════════════════════════════════════════════════════════════════════════
@@ -107,8 +109,18 @@ enum _Phase { orbit, converge, pinReveal, zoomOut, done }
 class SmartURLoader extends StatefulWidget {
   final VoidCallback? onFinished;
   final bool isMini;
+  /// Orbit loop for inline loading states (no pin/zoom sequence).
+  final bool continuous;
+  /// Opaque splash backdrop; transparent when overlaid on content.
+  final bool showBackground;
 
-  const SmartURLoader({super.key, this.onFinished, this.isMini = false});
+  const SmartURLoader({
+    super.key,
+    this.onFinished,
+    this.isMini = false,
+    this.continuous = false,
+    this.showBackground = false,
+  });
 
   @override
   State<SmartURLoader> createState() => _SmartURLoaderState();
@@ -264,15 +276,18 @@ class _SmartURLoaderState extends State<SmartURLoader>
   }
 
   Future<void> _runSequence() async {
+    final fast = mounted && SmarturMotion.prefersReducedMotion(context);
+
     // ── 1. Orbit: planes enter staggered & begin spinning ────────────────
     for (int i = 0; i < 4; i++) {
-      Future.delayed(Duration(milliseconds: i * 170), () {
+      Future.delayed(Duration(milliseconds: i * (fast ? 90 : 170)), () {
         if (!mounted) return;
         _entryCtrl[i].forward();
         _spinCtrl[i].repeat();
       });
     }
-    await Future.delayed(const Duration(milliseconds: 2700));
+    if (widget.continuous) return;
+    await Future.delayed(Duration(milliseconds: fast ? 1400 : 2700));
 
     // ── 2. Converge + Morph: settle angle while transforming in place ────
     if (!mounted) return;
@@ -285,30 +300,30 @@ class _SmartURLoaderState extends State<SmartURLoader>
     setState(() => _phase = _Phase.converge);
     _convergeCtrl.forward();
     // Morph starts 200ms into converge so the snap is almost done
-    Future.delayed(const Duration(milliseconds: 200), () {
+    Future.delayed(Duration(milliseconds: fast ? 100 : 200), () {
       for (int i = 0; i < 4; i++) {
-        Future.delayed(Duration(milliseconds: i * 100), () {
+        Future.delayed(Duration(milliseconds: i * (fast ? 60 : 100)), () {
           if (mounted) _morphCtrl[i].forward();
         });
       }
     });
-    await Future.delayed(const Duration(milliseconds: 1100));
+    await Future.delayed(Duration(milliseconds: fast ? 650 : 1100));
 
     // ── 4. Pin reveal: pieces appear staggered ──────────────────────────
     if (!mounted) return;
     setState(() => _phase = _Phase.pinReveal);
     for (int j = 0; j < 7; j++) {
-      Future.delayed(Duration(milliseconds: j * 85), () {
+      Future.delayed(Duration(milliseconds: j * (fast ? 50 : 85)), () {
         if (mounted) _pinCtrl[j].forward();
       });
     }
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(Duration(milliseconds: fast ? 600 : 1000));
 
     // ── 5. Zoom out: pull back to reveal the full assembled logo ────────
     if (!mounted) return;
     setState(() => _phase = _Phase.zoomOut);
     _zoomCtrl.forward();
-    await Future.delayed(const Duration(milliseconds: 1100));
+    await Future.delayed(Duration(milliseconds: fast ? 650 : 1100));
 
     // ── 6. Complete (sin fade interno: lo maneja _SplashGate) ───────────────
     if (!mounted) return;
@@ -344,10 +359,9 @@ class _SmartURLoaderState extends State<SmartURLoader>
   // ══════════════════════════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return ColoredBox(
-      // Fondo transparente para que se vea el mismo background
-      // que el de la pantalla subyacente (WelcomeScreen, etc.).
-      color: Colors.transparent,
+      color: widget.showBackground ? scheme.surface : Colors.transparent,
       child: SizedBox.expand(
         child: Center(
           child: AnimatedBuilder(

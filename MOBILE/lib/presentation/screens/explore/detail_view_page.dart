@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/user_content_service.dart';
@@ -193,6 +194,7 @@ class _DetailViewPageState extends State<DetailViewPage>
   }
 
   void _sharePlace() {
+    final l10n = AppLocalizations.of(context)!;
     final title = widget.title;
     final location = widget.locationLine;
     final desc = widget.subtitle.isNotEmpty ? widget.subtitle : '';
@@ -204,15 +206,15 @@ class _DetailViewPageState extends State<DetailViewPage>
       final encoded = Uri.encodeComponent('$title, Veracruz, México');
       mapsUrl = 'https://www.google.com/maps/search/?api=1&query=$encoded';
     }
-    final text = '¡Descubre $title en $location! 📍'
-        '${shortDesc.isNotEmpty ? '\n$shortDesc' : ''}'
-        '\nVer en Maps: $mapsUrl'
-        '\n\nDescubierto con SMARTUR — Altas Montañas, Veracruz';
+    final descLine = shortDesc.isNotEmpty ? '\n$shortDesc' : '';
+    final text = l10n.detailShareMessage(title, location, descLine, mapsUrl);
     SharePlus.instance.share(ShareParams(text: text, subject: title));
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -224,20 +226,20 @@ class _DetailViewPageState extends State<DetailViewPage>
               child: SizedBox.expand(
                 child: widget.heroImageUrl.isEmpty
                     ? Container(
-                        color: Colors.grey.shade900,
-                        child: const Icon(Icons.image_not_supported_outlined,
-                            color: Colors.white38, size: 48),
+                        color: scheme.surfaceContainerHighest,
+                        child: Icon(Icons.image_not_supported_outlined,
+                            color: semantic.onImageMuted, size: 48),
                       )
                     : CachedNetworkImage(
                         imageUrl: widget.heroImageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
                         fadeInDuration: const Duration(milliseconds: 300),
-                        placeholder: (_, __) => Container(color: Colors.grey.shade900),
+                        placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
                         errorWidget: (_, __, ___) => Container(
-                          color: Colors.grey.shade900,
-                          child: const Icon(Icons.image_not_supported_outlined,
-                              color: Colors.white38, size: 48),
+                          color: scheme.surfaceContainerHighest,
+                          child: Icon(Icons.image_not_supported_outlined,
+                              color: semantic.onImageMuted, size: 48),
                         ),
                       ),
               ),
@@ -255,11 +257,13 @@ class _DetailViewPageState extends State<DetailViewPage>
                         opacity: _heartOpacity.value,
                         child: Transform.scale(
                           scale: _heartScale.value,
-                          child: const Icon(
+                          child: Icon(
                             Icons.favorite_rounded,
-                            color: Colors.white,
+                            color: semantic.onImageText,
                             size: 100,
-                            shadows: [Shadow(color: Colors.black38, blurRadius: 20)],
+                            shadows: [
+                              Shadow(color: semantic.imageScrimStrong, blurRadius: 20),
+                            ],
                           ),
                         ),
                       ),
@@ -270,7 +274,7 @@ class _DetailViewPageState extends State<DetailViewPage>
             ),
 
             // Dark gradient overlay
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -278,10 +282,10 @@ class _DetailViewPageState extends State<DetailViewPage>
                     end: Alignment.bottomCenter,
                     stops: [0.0, 0.3, 0.7, 1.0],
                     colors: [
-                      Color(0x30000000),
-                      Color(0x10000000),
-                      Color(0x90000000),
-                      Color(0xDD000000),
+                      semantic.imageScrimSoft.withValues(alpha: 0.40),
+                      semantic.imageScrimSoft.withValues(alpha: 0.20),
+                      semantic.imageScrimStrong.withValues(alpha: 0.70),
+                      semantic.imageScrimStrong.withValues(alpha: 0.95),
                     ],
                   ),
                 ),
@@ -305,8 +309,8 @@ class _DetailViewPageState extends State<DetailViewPage>
                     left: 8,
                     child: _GlassCircle(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back_rounded,
-                          color: Colors.white, size: 22),
+                      child: Icon(Icons.arrow_back_rounded,
+                          color: semantic.onImageText, size: 22),
                     ),
                   ),
                   // Share button — top-right, left of favorite
@@ -315,9 +319,9 @@ class _DetailViewPageState extends State<DetailViewPage>
                     right: 60,
                     child: _GlassCircle(
                       onTap: _sharePlace,
-                      child: const Icon(
+                      child: Icon(
                         Icons.share_rounded,
-                        color: Colors.white,
+                        color: semantic.onImageText,
                         size: 20,
                       ),
                     ),
@@ -332,7 +336,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                         _isFavorite
                             ? Icons.favorite_rounded
                             : Icons.favorite_border_rounded,
-                        color: _isFavorite ? SmarturStyle.pink : Colors.white,
+                        color: _isFavorite ? SmarturStyle.pink : semantic.onImageText,
                         size: 22,
                       ),
                     ),
@@ -384,6 +388,7 @@ class _GlassCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: ClipOval(
@@ -393,7 +398,7 @@ class _GlassCircle extends StatelessWidget {
             width: 44,
             height: 44,
             alignment: Alignment.center,
-            color: Colors.white.withValues(alpha: 0.12),
+            color: semantic.onImageText.withValues(alpha: 0.12),
             child: child,
           ),
         ),
@@ -462,6 +467,7 @@ class _BottomContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: BackdropFilter(
@@ -469,11 +475,11 @@ class _BottomContent extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.42),
+            color: semantic.imageScrimStrong.withValues(alpha: 0.55),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: semantic.overlayBorder,
               ),
             ),
           ),
@@ -491,18 +497,18 @@ class _BottomContent extends StatelessWidget {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.place_outlined,
-                            color: Colors.white54, size: 14),
+                        Icon(Icons.place_outlined,
+                            color: semantic.onImageMuted, size: 14),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             locationLine,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 11,
-                              color: Colors.white54,
+                              color: semantic.onImageMuted,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -517,12 +523,12 @@ class _BottomContent extends StatelessWidget {
               // Title
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'CalSans',
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   height: 1.0,
-                  color: Colors.white,
+                  color: semantic.onImageText,
                 ),
               ),
               const SizedBox(height: 14),
@@ -532,8 +538,8 @@ class _BottomContent extends StatelessWidget {
                 isScrollable: true,
                 indicatorColor: SmarturStyle.orange,
                 indicatorSize: TabBarIndicatorSize.label,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white54,
+                labelColor: semantic.onImageText,
+                unselectedLabelColor: semantic.onImageMuted,
                 labelStyle: const TextStyle(
                   fontFamily: 'Outfit',
                   fontWeight: FontWeight.w700,
@@ -589,7 +595,7 @@ class _BottomContent extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 10,
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: semantic.onImageText.withValues(alpha: 0.5),
                         ),
                       ),
                       Text(
@@ -597,7 +603,7 @@ class _BottomContent extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'CalSans',
                           fontSize: 22,
-                          color: Colors.white,
+                          color: semantic.onImageText,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -608,7 +614,7 @@ class _BottomContent extends StatelessWidget {
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: SmarturStyle.orange,
-                        foregroundColor: Colors.white,
+                        foregroundColor: semantic.onImageText,
                         minimumSize: const Size(0, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -625,7 +631,7 @@ class _BottomContent extends StatelessWidget {
                           showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
+                            backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0),
                             builder: (_) => DayPlanSheet(
                               currentPlace: fakeCurrentPlace,
                               cityPlaces: cityPlaces!,
@@ -705,6 +711,7 @@ class _LocationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCoords = lat != null && lon != null;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 4),
@@ -715,14 +722,14 @@ class _LocationTab extends StatelessWidget {
           if (hasCoords)
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, color: Colors.white54, size: 13),
+                Icon(Icons.location_on_outlined, color: semantic.onImageMuted, size: 13),
                 const SizedBox(width: 4),
                 Text(
                   '${lat!.toStringAsFixed(5)}, ${lon!.toStringAsFixed(5)}',
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 11,
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: semantic.onImageText.withValues(alpha: 0.55),
                   ),
                 ),
               ],
@@ -730,14 +737,14 @@ class _LocationTab extends StatelessWidget {
           else
             Row(
               children: [
-                const Icon(Icons.location_city_outlined, color: Colors.white54, size: 13),
+                Icon(Icons.location_city_outlined, color: semantic.onImageMuted, size: 13),
                 const SizedBox(width: 4),
                 Text(
                   locationLine,
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 11,
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: semantic.onImageText.withValues(alpha: 0.55),
                   ),
                 ),
               ],
@@ -786,6 +793,7 @@ class _RatingPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -800,10 +808,10 @@ class _RatingPill extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             rating.toStringAsFixed(1),
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Outfit',
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: semantic.onImageText,
               fontSize: 12,
             ),
           ),
@@ -819,6 +827,7 @@ class _RightMosaic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final items = galleryUrls.skip(1).take(3).toList();
     final remaining = (galleryUrls.length - 1 - items.length).clamp(0, 999);
 
@@ -834,15 +843,15 @@ class _RightMosaic extends StatelessWidget {
             height: 46,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.40),
+              color: semantic.imageScrimStrong.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              border: Border.all(color: semantic.overlayBorder),
             ),
             child: Text(
               '+$remaining',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Outfit',
-                color: Colors.white,
+                color: semantic.onImageText,
                 fontWeight: FontWeight.w700,
                 fontSize: 12,
               ),
@@ -860,22 +869,24 @@ class _MiniThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
+        border: Border.all(color: semantic.overlayBorder.withValues(alpha: 0.9), width: 2),
       ),
       child: ClipOval(
         child: CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
           filterQuality: FilterQuality.medium,
-          placeholder: (_, __) => Container(color: Colors.grey.shade800),
+          placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
           errorWidget: (_, __, ___) => Container(
-            color: Colors.grey.shade800,
-            child: const Icon(Icons.image_not_supported_outlined, color: Colors.white38, size: 20),
+            color: scheme.surfaceContainerHighest,
+            child: Icon(Icons.image_not_supported_outlined, color: semantic.onImageMuted, size: 20),
           ),
         ),
       ),
@@ -889,6 +900,7 @@ class _TabText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -898,7 +910,7 @@ class _TabText extends StatelessWidget {
             fontFamily: 'Outfit',
             fontSize: 12,
             height: 1.4,
-            color: Colors.white.withValues(alpha: 0.72),
+            color: semantic.onImageText.withValues(alpha: 0.72),
           ),
         ),
       ),
@@ -928,27 +940,29 @@ class _DirectionsChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: _openDirections,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A73E8).withValues(alpha: 0.20),
+          color: semantic.info.withValues(alpha: 0.20),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFF1A73E8).withValues(alpha: 0.40)),
+          border: Border.all(color: semantic.info.withValues(alpha: 0.40)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.directions_rounded, size: 12, color: Color(0xFF82B4FF)),
-            SizedBox(width: 4),
+            Icon(Icons.directions_rounded, size: 12, color: semantic.info),
+            const SizedBox(width: 4),
             Text(
-              '¿Cómo llegar?',
+              l10n.openInMaps,
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF82B4FF),
+                color: semantic.info,
               ),
             ),
           ],
@@ -974,6 +988,7 @@ class _RatingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final hasRated = userRating != null;
 
     return SingleChildScrollView(
@@ -987,7 +1002,7 @@ class _RatingTab extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 11,
-                color: Colors.white.withValues(alpha: 0.7),
+                color: semantic.onImageText.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -1006,7 +1021,7 @@ class _RatingTab extends StatelessWidget {
                   child: Icon(
                     filled ? Icons.star_rounded : Icons.star_border_rounded,
                     size: 32,
-                    color: filled ? const Color(0xFFFBBF24) : Colors.white38,
+                    color: filled ? semantic.warning : semantic.onImageMuted,
                   ),
                 ),
               );
@@ -1022,22 +1037,22 @@ class _RatingTab extends StatelessWidget {
             ),
             Text(
               l10n.rateThanks,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 11,
-                color: Color(0xFFFBBF24),
+                color: semantic.warning,
               ),
             ),
           ],
           if (busy)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 6),
               child: SizedBox(
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 1.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
+                  valueColor: AlwaysStoppedAnimation<Color>(semantic.onImageMuted),
                 ),
               ),
             ),
@@ -1128,11 +1143,12 @@ class DayPlanSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final itinerary = _buildItinerary();
     final cityName = currentPlace.city;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
-        color: const Color(0xFF1A1A2E),
+        color: semantic.imageScrimStrong,
         child: SafeArea(
           top: false,
           child: Padding(
@@ -1148,22 +1164,22 @@ class DayPlanSheet extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: semantic.onImageMuted.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ),
                 // Title
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.route_rounded, color: SmarturStyle.orange, size: 22),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Text(
                       'Ruta de 1 Día',
                       style: TextStyle(
                         fontFamily: 'CalSans',
                         fontSize: 22,
-                        color: Colors.white,
+                        color: semantic.onImageText,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1175,7 +1191,7 @@ class DayPlanSheet extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: semantic.onImageText.withValues(alpha: 0.55),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -1191,12 +1207,12 @@ class DayPlanSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: semantic.onImageText.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.explore_outlined, color: Colors.white38, size: 16),
+                        Icon(Icons.explore_outlined, color: semantic.onImageMuted, size: 16),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -1204,7 +1220,7 @@ class DayPlanSheet extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 11,
-                              color: Colors.white.withValues(alpha: 0.50),
+                              color: semantic.onImageText.withValues(alpha: 0.50),
                             ),
                           ),
                         ),
@@ -1236,6 +1252,7 @@ class _DayStepTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -1243,12 +1260,12 @@ class _DayStepTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isCurrent
               ? slot.color.withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.06),
+              : semantic.onImageText.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isCurrent
                 ? slot.color.withValues(alpha: 0.40)
-                : Colors.white.withValues(alpha: 0.08),
+                : semantic.onImageText.withValues(alpha: 0.08),
           ),
         ),
         child: Row(
@@ -1281,18 +1298,18 @@ class _DayStepTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     place.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: semantic.onImageText,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (isCurrent)
                     Text(
-                      '← Estás aquí',
+                      AppLocalizations.of(context)!.youAreHere,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 10,
@@ -1308,20 +1325,20 @@ class _DayStepTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: semantic.onImageText.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.map_outlined, size: 12, color: Colors.white54),
-                    SizedBox(width: 4),
+                    Icon(Icons.map_outlined, size: 12, color: semantic.onImageMuted),
+                    const SizedBox(width: 4),
                     Text(
-                      'Maps',
+                      AppLocalizations.of(context)!.mapsLabel,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 10,
-                        color: Colors.white54,
+                        color: semantic.onImageMuted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

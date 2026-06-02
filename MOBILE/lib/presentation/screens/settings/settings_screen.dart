@@ -7,6 +7,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/update_service.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
 import '../../widgets/privacy_policy_modal.dart';
 import '../auth/welcome_screen.dart';
@@ -48,17 +49,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _languageLabelFromCode(String? code) {
     if (code == null) return AppLocalizations.of(context)!.systemLanguage;
     switch (code) {
-      case 'en': return 'English';
-      case 'fr': return 'Français';
-      case 'pt': return 'Português';
-      case 'es': default: return 'Español';
+      case 'en': return AppLocalizations.of(context)!.languageEnglish;
+      case 'fr': return AppLocalizations.of(context)!.languageFrench;
+      case 'pt': return AppLocalizations.of(context)!.languagePortuguese;
+      case 'es':
+      default:
+        return AppLocalizations.of(context)!.languageSpanish;
     }
   }
 
   String _themeLabelFromMode(ThemeMode mode) {
     switch (mode) {
-      case ThemeMode.light: return 'Claro';
-      case ThemeMode.dark: return 'Oscuro';
+      case ThemeMode.light: return AppLocalizations.of(context)!.themeLight;
+      case ThemeMode.dark: return AppLocalizations.of(context)!.themeDark;
       case ThemeMode.system: return AppLocalizations.of(context)!.systemTheme;
     }
   }
@@ -86,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           // ── Apariencia ──────────────────────────────────────────────
-          _buildSectionHeader(l10n.appearanceSection),
+          SmarturSectionHeader(l10n.appearanceSection),
           ListTile(
             leading: const Icon(Icons.palette_outlined, color: SmarturStyle.purple),
             title: Text(l10n.darkMode, style: const TextStyle(fontFamily: 'Outfit')),
@@ -142,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 32),
 
           // ── Cuenta ──────────────────────────────────────────────────
-          _buildSectionHeader(l10n.accountSection),
+          SmarturSectionHeader(l10n.accountSection),
           ListTile(
             leading: const Icon(Icons.face_outlined, color: SmarturStyle.purple),
             title: Text(l10n.editProfile,
@@ -159,9 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () async {
               await Navigator.push<void>(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const EditProfileAvatarScreen(),
-                ),
+                smarturFadeRoute(const EditProfileAvatarScreen()),
               );
             },
           ),
@@ -195,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 32),
 
           // ── Seguridad — sesiones activas ────────────────────────────
-          _buildSectionHeader(l10n.securitySection),
+          SmarturSectionHeader(l10n.securitySection),
           ListTile(
             leading: const Icon(Icons.devices_outlined, color: SmarturStyle.blue),
             title: Text(l10n.activeSessions,
@@ -215,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 32),
 
           // ── Información ─────────────────────────────────────────────
-          _buildSectionHeader(l10n.infoSection),
+          SmarturSectionHeader(l10n.infoSection),
           ListTile(
             leading: Icon(Icons.info_outline, color: scheme.onSurfaceVariant),
             title: Text(l10n.appVersion,
@@ -232,8 +233,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         strokeWidth: 2, color: SmarturStyle.purple))
                 : const Icon(Icons.system_update_outlined,
                     color: SmarturStyle.purple),
-            title: const Text('Buscar actualización',
-                style: TextStyle(fontFamily: 'Outfit')),
+            title: Text(
+              l10n.settingsCheckUpdate,
+              style: const TextStyle(fontFamily: 'Outfit'),
+            ),
             trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
             onTap: _checkingUpdate ? null : _checkForUpdate,
           ),
@@ -298,7 +301,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       UpdateService.showUpdateDialog(context, result.latestVersion);
     } else {
       SmarturNotifications.showSuccess(
-          context, 'SMARTUR v${result.currentVersion} está al día.');
+        context,
+        AppLocalizations.of(context)!.settingsAppUpToDate(result.currentVersion),
+      );
     }
   }
 
@@ -325,7 +330,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showLanguageDialog() {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final List<String> languages = [l10n.systemLanguage, 'Español', 'English', 'Français', 'Português'];
+    final List<String> languages = [
+      l10n.systemLanguage,
+      l10n.languageSpanish,
+      l10n.languageEnglish,
+      l10n.languageFrench,
+      l10n.languagePortuguese,
+    ];
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -355,10 +366,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : null,
                   onTap: () {
                     final code = switch (lang) {
-                      'English' => 'en',
-                      'Français' => 'fr',
-                      'Português' => 'pt',
-                      'Español' => 'es',
+                      _ when lang == l10n.languageEnglish => 'en',
+                      _ when lang == l10n.languageFrench => 'fr',
+                      _ when lang == l10n.languagePortuguese => 'pt',
+                      _ when lang == l10n.languageSpanish => 'es',
                       _ => null,
                     };
                     AppSettingsScope.of(context).setLocale(code != null ? Locale(code) : null);
@@ -375,7 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showThemeDialog() {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final List<String> themes = [l10n.systemTheme, 'Claro', 'Oscuro'];
+    final List<String> themes = [l10n.systemTheme, l10n.themeLight, l10n.themeDark];
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -405,8 +416,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : null,
                   onTap: () {
                     final mode = switch (t) {
-                      'Claro' => ThemeMode.light,
-                      'Oscuro' => ThemeMode.dark,
+                      _ when t == l10n.themeLight => ThemeMode.light,
+                      _ when t == l10n.themeDark => ThemeMode.dark,
                       _ => ThemeMode.system,
                     };
                     AppSettingsScope.of(context).setThemeMode(mode);
@@ -537,7 +548,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (parentCtx.mounted) {
                   Navigator.pushAndRemoveUntil(
                     parentCtx,
-                    MaterialPageRoute(builder: (_) => WelcomeScreen()),
+                    smarturFadeRoute(const WelcomeScreen()),
                     (_) => false,
                   );
                 }
@@ -575,7 +586,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => WelcomeScreen()),
+        smarturFadeRoute(const WelcomeScreen()),
         (_) => false,
       );
     }

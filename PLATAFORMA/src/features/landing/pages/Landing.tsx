@@ -5,7 +5,6 @@ import { useLanguage, useUserPreferences } from '../../../contexts/LanguageConte
 import SmartURLoader from '../../auth/components/SmartURLoader';
 import { FloatingNavbar } from '../../../components/layout/FloatingNavbar';
 import { HeroSection } from '../components/HeroSection';
-import { FlightDivider } from '../components/FlightDivider';
 import { VideoSection } from '../components/VideoSection';
 import { TechnologySection } from '../components/TechnologySection';
 import { About } from '../components/About';
@@ -197,10 +196,6 @@ export default function Landing() {
                     <main className="relative z-10 w-full">
                         <div id="inicio">
                             <HeroSection handleStartExperience={handleStartExperience} />
-                        </div>
-
-                        <div id="como-funciona">
-                            <FlightDivider handleStartExperience={handleStartExperience} />
                         </div>
 
                         <Statements handleStartExperience={handleStartExperience} />

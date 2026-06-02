@@ -368,5 +368,67 @@
   "onboardingTitle2": "Inteligencia que te conoce",
   "onboardingDesc2": "Analizamos tus preferencias para que cada recomendación se sienta escrita solo para ti.",
   "onboardingTitle3": "Vive lo auténtico",
-  "onboardingDesc3": "Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables."
+  "onboardingDesc3": "Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables.",
+  "errorTitle": "Error",
+  "settingsCheckUpdate": "Buscar actualización",
+  "settingsAppUpToDate": "SMARTUR v{version} está al día.",
+  "@settingsAppUpToDate": { "placeholders": { "version": {} } },
+  "languageSpanish": "Español",
+  "languageEnglish": "English",
+  "languageFrench": "Français",
+  "languagePortuguese": "Português",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+  "navAiShort": "IA",
+  "diaryAiSessionsEmptyTitle": "Sin sesiones de recomendaciones",
+  "diaryAiSessionsEmptySubtitle": "Las sesiones generadas desde la app o desde la plataforma web aparecerán aquí.",
+  "diaryMoreCount": "+{count} más",
+  "@diaryMoreCount": { "placeholders": { "count": {} } },
+  "diarySessionDestinationsCount": "{count} destinos de esta sesión",
+  "@diarySessionDestinationsCount": { "placeholders": { "count": {} } },
+  "diaryTapDestinationHint": "Toca un destino para ver más",
+  "mapRetry": "Reintentar",
+  "updateTitle": "Nueva versión disponible",
+  "updateBody": "La versión {version} de SMARTUR está disponible.\nSe descargará e instalará desde la app.",
+  "@updateBody": { "placeholders": { "version": {} } },
+  "updateDownloading": "Descargando... {progress}%",
+  "@updateDownloading": { "placeholders": { "progress": {} } },
+  "updatePreparingInstaller": "Preparando instalador...",
+  "updateDownloadError": "Error al descargar. Verifica tu conexión e intenta de nuevo.",
+  "updateLater": "Después",
+  "updateRetry": "Reintentar",
+  "updateNow": "Actualizar ahora",
+  "imageShareTitle": "Mis Recomendaciones en {city}",
+  "@imageShareTitle": { "placeholders": { "city": {} } },
+  "imageShareSubtitle": "Basado en mi perfil de viajero inteligente",
+  "imageShareGeneratedBy": "Generado por SMARTUR AI",
+  "imageShareMessage": "¡Mira lo que me recomienda SMARTUR en {city}!",
+  "@imageShareMessage": { "placeholders": { "city": {} } },
+  "commonPlaceFallback": "Lugar"
+  ,"recoTypeCultural":"Cultural"
+  ,"recoTypeNature":"Naturaleza"
+  ,"recoTypeGastronomy":"Gastronómico"
+  ,"recoTypeAdventure":"Aventura"
+  ,"recoTypeRelax":"Descanso"
+  ,"recoTypeNight":"Nocturno"
+  ,"recoBudgetLowLabel":"Económico"
+  ,"recoBudgetLowSub":"Máx. $500/día"
+  ,"recoBudgetMediumLabel":"Moderado"
+  ,"recoBudgetMediumSub":"$500–1500/día"
+  ,"recoBudgetHighLabel":"Premium"
+  ,"recoBudgetHighSub":"$1500+/día"
+  ,"recoGroupSolo":"Solo"
+  ,"recoGroupCouple":"Pareja"
+  ,"recoGroupFamily":"Familia"
+  ,"recoGroupFriends":"Amigos"
+  ,"recoShareList":"🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con SMARTUR"
+  ,"@recoShareList":{"placeholders":{"items":{}}}
+  ,"detailShareMessage":"¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con SMARTUR — Altas Montañas, Veracruz"
+  ,"@detailShareMessage":{"placeholders":{"title":{},"location":{},"description":{},"mapsUrl":{}}}
+  ,"mapsLabel":"Maps"
+  ,"youAreHere":"← Estás aquí"
+  ,"recoSavedInDiary":"Recomendaciones guardadas. Puedes revisarlas en Diario."
+  ,"recoResultsDone":"Listo"
+  ,"recoResultsRankHint":"Ordenados por compatibilidad con tu perfil"
+  ,"googleSignInReleaseConfig":"Esta versión de la app no tiene Google Sign-In configurado. El administrador debe registrar el SHA del keystore de release en Firebase."
 }

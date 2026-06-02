@@ -5,7 +5,9 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
+import '../../../core/motion/smartur_motion.dart';
 import '../../../core/theme/style_guide.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import 'welcome_screen.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
@@ -73,17 +75,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       height: height,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
+        final s = Theme.of(context).colorScheme;
         return Container(
           height: height,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: s.onSurface.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             'Falta:\n$path',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+            style: TextStyle(color: s.onSurfaceVariant, fontSize: 12),
           ),
         );
       },
@@ -171,17 +174,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       contents.length,
-                      (index) => Container(
-                        height: 10,
-                        width: (_pageOffset.round() == index) ? 25 : 10,
-                        margin: const EdgeInsets.only(right: 5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: (_pageOffset.round() == index) 
-                              ? SmarturStyle.purple 
-                              : scheme.onSurfaceVariant.withValues(alpha: 0.3),
-                        ),
-                      ),
+                      (index) {
+                        final active = _pageOffset.round() == index;
+                        return AnimatedContainer(
+                          duration: SmarturMotion.fast,
+                          curve: SmarturMotion.standard,
+                          height: 8,
+                          width: active ? 28 : 8,
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: active
+                                ? SmarturStyle.purple
+                                : scheme.onSurfaceVariant.withValues(alpha: 0.28),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -200,7 +208,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             );
                           },
                           child: Text(
-                            "Continuar",
+                            l10n.next,
                             style: TextStyle(
                               color: scheme.onSurface,
                               fontSize: 18, 
@@ -222,26 +230,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             width: double.infinity,
                             height: 60,
                             child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: SmarturStyle.purple, 
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              ),
-                              child: const Text(
-                                "¡Comenzar aventura!",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'CalSans'
-                                ),
-                              ),
                               onPressed: () {
                                 _storeOnboardingInfo();
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                                  smarturFadeRoute(const WelcomeScreen()),
                                 );
                               },
+                              child: Text(l10n.startNow),
                             ),
                           ),
                         ),

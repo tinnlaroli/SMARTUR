@@ -83,6 +83,13 @@ In `detail_view_page.dart`: start a `Stopwatch` in `initState`, stop in `dispose
 - **Platform channels**: Some features may require native code for iOS/Android.
 - **State management**: Uses Riverpod providers for global state.
 
+## Google Sign-In (release APK / tag de GitHub)
+
+- Login por USB (`flutter run`) usa keystore **debug**; el APK del tag usa keystore **release**.
+- Cada keystore tiene un SHA distinto: ambos deben estar en Firebase para `mx.smartur.app`.
+- `GOOGLE_SERVER_CLIENT_ID` en CI debe ser el **Web client ID** (el mismo que `serverClientId` en `auth_service.dart`).
+- Guía completa: `docs/GOOGLE_SIGNIN_RELEASE.md` y script `scripts/print_android_signing_sha.ps1`.
+
 ## Build notes
 
 - Uses Gradle for Android, Xcode for iOS

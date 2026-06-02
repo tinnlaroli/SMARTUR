@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
 class SmarturNotifications {
   static final Map<String, DateTime> _lastShown = {};
@@ -58,11 +59,15 @@ class SmarturNotifications {
 
   static void showError(BuildContext context, String message) {
     if (!_canShow(message)) return;
+    final l10n = AppLocalizations.of(context);
     toastification.show(
       context: context,
       type: ToastificationType.error,
       style: ToastificationStyle.flat,
-      title: const Text('Error en SMARTUR', style: TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        l10n?.errorTitle ?? 'Error',
+        style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Outfit'),
+      ),
       description: Text(message),
       alignment: Alignment.topCenter,
       autoCloseDuration: const Duration(seconds: 4),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/motion/smartur_routes.dart';
 import '../screens/explore/detail_view_page.dart';
 
 /// Construye `placeId` tipo `svc_12` / `poi_34` desde un ítem de favoritos o visitas API.
@@ -80,10 +81,8 @@ void openDiaryItemDetail(BuildContext context, Map<String, dynamic> it) {
   final p = _buildParams(it);
   Navigator.push<void>(
     context,
-    PageRouteBuilder<void>(
-      transitionDuration: const Duration(milliseconds: 400),
-      reverseTransitionDuration: const Duration(milliseconds: 350),
-      pageBuilder: (context, animation, secondaryAnimation) => DetailViewPage(
+    smarturDetailRoute(
+      DetailViewPage(
         title: p.name.isNotEmpty ? p.name : '—',
         heroTag: 'diary_${p.heroKey}',
         heroImageUrl: p.imageUrl,
@@ -93,9 +92,6 @@ void openDiaryItemDetail(BuildContext context, Map<String, dynamic> it) {
         galleryUrls: p.gallery,
         placeId: p.pid,
       ),
-      transitionsBuilder: (context, anim, secondaryAnim, child) {
-        return FadeTransition(opacity: anim, child: child);
-      },
     ),
   );
 }
@@ -108,14 +104,8 @@ void openDiaryItemDetailWithSwipe(
 ) {
   Navigator.push<void>(
     context,
-    PageRouteBuilder<void>(
-      transitionDuration: const Duration(milliseconds: 400),
-      reverseTransitionDuration: const Duration(milliseconds: 350),
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          _DiarySwipeView(items: allItems, initialIndex: initialIndex),
-      transitionsBuilder: (context, anim, secondaryAnim, child) {
-        return FadeTransition(opacity: anim, child: child);
-      },
+    smarturDetailRoute(
+      _DiarySwipeView(items: allItems, initialIndex: initialIndex),
     ),
   );
 }
