@@ -26,7 +26,7 @@ const {
 ---
 
 <header>
-  <sy-head>
+  <nav class="navbar">
     <div class="inner">
       <div class="wrapper">
         <a class="logo" href={logoUrl}>
@@ -92,11 +92,11 @@ const {
         </div>
       </div>
     </div>
-  </sy-head>
+  </nav>
 </header>
 
 <style>
-  sy-head {
+  nav.navbar {
     --br: 50px;
 
     position: fixed;
@@ -126,11 +126,6 @@ const {
     @media (--mq-tablet-sm) {
       --br: 1rem;
       top: 0.5rem;
-    }
-
-    &::before,
-    &::after {
-      display: none;
     }
   }
 
