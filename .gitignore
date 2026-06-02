@@ -43,7 +43,9 @@ skills-lock.json
 
 # Firebase service account keys — NUNCA commitear
 *firebase-adminsdk*.json
+*firebase-adminsdk*.json.b64
 *serviceAccountKey*.json
+*serviceAccountKey*.json.b64
 
 # Logs
 *.log
