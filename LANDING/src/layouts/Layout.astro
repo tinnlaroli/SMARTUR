@@ -147,6 +147,11 @@ const seo = seoMetadata[currentLang];
     <meta name="twitter:description" content={t("layout.twitterCardDesc")} />
     <meta name="twitter:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'}/image-1.jpg`} />
 
+    <!-- Favicon & Icon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="canonical" href={import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'} />
+
     <!-- Structured Data -->
     <script type="application/ld+json">
       {
