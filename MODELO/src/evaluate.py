@@ -267,6 +267,7 @@ def evaluar_ranking(engine, context_model, n_users=100, k=5, relevance_threshold
         results['ndcg'] = float(np.mean(ndcg_scores))
         results['precision'] = float(np.mean(precision_scores))
         results['hit_rate'] = float(np.mean(hit_scores))
+        results['n_users_evaluated'] = len(ndcg_scores)
 
         print(f"\n+---------------------------+---------+")
         print(f"| Metrica                   |  Valor  |")
@@ -278,6 +279,7 @@ def evaluar_ranking(engine, context_model, n_users=100, k=5, relevance_threshold
         print(f"\n  Usuarios evaluados: {len(ndcg_scores)}")
     else:
         print("  No se pudieron calcular métricas de ranking.")
+        results['n_users_evaluated'] = 0
 
     return results
 

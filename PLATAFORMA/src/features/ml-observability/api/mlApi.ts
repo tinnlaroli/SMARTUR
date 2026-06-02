@@ -9,13 +9,26 @@ export interface AlgorithmMetric {
 export interface MLMetrics {
     best_algorithm: string;
     best_alpha: number;
+    production_alpha?: number;
     local_blend?: { rf: number; gbm: number };
     algorithms: Record<string, AlgorithmMetric>;
     sample_size?: number;
     ranking?: {
-        ndcg: number;
-        precision: number;
-        hit_rate: number;
+        ndcg_at_5: number | null;
+        precision_at_5: number | null;
+        hit_rate_at_10: number | null;
+        users_evaluated?: number;
+        error?: string;
+    };
+    data_quality?: {
+        total_interactions: number;
+        total_test: number;
+        users_count: number;
+        businesses_count: number;
+        top_categories: string[];
+        features_count: number;
+        real_smartur_interactions: number;
+        uses_real_data: boolean;
     };
 }
 

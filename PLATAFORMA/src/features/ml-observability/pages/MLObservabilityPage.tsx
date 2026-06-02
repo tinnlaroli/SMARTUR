@@ -691,6 +691,69 @@ export const MLObservabilityPage = () => {
                     </div>
                 )}
 
+                {/* Ranking metrics — NDCG@5, Precision@5, Hit Rate@10 */}
+                {!isLoading && metrics?.ranking && (
+                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                Métricas de Ranking
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                {metrics.ranking.users_evaluated
+                                    ? `Evaluado sobre ${metrics.ranking.users_evaluated} usuarios del test set · umbral relevancia ≥4★`
+                                    : 'Sin datos de ranking disponibles'}
+                            </p>
+                        </div>
+                        {metrics.ranking.ndcg_at_5 != null ? (
+                            <div className="grid grid-cols-3 divide-x" style={{ divideColor: 'var(--color-border)' }}>
+                                {([
+                                    { label: 'NDCG@5', value: metrics.ranking.ndcg_at_5, desc: 'Calidad del orden de recomendaciones' },
+                                    { label: 'Precision@5', value: metrics.ranking.precision_at_5, desc: 'Fracción relevante en top-5' },
+                                    { label: 'Hit Rate@10', value: metrics.ranking.hit_rate_at_10, desc: 'Usuarios que encuentran algo relevante' },
+                                ] as const).map(({ label, value, desc }) => (
+                                    <div key={label} className="px-5 py-4 text-center">
+                                        <p
+                                            className="text-2xl font-bold tabular-nums"
+                                            style={{ color: value >= 0.5 ? DASHBOARD_COLORS.success : value >= 0.3 ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.danger }}
+                                        >
+                                            {(value * 100).toFixed(1)}%
+                                        </p>
+                                        <p className="text-xs font-semibold mt-1" style={{ color: 'var(--color-text)' }}>{label}</p>
+                                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="px-5 py-4 text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                {metrics.ranking.error ?? 'No se pudieron calcular métricas de ranking en este ciclo.'}
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {/* Real SMARTUR interactions badge */}
+                {!isLoading && metrics?.data_quality?.real_smartur_interactions != null && (
+                    <div
+                        className="flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm"
+                        style={{
+                            borderColor: 'var(--color-border)',
+                            background: metrics.data_quality.uses_real_data
+                                ? `${DASHBOARD_COLORS.success}12`
+                                : 'var(--color-bg-alt)',
+                        }}
+                    >
+                        {metrics.data_quality.uses_real_data
+                            ? <CheckCircle2 className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.success }} />
+                            : <AlertCircle className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />}
+                        <span style={{ color: 'var(--color-text)' }}>
+                            <span className="font-semibold">{metrics.data_quality.real_smartur_interactions}</span> interacciones reales de SMARTUR
+                            {metrics.data_quality.uses_real_data
+                                ? ' — incorporadas al entrenamiento (≥10)'
+                                : ' — aún no suficientes para refinar el modelo (mínimo 10)'}
+                        </span>
+                    </div>
+                )}
+
                 {/* Empty state: metrics exist but algorithms is empty */}
                 {!isLoading && metrics && !hasAlgorithms && (
                     <div

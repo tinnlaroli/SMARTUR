@@ -34,12 +34,12 @@ def _rmse_mae(actuals, preds):
     }
 
 
-def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alpha=0.2):
+def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alpha=0.2):
     """
     Evalúa CF+KNN, Random Forest y Gradient Boosting; elige el mejor por RMSE.
     Retorna métricas y pesos recomendados para producción.
     """
-    from evaluate import _infer_user_context
+    from evaluate import _infer_user_context, evaluar_ranking
 
     n_eval = min(sample_size, len(engine.test_data))
     test_sample = engine.test_data.sample(n_eval, random_state=42)
@@ -87,14 +87,17 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alph
         'gradient_boosting': _rmse_mae(actuals, preds_gbm),
     }
 
-    alphas = np.arange(0.0, 1.05, 0.1)
+    # Alpha grid search constrained to [0.1, 0.9] to guarantee genuine blending.
+    # Unconstrained search can collapse to alpha=1.0 (pure CF) when RF underperforms,
+    # making hybrid indistinguishable from CF in the dashboard.
+    alphas = np.arange(0.1, 0.95, 0.1)
     best_alpha, best_hybrid_rmse = hybrid_alpha, float('inf')
     for alpha in alphas:
         hybrid = alpha * preds_cf + (1 - alpha) * preds_rf
         rmse = sqrt(mean_squared_error(actuals, hybrid))
         if rmse < best_hybrid_rmse:
             best_hybrid_rmse = rmse
-            best_alpha = float(alpha)
+            best_alpha = float(round(alpha, 1))
 
     hybrid_preds = best_alpha * preds_cf + (1 - best_alpha) * preds_rf
     metrics['hybrid_cf_rf'] = {
@@ -123,6 +126,7 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alph
     result = {
         'best_algorithm': best_algorithm,
         'best_alpha': best_alpha if best_algorithm == 'hybrid_cf_rf' else hybrid_alpha,
+        'production_alpha': hybrid_alpha,
         'local_blend': {'rf': round(w_rf, 3), 'gbm': round(w_gbm, 3)},
         'algorithms': metrics,
         'sample_size': len(actuals),
@@ -151,6 +155,15 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alph
     }
 
     if engine is not None:
+        # Augment data_quality with real SMARTUR interaction count if available
+        real_count = 0
+        try:
+            from poi_repository import fetch_real_interactions
+            real_df = fetch_real_interactions()
+            real_count = len(real_df) if real_df is not None else 0
+        except Exception:
+            pass
+
         result['data_quality'] = {
             'total_interactions': int(len(engine.train_data)) if hasattr(engine, 'train_data') and engine.train_data is not None else 0,
             'total_test': int(len(engine.test_data)) if hasattr(engine, 'test_data') and engine.test_data is not None else 0,
@@ -158,7 +171,21 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=800, hybrid_alph
             'businesses_count': int(engine.user_item_matrix.shape[1]) if engine and engine.user_item_matrix is not None else 0,
             'top_categories': getattr(rf_model, 'top_categories', [])[:10],
             'features_count': len(getattr(rf_model, 'features', [])),
+            'real_smartur_interactions': real_count,
+            'uses_real_data': real_count >= 10,
         }
+
+    # Ranking metrics (NDCG@5, Precision@5, Hit Rate@10)
+    try:
+        ranking = evaluar_ranking(engine, rf_model, n_users=150, k=5)
+        result['ranking'] = {
+            'ndcg_at_5': round(ranking.get('ndcg', 0.0), 4),
+            'precision_at_5': round(ranking.get('precision', 0.0), 4),
+            'hit_rate_at_10': round(ranking.get('hit_rate', 0.0), 4),
+            'users_evaluated': ranking.get('n_users_evaluated', 0),
+        }
+    except Exception as e:
+        result['ranking'] = {'ndcg_at_5': None, 'precision_at_5': None, 'hit_rate_at_10': None, 'error': str(e)}
 
     return result
 
