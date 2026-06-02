@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 import { router } from './routes/router.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 
@@ -36,14 +35,12 @@ if (sentryDsn) {
 
 createRoot(document.getElementById('root')!).render(
     <ErrorBoundary title="Error crítico de la aplicación">
-        <HelmetProvider>
-            <UserPreferencesProvider>
-                <ToastProvider>
-                    <AuthModalProvider>
-                        <RouterProvider router={router} />
-                    </AuthModalProvider>
-                </ToastProvider>
-            </UserPreferencesProvider>
-        </HelmetProvider>
+        <UserPreferencesProvider>
+            <ToastProvider>
+                <AuthModalProvider>
+                    <RouterProvider router={router} />
+                </AuthModalProvider>
+            </ToastProvider>
+        </UserPreferencesProvider>
     </ErrorBoundary>,
 );

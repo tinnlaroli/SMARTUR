@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 
 interface SEOHelmetProps {
   title?: string;
@@ -14,6 +14,27 @@ interface SEOHelmetProps {
 const SITE_URL = 'https://app.smartur.online';
 const SITE_NAME = 'SMARTUR';
 
+function setMeta(name: string, content: string, property = false) {
+  const attr = property ? 'property' : 'name';
+  let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setLink(rel: string, href: string) {
+  let el = document.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', href);
+}
+
 export const SEOHelmet = ({
   title,
   description = 'SMARTUR: plataforma de turismo inteligente con IA para descubrir qué hacer en Veracruz y las Altas Montañas. Recomendaciones personalizadas para tu viaje.',
@@ -24,45 +45,46 @@ export const SEOHelmet = ({
   noindex,
   jsonLd,
 }: SEOHelmetProps) => {
-  const fullTitle = title
-    ? `${title} | ${SITE_NAME}`
-    : 'SMARTUR | Turismo con IA en las Altas Montañas, Veracruz';
-
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : 'SMARTUR | Turismo con IA en las Altas Montañas, Veracruz';
   const ogTitleFinal = ogTitle ?? fullTitle;
   const ogDescriptionFinal = ogDescription ?? description;
   const canonical = canonicalUrl ?? SITE_URL;
 
-  return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
-      {noindex ? (
-        <meta name="robots" content="noindex, nofollow" />
-      ) : (
-        <meta name="robots" content="index, follow, max-image-preview:large" />
-      )}
+  useEffect(() => {
+    document.title = fullTitle;
 
-      <link rel="canonical" href={canonical} />
+    setMeta('description', description);
+    setMeta('keywords', keywords);
+    setMeta('robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
 
-      <meta property="og:type" content="website" />
-      <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:title" content={ogTitleFinal} />
-      <meta property="og:description" content={ogDescriptionFinal} />
-      <meta property="og:url" content={canonical} />
-      <meta property="og:image" content="https://smartur.online/image-1.jpg" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:type" content="image/jpeg" />
+    setLink('canonical', canonical);
 
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={ogTitleFinal} />
-      <meta name="twitter:description" content={ogDescriptionFinal} />
-      <meta name="twitter:image" content="https://smartur.online/image-1.jpg" />
+    setMeta('og:type', 'website', true);
+    setMeta('og:site_name', SITE_NAME, true);
+    setMeta('og:title', ogTitleFinal, true);
+    setMeta('og:description', ogDescriptionFinal, true);
+    setMeta('og:url', canonical, true);
+    setMeta('og:image', 'https://smartur.online/image-1.jpg', true);
+    setMeta('og:image:width', '1200', true);
+    setMeta('og:image:height', '630', true);
+    setMeta('og:image:type', 'image/jpeg', true);
 
-      {jsonLd && (
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      )}
-    </Helmet>
-  );
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', ogTitleFinal);
+    setMeta('twitter:description', ogDescriptionFinal);
+    setMeta('twitter:image', 'https://smartur.online/image-1.jpg');
+
+    if (jsonLd) {
+      let script = document.querySelector<HTMLScriptElement>('script[type="application/ld+json"][data-seo]');
+      if (!script) {
+        script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.setAttribute('data-seo', '');
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(jsonLd);
+    }
+  }, [fullTitle, description, keywords, ogTitleFinal, ogDescriptionFinal, canonical, noindex, jsonLd]);
+
+  return null;
 };

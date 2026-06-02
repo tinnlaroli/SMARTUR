@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import gsap from 'gsap';
 import { useLanguage } from '../../../contexts/LanguageContext';
 
@@ -14,6 +14,19 @@ export const Faqs: React.FC = () => {
     const { t } = useLanguage();
     const [openIndex, setOpenIndex] = useState<number | null>(0);
     const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    const faqSchema = useMemo(() => ({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: FAQ_KEYS.map((faq) => ({
+            '@type': 'Question',
+            name: t(faq.q),
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: t(faq.a),
+            },
+        })),
+    }), [t]);
 
     const toggleFaq = (index: number) => {
         const isOpening = openIndex !== index;
@@ -43,7 +56,20 @@ export const Faqs: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        let script = document.querySelector<HTMLScriptElement>('script[type="application/ld+json"][data-faq]');
+        if (!script) {
+            script = document.createElement('script');
+            script.type = 'application/ld+json';
+            script.setAttribute('data-faq', '');
+            document.head.appendChild(script);
+        }
+        script.textContent = JSON.stringify(faqSchema);
+        return () => { script?.remove(); };
+    }, [faqSchema]);
+
     return (
+        <>
         <section id="faqs" className="relative overflow-hidden py-24 md:py-36" style={{ background: 'var(--color-bg)' }}>
             {/* Background Accent */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -106,5 +132,6 @@ export const Faqs: React.FC = () => {
                 </div>
             </div>
         </section>
+        </>
     );
 };
