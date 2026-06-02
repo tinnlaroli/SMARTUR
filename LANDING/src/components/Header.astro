@@ -566,28 +566,38 @@ const {
 </style>
 
 <script>
-  // Initialize navbar functionality
+  // Navbar state
+  let navState = {
+    initialized: false,
+    scrollY: 0,
+    prevY: 0,
+    smallThreshold: 100,
+    hiddenThreshold: 200
+  };
+
   function initNavbar() {
     const navbar = document.querySelector('nav.navbar');
-    if (!navbar || navbar.__initialized) return;
-    navbar.__initialized = true;
+    if (!navbar || navState.initialized) return;
+    navState.initialized = true;
+
+    console.log('Initializing navbar');
 
     // Toggle menu button
     const toggleBtn = navbar.querySelector('.toggle');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', (e) => {
+        console.log('Toggle clicked');
         e.preventDefault();
         e.stopPropagation();
         document.body.classList.toggle('is-nav-opened');
-        const isOpen = document.body.classList.contains('is-nav-opened');
-        document.body.style.overflow = isOpen ? 'hidden' : '';
       });
     }
 
-    // Close menu when clicking links
+    // Close menu and navigate when clicking links
     const menuLinks = navbar.querySelectorAll('.menu a[href^="#"]');
     menuLinks.forEach(link => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (e) => {
+        console.log('Link clicked:', link.href);
         document.body.classList.remove('is-nav-opened');
         document.body.style.overflow = '';
       });
@@ -620,11 +630,43 @@ const {
     });
   }
 
-  // Run on page load and Astro transitions
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initNavbar);
-  } else {
-    initNavbar();
+  // Scroll handler for hide/show navbar
+  function handleScroll() {
+    navState.scrollY = window.scrollY;
+    const classList = document.body.classList;
+
+    // Show/hide navbar on scroll
+    const shouldBeSmall = navState.scrollY > navState.smallThreshold;
+    const isSmall = classList.contains('is-nav-small');
+    if (shouldBeSmall !== isSmall) {
+      classList.toggle('is-nav-small', shouldBeSmall);
+    }
+
+    const isDown = navState.scrollY > navState.prevY;
+    const shouldBeHidden = navState.scrollY > navState.hiddenThreshold && isDown;
+    const isHidden = classList.contains('is-nav-hidden');
+    if (shouldBeHidden !== isHidden) {
+      classList.toggle('is-nav-hidden', shouldBeHidden);
+    }
+
+    navState.prevY = navState.scrollY;
   }
-  document.addEventListener('astro:after-swap', initNavbar);
+
+  // Initialize when DOM is ready
+  function initAll() {
+    initNavbar();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+
+  // Re-initialize on Astro navigation
+  document.addEventListener('astro:after-swap', () => {
+    navState.initialized = false;
+    initAll();
+  });
 </script>
