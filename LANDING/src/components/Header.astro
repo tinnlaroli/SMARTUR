@@ -148,6 +148,7 @@ const {
 
   .wrapper {
     position: relative;
+    z-index: 101;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -157,7 +158,7 @@ const {
     max-width: 1360px;
     margin: 0 auto;
     border-radius: var(--br);
-    background: rgba(var(--rgb-bg), 0.88);
+    background: rgba(var(--rgb-bg), 0.88) !important;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
@@ -200,6 +201,8 @@ const {
     display: flex;
     margin-left: 2rem;
     width: auto;
+    pointer-events: auto;
+    z-index: 101;
 
     /* Adjust menu item spacing */
     @media (--mq-tablet) {
