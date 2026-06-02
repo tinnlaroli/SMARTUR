@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import logoImage from "../assets/imgs/logo_costado.png";
 import type { Link } from "../types";
 import { useTranslations, defaultLang } from "../i18n/utils";
@@ -59,11 +60,13 @@ try {
         <!-- Branding -->
         <div class="footer-brand">
           <a class="logo" href={logoUrl}>
-            <img
-              src={logoImage.src}
+            <Image
+              src={logoImage}
               alt={logoAlt}
               loading="lazy"
               decoding="async"
+              width={160}
+              height={48}
               style="filter: var(--logo-filter, none);"
             />
             <span class="u-sr-only">{logoAlt}</span>

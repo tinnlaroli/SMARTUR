@@ -13,6 +13,7 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
+  function initGLScene() {
   const container = document.querySelector("sy-gl") as HTMLElement;
 
   const scene = new THREE.Scene();
@@ -876,6 +877,15 @@ void main() {
   }
 
   customElements.define("sy-gl", SyGL);
+  } // end initGLScene
+
+  // Defer WebGL context creation until after the page loader completes.
+  // During the loader (3.4s), we avoid competing WebGL contexts with Spline.
+  if (document.body.classList.contains("is-loading")) {
+    window.addEventListener("smartur:loaded", initGLScene, { once: true });
+  } else {
+    requestAnimationFrame(initGLScene);
+  }
 </script>
 
 <style>

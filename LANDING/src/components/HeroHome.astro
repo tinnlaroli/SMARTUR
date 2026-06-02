@@ -487,16 +487,7 @@ const t = useTranslations(lang);
     }
   }
 
-  // Listen for loader completion event
-  window.addEventListener("smartur:loaded", animateHero, { once: true });
-
-  // Fallback: if no loader (instant navigation), reveal after small delay
-  if (!document.body.classList.contains("is-loading")) {
-    setTimeout(animateHero, 100);
-  }
-
-  // ——— 3D Phone: only on desktop (≥768px) to avoid heavy WebGL on mobile/tablet ———
-  (function preload3D() {
+  function init3DPhone() {
     if (!window.matchMedia("(min-width: 768px)").matches) return;
     const phoneContainer = document.querySelector(
       ".hero-video-wrap",
@@ -507,5 +498,16 @@ const t = useTranslations(lang);
     } catch (e) {
       console.warn("Failed to initialize 3D Phone scene:", e);
     }
-  })();
+  }
+
+  // Listen for loader completion: animate hero + init Spline phone together
+  window.addEventListener("smartur:loaded", () => {
+    animateHero();
+    init3DPhone();
+  }, { once: true });
+
+  // Fallback: if no loader (instant navigation), reveal after small delay
+  if (!document.body.classList.contains("is-loading")) {
+    setTimeout(() => { animateHero(); init3DPhone(); }, 100);
+  }
 </script>
