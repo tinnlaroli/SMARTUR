@@ -705,23 +705,30 @@ export const MLObservabilityPage = () => {
                             </p>
                         </div>
                         {metrics.ranking.ndcg_at_5 != null ? (
-                            <div className="grid grid-cols-3 divide-x" style={{ divideColor: 'var(--color-border)' }}>
+                            <div className="grid grid-cols-3">
                                 {([
                                     { label: 'NDCG@5', value: metrics.ranking.ndcg_at_5, desc: 'Calidad del orden de recomendaciones' },
                                     { label: 'Precision@5', value: metrics.ranking.precision_at_5, desc: 'Fracción relevante en top-5' },
                                     { label: 'Hit Rate@10', value: metrics.ranking.hit_rate_at_10, desc: 'Usuarios que encuentran algo relevante' },
-                                ] as const).map(({ label, value, desc }) => (
-                                    <div key={label} className="px-5 py-4 text-center">
-                                        <p
-                                            className="text-2xl font-bold tabular-nums"
-                                            style={{ color: value >= 0.5 ? DASHBOARD_COLORS.success : value >= 0.3 ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.danger }}
+                                ] as const).map(({ label, value, desc }, i) => {
+                                    const v = value ?? 0;
+                                    return (
+                                        <div
+                                            key={label}
+                                            className="px-5 py-4 text-center"
+                                            style={i > 0 ? { borderLeft: '1px solid var(--color-border)' } : undefined}
                                         >
-                                            {(value * 100).toFixed(1)}%
-                                        </p>
-                                        <p className="text-xs font-semibold mt-1" style={{ color: 'var(--color-text)' }}>{label}</p>
-                                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{desc}</p>
-                                    </div>
-                                ))}
+                                            <p
+                                                className="text-2xl font-bold tabular-nums"
+                                                style={{ color: v >= 0.5 ? DASHBOARD_COLORS.success : v >= 0.3 ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.danger }}
+                                            >
+                                                {(v * 100).toFixed(1)}%
+                                            </p>
+                                            <p className="text-xs font-semibold mt-1" style={{ color: 'var(--color-text)' }}>{label}</p>
+                                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{desc}</p>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <p className="px-5 py-4 text-sm" style={{ color: 'var(--color-text-alt)' }}>
