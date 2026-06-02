@@ -236,7 +236,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                         <div className="flex items-center gap-5 ml-auto z-[110]">
                                             {/* "Negocios" — external link, btn-cyan style */}
                                             <a
-                                                href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online:4321/'}
+                                                href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online/'}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="nav-business-btn hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-px lg:flex whitespace-nowrap"

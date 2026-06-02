@@ -209,7 +209,7 @@ export const FlightDivider: React.FC<FlightDividerProps> = ({ handleStartExperie
 
                     {/* Tengo un negocio — secondary */}
                     <a
-                        href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online:4321/'}
+                        href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online/'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bridge-action bridge-action--tourist group relative w-full rounded-[2rem] p-4 transition-all duration-300 md:w-auto md:min-w-[280px]"

@@ -550,8 +550,12 @@ const options = {
                 description: 'Mismo host (desarrollo y producción)',
             },
             {
+                url: 'https://smartur.online',
+                description: 'Producción — dominio HTTPS',
+            },
+            {
                 url: 'http://2.24.112.25:4000',
-                description: 'VPS — producción',
+                description: 'Producción — VPS directo',
             },
         ],
         components: {

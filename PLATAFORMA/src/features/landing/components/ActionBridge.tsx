@@ -67,7 +67,7 @@ export const ActionBridge: React.FC<ActionBridgeProps> = ({ handleStartExperienc
 
             {/* Tengo un negocio — SECONDARY (gray) + external link icon */}
             <a
-              href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online:4321/'}
+              href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online/'}
               target="_blank"
               rel="noopener noreferrer"
               className="bridge-action bridge-action--tourist group relative w-full md:w-auto md:min-w-[280px] p-4 rounded-[2rem]"

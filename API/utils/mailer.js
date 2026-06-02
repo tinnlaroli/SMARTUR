@@ -21,7 +21,7 @@ function createTransporter() {
     });
 }
 
-const FROM_NAME = `"SMARTUR" <${process.env.EMAIL_USER || 'noreply@smartur.mx'}>`;
+const FROM_NAME = `"SMARTUR" <${process.env.EMAIL_USER || 'noreply@smartur.online'}>`;
 
 function logoAttachment() {
     return [
@@ -184,7 +184,7 @@ export async function sendContactNotification(toAdmin, { email, reason, message,
 }
 
 export async function sendWelcomeEmail(to) {
-    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://smartur.mx';
+    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://app.smartur.online';
 
     const content = `
       ${heading('Bienvenido a SMARTUR')}
@@ -201,7 +201,7 @@ export async function sendWelcomeEmail(to) {
 }
 
 export async function sendEmpresaApprovedEmail(to, { companyName }) {
-    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://smartur.mx';
+    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://app.smartur.online';
 
     const content = `
       ${heading('¡Tu empresa fue aprobada!')}

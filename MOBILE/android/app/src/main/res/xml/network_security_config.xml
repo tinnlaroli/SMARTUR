@@ -13,10 +13,7 @@
         <domain includeSubdomains="false">192.168.1.1</domain>
     </domain-config>
 
-    <!-- Servidor API de producción — remover cuando HTTPS esté activo -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">2.24.112.25</domain>
-    </domain-config>
+    <!-- Servidor API de producción — HTTPS activo en todos los dominios -->
 
     <!-- Bloquear cleartext para todos los demás dominios -->
     <base-config cleartextTrafficPermitted="false" />

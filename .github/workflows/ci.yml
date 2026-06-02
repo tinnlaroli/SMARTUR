@@ -79,7 +79,7 @@ jobs:
         env:
           VITE_API_URL: /api/v2
           VITE_MODELO_URL: http://localhost:8000
-          VITE_BUSINESS_URL: http://localhost:4321/
+          VITE_BUSINESS_URL: http://localhost/
 
   # ─────────────────────────────────────────────────────────────
   # LANDING — Astro build

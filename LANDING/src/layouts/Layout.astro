@@ -125,11 +125,11 @@ const seo = seoMetadata[currentLang];
     <meta property="og:title" content={seo.ogTitle} />
     <meta property="og:description" content={seo.ogDescription} />
     <meta property="og:locale" content={seo.locale} />
-    <meta property="og:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online:4321'}/image-1.jpg`} />
+    <meta property="og:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'}/image-1.jpg`} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={seo.ogTitle} />
-    <meta property="og:url" content={import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online:4321'} />
+    <meta property="og:url" content={import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'} />
 
     <!-- Fonts - Vibrant Design System -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -145,7 +145,7 @@ const seo = seoMetadata[currentLang];
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={t("layout.twitterCardTitle")} />
     <meta name="twitter:description" content={t("layout.twitterCardDesc")} />
-    <meta name="twitter:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online:4321'}/image-1.jpg`} />
+    <meta name="twitter:image" content={`${import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'}/image-1.jpg`} />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -172,7 +172,7 @@ const seo = seoMetadata[currentLang];
       logoUrl="/"
       logoAlt={t("header.logo.alt")}
       links={links}
-      link1={{ title: t("button.login"), url: import.meta.env.PUBLIC_TOURIST_APP_URL || "https://smartur.online/" }}
+      link1={{ title: t("button.login"), url: import.meta.env.PUBLIC_TOURIST_APP_URL || "https://app.smartur.online/" }}
       link2={{ title: t("button.get-started"), url: "#contacto" }}
       mobileMenuLabel={t("accessibility.toggleMenu")}
     />

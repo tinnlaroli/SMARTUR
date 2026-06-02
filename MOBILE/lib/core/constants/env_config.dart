@@ -1,11 +1,11 @@
 class EnvConfig {
   /// Base URL del backend SMARTUR (por ejemplo: https://api-smartur.fly.dev/api/v2)
   static const String apiBaseUrl =
-      String.fromEnvironment('API_BASE_URL', defaultValue: 'http://2.24.112.25:4000/api/v2');
+      String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.smartur.online/api/v2');
 
   /// URL del Motor de IA
   static const String aiEngineUrl =
-      String.fromEnvironment('AI_ENGINE_URL', defaultValue: 'http://2.24.112.25:8000');
+      String.fromEnvironment('AI_ENGINE_URL', defaultValue: 'https://ml.smartur.online');
 
   /// Client ID de Google Sign-In (server client ID — Firebase Web Client)
   static const String googleServerClientId = String.fromEnvironment(

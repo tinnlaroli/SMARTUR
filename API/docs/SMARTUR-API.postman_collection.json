@@ -1,0 +1,2742 @@
+{
+  "info": {
+    "name": "SMARTUR API",
+    "description": "Complete API collection for SMARTUR - Sistema de Gesti\u00f3n Tur\u00edstica. Includes all API v2 endpoints and MODELO (ML service) endpoints. Use the **SMARTUR - Local** or **SMARTUR - Production** environment to switch between environments.\n\n## Authentication\n1. Use **Login (Paso 1 - OTP)** then **Two-Factor (Valida OTP)** to get a JWT token.\n2. The token is stored in `{{auth_token}}` variable.\n3. All authenticated requests use `Authorization: Bearer {{auth_token}}`.\n\n## Test Credentials\n- Tourist: `turista@smartur.demo` / `Password1a` (role 2)\n- Admin: `martinlaraolivares@gmail.com` / `Password1a` (role 1)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:4000/api/v2", "type": "string" },
+    { "key": "base_url_no_prefix", "value": "http://localhost:4000", "type": "string" },
+    { "key": "modelo_url", "value": "http://localhost:8000", "type": "string" },
+    { "key": "auth_token", "value": "", "type": "string" },
+    { "key": "email", "value": "turista@smartur.demo", "type": "string" },
+    { "key": "password", "value": "Password1a", "type": "string" },
+    { "key": "admin_email", "value": "martinlaraolivares@gmail.com", "type": "string" },
+    { "key": "admin_password", "value": "Password1a", "type": "string" },
+    { "key": "user_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Paso 1 - Genera OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{email}}\",\"password\":\"{{password}}\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "Two-Factor (Valida OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{email}}\",\"token\":123456}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/two-factor",
+              "host": ["{{base_url}}"],
+              "path": ["two-factor"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.collectionVariables.set(\"auth_token\", pm.response.json().token);"],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{email}}\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/forgot",
+              "host": ["{{base_url}}"],
+              "path": ["forgot"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"...\",\"password\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/reset",
+              "host": ["{{base_url}}"],
+              "path": ["reset"]
+            }
+          }
+        },
+        {
+          "name": "Register (P\u00fablico)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "email", "value": "", "type": "text" },
+                { "key": "password", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            }
+          }
+        },
+        {
+          "name": "Google Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"credential\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/google-login",
+              "host": ["{{base_url}}"],
+              "path": ["google-login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-email/{{token}}",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-email", "{{token}}"]
+            }
+          }
+        },
+        {
+          "name": "Register Empresa",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"company_name\":\"...\",\"email\":\"...\",\"password\":\"...\",\"phone\":\"...\",\"address\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register-empresa",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register-empresa"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"...\",\"otp\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-email-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-email-otp"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empresa",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresa/profile",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/empresa/profile",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresa/services",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "services"]
+            }
+          }
+        },
+        {
+          "name": "Get Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresa/analytics",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "analytics"]
+            }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/empresa/services",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "services"]
+            }
+          }
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/empresa/services/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "services", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/empresa/services/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["empresa", "services", "{{id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Ping (Validar Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/ping",
+              "host": ["{{base_url}}"],
+              "path": ["me", "ping"]
+            }
+          }
+        },
+        {
+          "name": "Mis Sesiones",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["me", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Revocar Sesi\u00f3n",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/sessions/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["me", "sessions", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Obtener Usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Buscar por Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/email/{{email}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "email", "{{email}}"]
+            }
+          }
+        },
+        {
+          "name": "Register (Alterno)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "email", "value": "", "type": "text" },
+                { "key": "password", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/register",
+              "host": ["{{base_url}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Crear Usuario (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "email", "value": "", "type": "text" },
+                { "key": "password", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/",
+              "host": ["{{base_url}}"],
+              "path": ["users", ""]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "email", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Usuario",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Subir Avatar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "avatar", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "avatar"]
+            }
+          }
+        },
+        {
+          "name": "Sesiones de Usuario (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Recomendaciones de Usuario (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/recommendations",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}", "recommendations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies",
+              "host": ["{{base_url}}"],
+              "path": ["companies"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/companies",
+              "host": ["{{base_url}}"],
+              "path": ["companies"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/companies/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "{{id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tourist Services",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist-services",
+              "host": ["{{base_url}}"],
+              "path": ["tourist-services"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist-services/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist-services", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/tourist-services",
+              "host": ["{{base_url}}"],
+              "path": ["tourist-services"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/tourist-services/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist-services", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist-services/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist-services", "{{id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": ["{{base_url}}"],
+              "path": ["locations"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["locations", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/locations",
+              "host": ["{{base_url}}"],
+              "path": ["locations"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/locations/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["locations", "{{id}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/locations/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["locations", "{{id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Points of Interest",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/points-of-interest",
+              "host": ["{{base_url}}"],
+              "path": ["points-of-interest"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/points-of-interest/{{id_point}}",
+              "host": ["{{base_url}}"],
+              "path": ["points-of-interest", "{{id_point}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "categories_raw", "value": "", "type": "text" },
+                { "key": "price_level", "value": "", "type": "text" },
+                { "key": "latitude", "value": "", "type": "text" },
+                { "key": "longitude", "value": "", "type": "text" },
+                { "key": "is_accessible", "value": "", "type": "text" },
+                { "key": "outdoor", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/points-of-interest/register",
+              "host": ["{{base_url}}"],
+              "path": ["points-of-interest", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/points-of-interest/delete/{{id_point}}",
+              "host": ["{{base_url}}"],
+              "path": ["points-of-interest", "delete", "{{id_point}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "", "type": "text" },
+                { "key": "categories_raw", "value": "", "type": "text" },
+                { "key": "price_level", "value": "", "type": "text" },
+                { "key": "latitude", "value": "", "type": "text" },
+                { "key": "longitude", "value": "", "type": "text" },
+                { "key": "is_accessible", "value": "", "type": "text" },
+                { "key": "outdoor", "value": "", "type": "text" },
+                { "key": "image", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/points-of-interest/update/{{id_point}}",
+              "host": ["{{base_url}}"],
+              "path": ["points-of-interest", "update", "{{id_point}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tourist Activities",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist_activities",
+              "host": ["{{base_url}}"],
+              "path": ["tourist_activities"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist_activities/{{id_activity}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist_activities", "{{id_activity}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/tourist_activities/register",
+              "host": ["{{base_url}}"],
+              "path": ["tourist_activities", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourist_activities/delete/{{id_activity}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist_activities", "delete", "{{id_activity}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/tourist_activities/update/{{id_activity}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourist_activities", "update", "{{id_activity}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evaluation Templates",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates",
+              "host": ["{{base_url}}"],
+              "path": ["templates"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates/{{id_template}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{id_template}}"]
+            }
+          }
+        },
+        {
+          "name": "Obtener R\u00fabrica",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates/{{id_template}}/rubric",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{id_template}}", "rubric"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/register",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/templates/delete/{{id_template}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "delete", "{{id_template}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/update/{{id_template}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "update", "{{id_template}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Criterion",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/criterion/",
+              "host": ["{{base_url}}"],
+              "path": ["criterion", ""]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/criterion/{{id_criterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["criterion", "{{id_criterion}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/criterion/register",
+              "host": ["{{base_url}}"],
+              "path": ["criterion", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/criterion/delete/{{id_criterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["criterion", "delete", "{{id_criterion}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/criterion/update/{{id_criterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["criterion", "update", "{{id_criterion}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Evaluation",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-evaluation",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/{{id_evaluation}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "{{id_evaluation}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/register",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "register"]
+            }
+          }
+        },
+        {
+          "name": "Batch Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/batch-register",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "batch-register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/delete/{{id_evaluation}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "delete", "{{id_evaluation}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/update/{{id_evaluation}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "update", "{{id_evaluation}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-evaluation/status/{{id_evaluation}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-evaluation", "status", "{{id_evaluation}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Evaluation Detail",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail/{{id_detail}}",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail", "{{id_detail}}"]
+            }
+          }
+        },
+        {
+          "name": "Por Evaluaci\u00f3n",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail/evaluation/{{id_evaluation}}",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail", "evaluation", "{{id_evaluation}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail/register",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail/delete/{{id_detail}}",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail", "delete", "{{id_detail}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/evaluation-detail/update/{{id_detail}}",
+              "host": ["{{base_url}}"],
+              "path": ["evaluation-detail", "update", "{{id_detail}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Certification",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications/{{id_certification}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "{{id_certification}}"]
+            }
+          }
+        },
+        {
+          "name": "Por Servicio",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications/service/{{id_service}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "service", "{{id_service}}"]
+            }
+          }
+        },
+        {
+          "name": "Por Tipo",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications/type/{{certification_type}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "type", "{{certification_type}}"]
+            }
+          }
+        },
+        {
+          "name": "Por Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications/status/{{status}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "status", "{{status}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-certifications/register",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "register"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-certifications/delete/{{id_certification}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "delete", "{{id_certification}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-certifications/update/{{id_certification}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "update", "{{id_certification}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/service-certifications/status/{{id_certification}}",
+              "host": ["{{base_url}}"],
+              "path": ["service-certifications", "status", "{{id_certification}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Traveler Profiles",
+      "item": [
+        {
+          "name": "Mi Perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profiles/me",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "me"]
+            }
+          }
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profiles",
+              "host": ["{{base_url}}"],
+              "path": ["profiles"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profiles/{{id_profile}}",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "{{id_profile}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/profiles/register",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "register"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/profiles/update/{{id_profile}}",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "update", "{{id_profile}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profiles/delete/{{id_profile}}",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "delete", "{{id_profile}}"]
+            }
+          }
+        },
+        {
+          "name": "Preferencias",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/profiles/preferences",
+              "host": ["{{base_url}}"],
+              "path": ["profiles", "preferences"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tourism Expenditure",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-expenditures",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-expenditures"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-expenditures/{{id_expenditure}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-expenditures", "{{id_expenditure}}"]
+            }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/tourism-expenditures/register",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-expenditures", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tourism Employment",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-employment",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-employment"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-employment/{{id_employment}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-employment", "{{id_employment}}"]
+            }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/tourism-employment/register",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-employment", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tourism Inputs",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-inputs",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-inputs"]
+            }
+          }
+        },
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tourism-inputs/{{id_input}}",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-inputs", "{{id_input}}"]
+            }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/tourism-inputs/register",
+              "host": ["{{base_url}}"],
+              "path": ["tourism-inputs", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Explore",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/explore/home",
+              "host": ["{{base_url}}"],
+              "path": ["explore", "home"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "item": [
+        {
+          "name": "Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/security/events?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["security", "events"],
+              "query": [
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Submit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"...\",\"reason\":\"...\",\"message\":\"...\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/contact",
+              "host": ["{{base_url}}"],
+              "path": ["contact"]
+            }
+          }
+        },
+        {
+          "name": "List Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/contact-subscriptions",
+              "host": ["{{base_url}}"],
+              "path": ["contact-subscriptions"]
+            }
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"in_progress\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/contact-subscriptions/{{id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["contact-subscriptions", "{{id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/contact-subscriptions/{{id}}",
+              "host": ["{{base_url}}"],
+              "path": ["contact-subscriptions", "{{id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interactions & Ratings",
+      "item": [
+        {
+          "name": "Batch Interactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"events\":[{\"event_type\":\"dwell\",\"place_kind\":\"svc\",\"place_id\":1,\"dwell_ms\":5000}]}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/me/interactions",
+              "host": ["{{base_url}}"],
+              "path": ["me", "interactions"]
+            }
+          }
+        },
+        {
+          "name": "Upsert Rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"place_kind\":\"svc\",\"place_id\":1,\"rating\":4}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/me/rating",
+              "host": ["{{base_url}}"],
+              "path": ["me", "rating"]
+            }
+          }
+        },
+        {
+          "name": "Get Rating",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/rating/svc/1",
+              "host": ["{{base_url}}"],
+              "path": ["me", "rating", "svc", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ML / Recommendations",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ml/health",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "health"]
+            }
+          }
+        },
+        {
+          "name": "Model Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ml/model-status",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "model-status"]
+            }
+          }
+        },
+        {
+          "name": "Train",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/ml/train",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "train"]
+            }
+          }
+        },
+        {
+          "name": "Recommend",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"alpha\":0.2,\"top_n\":5}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/ml/recommend/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "recommend", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"session_id\":1,\"item_id\":1,\"rank_pos\":1,\"clicked\":true}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/ml/feedback",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "feedback"]
+            }
+          }
+        },
+        {
+          "name": "My Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ml/sessions/me",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "sessions", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Scheduler",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/ml/scheduler-config",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "scheduler-config"]
+            }
+          }
+        },
+        {
+          "name": "Update Scheduler",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"enabled\":true,\"hour\":2,\"minute\":0}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/ml/scheduler-config",
+              "host": ["{{base_url}}"],
+              "path": ["ml", "scheduler-config"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Content",
+      "item": [
+        {
+          "name": "Favoritos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["me", "favorites"]
+            }
+          }
+        },
+        {
+          "name": "Add Favorito",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/me/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["me", "favorites"]
+            }
+          }
+        },
+        {
+          "name": "Delete Favorito",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/favorites/svc/1",
+              "host": ["{{base_url}}"],
+              "path": ["me", "favorites", "svc", "1"]
+            }
+          }
+        },
+        {
+          "name": "Visitas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me/visits",
+              "host": ["{{base_url}}"],
+              "path": ["me", "visits"]
+            }
+          }
+        },
+        {
+          "name": "Add Visita",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/me/visits",
+              "host": ["{{base_url}}"],
+              "path": ["me", "visits"]
+            }
+          }
+        },
+        {
+          "name": "Community Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/community/posts",
+              "host": ["{{base_url}}"],
+              "path": ["community", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "place_kind", "value": "", "type": "text" },
+                { "key": "place_id", "value": "", "type": "text" },
+                { "key": "caption", "value": "", "type": "text" },
+                { "key": "photo", "value": "", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/community/posts",
+              "host": ["{{base_url}}"],
+              "path": ["community", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/posts/{{postId}}",
+              "host": ["{{base_url}}"],
+              "path": ["community", "posts", "{{postId}}"]
+            }
+          }
+        },
+        {
+          "name": "Admin Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/posts/{{postId}}/admin",
+              "host": ["{{base_url}}"],
+              "path": ["community", "posts", "{{postId}}", "admin"]
+            }
+          }
+        },
+        {
+          "name": "Report Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/community/posts/{{postId}}/report",
+              "host": ["{{base_url}}"],
+              "path": ["community", "posts", "{{postId}}", "report"]
+            }
+          }
+        },
+        {
+          "name": "Reports List",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/community/reports",
+              "host": ["{{base_url}}"],
+              "path": ["community", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Resolve Report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/community/reports/{{reportId}}/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["community", "reports", "{{reportId}}", "resolve"]
+            }
+          }
+        },
+        {
+          "name": "Register Device Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"...\",\"platform\":\"android\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/me/device-token",
+              "host": ["{{base_url}}"],
+              "path": ["me", "device-token"]
+            }
+          }
+        },
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"...\",\"body\":\"...\",\"target\":\"all\"}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/notifications/send",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "notifications", "send"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subcriteria",
+      "item": [
+        {
+          "name": "Por Criterio",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/subcriteria/criterion/{{id_criterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["subcriteria", "criterion", "{{id_criterion}}"]
+            }
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/subcriteria",
+              "host": ["{{base_url}}"],
+              "path": ["subcriteria"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/subcriteria/{{id_subcriterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["subcriteria", "{{id_subcriterion}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/subcriteria/{{id_subcriterion}}",
+              "host": ["{{base_url}}"],
+              "path": ["subcriteria", "{{id_subcriterion}}"]
+            }
+          }
+        },
+        {
+          "name": "Batch Replace",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/subcriteria/criterion/{{id_criterion}}/batch",
+              "host": ["{{base_url}}"],
+              "path": ["subcriteria", "criterion", "{{id_criterion}}", "batch"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MODELO (ML Service)",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{modelo_url}}/health",
+              "host": ["{{modelo_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "POI DB Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{modelo_url}}/health/poi-db",
+              "host": ["{{modelo_url}}"],
+              "path": ["health", "poi-db"]
+            }
+          }
+        },
+        {
+          "name": "Get Scheduler",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{modelo_url}}/scheduler",
+              "host": ["{{modelo_url}}"],
+              "path": ["scheduler"]
+            }
+          }
+        },
+        {
+          "name": "Update Scheduler",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"enabled\":true,\"hour\":2,\"minute\":0}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{modelo_url}}/scheduler",
+              "host": ["{{modelo_url}}"],
+              "path": ["scheduler"]
+            }
+          }
+        },
+        {
+          "name": "Recommend (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{modelo_url}}/recommend/{{user_id}}?alpha=0.4&top_n=5",
+              "host": ["{{modelo_url}}"],
+              "path": ["recommend", "{{user_id}}"],
+              "query": [
+                { "key": "alpha", "value": "0.4" },
+                { "key": "top_n", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Recommend (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"alpha\":0.4,\"top_n\":5,\"context\":{}}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{modelo_url}}/recommend/{{user_id}}",
+              "host": ["{{modelo_url}}"],
+              "path": ["recommend", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{modelo_url}}/metrics",
+              "host": ["{{modelo_url}}"],
+              "path": ["metrics"]
+            }
+          }
+        },
+        {
+          "name": "Train",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{modelo_url}}/train",
+              "host": ["{{modelo_url}}"],
+              "path": ["train"]
+            }
+          }
+        },
+        {
+          "name": "Train RF",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{modelo_url}}/train-rf",
+              "host": ["{{modelo_url}}"],
+              "path": ["train-rf"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Infraestructura",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url_no_prefix}}/health",
+              "host": ["{{base_url_no_prefix}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Docs JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url_no_prefix}}/api-docs.json",
+              "host": ["{{base_url_no_prefix}}"],
+              "path": ["api-docs.json"]
+            }
+          }
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url_no_prefix}}/api-docs",
+              "host": ["{{base_url_no_prefix}}"],
+              "path": ["api-docs"]
+            }
+          }
+        },
+        {
+          "name": "Security Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url_no_prefix}}/security-docs",
+              "host": ["{{base_url_no_prefix}}"],
+              "path": ["security-docs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
