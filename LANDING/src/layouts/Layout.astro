@@ -153,22 +153,25 @@ const seo = seoMetadata[currentLang];
     <link rel="canonical" href={import.meta.env.PUBLIC_SITE_URL || 'https://smartur.online'} />
 
     <!-- Structured Data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "SMARTUR",
-        "description": "{seo.description}",
-        "url": "https://smartur.online",
-        "logo": "https://smartur.online/logo.png",
-        "address": {
-          "@type": "PostalAddress",
-          "addressRegion": "Veracruz",
-          "addressCountry": "MX"
-        },
-        "award": "{t("layout.award")}"
-      }
-    </script>
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SMARTUR",
+      "description": seo.description,
+      "url": import.meta.env.PUBLIC_SITE_URL || "https://smartur.online",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${import.meta.env.PUBLIC_SITE_URL || "https://smartur.online"}/logo.png`,
+        "width": 200,
+        "height": 200
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": "Veracruz",
+        "addressCountry": "MX"
+      },
+      "sameAs": ["https://smartur.online"]
+    })} />
   </head>
   <body class="is-loading" data-tab-away={t("tab.away")} data-tab-away-fallback={t("layout.tabAwayFallback")}>
     <PageLoader label={t("loader.ariaLabel")} />
