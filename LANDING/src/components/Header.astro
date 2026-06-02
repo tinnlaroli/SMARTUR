@@ -563,130 +563,65 @@ const {
 </style>
 
 <script>
-  import { addScrollObserver } from "../utils/observers";
+  // Initialize navbar functionality
+  function initNavbar() {
+    const navbar = document.querySelector('nav.navbar');
+    if (!navbar || navbar.__initialized) return;
+    navbar.__initialized = true;
 
-  const heroSelectors = ["sy-hero-home"];
-
-  class Header extends HTMLElement {
-    smallThreshold = 100;
-    hiddenThreshold = 200;
-    hero = document.querySelector(heroSelectors.join(","));
-    prevY = -1;
-
-    constructor() {
-      super();
-      addScrollObserver(this);
-    }
-
-    connectedCallback() {
-      const toggleEl = this.querySelector(".toggle");
-      if (toggleEl) {
-        toggleEl.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.toggleNav();
-        });
-      }
-
-      const menuLinks = this.querySelectorAll(".menu a[href^='#']");
-      menuLinks.forEach((link) => {
-        link.addEventListener("click", () => {
-          document.body.classList.remove("is-nav-opened");
-        });
+    // Toggle menu button
+    const toggleBtn = navbar.querySelector('.toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.body.classList.toggle('is-nav-opened');
+        const isOpen = document.body.classList.contains('is-nav-opened');
+        document.body.style.overflow = isOpen ? 'hidden' : '';
       });
-
-      this.onResize();
-      this.onScroll(typeof window !== "undefined" ? window.scrollY : 0);
-
-      this.initScrollSpy();
     }
 
-    initScrollSpy() {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Find the link corresponding to this section
-              const id = entry.target.id;
-              const link = this.querySelector(`.menu a[href="#${id}"]`);
-              if (link) {
-                // Remove active class from all links
-                this.querySelectorAll(".menu a").forEach((l) =>
-                  l.classList.remove("is-active"),
-                );
-                // Add active class to the current link
-                link.classList.add("is-active");
-              }
+    // Close menu when clicking links
+    const menuLinks = navbar.querySelectorAll('.menu a[href^="#"]');
+    menuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        document.body.classList.remove('is-nav-opened');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // Scroll spy - highlight active section
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            const link = navbar.querySelector(`.menu a[href="#${id}"]`);
+            if (link) {
+              navbar.querySelectorAll('.menu a').forEach(l => l.classList.remove('is-active'));
+              link.classList.add('is-active');
             }
-          });
-        },
-        {
-          rootMargin: "-20% 0px -60% 0px", // Trigger when section is near the top
-          threshold: 0,
-        },
-      );
-
-      // Select all sections that have a corresponding link in the menu
-      const links = this.querySelectorAll(".menu a[href^='#']");
-      links.forEach((link) => {
-        const href = link.getAttribute("href");
-        if (href && href.length > 1) {
-          const id = href.substring(1);
-          const section = document.getElementById(id);
-          if (section) {
-            observer.observe(section);
           }
-        }
-      });
-    }
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
 
-    onScroll(y: number) {
-      const isDown = y > this.prevY ? true : false;
-      this.prevY = y;
-
-      const classList = document.body.classList;
-
-      const shouldBeSmall = y > this.smallThreshold;
-      const isSmall = classList.contains("is-nav-small");
-
-      if (shouldBeSmall !== isSmall) {
-        classList.toggle("is-nav-small", shouldBeSmall);
+    menuLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.length > 1) {
+        const id = href.substring(1);
+        const section = document.getElementById(id);
+        if (section) observer.observe(section);
       }
-
-      const shouldBeHidden = y > this.hiddenThreshold && isDown;
-      const isHidden = classList.contains("is-nav-hidden");
-
-      if (shouldBeHidden !== isHidden) {
-        classList.toggle("is-nav-hidden", shouldBeHidden);
-      }
-    }
-
-    toggleNav = () => {
-      document.body.classList.toggle("is-nav-opened");
-      if (document.body.classList.contains("is-nav-opened")) {
-        document.body.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "";
-      }
-    };
-
-    onResize() {
-      const hero = this.hero;
-      const bcr = this.getBoundingClientRect();
-      const heroBcr = hero && hero.getBoundingClientRect();
-
-      this.smallThreshold = heroBcr ? heroBcr.height - bcr.height : bcr.height;
-    }
+    });
   }
 
-  // Initialize the Header class for the nav.navbar element
-  document.addEventListener('DOMContentLoaded', () => {
-    const navbar = document.querySelector('nav.navbar');
-    if (navbar && !navbar.__headerInitialized) {
-      Object.setPrototypeOf(navbar, Header.prototype);
-      Header.call(navbar);
-      navbar.connectedCallback();
-      navbar.__headerInitialized = true;
-    }
-  });
+  // Run on page load and Astro transitions
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavbar);
+  } else {
+    initNavbar();
+  }
+  document.addEventListener('astro:after-swap', initNavbar);
 </script>
