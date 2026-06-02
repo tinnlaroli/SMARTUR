@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback /*, useMemo */ } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import SmartURLoader from '../../auth/components/SmartURLoader';
@@ -171,7 +172,7 @@ export default function Landing() {
 
     return (
         <div className="relative min-h-screen bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
-            {loading && <SmartURLoader onFinished={() => setLoading(false)} />}
+            {loading && createPortal(<SmartURLoader onFinished={() => setLoading(false)} />, document.body)}
 
             <div className="page-blobs" aria-hidden="true">
               <div className="pblob pblob-pink-tr" />
