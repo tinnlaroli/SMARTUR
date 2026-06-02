@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /private
+Disallow: /*.json
+Sitemap: https://smartur.online/sitemap.xml
+Sitemap: https://app.smartur.online/sitemap.xml
