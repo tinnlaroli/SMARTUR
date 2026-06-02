@@ -124,7 +124,7 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q --spider http://localhost:5173/ || exit 1']
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:5173/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -150,7 +150,7 @@ services:
     depends_on:
       - api
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q --spider http://localhost:4321/ || exit 1']
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:4321/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
