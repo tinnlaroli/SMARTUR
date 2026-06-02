@@ -103,7 +103,7 @@ const {
     top: 0.75rem;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 9999;
     color: var(--color-text);
     margin: 0 auto;
     padding: 0.5rem 0;
@@ -112,6 +112,9 @@ const {
     box-sizing: border-box;
     transition: transform 0.3s var(--ease-out-cubic);
     pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     /* When menu is open, disable the transform to avoid stacking context issues */
     :global(body.is-nav-opened) & {
@@ -144,7 +147,7 @@ const {
 
   .wrapper {
     position: relative;
-    z-index: 101;
+    z-index: 9999;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -199,7 +202,7 @@ const {
     margin-left: 2rem;
     width: auto;
     pointer-events: auto;
-    z-index: 101;
+    z-index: 9999;
 
     /* Adjust menu item spacing */
     @media (--mq-tablet) {
