@@ -32,4 +32,4 @@ EXPOSE 8000
 
 # Corre como root para poder escribir en los volúmenes Docker
 # (los volúmenes son propiedad de root; modeluser no tendría permisos de escritura)
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]
