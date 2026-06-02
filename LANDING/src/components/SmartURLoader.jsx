@@ -286,18 +286,20 @@ export default function SmartURLoader({ label, onFinished } = {}) {
       const pinEls = root.querySelectorAll(".pin-path"); // 7 piezas del marcador
 
       /* ─── Rastreo del progreso de carga ──────────────────────────── */
-      const progressObj = { value: 0 }; // Objeto proxy para animar con GSAP
+      const progressObj = { value: 0 };
       let pageLoaded = false;
 
-      // Verificar si la página ya cargó o escuchar el evento 'load'
-      if (document.readyState === "complete") {
+      // Salir cuando el DOM esté listo (no esperamos assets pesados como Spline)
+      const markLoaded = () => { pageLoaded = true; };
+
+      if (document.readyState !== "loading") {
         pageLoaded = true;
       } else {
-        const onLoad = () => {
-          pageLoaded = true;
-        };
-        window.addEventListener("load", onLoad, { once: true });
+        document.addEventListener("DOMContentLoaded", markLoaded, { once: true });
       }
+
+      // Cap máximo: si en 1.5s no salió, forzar salida
+      setTimeout(() => { pageLoaded = true; }, 1500);
 
       /* ─── Animación de entrada + spinners (optimizada: más corta y ligera) ─── */
       const spinTweens = [];
