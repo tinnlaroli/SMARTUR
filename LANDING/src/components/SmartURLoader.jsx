@@ -405,10 +405,8 @@ export default function SmartURLoader({ label, onFinished } = {}) {
 
         const tl = gsap.timeline();
 
-        /* ── PASO 1: Estacionar spinners (0s – 1s) ──────────────── */
-        // Cada spinner se detiene suavemente completando una rotación
-        // completa para que los íconos queden alineados correctamente.
-        const parkDuration = 1.0;
+        /* ── PASO 1: Estacionar spinners (0s – 0.4s) ──────────────── */
+        const parkDuration = 0.4;
 
         morphEls.forEach((_, i) => {
           const spinner = spinnerGs[i];
@@ -437,19 +435,18 @@ export default function SmartURLoader({ label, onFinished } = {}) {
           );
         });
 
-        /* ── PASO 2: Morph aviones → íconos (1s – 1.8s) ────────── */
-        const morphStart = parkDuration; // Comienza tras el estacionamiento
+        /* ── PASO 2: Morph aviones → íconos ────────── */
+        const morphStart = parkDuration;
 
         morphEls.forEach((pathEl, i) => {
-          // Proxy para animar un valor de 0→1 y usarlo con Flubber
           const proxy = { t: 0 };
 
           tl.to(
             proxy,
             {
               t: 1,
-              duration: 0.8,
-              ease: "expo.out", // Rápido al inicio, suave al final
+              duration: 0.4,
+              ease: "expo.out",
               onUpdate: () => {
                 // Actualizar el atributo "d" del path con la interpolación
                 pathEl.setAttribute("d", interpolators[i](proxy.t));
@@ -463,46 +460,33 @@ export default function SmartURLoader({ label, onFinished } = {}) {
             morphStart, // Todos los morphs inician simultáneamente
           );
 
-          // Transición de color: del color del arco al color final del ícono
           tl.to(
             pathEl,
-            { fill: ARCS[i].fill, duration: 0.4, ease: "power1.in" },
-            morphStart + 0.3, // Inicia 0.3s después del morph
+            { fill: ARCS[i].fill, duration: 0.2, ease: "power1.in" },
+            morphStart + 0.15,
           );
         });
 
-        /* ── PASO 3: Dibujar el pin con stroke-draw (1.5s – 2.2s) ── */
-        const pinStart = morphStart + 0.5;
+        /* ── PASO 3: Dibujar el pin ── */
+        const pinStart = morphStart + 0.3;
 
         pinEls.forEach((p, j) => {
           // Fase A: Dibujar el trazo (strokeDashoffset → 0)
           tl.to(
             p,
-            {
-              strokeDashoffset: 0, // Revela el trazo completamente
-              opacity: 1, // Hacer visible
-              duration: 0.6,
-              ease: "power2.inOut",
-            },
-            pinStart + j * 0.08, // Escalonamiento: cada pieza empieza 80ms después
+            { strokeDashoffset: 0, opacity: 1, duration: 0.3, ease: "power2.inOut" },
+            pinStart + j * 0.04,
           );
 
-          // Fase B: Rellenar con color y quitar el trazo
           tl.to(
             p,
-            {
-              fill: p.dataset.color, // Relleno con el color del path (data-color)
-              strokeWidth: 0, // Quitar trazo
-              duration: 0.35,
-            },
-            pinStart + 0.3 + j * 0.08, // 0.3s después de empezar el stroke-draw
+            { fill: p.dataset.color, strokeWidth: 0, duration: 0.2 },
+            pinStart + 0.15 + j * 0.04,
           );
         });
 
-        /* ── PASO 4: Ensamblar y salir ──────────────────────────── */
-        // El último pin termina su relleno en: pinStart + 0.3 + 6*0.08 + 0.35 ≈ pinStart + 1.13
-        // Añadimos 0.5s de pausa para apreciar el logo completo antes de salir
-        const assembleStart = pinStart + 1.6;
+        /* ── PASO 4: Ensamblar y salir ── */
+        const assembleStart = pinStart + 0.7;
 
         // Sincronizar el porcentaje para llegar a 100% justo cuando termina el ensamble
         tl.to(
@@ -522,25 +506,18 @@ export default function SmartURLoader({ label, onFinished } = {}) {
         // Desvanecer el texto del porcentaje
         tl.to(percentRef.current, { opacity: 0, duration: 0.3 }, assembleStart);
 
-        // Desvanecer el fondo blanco para revelar la página debajo
         tl.to(
           ".smartur-loader-overlay",
-          {
-            backgroundColor: "rgba(255, 255, 255, 0)",
-            duration: 0.8,
-            ease: "power2.inOut",
-          },
-          assembleStart + 0.3,
+          { backgroundColor: "rgba(255,255,255,0)", duration: 0.4, ease: "power2.inOut" },
+          assembleStart + 0.1,
         );
 
-        // Reducir y desvanecer el SVG ensamblado directamente desde su tamaño actual (scale 1 → 0.8)
-        // Sin pulso intermedio para evitar saltos visuales
         tl.to(
           svgRef.current,
           {
-            scale: 0.8,
+            scale: 0.85,
             opacity: 0,
-            duration: 1.0,
+            duration: 0.5,
             ease: "power2.inOut",
             onComplete: () => {
               // Ocultar overlay y liberar la interacción con la página

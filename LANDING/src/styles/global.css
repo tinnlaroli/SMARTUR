@@ -108,7 +108,12 @@ svg {
 [data-theme="dark"] .pblob-pink-br   { background: rgba(var(--rgb-pink-primary), 0.11); }
 [data-theme="dark"] .pblob-purple-bc { background: rgba(var(--rgb-purple-accent), 0.09); }
 
-body > *:not(.page-blobs) { position: relative; z-index: 1; }
+/* Header debe flotar por encima de todo sin stacking context */
+header { position: relative; z-index: 9999; }
+
+/* El contenido principal queda encima de los blobs pero debajo del header */
+#smooth-wrapper, main { position: relative; z-index: 1; }
+
 main section,
 section,
 footer,
