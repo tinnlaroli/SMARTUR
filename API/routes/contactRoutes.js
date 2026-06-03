@@ -24,6 +24,14 @@ router.post('/contact', contactLimiter, async (req, res) => {
     const cleanMessage = message?.trim() || null;
 
     try {
+        const { rows: recent } = await db.query(
+            `SELECT 1 FROM contact_subscription
+             WHERE email = $1 AND created_at > NOW() - INTERVAL '5 minutes'
+             LIMIT 1`,
+            [clean],
+        );
+        if (recent.length > 0) return res.json({ ok: true });
+
         await db.query(
             'INSERT INTO contact_subscription (email, source, reason, message) VALUES ($1, $2, $3, $4)',
             [clean, source, cleanReason, cleanMessage],

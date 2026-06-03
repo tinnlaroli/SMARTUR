@@ -197,7 +197,8 @@ const text: Record<Lang, string[]> = {
   document.addEventListener("astro:page-load", initFlightDivider);
   
   if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(initFlightDivider, 10);
+    const _t = setTimeout(initFlightDivider, 10);
+    document.addEventListener('astro:before-swap', () => clearTimeout(_t), { once: true });
   } else {
     document.addEventListener("DOMContentLoaded", initFlightDivider);
   }

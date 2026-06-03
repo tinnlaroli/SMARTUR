@@ -52,7 +52,8 @@
 
   document.addEventListener("astro:page-load", initSmoothScroll);
   if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(initSmoothScroll, 10);
+    const _t = setTimeout(initSmoothScroll, 10);
+    document.addEventListener('astro:before-swap', () => clearTimeout(_t), { once: true });
   } else {
     document.addEventListener("DOMContentLoaded", initSmoothScroll);
   }

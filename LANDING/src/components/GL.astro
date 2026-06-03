@@ -692,7 +692,8 @@ void main() {
     });
   }
 
-  setTimeout(animateIn, 200);
+  const _t = setTimeout(animateIn, 200);
+  document.addEventListener('astro:before-swap', () => clearTimeout(_t), { once: true });
 
   class SyGL extends HTMLElement {
     height = 0;
