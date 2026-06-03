@@ -9,17 +9,27 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:smartur/core/theme/smartur_theme_extensions.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+enum UpdateInstallResult { launched, needsPermission }
+
 class UpdateService {
   static const _installChannel = MethodChannel('mx.smartur.app/installer');
 
   static const _apiUrl =
       'https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest';
-  static const _downloadUrl =
+  static const _fallbackDownloadUrl =
       'https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk';
 
   static DateTime? _lastCheck;
   static ({bool hasUpdate, String latestVersion, String currentVersion})? _cached;
+  static String? _apkDownloadUrl;
   static bool _shownThisSession = false;
+
+  /// Llamar al volver a primer plano para detectar si ya se instaló la nueva versión.
+  static void invalidateCache() {
+    _lastCheck = null;
+    _cached = null;
+    _apkDownloadUrl = null;
+  }
 
   static Future<String> currentVersion() async {
     final info = await PackageInfo.fromPlatform();
@@ -57,6 +67,8 @@ class UpdateService {
         return _cache((hasUpdate: false, latestVersion: current, currentVersion: current));
       }
 
+      _apkDownloadUrl = _resolveApkUrl(body, tag);
+
       return _cache((
         hasUpdate: _isNewer(tag, current),
         latestVersion: tag,
@@ -87,6 +99,21 @@ class UpdateService {
     showUpdateDialog(context, result.latestVersion);
   }
 
+  static String? _resolveApkUrl(Map<String, dynamic> release, String tag) {
+    final assets = release['assets'] as List<dynamic>? ?? [];
+    for (final raw in assets) {
+      if (raw is! Map<String, dynamic>) continue;
+      if (raw['name'] == 'app-release.apk') {
+        final url = raw['browser_download_url'] as String?;
+        if (url != null && url.isNotEmpty) return url;
+      }
+    }
+    if (tag.isNotEmpty) {
+      return 'https://github.com/tinnlaroli/smartur-movil/releases/download/v$tag/app-release.apk';
+    }
+    return null;
+  }
+
   static bool _isNewer(String latest, String current) {
     final clean = (String v) => v.split('-').first;
     final parse = (String v) =>
@@ -104,7 +131,7 @@ class UpdateService {
 
   /// Downloads the APK and launches the system package installer (Android).
   /// [onProgress] receives 0.0–1.0 as bytes arrive.
-  static Future<void> downloadAndInstall({
+  static Future<UpdateInstallResult> downloadAndInstall({
     void Function(double progress)? onProgress,
   }) async {
     final dir = await getTemporaryDirectory();
@@ -116,7 +143,8 @@ class UpdateService {
 
     final client = http.Client();
     try {
-      final request = http.Request('GET', Uri.parse(_downloadUrl));
+      final downloadUrl = _apkDownloadUrl ?? _fallbackDownloadUrl;
+      final request = http.Request('GET', Uri.parse(downloadUrl));
       final response = await client.send(request);
       if (response.statusCode != 200) {
         throw HttpException('Download failed (${response.statusCode})');
@@ -146,17 +174,24 @@ class UpdateService {
     }
 
     if (Platform.isAndroid) {
-      await _installChannel.invokeMethod<void>('installApk', {'path': filePath});
-      return;
+      final status = await _installChannel.invokeMethod<String>(
+        'installApk',
+        {'path': filePath},
+      );
+      if (status == 'needs_permission') {
+        return UpdateInstallResult.needsPermission;
+      }
+      return UpdateInstallResult.launched;
     }
 
     final opened = await launchUrl(
-      Uri.parse(_downloadUrl),
+      Uri.parse(_apkDownloadUrl ?? _fallbackDownloadUrl),
       mode: LaunchMode.externalApplication,
     );
     if (!opened) {
       throw const FileSystemException('Could not open update URL');
     }
+    return UpdateInstallResult.launched;
   }
 
   static void showUpdateDialog(BuildContext context, String latestVersion) {
@@ -179,19 +214,34 @@ class _UpdateDialog extends StatefulWidget {
 class _UpdateDialogState extends State<_UpdateDialog> {
   double? _progress; // null = idle, 0.0–1.0 = downloading
   bool _error = false;
+  bool _permissionError = false;
+  bool _installerLaunched = false;
 
   Future<void> _startUpdate() async {
     setState(() {
       _progress = 0;
       _error = false;
+      _permissionError = false;
+      _installerLaunched = false;
     });
     try {
-      await UpdateService.downloadAndInstall(
+      final result = await UpdateService.downloadAndInstall(
         onProgress: (p) {
           if (mounted) setState(() => _progress = p);
         },
       );
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      if (result == UpdateInstallResult.needsPermission) {
+        setState(() {
+          _permissionError = true;
+          _progress = null;
+        });
+        return;
+      }
+      setState(() {
+        _installerLaunched = true;
+        _progress = null;
+      });
     } catch (_) {
       if (mounted) setState(() { _error = true; _progress = null; });
     }
@@ -244,10 +294,26 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               ),
             ),
           ],
-          if (_error) ...[
+          if (_installerLaunched) ...[
+            const SizedBox(height: 16),
+            Icon(Icons.install_mobile_rounded, color: scheme.primary, size: 40),
             const SizedBox(height: 12),
             Text(
-              l10n.updateDownloadError,
+              l10n.updateConfirmInstall,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 13,
+                height: 1.45,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+          if (_error || _permissionError) ...[
+            const SizedBox(height: 12),
+            Text(
+              _permissionError
+                  ? l10n.updateInstallPermission
+                  : l10n.updateDownloadError,
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 12,
@@ -255,7 +321,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               ),
             ),
           ],
-          if (!isDownloading) ...[
+          if (!isDownloading && !_installerLaunched) ...[
             const SizedBox(height: 20),
             Center(
               child: TextButton(
@@ -288,9 +354,25 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               ),
             ),
           ],
+          if (_installerLaunched) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(l10n.updateInstallDone),
+              ),
+            ),
+          ],
         ],
       ),
-      actions: isDownloading && !_error
+      actions: isDownloading && !_error && !_installerLaunched
           ? [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),

@@ -54,7 +54,7 @@ void main() async {
   runApp(SmarturApp(seenOnboarding: seenOnboarding, settings: settings));
 
   // Deep links — smartur://app/<screen>
-  void _handleDeepLink(Uri uri) {
+  void handleDeepLink(Uri uri) {
     if (uri.scheme != 'smartur') return;
     final screen = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     if (screen != null) pendingNotificationScreen.value = screen;
@@ -63,8 +63,8 @@ void main() async {
   try {
     final appLinks = AppLinks();
     final initial = await appLinks.getInitialLink();
-    if (initial != null) _handleDeepLink(initial);
-    appLinks.uriLinkStream.listen(_handleDeepLink, onError: (_) {});
+    if (initial != null) handleDeepLink(initial);
+    appLinks.uriLinkStream.listen(handleDeepLink, onError: (_) {});
   } catch (_) {}
 }
 
