@@ -12,6 +12,7 @@ import '../../utils/diary_place_detail.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_loader.dart';
 import '../explore/detail_view_page.dart';
 
 class DiaryScreen extends StatefulWidget {
@@ -120,22 +121,26 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     ],
                   ),
                 )
-              : _loading
-                  ? SmarturShimmer(
-                      enabled: true,
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        children: List.generate(8, (_) => const SkeletonListRow()),
-                      ),
-                    )
-                  : TabBarView(
+              : SmarturLoadTransition(
+                  loading: _loading,
+                  loadingChild: SmarturShimmer(
+                    enabled: true,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      children: List.generate(8, (_) => const SkeletonListRow()),
+                    ),
+                  ),
+                  child: SmarturFadeIn(
+                    child: TabBarView(
                       children: [
                         _FavoritesTab(items: _favorites, onRefresh: _load),
                         _HistoryTab(items: _visits, onRefresh: _load),
                         _SessionsTab(sessions: _sessions, onRefresh: _load),
                       ],
                     ),
+                  ),
+                ),
         ),
       ),
     );
@@ -682,7 +687,9 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                 const SizedBox(height: 8),
                 if (_loading)
                   const Expanded(
-                    child: Center(child: CircularProgressIndicator(color: SmarturStyle.purple)),
+                    child: Center(
+                      child: SmartURLoader(isMini: true, continuous: true),
+                    ),
                   )
                 else
                   Expanded(

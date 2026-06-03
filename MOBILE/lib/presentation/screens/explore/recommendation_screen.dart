@@ -20,8 +20,9 @@ import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../../core/utils/notifications.dart';
-import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_loader.dart';
+import '../../widgets/smartur_loading_overlay.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import 'detail_view_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -468,45 +469,38 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Scaffold(
-      backgroundColor: scheme.surface.withValues(alpha: 0),
-      extendBodyBehindAppBar: true,
+      backgroundColor: scheme.surface,
       appBar: AppBar(
-        backgroundColor: scheme.surface.withValues(alpha: 0),
+        automaticallyImplyLeading: false,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         elevation: 0,
-        surfaceTintColor: scheme.surface.withValues(alpha: 0),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: semantic.onImageText, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        scrolledUnderElevation: 0,
+        surfaceTintColor: scheme.surface,
+        centerTitle: true,
         title: Text(
           AppLocalizations.of(context)!.recoTitle,
-          style: TextStyle(fontFamily: 'CalSans', color: semantic.onImageText, fontSize: 20),
+          style: TextStyle(
+            fontFamily: 'CalSans',
+            color: scheme.onSurface,
+            fontSize: 20,
+          ),
         ),
       ),
-      body: SmarturBackgroundTop(
+      body: ColoredBox(
+        color: scheme.surface,
         child: Stack(
+          fit: StackFit.expand,
           children: [
-            if (!_isLoadingProfile) _buildBody(scheme),
-            if (_isLoadingProfile)
-              Positioned.fill(
-                child: ColoredBox(
-                  color: scheme.surface.withValues(alpha: 0.88),
-                  child: const Center(
-                    child: SmartURLoader(isMini: true, continuous: true),
-                  ),
-                ),
+            SmarturLoadTransition(
+              loading: _isLoadingProfile,
+              loadingChild: const Center(
+                child: SmartURLoader(isMini: true, continuous: true),
               ),
-            if (_isFetching)
-              Positioned.fill(
-                child: ColoredBox(
-                  color: scheme.scrim.withValues(alpha: 0.35),
-                  child: const Center(
-                    child: SmartURLoader(isMini: true, continuous: true),
-                  ),
-                ),
-              ),
+              child: SmarturFadeIn(child: _buildBody(scheme)),
+            ),
+            SmarturLoadingOverlay(visible: _isFetching),
           ],
         ),
       ),
@@ -517,7 +511,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final mq = MediaQuery.of(context);
-        final top = mq.padding.top + kToolbarHeight + 16;
+        final top = 16.0;
         final bottom = mq.padding.bottom + 24;
         final maxW = constraints.maxWidth;
         final hPad = maxW > 600 ? (maxW - 560) / 2 + 16 : 16.0;

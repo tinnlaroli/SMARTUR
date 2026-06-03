@@ -42,11 +42,11 @@ class SmarturRouteTransitions {
     );
 
     final slideBegin = kind == SmarturRouteKind.detail
-        ? const Offset(0.12, 0)
-        : const Offset(0.05, 0.02);
+        ? const Offset(0.06, 0)
+        : const Offset(0.03, 0.01);
 
     final slide = Tween<Offset>(begin: slideBegin, end: Offset.zero).animate(curved);
-    final fade = Tween<double>(begin: 0.0, end: 1.0).animate(curved);
+    final fade = Tween<double>(begin: 0.92, end: 1.0).animate(curved);
 
     Widget page = SlideTransition(
       position: slide,
@@ -56,7 +56,7 @@ class SmarturRouteTransitions {
     if (secondaryAnimation.status != AnimationStatus.dismissed) {
       final parallax = Tween<Offset>(
         begin: Offset.zero,
-        end: Offset(kind == SmarturRouteKind.detail ? -0.04 : -0.02, 0),
+        end: Offset(kind == SmarturRouteKind.detail ? -0.03 : -0.015, 0),
       ).animate(
         CurvedAnimation(
           parent: secondaryAnimation,

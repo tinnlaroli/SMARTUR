@@ -15,6 +15,7 @@ import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
 import '../../widgets/smartur_user_avatar.dart';
 import '../../widgets/smartur_ui_kit.dart';
+import '../../widgets/smartur_loader.dart';
 
 /// Devuelve kind API (`svc` / `poi`) e id numérico desde [Place.id] tipo `svc_12`.
 ({String kind, int id})? _parsePlaceRef(String placeId) {
@@ -182,31 +183,35 @@ class _CommunityScreenState extends State<CommunityScreen> {
           : RefreshIndicator(
               color: SmarturStyle.purple,
               onRefresh: _load,
-              child: SmarturShimmer(
-                enabled: _loading,
-                child: _loading
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(bottom: 80),
-                        children: const [
-                          SkeletonCommunityPostCard(),
-                          SkeletonCommunityPostCard(),
-                          SkeletonCommunityPostCard(),
-                        ],
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 80),
-                        itemCount: _posts.length,
-                        itemBuilder: (context, index) {
-                          final post = _posts[index];
-                          return _PostCard(
-                            data: post,
-                            currentUserId: _currentUserId,
-                            onDelete: () => _deletePost(post['id'] as int),
-                            onReport: (reason) => _reportPost(post['id'] as int, reason),
-                          );
-                        },
-                      ),
+              child: SmarturLoadTransition(
+                loading: _loading,
+                loadingChild: SmarturShimmer(
+                  enabled: true,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 80),
+                    children: const [
+                      SkeletonCommunityPostCard(),
+                      SkeletonCommunityPostCard(),
+                      SkeletonCommunityPostCard(),
+                    ],
+                  ),
+                ),
+                child: SmarturFadeIn(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: _posts.length,
+                    itemBuilder: (context, index) {
+                      final post = _posts[index];
+                      return _PostCard(
+                        data: post,
+                        currentUserId: _currentUserId,
+                        onDelete: () => _deletePost(post['id'] as int),
+                        onReport: (reason) => _reportPost(post['id'] as int, reason),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
       ),
@@ -363,7 +368,9 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
             if (_loadingPlaces)
               const Padding(
                 padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator(color: SmarturStyle.purple)),
+                child: Center(
+                  child: SmartURLoader(isMini: true, continuous: true),
+                ),
               )
             else if (_placesError != null)
               Text(_placesError!, style: TextStyle(color: scheme.error, fontFamily: 'Outfit'))

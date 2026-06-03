@@ -1165,6 +1165,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateNow => 'Update now';
 
   @override
+  String get updateConfirmInstall =>
+      'On the system screen, tap Install to finish the update. If you cancel, you will stay on the previous version.';
+
+  @override
+  String get updateInstallPermission =>
+      'Allow installing apps from this source in Settings, then tap Update again.';
+
+  @override
+  String get updateInstallDone => 'Got it';
+
+  @override
   String imageShareTitle(Object city) {
     return 'My Recommendations in $city';
   }

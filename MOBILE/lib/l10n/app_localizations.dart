@@ -2268,6 +2268,24 @@ abstract class AppLocalizations {
   /// **'Actualizar ahora'**
   String get updateNow;
 
+  /// No description provided for @updateConfirmInstall.
+  ///
+  /// In es, this message translates to:
+  /// **'En la pantalla del sistema, pulsa «Instalar» para completar la actualización. Si cancelas, seguirás en la versión anterior.'**
+  String get updateConfirmInstall;
+
+  /// No description provided for @updateInstallPermission.
+  ///
+  /// In es, this message translates to:
+  /// **'Permite instalar apps de esta fuente (Ajustes) y pulsa «Actualizar ahora» otra vez.'**
+  String get updateInstallPermission;
+
+  /// No description provided for @updateInstallDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get updateInstallDone;
+
   /// No description provided for @imageShareTitle.
   ///
   /// In es, this message translates to:

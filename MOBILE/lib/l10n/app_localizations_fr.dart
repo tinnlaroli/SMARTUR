@@ -1181,6 +1181,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get updateNow => 'Mettre à jour';
 
   @override
+  String get updateConfirmInstall =>
+      'Sur l\'écran système, appuyez sur Installer pour terminer la mise à jour. Si vous annulez, vous resterez sur l\'ancienne version.';
+
+  @override
+  String get updateInstallPermission =>
+      'Autorisez l\'installation depuis cette source dans les Réglages, puis réessayez.';
+
+  @override
+  String get updateInstallDone => 'Compris';
+
+  @override
   String imageShareTitle(Object city) {
     return 'Mes recommandations à $city';
   }

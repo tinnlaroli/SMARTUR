@@ -10,8 +10,8 @@ import '../../widgets/smartur_user_avatar.dart';
 import 'edit_profile_avatar_screen.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../preferences/preferences_screen.dart';
-import '../explore/recommendation_screen.dart';
 import '../settings/settings_screen.dart';
+import 'main_tab_scope.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -152,14 +152,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SmarturBackgroundTop(
-        child: SmarturShimmer(
-          enabled: _loading,
-          child: _loading
-              ? CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: _profileSkeletonSlivers(),
-                )
-              : RefreshIndicator(
+        child: SmarturLoadTransition(
+          loading: _loading,
+          loadingChild: SmarturShimmer(
+            enabled: true,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: _profileSkeletonSlivers(),
+            ),
+          ),
+          child: SmarturFadeIn(
+            child: RefreshIndicator(
                   color: SmarturStyle.purple,
                   onRefresh: _loadProfile,
                   child: CustomScrollView(
@@ -270,8 +273,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                 ),
-        ),
-      ),
+              ),
+            ),
+          ),
     );
   }
 
@@ -382,12 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.auto_awesome_rounded,
             title: l10n.recoTitle,
             subtitle: l10n.recoAiPersonalizedFor,
-            onTap: () {
-              Navigator.push(
-                context,
-                smarturFadeRoute(const RecommendationScreen()),
-              );
-            },
+            onTap: () => MainTabScope.goTo(context, MainTabIndex.discover),
           ),
           Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
           _ProfileActionTile(

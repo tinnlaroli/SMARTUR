@@ -9,6 +9,9 @@ export '../../core/motion/smartur_routes.dart'
         smarturDetailRoute,
         smarturFadeRoute;
 
+export 'smartur_loading_overlay.dart';
+export 'smartur_tab_fade_stack.dart';
+
 /// Entrada escalonada para listas y secciones.
 class SmarturFadeIn extends StatefulWidget {
   final Widget child;
@@ -36,7 +39,7 @@ class _SmarturFadeInState extends State<SmarturFadeIn>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: SmarturMotion.normal,
+      duration: SmarturMotion.fast,
     );
     _anim = CurvedAnimation(parent: _ctrl, curve: SmarturMotion.standard);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -62,10 +65,61 @@ class _SmarturFadeInState extends State<SmarturFadeIn>
     return FadeTransition(
       opacity: _anim,
       child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        position: Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero)
             .animate(_anim),
         child: widget.child,
       ),
+    );
+  }
+}
+
+/// Crossfade suave entre esqueleto/cargador y contenido listo.
+class SmarturLoadTransition extends StatelessWidget {
+  final bool loading;
+  final Widget loadingChild;
+  final Widget child;
+
+  const SmarturLoadTransition({
+    super.key,
+    required this.loading,
+    required this.loadingChild,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: SmarturMotion.normal,
+      switchInCurve: SmarturMotion.enter,
+      switchOutCurve: SmarturMotion.exit,
+      layoutBuilder: (current, previous) => Stack(
+        fit: StackFit.expand,
+        alignment: Alignment.topCenter,
+        children: [
+          for (final p in previous) IgnorePointer(child: p),
+          ?current,
+        ],
+      ),
+      transitionBuilder: (child, animation) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: SmarturMotion.standard,
+          reverseCurve: SmarturMotion.exit,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.02),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      child: loading
+          ? KeyedSubtree(key: const ValueKey('smartur_load'), child: loadingChild)
+          : KeyedSubtree(key: const ValueKey('smartur_content'), child: child),
     );
   }
 }
