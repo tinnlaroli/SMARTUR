@@ -9,6 +9,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: true,
+    hmr: false,
     proxy: {
       '/api/v2': {
         target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:4000',
