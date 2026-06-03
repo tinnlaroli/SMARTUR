@@ -1,0 +1,97 @@
+---
+---
+<div
+  id="cookie-banner"
+  role="dialog"
+  aria-label="Aviso de almacenamiento local"
+  aria-live="polite"
+  style="display:none"
+>
+  <p>
+    Usamos almacenamiento local para gestionar tu sesión y preferencias de viaje.
+    <a href="/privacidad">Más información</a>
+  </p>
+  <button id="cookie-accept" type="button">Entendido</button>
+</div>
+
+<script>
+  const banner = document.getElementById('cookie-banner') as HTMLElement;
+  if (!banner) { /* noop */ }
+  else if (localStorage.getItem('smartur_consent')) {
+    banner.remove();
+  } else {
+    banner.style.display = 'flex';
+    document.getElementById('cookie-accept')?.addEventListener('click', () => {
+      localStorage.setItem('smartur_consent', '1');
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateY(8px)';
+      setTimeout(() => banner.remove(), 300);
+    }, { once: true });
+  }
+</script>
+
+<style>
+  #cookie-banner {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: min(680px, calc(100vw - 2rem));
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  #cookie-banner p {
+    flex: 1;
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8125rem;
+    color: rgba(226, 232, 240, 0.82);
+    line-height: 1.5;
+  }
+
+  #cookie-banner p a {
+    color: #4DB9CA;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+  }
+
+  #cookie-accept {
+    flex-shrink: 0;
+    padding: 0.5rem 1.125rem;
+    background: #FC478E;
+    color: white;
+    border: none;
+    border-radius: 0.625rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  #cookie-accept:hover {
+    opacity: 0.88;
+  }
+
+  @media (max-width: 480px) {
+    #cookie-banner {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+      bottom: 0.75rem;
+    }
+  }
+</style>
