@@ -14,13 +14,21 @@ jobs:
     # Solo despliega si el CI pasó (o si se dispara manualmente)
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - name: Diagnose SSH connectivity
+        run: |
+          echo "=== DNS resolution ==="
+          nslookup ${{ secrets.VPS_HOST }} || true
+          echo "=== Port 22 reachability ==="
+          nc -zv ${{ secrets.VPS_HOST }} 22 -w 10 && echo "PORT 22 OPEN" || echo "PORT 22 CLOSED/TIMEOUT"
+          echo "=== Port 80 reachability ==="
+          nc -zv ${{ secrets.VPS_HOST }} 80 -w 5 && echo "PORT 80 OPEN" || echo "PORT 80 CLOSED"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
           timeout: 60s
           command_timeout: 10m
           script: |
