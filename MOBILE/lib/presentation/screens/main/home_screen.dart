@@ -9,6 +9,7 @@ import 'package:local_auth_android/local_auth_android.dart';
 import 'package:http/http.dart' as http;
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/motion/smartur_motion.dart';
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
@@ -195,6 +196,16 @@ class HomeScreenState extends State<HomeScreen> {
   Future<void> refreshUserIdentity() async {
     await _applyGreetingName();
     await _refreshHeaderAvatarFromStorage();
+  }
+
+  /// Segundo toque en la pestaña Inicio: vuelve al inicio del scroll.
+  void scrollToTop() {
+    if (!_homeScrollController.hasClients) return;
+    _homeScrollController.animateTo(
+      0,
+      duration: SmarturMotion.normal,
+      curve: SmarturMotion.standard,
+    );
   }
 
   Future<void> _refreshHeaderAvatarFromStorage() async {

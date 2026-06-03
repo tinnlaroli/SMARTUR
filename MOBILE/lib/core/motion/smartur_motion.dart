@@ -5,14 +5,17 @@ class SmarturMotion {
   SmarturMotion._();
 
   static const Duration fast = Duration(milliseconds: 200);
-  static const Duration normal = Duration(milliseconds: 350);
+  static const Duration tabFade = Duration(milliseconds: 220);
+  static const Duration normal = Duration(milliseconds: 300);
   static const Duration slow = Duration(milliseconds: 500);
   static const Duration splashFade = Duration(milliseconds: 450);
   static const Duration loaderMini = Duration(milliseconds: 400);
-  static const Duration routeIn = Duration(milliseconds: 320);
-  static const Duration routeOut = Duration(milliseconds: 240);
-  static const Duration routeDetailIn = Duration(milliseconds: 360);
-  static const Duration routeDetailOut = Duration(milliseconds: 280);
+  static const Duration routeIn = Duration(milliseconds: 280);
+  static const Duration routeOut = Duration(milliseconds: 220);
+  static const Duration routeDetailIn = Duration(milliseconds: 320);
+  static const Duration routeDetailOut = Duration(milliseconds: 260);
+
+  static const Curve tab = Curves.easeOutCubic;
 
   static const Curve standard = Curves.easeOutCubic;
   static const Curve enter = Curves.easeOut;
