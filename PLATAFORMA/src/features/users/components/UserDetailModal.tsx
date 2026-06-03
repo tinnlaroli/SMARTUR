@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useUser } from '../hooks/useUser';
-import { UserPen, X, User as UserIcon, Mail, Shield, Activity, Calendar } from 'lucide-react';
+import { UserPen, X, User as UserIcon, Mail, Shield, Activity, Calendar, BrainCircuit } from 'lucide-react';
+import { api } from '../../../shared/api/axiosClient';
 import EditUserModal from './EditUserModal';
 import type { UpdateUserDTO } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+
+interface AiMetrics {
+    total_sessions: number;
+    total_items_shown: number;
+    total_clicks: number;
+    ctr_pct: number;
+    avg_latency_ms: number;
+    last_session_at: string | null;
+    top_algorithm: string | null;
+}
 
 interface Props {
     isOpen: boolean;
@@ -16,6 +27,7 @@ interface Props {
 const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser }) => {
     const { user, isLoading, error, findById } = useUser();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [aiMetrics, setAiMetrics] = useState<AiMetrics | null>(null);
     const { lang } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const dateLocale = useMemo(
@@ -24,7 +36,13 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
     );
 
     useEffect(() => {
-        if (userId && isOpen) findById(userId);
+        if (userId && isOpen) {
+            findById(userId);
+            setAiMetrics(null);
+            api.get<AiMetrics>(`/ml/sessions/user/${userId}`)
+                .then(r => setAiMetrics(r.data))
+                .catch(() => {});
+        }
     }, [userId, isOpen]);
 
     // Re-fetch user data whenever EditModal closes (covers both save & cancel — harmless extra request)
@@ -184,6 +202,34 @@ const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser 
                                         {new Date(user.updated_at).toLocaleString(dateLocale)}
                                     </p>
                                 </div>
+                            </div>
+
+                            {/* Actividad IA */}
+                            <div className="col-span-2 pt-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+                                <span className="mb-3 flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style={{ color: 'var(--color-text-alt)' }}>
+                                    <BrainCircuit className="size-3" style={{ color: 'var(--color-purple)' }} />
+                                    {mod.users.aiActivity}
+                                </span>
+                                {aiMetrics === null ? (
+                                    <div className="h-4 w-24 animate-pulse rounded" style={{ background: 'var(--color-border)' }} />
+                                ) : aiMetrics.total_sessions === 0 ? (
+                                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{mod.users.aiNoSessions}</p>
+                                ) : (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { label: mod.users.aiSessions, value: String(aiMetrics.total_sessions) },
+                                            { label: mod.users.aiCtr, value: `${aiMetrics.ctr_pct ?? 0}%` },
+                                            { label: mod.users.aiLatency, value: aiMetrics.avg_latency_ms ? `${aiMetrics.avg_latency_ms}ms` : '—' },
+                                            { label: mod.users.aiAlgorithm, value: aiMetrics.top_algorithm ?? '—' },
+                                            { label: mod.users.aiLastSession, value: aiMetrics.last_session_at ? new Date(aiMetrics.last_session_at).toLocaleDateString(dateLocale) : '—' },
+                                        ].map(({ label, value }) => (
+                                            <div key={label} className="rounded-lg p-2 text-center" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
+                                                <p className="text-[9px] font-bold uppercase tracking-wider truncate" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
+                                                <p className="mt-0.5 text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>{value}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Botón editar */}

@@ -683,6 +683,8 @@ CREATE TABLE IF NOT EXISTS ml_recommendation_feedback (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_ml_rec_feedback_session ON ml_recommendation_feedback (session_id);
+ALTER TABLE ml_recommendation_feedback
+  ADD CONSTRAINT uq_feedback_session_item UNIQUE (session_id, item_id);
 
 -- ── Post reports ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS post_reports (

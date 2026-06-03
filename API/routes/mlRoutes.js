@@ -185,7 +185,10 @@ router.post('/ml/feedback', verifyToken, async (req, res) => {
     try {
         await db.query(
             `INSERT INTO ml_recommendation_feedback (session_id, item_id, rank_pos, clicked, clicked_at)
-             VALUES ($1, $2, $3, $4, $5)`,
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (session_id, item_id) DO UPDATE
+               SET clicked    = GREATEST(ml_recommendation_feedback.clicked, EXCLUDED.clicked),
+                   clicked_at = COALESCE(ml_recommendation_feedback.clicked_at, EXCLUDED.clicked_at)`,
             [session_id, item_id, parseInt(rank_pos, 10), Boolean(clicked), clicked ? new Date() : null],
         );
         res.json({ ok: true });
@@ -254,6 +257,38 @@ router.put('/ml/scheduler-config', verifyToken, requireRole([1]), async (req, re
     } catch (err) {
         console.error('[ml/scheduler-config] PUT error:', err.message);
         res.status(502).json({ message: 'No se pudo actualizar el scheduler.' });
+    }
+});
+
+/**
+ * GET /api/v2/ml/sessions/user/:userId
+ * Returns AI quality metrics for a specific user. Admin only.
+ */
+router.get('/ml/sessions/user/:userId', verifyToken, requireRole([1]), async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const { rows } = await db.query(
+            `SELECT
+               COUNT(DISTINCT s.id)::int                                               AS total_sessions,
+               COUNT(f.id)::int                                                        AS total_items_shown,
+               COUNT(f.id) FILTER (WHERE f.clicked = true)::int                       AS total_clicks,
+               ROUND(
+                 CASE WHEN COUNT(f.id) > 0
+                   THEN COUNT(f.id) FILTER (WHERE f.clicked = true)::numeric / COUNT(f.id) * 100
+                   ELSE 0 END, 1
+               )                                                                       AS ctr_pct,
+               ROUND(AVG(s.execution_time_ms)::numeric, 0)::int                       AS avg_latency_ms,
+               MAX(s.created_at)                                                       AS last_session_at,
+               MODE() WITHIN GROUP (ORDER BY s.best_algorithm)                        AS top_algorithm
+             FROM ml_recommendation_session s
+             LEFT JOIN ml_recommendation_feedback f ON f.session_id = s.id
+             WHERE s.user_id = $1`,
+            [String(userId)],
+        );
+        res.json(rows[0] ?? { total_sessions: 0 });
+    } catch (err) {
+        console.error('[ml/sessions/user] error:', err.message);
+        res.status(500).json({ message: 'Error al obtener métricas del usuario.' });
     }
 });
 

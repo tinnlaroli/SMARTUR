@@ -59,6 +59,13 @@ export type DashboardModalsLocale = {
         colStatus: string;
         colRegistered: string;
         filterAll: string;
+        aiActivity: string;
+        aiSessions: string;
+        aiCtr: string;
+        aiLastSession: string;
+        aiAlgorithm: string;
+        aiLatency: string;
+        aiNoSessions: string;
     };
     companies: {
         createTitle: string;
@@ -315,6 +322,13 @@ const es: DashboardModalsLocale = {
         colStatus: 'Estado',
         colRegistered: 'Registrado',
         filterAll: 'Todos',
+        aiActivity: 'Actividad IA',
+        aiSessions: 'Sesiones',
+        aiCtr: 'CTR',
+        aiLastSession: 'Último uso',
+        aiAlgorithm: 'Algoritmo',
+        aiLatency: 'Latencia prom.',
+        aiNoSessions: 'Sin sesiones de recomendación aún',
     },
     companies: {
         createTitle: 'Crear nueva compañía',
@@ -586,6 +600,13 @@ const en: DashboardModalsLocale = {
         colStatus: 'Status',
         colRegistered: 'Registered',
         filterAll: 'All',
+        aiActivity: 'AI Activity',
+        aiSessions: 'Sessions',
+        aiCtr: 'CTR',
+        aiLastSession: 'Last use',
+        aiAlgorithm: 'Algorithm',
+        aiLatency: 'Avg latency',
+        aiNoSessions: 'No recommendation sessions yet',
     },
     companies: {
         createTitle: 'Create new company',
@@ -856,6 +877,13 @@ const fr: DashboardModalsLocale = {
         colStatus: 'État',
         colRegistered: 'Inscrit',
         filterAll: 'Tous',
+        aiActivity: 'Activité IA',
+        aiSessions: 'Sessions',
+        aiCtr: 'CTR',
+        aiLastSession: 'Dernière util.',
+        aiAlgorithm: 'Algorithme',
+        aiLatency: 'Latence moy.',
+        aiNoSessions: 'Aucune session de recommandation',
     },
     companies: {
         createTitle: 'Créer une entreprise',

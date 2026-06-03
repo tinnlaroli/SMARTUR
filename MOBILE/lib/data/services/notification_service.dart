@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'api_client.dart';
 import '../../core/constants/api_constants.dart';
+import '../../main.dart' show kFirebaseAvailable;
 
 /// Maneja notificaciones push via Firebase Cloud Messaging.
 ///
@@ -21,6 +22,10 @@ class NotificationService {
   /// Los permisos se solicitan en [registerWithApi] — ya dentro de la app tras el login.
   static Future<void> setup() async {
     if (_setupDone) return;
+    if (!kFirebaseAvailable) {
+      debugPrint('[FCM] Firebase no disponible — setup omitido.');
+      return;
+    }
 
     try {
       final messaging = FirebaseMessaging.instance;
@@ -58,6 +63,10 @@ class NotificationService {
   /// Etapa 2: pide permisos (primera vez), obtiene token y lo registra en API.
   /// Llamar en MainScreen.initState() después del primer frame — ya dentro de la app.
   static Future<void> registerWithApi({BuildContext? context}) async {
+    if (!kFirebaseAvailable) {
+      debugPrint('[FCM] Firebase no disponible — registro omitido.');
+      return;
+    }
     if (!_setupDone) await setup();
     if (_registered) return;
 
