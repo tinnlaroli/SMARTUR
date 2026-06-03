@@ -55,7 +55,14 @@ const linksMap = {
   ],
 };
 
-const links = linksMap[currentLang as keyof typeof linksMap] || linksMap.es;
+const homePaths: Record<string, string> = { es: '/', en: '/en/', fr: '/fr/', pt: '/pt/' };
+const homePath = homePaths[currentLang] ?? '/';
+const isHomePage = Astro.url.pathname === homePath || Astro.url.pathname === homePath.replace(/\/$/, '');
+
+const rawLinks = linksMap[currentLang as keyof typeof linksMap] || linksMap.es;
+const links = isHomePage
+  ? rawLinks
+  : rawLinks.map((l) => ({ ...l, url: l.url.startsWith('#') ? `${homePath}${l.url}` : l.url }));
 
 // Localized SEO metadata
 const seoMetadata = {
