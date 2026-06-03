@@ -9,6 +9,10 @@ export default defineConfig({
   base: "/",
   integrations: [react(), tailwind()],
   scopedStyleStrategy: "where",
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: true,
+  },
   vite: {
     server: {
       host: '0.0.0.0',
