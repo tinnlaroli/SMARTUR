@@ -57,15 +57,15 @@ export default function () {
     if (ok && rec.body) {
         try {
             const body    = JSON.parse(rec.body);
-            const item    = body[0];
-            const session = item?.session_id;
+            const session = body.session_id;
+            const item    = body.recommendations?.[0];
 
             if (session && item) {
                 const fb = http.post(
                     `${API}/ml/feedback`,
                     JSON.stringify({
                         session_id: session,
-                        item_id:    item.id || item.poi_id,
+                        item_id:    item.id || item.poi_id || item.item_id,
                         rank_pos:   0,
                         clicked:    Math.random() > 0.5,
                     }),

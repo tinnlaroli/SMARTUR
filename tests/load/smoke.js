@@ -32,9 +32,9 @@ export default function () {
 
     const headers = HEADERS();
 
-    // ── 1. Health check de la API ─────────────────────────────────────────────
-    const health = http.get(`${API}/health`, { headers });
-    check(health, { 'API health 200': (r) => r.status === 200 });
+    // ── 1. Health check del modelo ML ────────────────────────────────────────
+    const health = http.get(`${API}/ml/health`, { headers });
+    check(health, { 'ML health 200': (r) => r.status === 200 });
 
     // ── 2. Recomendaciones ML ─────────────────────────────────────────────────
     const t0  = Date.now();
@@ -45,10 +45,14 @@ export default function () {
     );
     recommendLatency.add(Date.now() - t0);
 
+    // Respuesta: { session_id, recommendations: [...], alpha, latency_ms }
     const recOk = check(rec, {
-        'recommend 200':          (r) => r.status === 200,
-        'recommend tiene items':  (r) => {
-            try { return Array.isArray(JSON.parse(r.body)); } catch { return false; }
+        'recommend 200':         (r) => r.status === 200,
+        'recommend tiene items': (r) => {
+            try {
+                const b = JSON.parse(r.body);
+                return Array.isArray(b.recommendations) && b.recommendations.length > 0;
+            } catch { return false; }
         },
     });
 
@@ -56,33 +60,28 @@ export default function () {
 
     // ── 3. Feedback ───────────────────────────────────────────────────────────
     if (recOk) {
-        let sessionId, firstItem;
         try {
-            const body = JSON.parse(rec.body);
-            // El endpoint devuelve array de recomendaciones; la sesión viene en el header o en el primer item
-            // Ajustar según la respuesta real del servidor
-            firstItem = body[0];
-            sessionId = firstItem?.session_id || rec.headers['X-Session-Id'];
-        } catch (_) {}
+            const body      = JSON.parse(rec.body);
+            const sessionId = body.session_id;
+            const firstItem = body.recommendations?.[0];
 
-        if (sessionId && firstItem) {
-            const t1  = Date.now();
-            const fb  = http.post(
-                `${API}/ml/feedback`,
-                JSON.stringify({
-                    session_id: sessionId,
-                    item_id:    firstItem.id || firstItem.poi_id,
-                    rank_pos:   0,
-                    clicked:    true,
-                }),
-                { headers, tags: { endpoint: 'feedback' } },
-            );
-            feedbackLatency.add(Date.now() - t1);
-            check(fb, { 'feedback 200': (r) => r.status === 200 });
-            console.log(`[smoke] feedback: ${fb.status} — ${Date.now() - t1}ms`);
-        } else {
-            console.warn('[smoke] no se pudo extraer session_id — ajustar mapeo en smoke.js');
-        }
+            if (sessionId && firstItem) {
+                const t1 = Date.now();
+                const fb = http.post(
+                    `${API}/ml/feedback`,
+                    JSON.stringify({
+                        session_id: sessionId,
+                        item_id:    firstItem.id || firstItem.poi_id || firstItem.item_id,
+                        rank_pos:   0,
+                        clicked:    true,
+                    }),
+                    { headers, tags: { endpoint: 'feedback' } },
+                );
+                feedbackLatency.add(Date.now() - t1);
+                check(fb, { 'feedback 200': (r) => r.status === 200 });
+                console.log(`[smoke] feedback: ${fb.status} — ${Date.now() - t1}ms`);
+            }
+        } catch (_) {}
     }
 
     // ── 4. Mis sesiones ───────────────────────────────────────────────────────
