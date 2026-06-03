@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ChevronDown, ArrowRight } from 'lucide-react';
-import { PhoneMockup } from './PhoneMockup';
+import { initPhoneScene } from '../../../assets/3D/phone';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { prefersReducedMotion } from '../utils/motion';
 
@@ -45,6 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
     const heroRef = useRef<HTMLDivElement>(null);
     const phoneContainerRef = useRef<HTMLDivElement>(null);
     const [isRevealed, setIsRevealed] = useState(false);
+    const cleanupSplineRef = useRef<(() => void) | undefined>(undefined);
 
     const { t } = useLanguage();
 
@@ -149,17 +150,29 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             }
         };
 
+        const init3D = () => {
+            if (!phoneContainerRef.current) return;
+            if (!window.matchMedia('(min-width: 768px)').matches) return;
+            try {
+                const cleanup = initPhoneScene(phoneContainerRef.current);
+                if (cleanup) cleanupSplineRef.current = cleanup;
+            } catch (e) {
+                console.warn('3D phone init failed:', e);
+            }
+        };
+
         // Listen for loader completion event
-        const handleLoaded = () => animateHero();
+        const handleLoaded = () => { animateHero(); init3D(); };
         window.addEventListener('smartur:loaded', handleLoaded, { once: true });
 
         // Fallback: if loader already finished before this mounted (instant navigation)
         if (!document.body.classList.contains('is-loading')) {
-            setTimeout(animateHero, 80);
+            setTimeout(() => { animateHero(); init3D(); }, 80);
         }
 
         return () => {
             window.removeEventListener('smartur:loaded', handleLoaded);
+            cleanupSplineRef.current?.();
         };
     }, []);
 
@@ -221,10 +234,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                     <div
                         ref={phoneContainerRef}
                         className="video-wrapper hero-video-wrap"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                        <PhoneMockup />
-                    </div>
+                    />
                 </div>
             </div>
 
