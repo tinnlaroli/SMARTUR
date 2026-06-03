@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import 'core/motion/smartur_routes.dart';
+import 'core/navigation/notification_router.dart';
 import 'core/theme/style_guide.dart';
 import 'core/theme/smartur_theme_extensions.dart';
 import 'core/settings/app_settings.dart';
@@ -13,6 +15,7 @@ import 'core/settings/app_settings_scope.dart';
 import 'data/services/api_client.dart';
 import 'data/services/auth_service.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/update_service.dart';
 import 'presentation/screens/auth/onboarding_screen.dart';
 import 'presentation/screens/auth/welcome_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
@@ -49,6 +52,20 @@ void main() async {
 
   final settings = await AppSettingsNotifier.load();
   runApp(SmarturApp(seenOnboarding: seenOnboarding, settings: settings));
+
+  // Deep links — smartur://app/<screen>
+  void _handleDeepLink(Uri uri) {
+    if (uri.scheme != 'smartur') return;
+    final screen = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
+    if (screen != null) pendingNotificationScreen.value = screen;
+  }
+
+  try {
+    final appLinks = AppLinks();
+    final initial = await appLinks.getInitialLink();
+    if (initial != null) _handleDeepLink(initial);
+    appLinks.uriLinkStream.listen(_handleDeepLink, onError: (_) {});
+  } catch (_) {}
 }
 
 class SmarturApp extends StatelessWidget {
@@ -73,13 +90,49 @@ class SmarturApp extends StatelessWidget {
               locale: appSettings.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
-              home: _SplashGate(seenOnboarding: seenOnboarding),
+              home: _AppLifecycleWatcher(
+                child: _SplashGate(seenOnboarding: seenOnboarding),
+              ),
             ),
           );
         },
       ),
     );
   }
+}
+
+/// Tras volver del instalador del sistema, revalida la versión instalada.
+class _AppLifecycleWatcher extends StatefulWidget {
+  final Widget child;
+  const _AppLifecycleWatcher({required this.child});
+
+  @override
+  State<_AppLifecycleWatcher> createState() => _AppLifecycleWatcherState();
+}
+
+class _AppLifecycleWatcherState extends State<_AppLifecycleWatcher>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      UpdateService.invalidateCache();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 ThemeData _baseTheme(ColorScheme scheme) {

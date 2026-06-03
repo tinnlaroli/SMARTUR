@@ -33,6 +33,7 @@ import MLRouter from './routes/mlRoutes.js';
 import EmpresaRouter from './routes/empresaRoutes.js';
 import NotificationRouter from './routes/notificationRoutes.js';
 import { runMigrations } from './config/migrations.js';
+import db from './config/db.js';
 import { validateEnv } from './config/env.js';
 import { initSentry, setupSentryErrorHandler } from './config/sentry.js';
 dotenv.config();
@@ -262,8 +263,24 @@ setupSentryErrorHandler(app);
 
 const PORT = process.env.PORT || 3000;
 
+async function purgeExpiredTokens() {
+    try {
+        const { rowCount: r1 } = await db.query(
+            `DELETE FROM login_tokens WHERE expires_at < NOW() OR used = TRUE`
+        );
+        const { rowCount: r2 } = await db.query(
+            `DELETE FROM password_reset_tokens WHERE expires_at < NOW() OR used = TRUE`
+        );
+        if (r1 + r2 > 0) console.log(`[cleanup] ${r1} OTP + ${r2} reset tokens eliminados`);
+    } catch (err) {
+        console.error('[cleanup] Error al purgar tokens:', err.message);
+    }
+}
+
 // Run DB migrations before accepting connections
-runMigrations().then(() => {
+runMigrations().then(async () => {
+    await purgeExpiredTokens();
+    setInterval(purgeExpiredTokens, 6 * 60 * 60 * 1000);
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`[server] listening on port ${PORT}`);
     });

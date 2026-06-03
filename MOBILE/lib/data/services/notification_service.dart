@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'api_client.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/navigation/notification_router.dart';
 import '../../main.dart' show kFirebaseAvailable;
 
 /// Maneja notificaciones push via Firebase Cloud Messaging.
@@ -48,10 +49,14 @@ class NotificationService {
       // Handler para mensajes con la app cerrada (top-level, sin contexto)
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-      // Registro en app abierta desde notificación
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        debugPrint('[FCM] App abierta desde notificación: ${message.notification?.title}');
-      });
+      // Tap desde background — app ya estaba abierta
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+      // Tap desde app cerrada (cold start)
+      final initial = await FirebaseMessaging.instance.getInitialMessage();
+      if (initial != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _handleNotificationTap(initial));
+      }
 
       _setupDone = true;
       debugPrint('[FCM] Setup completado.');
@@ -124,6 +129,12 @@ class NotificationService {
       }
     }
     debugPrint('[FCM] No se pudo registrar el token tras $maxAttempts intentos.');
+  }
+
+  static void _handleNotificationTap(RemoteMessage message) {
+    final screen = message.data['screen'] as String?;
+    debugPrint('[FCM] Tap en notificación — screen: $screen');
+    if (screen != null) pendingNotificationScreen.value = screen;
   }
 
   static void _showForegroundBanner(BuildContext context, RemoteMessage message) {

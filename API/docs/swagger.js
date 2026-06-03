@@ -531,6 +531,37 @@ const paths = {
     '/api/v2/service-evaluation/batch-register': {
         post: op({ tag: 'Service Evaluation', summary: 'Registro en lote de evaluaciones', permission: 'Admin', auth: true, body: jsonBody }),
     },
+
+    // ── Empresa B2B ──
+    '/api/v2/auth/register-empresa': {
+        post: op({ tag: 'Empresa B2B', summary: 'Registro público de empresa turística', permission: 'Público', body: jsonBody }),
+    },
+    '/api/v2/empresa/profile': {
+        get:   op({ tag: 'Empresa B2B', summary: 'Obtener perfil de la empresa autenticada', permission: 'Empresa', auth: true }),
+        patch: op({ tag: 'Empresa B2B', summary: 'Actualizar perfil de la empresa', permission: 'Empresa', auth: true, body: jsonBody }),
+    },
+    '/api/v2/empresa/services': {
+        get: op({ tag: 'Empresa B2B', summary: 'Listar servicios de la empresa', permission: 'Empresa', auth: true }),
+    },
+    '/api/v2/empresa/analytics': {
+        get: op({ tag: 'Empresa B2B', summary: 'Métricas y KPIs del dashboard empresa', permission: 'Empresa', auth: true }),
+    },
+
+    // ── Push Notifications (FCM) ──
+    '/api/v2/me/device-token': {
+        post: op({ tag: 'Push Notifications', summary: 'Registrar o actualizar token FCM del dispositivo', permission: 'Autenticado', auth: true, body: jsonBody }),
+    },
+    '/api/v2/admin/notifications/send': {
+        post: op({ tag: 'Push Notifications', summary: 'Enviar notificación push (a todos, a usuario o a empresa)', permission: 'Admin', auth: true, body: jsonBody }),
+    },
+
+    // ── ML: sesiones por usuario (admin) ──
+    '/api/v2/ml/sessions/user/{userId}': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Métricas IA de un usuario específico (CTR, latencia, sesiones)', permission: 'Admin', auth: true, params: [idParam('userId', 'ID del usuario')] }),
+    },
+    '/api/v2/ml/model-status': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Estado en tiempo real de cada sub-modelo ML', permission: 'Autenticado', auth: true }),
+    },
 }
 
 const options = {
@@ -736,6 +767,8 @@ const options = {
             { name: 'Sessions', description: 'Gestión de sesiones activas y tokens JWT' },
             { name: 'Interactions & Ratings', description: 'Interacciones implícitas y calificaciones de lugares' },
             { name: 'ML / Recommendations', description: 'Motor de IA: recomendaciones, feedback, estado y scheduler' },
+            { name: 'Empresa B2B', description: 'Portal de empresas turísticas — registro, perfil, servicios y analytics' },
+            { name: 'Push Notifications', description: 'Notificaciones push FCM — registro de tokens y envío desde admin' },
             { name: 'Subcriteria', description: 'Subcriterios de evaluación' },
         ],
     },
