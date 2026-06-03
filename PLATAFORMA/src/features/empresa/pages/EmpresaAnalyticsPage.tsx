@@ -78,7 +78,7 @@ export function EmpresaAnalyticsPage() {
     const avgRating = summary?.avg_rating != null ? Number(summary.avg_rating).toFixed(1) : '—';
     const hasData = timeline30d.length > 0 || topServicios.length > 0;
 
-    const hasServices = (summary?.total_services ?? 0) > 0;
+    const hasServices = (summary?.total_servicios_activos ?? 0) > 0;
     const hasProfile = true; // profile exists if they reached this page
     const interactionTotal = useMemo(
         () => timeline30d.reduce((acc, row) => acc + row.interacciones, 0),
