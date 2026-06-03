@@ -10,6 +10,10 @@ export default defineConfig({
   integrations: [react(), tailwind()],
   scopedStyleStrategy: "where",
   vite: {
+    server: {
+      host: '0.0.0.0',
+      allowedHosts: 'all',
+    },
     build: {
       rollupOptions: {
         output: {

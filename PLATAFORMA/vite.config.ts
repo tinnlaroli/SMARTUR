@@ -7,6 +7,8 @@ export default defineConfig({
   base: '/',
   plugins: [react(), tailwindcss()],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: 'all',
     proxy: {
       '/api/v2': {
         target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:4000',
