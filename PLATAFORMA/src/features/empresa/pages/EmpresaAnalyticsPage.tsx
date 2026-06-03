@@ -6,6 +6,9 @@ import {
     Award,
     AlertCircle,
     Activity,
+    CheckCircle2,
+    Circle,
+    ArrowRight,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
@@ -74,6 +77,9 @@ export function EmpresaAnalyticsPage() {
     const evalScore = summary?.evaluacion_score != null ? Number(summary.evaluacion_score) : null;
     const avgRating = summary?.avg_rating != null ? Number(summary.avg_rating).toFixed(1) : '—';
     const hasData = timeline30d.length > 0 || topServicios.length > 0;
+
+    const hasServices = (summary?.total_services ?? 0) > 0;
+    const hasProfile = true; // profile exists if they reached this page
     const interactionTotal = useMemo(
         () => timeline30d.reduce((acc, row) => acc + row.interacciones, 0),
         [timeline30d],
@@ -135,22 +141,50 @@ export function EmpresaAnalyticsPage() {
 
             {!loading && !error && !hasData && (
                 <div
-                    className="flex h-full flex-col items-center justify-center gap-4 rounded-lg border p-12 text-center"
+                    className="flex flex-col gap-4 rounded-2xl border p-6"
                     style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                 >
-                    <div
-                        className="flex size-14 items-center justify-center rounded-2xl"
-                        style={{ background: `${MODULE_COLORS.services}18` }}
-                    >
-                        <BarChart3 size={24} style={{ color: MODULE_COLORS.services }} />
+                    <div className="flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: `${MODULE_COLORS.services}18` }}>
+                            <BarChart3 size={20} style={{ color: MODULE_COLORS.services }} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                {t('empresa.analytics.noDataTitle')}
+                            </p>
+                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                {t('empresa.analytics.noDataDescription')}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                            {t('empresa.analytics.noDataTitle')}
+
+                    {/* Onboarding checklist */}
+                    <div className="flex flex-col gap-2 rounded-xl p-4" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
+                            Próximos pasos
                         </p>
-                        <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                            {t('empresa.analytics.noDataDescription')}
-                        </p>
+                        {[
+                            { done: hasProfile, label: 'Completa tu perfil de empresa', href: '/empresa/perfil' },
+                            { done: hasServices, label: 'Agrega al menos un servicio', href: '/empresa/servicios' },
+                            { done: false, label: 'Los turistas descubrirán tu empresa en la app SMARTUR (puede tomar unos días)', href: null },
+                        ].map((step, i) => (
+                            <div key={i} className="flex items-start gap-3">
+                                {step.done
+                                    ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: '#10B981' }} />
+                                    : <Circle size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--color-border)' }} />
+                                }
+                                <div className="flex-1">
+                                    <span className="text-xs" style={{ color: step.done ? 'var(--color-text-alt)' : 'var(--color-text)', textDecoration: step.done ? 'line-through' : 'none' }}>
+                                        {step.label}
+                                    </span>
+                                </div>
+                                {step.href && !step.done && (
+                                    <a href={step.href} className="flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--color-purple)' }}>
+                                        Ir <ArrowRight size={10} />
+                                    </a>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

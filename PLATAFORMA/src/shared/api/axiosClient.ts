@@ -35,6 +35,27 @@ export const clearAccessToken = () => { _accessToken = null; };
 export const isAuthenticated = () =>
     _accessToken !== null || sessionStorage.getItem('refreshToken') !== null;
 
+/**
+ * Rehidrata la sesión desde el refreshToken al arrancar la app (ej: tras F5).
+ * Llama a /auth/refresh si hay refreshToken pero no hay accessToken en memoria.
+ * Retorna true si la sesión quedó activa, false si no hay sesión o expiró.
+ */
+export async function initSession(): Promise<boolean> {
+    if (_accessToken) return true;
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    if (!refreshToken) return false;
+    try {
+        const { data } = await axios.post(`${resolveApiBaseUrl()}/auth/refresh`, { refreshToken });
+        setAccessToken(data.token);
+        sessionStorage.setItem('refreshToken', data.refreshToken);
+        return true;
+    } catch {
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        return false;
+    }
+}
+
 api.interceptors.request.use(
     (config) => {
         if (_accessToken) {

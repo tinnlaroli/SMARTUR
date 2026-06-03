@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
-import { initPhoneScene } from '../../../assets/3D/phone';
 import { ChevronDown, ArrowRight } from 'lucide-react';
+import { PhoneMockup } from './PhoneMockup';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { prefersReducedMotion } from '../utils/motion';
 
@@ -158,19 +158,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             setTimeout(animateHero, 80);
         }
 
-        // Initialize 3D on desktop only — matches lg:flex breakpoint (1024px+)
-        let cleanup3D: (() => void) | undefined;
-        if (window.matchMedia('(min-width: 768px)').matches && phoneContainerRef.current) {
-            try {
-                cleanup3D = initPhoneScene(phoneContainerRef.current);
-            } catch (e) {
-                console.warn('3D Phone init failed:', e);
-            }
-        }
-
         return () => {
             window.removeEventListener('smartur:loaded', handleLoaded);
-            if (cleanup3D) cleanup3D();
         };
     }, []);
 
@@ -232,13 +221,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                     <div
                         ref={phoneContainerRef}
                         className="video-wrapper hero-video-wrap"
-                        style={{
-                            maskImage:
-                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.3) 88%, transparent 100%)',
-                            WebkitMaskImage:
-                                'radial-gradient(ellipse 92% 92% at center, black 40%, rgba(0,0,0,0.95) 60%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.3) 88%, transparent 100%)',
-                        }}
-                    />
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <PhoneMockup />
+                    </div>
                 </div>
             </div>
 
