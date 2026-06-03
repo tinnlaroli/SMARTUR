@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Star, Filter, ChevronDown } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import bgPatron from '../../../assets/landing/bgPatron.png';
-
-// Declare Leaflet for global usage
-declare const L: any;
 
 const REGION_CENTER = {
     lat: 18.85,
@@ -123,25 +122,11 @@ export const CordobaMap: React.FC = () => {
     });
 
     useEffect(() => {
-        if (!window.hasOwnProperty('L')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-            document.head.appendChild(link);
-
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            script.async = true;
-            script.defer = true;
-            script.onload = () => setMapLoaded(true);
-            document.head.appendChild(script);
-        } else {
-            setMapLoaded(true);
-        }
+        setMapLoaded(true);
     }, []);
 
     const initializeMap = React.useCallback(() => {
-        if (typeof L === 'undefined' || !document.getElementById('altas-montanas-map')) return;
+        if (!document.getElementById('altas-montanas-map')) return;
 
         if (mapRef.current) {
             mapRef.current.remove();
