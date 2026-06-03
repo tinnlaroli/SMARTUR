@@ -1,5 +1,13 @@
 import jwt from "jsonwebtoken";
 
+export function requireRole(roles) {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role_id))
+      return res.status(403).json({ message: 'Acceso denegado.' });
+    next();
+  };
+}
+
 /**
  * Middleware: verifyToken
  * Verifica que el request tenga un JWT válido en el header Authorization.
@@ -20,7 +28,7 @@ export function verifyToken(req, res, next) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     req.user = decoded; // { id, email, role_id }
     next();
   } catch (error) {

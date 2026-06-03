@@ -1,7 +1,10 @@
 import pool from "../config/db.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { findByEmail } from "../validators/userValidators.js";
+
+const hashToken = (t) => crypto.createHash('sha256').update(t).digest('hex');
 
 const SALT_ROUNDS = 10;
 
@@ -16,7 +19,7 @@ export class UserService {
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
          VALUES ($1, $2, $3)`,
-      [user.user_id, token, expiresAt],
+      [user.user_id, hashToken(token), expiresAt],
     );
 
     return token;
@@ -28,11 +31,11 @@ export class UserService {
 
     const tokenResult = await pool.query(
       `SELECT id FROM password_reset_tokens
-         WHERE user_id = $1 
-         AND token = $2 
-         AND used = FALSE 
+         WHERE user_id = $1
+         AND token = $2
+         AND used = FALSE
          AND expires_at > NOW()`,
-      [user.user_id, token],
+      [user.user_id, hashToken(token)],
     );
 
     if (tokenResult.rowCount === 0) {
@@ -88,7 +91,7 @@ export class UserService {
       await pool.query(
         `INSERT INTO login_tokens (user_id, token, expires_at, used)
                  VALUES ($1, $2, $3, $4)`,
-        [user.user_id, verificationCode, expiresAt, false],
+        [user.user_id, hashToken(verificationCode), expiresAt, false],
       );
 
       return {
@@ -136,7 +139,7 @@ export class UserService {
       const result = await pool.query(
         `SELECT * FROM login_tokens
                  WHERE user_id = $1 AND token = $2`,
-        [user.user_id, verificationCode],
+        [user.user_id, hashToken(verificationCode)],
       );
 
       if (result.rows.length === 0) {
@@ -157,7 +160,7 @@ export class UserService {
 
       await pool.query(
         `UPDATE login_tokens SET used = TRUE WHERE user_id = $1 AND token = $2 AND used = FALSE;`,
-        [user.user_id, verificationCode],
+        [user.user_id, hashToken(verificationCode)],
       );
 
       // Reactivación automática si el usuario estaba inactivo (is_active = false)

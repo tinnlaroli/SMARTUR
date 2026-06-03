@@ -25,13 +25,20 @@ function resolveApiBaseUrl(): string {
 
 export const api = axios.create({
     baseURL: resolveApiBaseUrl(),
+    timeout: 30000,
 });
+
+// Access token en memoria — no persiste en storage, no es accesible por XSS
+let _accessToken: string | null = null;
+export const setAccessToken = (t: string) => { _accessToken = t; };
+export const clearAccessToken = () => { _accessToken = null; };
+export const isAuthenticated = () =>
+    _accessToken !== null || sessionStorage.getItem('refreshToken') !== null;
 
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        if (_accessToken) {
+            config.headers.Authorization = `Bearer ${_accessToken}`;
         }
         return config;
     },
@@ -43,8 +50,8 @@ let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
 
 function clearSessionAndRedirect() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+    _accessToken = null;
+    sessionStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     emitUserStorageSync();
     window.location.href = '/';
@@ -64,7 +71,7 @@ api.interceptors.response.use(
             originalRequest?.url?.includes('/auth/refresh');
 
         if (error.response?.status === 401 && !isAuthRoute && !originalRequest._retried) {
-            const refreshToken = localStorage.getItem('refreshToken');
+            const refreshToken = sessionStorage.getItem('refreshToken');
 
             if (!refreshToken) {
                 clearSessionAndRedirect();
@@ -92,8 +99,8 @@ api.interceptors.response.use(
                 const newToken: string = data.token;
                 const newRefresh: string = data.refreshToken;
 
-                localStorage.setItem('token', newToken);
-                localStorage.setItem('refreshToken', newRefresh);
+                setAccessToken(newToken);
+                sessionStorage.setItem('refreshToken', newRefresh);
 
                 // Descola peticiones en espera
                 refreshQueue.forEach((cb) => cb(newToken));

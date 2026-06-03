@@ -18,18 +18,24 @@ import 'presentation/screens/auth/welcome_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
 import 'presentation/widgets/smartur_loader.dart';
 
+/// Indica si Firebase se inicializó correctamente.
+/// Usar para deshabilitar FCM graciosamente cuando no está disponible.
+bool kFirebaseAvailable = false;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Catch unhandled Flutter framework errors so the app never shows a blank screen
+  // Captura errores del framework Flutter para evitar pantallas en blanco
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
   };
 
   try {
     await Firebase.initializeApp();
+    kFirebaseAvailable = true;
   } catch (e) {
     debugPrint('[main] Firebase init failed (FCM unavailable): $e');
+    // kFirebaseAvailable permanece false — NotificationService lo verifica
   }
 
   try {

@@ -12,10 +12,6 @@ export const evaluationsApi = {
     },
 
     registerFull: async (data: FullEvaluationRegisterDTO): Promise<any> => {
-        console.log(
-            'DEBUG API: Enviando POST a /service-evaluation/batch-register con data:',
-            data
-        );
         const response = await api.post('/service-evaluation/batch-register', data);
         return response.data;
     },

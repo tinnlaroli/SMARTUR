@@ -126,6 +126,9 @@ router.post('/ml/train', verifyToken, async (req, res) => {
  */
 router.post('/ml/recommend/:userId', verifyToken, async (req, res) => {
     const { userId } = req.params;
+    if (userId !== String(req.user.id) && req.user.role_id !== 1) {
+        return res.status(403).json({ message: 'Acceso no autorizado.' });
+    }
     const { alpha = 0.2, top_n = 5, context = null } = req.body ?? {};
     const start = Date.now();
 

@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { validatePassword } from '../validators/userValidators.js';
-import { sendRegistrationConfirmation } from '../utils/mailer.js';
+import { sendRegistrationConfirmation, sendExistingAccountNotification } from '../utils/mailer.js';
 
 const SALT_ROUNDS = 10;
 
@@ -59,8 +59,9 @@ class EmpresaController {
                 [trimmedEmail],
             );
             if (existingUser.rowCount > 0) {
-                // Anti-enumeración OWASP: respuesta idéntica al caso exitoso
-                // No se envía OTP — el flujo fallará silenciosamente en la verificación
+                // Anti-enumeración: misma respuesta + notificación al address real para evitar timing/email attack
+                sendExistingAccountNotification(trimmedEmail)
+                    .catch(err => console.error('[registerEmpresa] fallo al notificar cuenta existente:', err.message));
                 return res.status(201).json({
                     message: 'OTP enviado al correo. Verifica tu email para completar el registro.',
                 });

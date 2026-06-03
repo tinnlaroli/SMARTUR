@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { LayoutGrid, ClipboardList, Info, LogOut } from 'lucide-react';
 import { FormModal } from '../components/FormModal';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
+import { clearAccessToken } from '../../../shared/api/axiosClient';
 
 export default function Form() {
     const navigate = useNavigate();
@@ -23,7 +24,9 @@ export default function Form() {
     }, [token, navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         navigate('/');
     };

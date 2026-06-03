@@ -1,10 +1,19 @@
 import express from 'express';
-import { verifyToken } from '../middleware/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
+import { verifyToken, requireRole } from '../middleware/authMiddleware.js';
 import db from '../config/db.js';
 
 const router = express.Router();
 
-router.post('/contact', async (req, res) => {
+const contactLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiados mensajes enviados. Intenta de nuevo en 10 minutos.' },
+});
+
+router.post('/contact', contactLimiter, async (req, res) => {
     const { email, reason, message, source = 'landing_b2b' } = req.body;
     if (!email || typeof email !== 'string' || !email.includes('@')) {
         return res.status(400).json({ message: 'Email inválido.' });
@@ -26,7 +35,7 @@ router.post('/contact', async (req, res) => {
     }
 });
 
-router.get('/contact-subscriptions', verifyToken, async (req, res) => {
+router.get('/contact-subscriptions', verifyToken, requireRole([1]), async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
     const offset = (page - 1) * limit;
@@ -53,7 +62,7 @@ router.get('/contact-subscriptions', verifyToken, async (req, res) => {
 
 const ALLOWED_STATUSES = ['pending', 'in_progress', 'done', 'dismissed'];
 
-router.patch('/contact-subscriptions/:id/status', verifyToken, async (req, res) => {
+router.patch('/contact-subscriptions/:id/status', verifyToken, requireRole([1]), async (req, res) => {
     const id = parseInt(req.params.id, 10);
     const { status } = req.body;
     if (Number.isNaN(id)) return res.status(400).json({ message: 'ID inválido.' });
@@ -72,7 +81,7 @@ router.patch('/contact-subscriptions/:id/status', verifyToken, async (req, res) 
     }
 });
 
-router.delete('/contact-subscriptions/:id', verifyToken, async (req, res) => {
+router.delete('/contact-subscriptions/:id', verifyToken, requireRole([1]), async (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) return res.status(400).json({ message: 'ID inválido.' });
 

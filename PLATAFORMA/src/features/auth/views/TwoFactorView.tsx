@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setAccessToken } from '../../../shared/api/axiosClient';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { authApi } from '../authApi';
 import type { TwoFactorPayload } from '../types';
@@ -88,9 +89,11 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
             const response = await authApi.twoFactor(payload);
             const { token: jwt } = response;
 
-            localStorage.setItem('token', jwt);
-            if (response.refreshToken) localStorage.setItem('refreshToken', response.refreshToken);
+            setAccessToken(jwt);
+            if (response.refreshToken) sessionStorage.setItem('refreshToken', response.refreshToken);
             setUser(response.user);
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
             localStorage.removeItem('v1:token');
             localStorage.removeItem('v1:user');
 

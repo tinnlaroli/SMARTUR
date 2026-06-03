@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback /*, useMemo */ } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
+import { clearAccessToken } from '../../../shared/api/axiosClient';
 import SmartURLoader from '../../auth/components/SmartURLoader';
 import { FloatingNavbar } from '../../../components/layout/FloatingNavbar';
 import { HeroSection } from '../components/HeroSection';
@@ -162,7 +163,9 @@ export default function Landing() {
     }, [sessionUser, openModal]);
 
     const logout = () => {
-        localStorage.removeItem('token');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         navigate('/');
     };

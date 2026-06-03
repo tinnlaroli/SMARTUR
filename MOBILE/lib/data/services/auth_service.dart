@@ -31,6 +31,15 @@ class AuthService {
 
   AuthService();
 
+  // Parsea el body de la respuesta — lanza AuthException si el JSON es inválido
+  static Map<String, dynamic> _parseBody(http.Response response) {
+    try {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } on FormatException {
+      throw AuthException('Respuesta del servidor inválida (código ${response.statusCode}).');
+    }
+  }
+
   // ── Token persistence ───────────────────────────────────────────────────
 
   Future<void> saveToken(String token) async {
@@ -297,9 +306,9 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       return true;
     } else {
-      final errorMsg =
-          jsonDecode(response.body)['message'] ?? 'Error al registrarse.';
-      throw AuthException(errorMsg);
+      final body = _parseBody(response);
+      final errorMsg = body['message'] ?? 'Error al registrarse.';
+      throw AuthException(errorMsg as String);
     }
   }
 
@@ -315,7 +324,7 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return _parseBody(response);
     }
     if (response.statusCode == 429) {
       throw AuthRateLimitException();
@@ -335,8 +344,8 @@ class AuthService {
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final String? token = data['token'];
+      final data = _parseBody(response);
+      final String? token = data['token'] as String?;
       final String? refresh = data['refreshToken'];
       if (token != null) await saveToken(token);
       if (refresh != null) await saveRefreshToken(refresh);

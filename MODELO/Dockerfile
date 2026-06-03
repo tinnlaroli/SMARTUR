@@ -20,16 +20,20 @@ COPY data/ ./data_seed/
 COPY models/ ./models_seed/
 COPY src/ ./src/
 
-# Directorios destino con permisos amplios para que root los pueda poblar
-RUN mkdir -p /app/data /app/models && chmod 777 /app/data /app/models
+RUN mkdir -p /app/data /app/models
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
+
+# Crear usuario no-root y ceder propiedad de los directorios de trabajo
+RUN addgroup --gid 1001 --system modeluser \
+ && adduser --uid 1001 --system --ingroup modeluser --no-create-home modeluser \
+ && chown -R modeluser:modeluser /app
+
+USER modeluser
 
 WORKDIR /app/src
 
 EXPOSE 8000
 
-# Corre como root para poder escribir en los volúmenes Docker
-# (los volúmenes son propiedad de root; modeluser no tendría permisos de escritura)
 ENTRYPOINT ["sh", "/app/entrypoint.sh"]

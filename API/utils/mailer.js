@@ -235,6 +235,26 @@ export async function sendEmpresaSuspendedEmail(to, { companyName }) {
     });
 }
 
+export async function sendExistingAccountNotification(to) {
+    const platformUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() ?? 'https://app.smartur.online';
+
+    const content = `
+      ${heading('Intento de registro con tu correo')}
+      ${paragraph('Alguien intentó crear una cuenta empresa en SMARTUR usando esta dirección de correo.')}
+      ${paragraph('Si fuiste tú y ya tienes cuenta, puedes iniciar sesión directamente.')}
+      ${ctaButton(`${platformUrl}/login`, 'Iniciar sesión')}
+      ${paragraph(`Si no reconoces esta actividad, ignora este mensaje. Nadie más tiene acceso a tu cuenta.`)}`;
+
+    await deliver({
+        to,
+        subject: 'Intento de registro — SMARTUR',
+        title: 'Intento de registro',
+        text: `Alguien intentó registrarse con tu correo en SMARTUR.\nSi ya tienes cuenta, inicia sesión en ${platformUrl}/login\nSi no reconoces esto, ignora este mensaje.\n\nSMARTUR`,
+        html: content,
+        bulk: false,
+    });
+}
+
 export async function sendRegistrationConfirmation(to, { name, otp }) {
     const content = `
       ${heading(`Hola ${name}, confirma tu correo`)}

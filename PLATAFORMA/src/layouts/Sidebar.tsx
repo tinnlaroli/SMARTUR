@@ -8,6 +8,7 @@ import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
+import { clearAccessToken } from '../shared/api/axiosClient';
 import { TermsModal } from '../features/auth/components/TermsModal';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
@@ -74,8 +75,9 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     );
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         openModal('login');
         navigate('/');

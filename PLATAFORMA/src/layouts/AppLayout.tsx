@@ -7,6 +7,7 @@ import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, Aler
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
+import { clearAccessToken } from '../shared/api/axiosClient';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { getDashboardText } from '../shared/i18n/dashboardLocale';
@@ -372,8 +373,9 @@ export default function AppLayout() {
     }, [markAllAsRead]);
 
     const handleLogout = useCallback(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         openModal('login');
         navigate('/');

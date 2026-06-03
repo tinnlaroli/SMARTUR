@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SEOHelmet } from '../../../shared/components/SEOHelmet';
+import { clearAccessToken } from '../../../shared/api/axiosClient';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
@@ -173,8 +174,9 @@ export function EmpresaLayout() {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         openModal('login');
         navigate('/');

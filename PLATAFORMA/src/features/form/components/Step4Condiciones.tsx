@@ -32,9 +32,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
     const isSubmittingRef = useRef(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Read session from the shared user context — no raw localStorage fallback.
     const { user } = useUserPreferences();
-    const authToken = localStorage.getItem('token');
 
     useGSAP(
         () => {
@@ -101,15 +99,13 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
         }
 
         const aiContext = buildAIContext();
-        console.log('[Step4] Enviando context al recommender:', aiContext);
 
         try {
             const result = await getRecommendations({
                 userId: String(user.id),
-                alpha: 0.2, // Updated to 0.2 as per requirement
-                top_n: 5,   // Updated to 5 as per requirement
+                alpha: 0.2,
+                top_n: 5,
                 context: aiContext,
-                token: authToken,
             });
 
             if (result && result.recommendations && result.recommendations.length > 0) {

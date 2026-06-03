@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { useAuthModal } from '../../auth/context/AuthModalContext';
 import { TermsModal } from '../../auth/components/TermsModal';
+import { clearAccessToken } from '../../../shared/api/axiosClient';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
@@ -51,7 +52,9 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
     );
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        clearAccessToken();
+        sessionStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         clearUser();
         openModal('login');
         navigate('/');

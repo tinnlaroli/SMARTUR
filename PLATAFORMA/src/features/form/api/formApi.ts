@@ -1,7 +1,5 @@
-import axios from 'axios';
+import { api } from '../../../shared/api/axiosClient';
 import type { GetRecommendationsParams, RecommendationsResponse } from '../types/types';
-
-const MODELO_URL = import.meta.env.VITE_MODELO_URL ?? 'http://localhost:8000';
 
 export const formApi = {
     getRecommendations: async ({
@@ -9,19 +7,13 @@ export const formApi = {
         alpha = 0.2,
         top_n = 5,
         context,
-        token = null,
         signal,
-    }: GetRecommendationsParams): Promise<RecommendationsResponse> => {
-        const url = `${MODELO_URL}/recommend/${userId}`;
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const response = await axios.post<RecommendationsResponse>(
-            url,
+    }: Omit<GetRecommendationsParams, 'token'>): Promise<RecommendationsResponse> => {
+        const response = await api.post<RecommendationsResponse>(
+            `/ml/recommend/${userId}`,
             { alpha, top_n, context },
-            { headers, signal }
+            { signal }
         );
-
         return response.data;
     },
 };

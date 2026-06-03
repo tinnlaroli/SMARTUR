@@ -1,6 +1,7 @@
 import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setAccessToken } from '../../../shared/api/axiosClient';
 import type { LoginPayload } from '../types';
 import { authApi } from '../authApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -54,9 +55,11 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
             }
 
             if (response.token && response.user) {
-                localStorage.setItem('token', response.token);
-                if (response.refreshToken) localStorage.setItem('refreshToken', response.refreshToken);
+                setAccessToken(response.token);
+                if (response.refreshToken) sessionStorage.setItem('refreshToken', response.refreshToken);
                 setUser(response.user);
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('v1:token');
                 localStorage.removeItem('v1:user');
 
