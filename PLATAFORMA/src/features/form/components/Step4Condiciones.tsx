@@ -116,7 +116,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
                 throw new Error(copy.step4.noRecommendations);
             }
         } catch (err: any) {
-            setError(err?.message || copy.step4.errorGeneric || 'Error al obtener recomendaciones');
+            setError(err?.message || 'Error al obtener recomendaciones');
         } finally {
             // No reseteamos isSubmitting hasta que el loader termine si hubo éxito
             if (!isReady) isSubmittingRef.current = false;
@@ -143,14 +143,16 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
         );
     }
 
-    if (apiError) {
+    const displayError = localError || apiError;
+
+    if (displayError) {
         return (
             <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-red-500/20 bg-zinc-900/50 p-8 text-center">
                 <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-red-500/10">
                     <XCircle className="size-8 text-red-500" />
                 </div>
                 <h3 className="mb-2 text-2xl font-semibold text-white">{copy.step4.errorTitle}</h3>
-                <p className="mb-8 max-w-md text-zinc-400">{apiError}</p>
+                <p className="mb-8 max-w-md text-zinc-400">{displayError}</p>
                 <button
                     onClick={() => {
                         isSubmittingRef.current = false;
