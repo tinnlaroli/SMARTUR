@@ -9,8 +9,11 @@ const pool = new Pool(
     process.env.DATABASE_URL
         ? {
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false },
-            // Evita caracteres como á/ó mostrándose como "?" (encoding)
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+            max: 20,
+            min: 2,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
             options: '-c client_encoding=UTF8',
         }
         : {
@@ -20,6 +23,10 @@ const pool = new Pool(
             password: process.env.DB_PASSWORD,
             port: process.env.DB_PORT,
             ssl: false,
+            max: 20,
+            min: 2,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
             options: '-c client_encoding=UTF8',
         }
 );

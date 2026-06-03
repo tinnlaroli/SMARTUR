@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import threading
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -36,6 +37,7 @@ quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from se
 _scheduler      = None   # APScheduler instance — module-level so endpoints can read/update it
 _restmex_cache  = None   # tuple of (reviews_df, biz_df)
 _training_in_progress = False   # True mientras se entrena en background al arrancar
+_models_lock    = threading.RLock()  # Guards global model references during swap
 
 def _get_restmex_data():
     global _restmex_cache
@@ -385,16 +387,23 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
         if profile_ctx:
             logger.info(f"Perfil de viajero cargado para usuario {user_id}")
 
+        with _models_lock:
+            _engine = engine
+            _ctx    = context_model
+            _lfm    = lightfm_model
+            _cb     = content_model_cb
+            _qs     = quality_scores
+
         recs = recommend_hybrid(
             user_id=user_id,
-            engine=engine,
-            context_model=context_model,
+            engine=_engine,
+            context_model=_ctx,
             alpha=payload.alpha,
             context=merged_context,
             top_n=payload.top_n,
-            lightfm_model=lightfm_model,
-            content_model=content_model_cb,
-            quality_scores=quality_scores,
+            lightfm_model=_lfm,
+            content_model=_cb,
+            quality_scores=_qs,
         )
         return RecommendationResponse(
             user_id=user_id,

@@ -138,7 +138,7 @@ api.interceptors.response.use(
             }
         }
 
-        if (error.response?.status >= 500) {
+        if (import.meta.env.DEV && error.response?.status >= 500) {
             console.error(
                 `[API] ${error.config?.method?.toUpperCase()} ${error.config?.url} → ${error.response.status}`,
                 error.response.data,

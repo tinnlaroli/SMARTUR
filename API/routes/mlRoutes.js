@@ -125,11 +125,14 @@ router.post('/ml/train', verifyToken, async (req, res) => {
  * Body: { alpha?, top_n?, context? }
  */
 router.post('/ml/recommend/:userId', verifyToken, async (req, res) => {
-    const { userId } = req.params;
-    if (userId !== String(req.user.id) && req.user.role_id !== 1) {
+    const userId = parseInt(req.params.userId, 10);
+    if (isNaN(userId)) return res.status(400).json({ message: 'userId inválido.' });
+    if (userId !== req.user.id && req.user.role_id !== 1) {
         return res.status(403).json({ message: 'Acceso no autorizado.' });
     }
-    const { alpha = 0.2, top_n = 5, context = null } = req.body ?? {};
+    let { alpha = 0.2, top_n = 5, context = null } = req.body ?? {};
+    alpha = Math.min(1, Math.max(0, parseFloat(alpha) || 0.2));
+    top_n = Math.min(50, Math.max(1, parseInt(top_n, 10) || 5));
     const start = Date.now();
 
     try {

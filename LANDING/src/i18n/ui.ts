@@ -299,6 +299,7 @@ export const ui = {
     "footer.mobileApp.download": "Descargar APK",
     "footer.mobileApp.version": "Última versión",
     "footer.location": "Las Altas Montañas, Veracruz",
+    "footer.privacy": "Política de Privacidad",
     "footer.copyright": "Todos los derechos reservados.",
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
@@ -729,6 +730,7 @@ export const ui = {
     "footer.mobileApp.download": "Download APK",
     "footer.mobileApp.version": "Latest version",
     "footer.location": "High Mountains, Veracruz",
+    "footer.privacy": "Privacy Policy",
     "footer.copyright": "All rights reserved.",
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
@@ -1127,6 +1129,7 @@ export const ui = {
     "footer.mobileApp.download": "Télécharger l'APK",
     "footer.mobileApp.version": "Dernière version",
     "footer.location": "Hautes Montagnes, Veracruz",
+    "footer.privacy": "Politique de Confidentialité",
     "footer.copyright": "Tous droits réservés.",
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
@@ -1577,6 +1580,7 @@ export const ui = {
     "footer.mobileApp.download": "Baixar APK",
     "footer.mobileApp.version": "Última versão",
     "footer.location": "Altas Montanhas, Veracruz",
+    "footer.privacy": "Política de Privacidade",
     "footer.copyright": "Todos os direitos reservados.",
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 

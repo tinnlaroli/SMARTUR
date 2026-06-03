@@ -157,8 +157,9 @@ class SmarturContextModel:
         df['price_level'] = df['price_level'].fillna(2).astype(int)
         df['is_accessible'] = df['is_accessible'].fillna(0).astype(int)
         df['outdoor'] = df['outdoor'].fillna(0).astype(int)
-        df['latitude'] = df['latitude'].fillna(0).astype(float)
-        df['longitude'] = df['longitude'].fillna(0).astype(float)
+        # Altas Montañas region center — avoids placing missing coords in the Atlantic Ocean
+        df['latitude'] = df['latitude'].fillna(18.85).astype(float)
+        df['longitude'] = df['longitude'].fillna(-96.95).astype(float)
 
         for col, default in self._local_defaults.items():
             if col not in df.columns:

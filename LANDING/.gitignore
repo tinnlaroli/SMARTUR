@@ -12,7 +12,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
 # environment variables
 .env
 .env.production
@@ -23,4 +22,21 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-.env
+# CI / CD workflows (original repo, not needed for practice)
+.github/
+
+# IDE config
+.vscode/
+
+# Agent config
+.agents/
+skills-lock.json
+
+# Utility scripts
+inspect_lottie.js
+stabilize_lottie_advanced.js
+
+# Editor config files
+.editorconfig
+.prettierrc
+.dockerignore

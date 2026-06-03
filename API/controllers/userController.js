@@ -218,6 +218,17 @@ class UserController {
       }
 
       if (req.body.password !== undefined) {
+        if (!isAdmin) {
+          if (!req.body.currentPassword) {
+            return res.status(400).json({ message: 'Se requiere la contraseña actual para cambiarla.' });
+          }
+          const currentUser = await User.findById(targetId);
+          const bcrypt = (await import('bcrypt')).default;
+          const valid = await bcrypt.compare(req.body.currentPassword, currentUser.password);
+          if (!valid) {
+            return res.status(400).json({ message: 'Contraseña actual incorrecta.' });
+          }
+        }
         validatePassword(req.body.password);
         updates.password = req.body.password;
       }

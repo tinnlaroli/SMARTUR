@@ -33,10 +33,8 @@ export function useFormRecommendations() {
                 return json;
             } catch (err: any) {
                 if (err?.name === 'AbortError' || err?.message === 'The operation was aborted.') {
-                    console.log('[useFormRecommendations] request aborted');
                     return null;
                 }
-                console.error('[useFormRecommendations] error:', err);
                 const errorMessage = err?.response?.data?.detail || err?.message || 'Error al obtener recomendaciones';
                 setError(errorMessage);
                 throw new Error(errorMessage);

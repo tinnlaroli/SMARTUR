@@ -27,6 +27,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
     const [visitado, setVisitado] = useState<string>(data.visitado || 'no');
 
     const { loading, error: apiError, getRecommendations, cancel } = useFormRecommendations();
+    const [localError, setError] = useState<string | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [pendingResult, setPendingResult] = useState<RecommendationsResponse | null>(null);
     const isSubmittingRef = useRef(false);
@@ -93,7 +94,7 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
         });
 
         if (!user || !user.id) {
-            alert(copy.step4.loginRequired);
+            setError(copy.step4.loginRequired);
             isSubmittingRef.current = false;
             return;
         }
@@ -114,8 +115,8 @@ export const Step4Condiciones: React.FC<Step4Props> = ({ data = {}, onBack, onCh
             } else if (result) {
                 throw new Error(copy.step4.noRecommendations);
             }
-        } catch (err) {
-            console.error('[Step4] Error al obtener recomendaciones:', err);
+        } catch (err: any) {
+            setError(err?.message || copy.step4.errorGeneric || 'Error al obtener recomendaciones');
         } finally {
             // No reseteamos isSubmitting hasta que el loader termine si hubo éxito
             if (!isReady) isSubmittingRef.current = false;

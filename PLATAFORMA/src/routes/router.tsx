@@ -19,9 +19,11 @@ const CompanyPage         = lazy(() => import('../features/companies/pages/Compa
 const TouristServicePage  = lazy(() => import('../features/tourist-services/pages/TouristServicePage').then(m => ({ default: m.TouristServicePage })));
 const LocationPage        = lazy(() => import('../features/locations/pages/LocationPage').then(m => ({ default: m.LocationPage })));
 const ProfilesPage        = lazy(() => import('../features/profiles/pages/ProfilesPage').then(m => ({ default: m.ProfilesPage })));
+const ActivitiesPage      = lazy(() => import('../features/activities/pages/ActivitiesPage').then(m => ({ default: m.ActivitiesPage })));
 const CertificationsPage  = lazy(() => import('../features/certifications/pages/CertificationsPage').then(m => ({ default: m.CertificationsPage })));
 const POIPage             = lazy(() => import('../features/points-of-interest/pages/POIPage').then(m => ({ default: m.POIPage })));
 const StatisticsPage      = lazy(() => import('../features/statistics/pages/StatisticsPage').then(m => ({ default: m.StatisticsPage })));
+const TemplatesPage         = lazy(() => import('../features/evaluations/pages/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
 const InstrumentBuilderPage = lazy(() => import('../features/instrument-builder/pages/InstrumentBuilderPage').then(m => ({ default: m.InstrumentBuilderPage })));
 const InstrumentEditorPage  = lazy(() => import('../features/instrument-builder/pages/InstrumentEditorPage').then(m => ({ default: m.InstrumentEditorPage })));
 const CommunityPage       = lazy(() => import('../features/community/pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
@@ -66,11 +68,11 @@ export const router = createBrowserRouter([
                                     { path: 'servicios',            element: <S><TouristServicePage /></S> },
                                     { path: 'ubicaciones',          element: <S><LocationPage /></S> },
                                     { path: 'perfiles',             element: <S><ProfilesPage /></S> },
-                                    { path: 'actividades',          element: <Navigate to="/dashboard/companias" replace /> },
+                                    { path: 'actividades',          element: <S><ActivitiesPage /></S> },
                                     { path: 'certificaciones',      element: <S><CertificationsPage /></S> },
                                     { path: 'poi',                  element: <S><POIPage /></S> },
                                     { path: 'estadisticas',         element: <S><StatisticsPage /></S> },
-                                    { path: 'plantillas',           element: <Navigate to="/dashboard/instrumentos" replace /> },
+                                    { path: 'plantillas',           element: <S><TemplatesPage /></S> },
                                     { path: 'instrumentos',         element: <S><InstrumentBuilderPage /></S> },
                                     { path: 'instrumentos/:id',     element: <S><InstrumentEditorPage /></S> },
                                     { path: 'comunidad',            element: <S><CommunityPage /></S> },

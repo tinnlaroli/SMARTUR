@@ -254,7 +254,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
       logoAlt={t("header.logo.alt")}
       links={links}
       link1={{ title: t("button.login"), url: import.meta.env.PUBLIC_TOURIST_APP_URL || "https://app.smartur.online/" }}
-      link2={{ title: t("button.get-started"), url: "#contacto" }}
+      link2={{ title: t("button.get-started"), url: `${isHomePage ? '' : homePath}${linksMap[currentLang as keyof typeof linksMap]?.at(-1)?.url ?? '#contacto'}` }}
       mobileMenuLabel={t("accessibility.toggleMenu")}
     />
     <div id="smooth-wrapper">

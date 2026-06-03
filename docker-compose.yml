@@ -6,6 +6,11 @@ services:
     image: postgres:16-alpine
     container_name: smartur-postgres
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-12345678}
@@ -30,6 +35,11 @@ services:
       dockerfile: Dockerfile
     container_name: smartur-api
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     environment:
       PORT: 3000
       DB_HOST: postgres
@@ -77,6 +87,11 @@ services:
       dockerfile: Dockerfile
     container_name: smartur-modelo
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1536M
     environment:
       POI_DB_HOST: postgres
       POI_DB_PORT: 5432
@@ -165,6 +180,11 @@ services:
     image: nginx:alpine
     container_name: smartur-nginx
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
     ports:
       - '80:80'
       - '4321:4321'
