@@ -13,7 +13,7 @@ export class UserService {
     const user = await findByEmail(email);
     if (!user) throw new Error("Usuario no encontrado");
 
-    const token = String(Math.floor(100000 + Math.random() * 900000));
+    const token = String(crypto.randomInt(100000, 1000000));
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await pool.query(
@@ -83,9 +83,7 @@ export class UserService {
         return { status: 400, message: "Credenciales incorrectas" };
       }
 
-      const verificationCode = String(
-        Math.floor(100000 + Math.random() * 900000),
-      );
+      const verificationCode = String(crypto.randomInt(100000, 1000000));
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
       await pool.query(

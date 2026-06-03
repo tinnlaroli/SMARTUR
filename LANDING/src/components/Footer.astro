@@ -165,7 +165,12 @@ try {
       <div class="footer-bottom">
         <p class="cp">© {new Date().getFullYear()} {logoAlt}. {copyright}</p>
         <div class="legal-links">
-          <a href={lang === 'es' ? '/privacidad' : '/privacidad'}>{t("footer.privacy")}</a>
+          <a href={
+            lang === 'en' ? '/en/privacy' :
+            lang === 'fr' ? '/fr/politique-de-confidentialite' :
+            lang === 'pt' ? '/pt/privacidade' :
+            '/privacidad'
+          }>{t("footer.privacy")}</a>
           <span aria-hidden="true">·</span>
           <a href="mailto:smarturutcv@gmail.com">{t("footer.contact")}</a>
         </div>

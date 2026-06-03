@@ -1,0 +1,129 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Privacy Policy — SMARTUR">
+  <section class="privacy-page">
+    <div class="privacy-container">
+      <header class="privacy-header">
+        <p class="privacy-label">Legal</p>
+        <h1>Privacy Policy</h1>
+        <p class="privacy-updated">Last updated: June 2026</p>
+      </header>
+
+      <div class="privacy-body">
+
+        <section>
+          <h2>1. Who we are</h2>
+          <p>
+            SMARTUR is an intelligent tourism platform developed as an academic project at the
+            Universidad Tecnológica del Centro de Veracruz (UTCV). We operate the website
+            <a href="https://smartur.online">smartur.online</a> and the SMARTUR mobile app.
+          </p>
+          <p>
+            Contact: <a href="mailto:smarturutcv@gmail.com">smarturutcv@gmail.com</a>
+          </p>
+        </section>
+
+        <section>
+          <h2>2. Data we collect</h2>
+          <p>When you register and use SMARTUR we collect:</p>
+          <ul>
+            <li><strong>Account data:</strong> full name, email address and password (stored as a bcrypt hash, never in plain text).</li>
+            <li><strong>Travel preferences:</strong> traveler type, favourite place categories, visit history and ratings you voluntarily submit.</li>
+            <li><strong>Approximate location:</strong> when you use the exploration map, your position is used only to show nearby places. It is not stored persistently.</li>
+            <li><strong>Usage data:</strong> interactions with recommendations (which places you open, how long you spend on them) to improve AI engine personalisation.</li>
+            <li><strong>Profile photo:</strong> optional. If you upload one, it is stored on Cloudinary under our account.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>3. How we use your data</h2>
+          <ul>
+            <li>Generate personalised tourist-place recommendations through our AI engine (KNN + Random Forest).</li>
+            <li>Manage your session and preferences (theme, language).</li>
+            <li>Send you relevant push notifications if you enable permissions in the app.</li>
+            <li>Continuously improve the service by analysing usage patterns in an aggregated and anonymous way.</li>
+            <li>Comply with applicable legal obligations.</li>
+          </ul>
+          <p>We do not sell, rent or share your data with third parties for commercial purposes.</p>
+        </section>
+
+        <section>
+          <h2>4. Local storage</h2>
+          <p>
+            The web app uses the browser's <strong>localStorage</strong> and <strong>sessionStorage</strong> to:
+          </p>
+          <ul>
+            <li>Keep your session active (authentication token in sessionStorage — deleted when you close the tab).</li>
+            <li>Remember your theme (light/dark) and language preference.</li>
+            <li>Record that you accepted this notice (key <code>smartur_consent</code>).</li>
+          </ul>
+          <p>You can clear this data at any time from your browser settings.</p>
+        </section>
+
+        <section>
+          <h2>5. Security</h2>
+          <ul>
+            <li>Passwords hashed with <strong>bcrypt</strong> (never stored in plain text).</li>
+            <li>Encrypted communication via <strong>HTTPS / TLS</strong>.</li>
+            <li>Short-lived access tokens (15 min) with automatic refresh-token rotation.</li>
+            <li>Two-step verification (2FA) by email at login.</li>
+            <li>Security event logs to detect unauthorised access.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>6. Your rights</h2>
+          <p>You have the right to:</p>
+          <ul>
+            <li><strong>Access</strong> the data we hold about you.</li>
+            <li><strong>Correct</strong> incorrect information from your in-app profile.</li>
+            <li><strong>Delete</strong> your account and all associated data.</li>
+            <li><strong>Revoke</strong> notification permissions from your device settings.</li>
+          </ul>
+          <p>To exercise any of these rights, write to us at <a href="mailto:smarturutcv@gmail.com">smarturutcv@gmail.com</a>.</p>
+        </section>
+
+        <section>
+          <h2>7. Changes to this policy</h2>
+          <p>
+            We may update this policy occasionally. If the changes are significant, we will notify you
+            by email or via a prominent notice on the platform. The date of the last update always
+            appears at the top of this document.
+          </p>
+        </section>
+
+        <section>
+          <h2>8. Contact</h2>
+          <p>
+            For any questions about this policy or the handling of your data:<br />
+            <strong>Email:</strong> <a href="mailto:smarturutcv@gmail.com">smarturutcv@gmail.com</a><br />
+            <strong>Phone:</strong> <a href="tel:+522711730136">271 173 0136</a>
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .privacy-page {
+    padding: clamp(5rem, 10vw, 8rem) 1.5rem clamp(4rem, 8vw, 6rem);
+    min-height: 80vh;
+  }
+  .privacy-container { max-width: 720px; margin: 0 auto; }
+  .privacy-header { margin-bottom: 3rem; border-bottom: 1px solid rgba(148, 163, 184, 0.12); padding-bottom: 2rem; }
+  .privacy-label { font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #FC478E; margin-bottom: 0.75rem; }
+  .privacy-header h1 { font-family: 'CalSans', 'Outfit', sans-serif; font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 700; color: var(--color-text, #F1F5F9); margin: 0 0 0.5rem; }
+  .privacy-updated { font-family: 'Outfit', sans-serif; font-size: 0.8125rem; color: var(--color-text-muted, #64748B); margin: 0; }
+  .privacy-body { display: flex; flex-direction: column; gap: 2.5rem; }
+  .privacy-body section h2 { font-family: 'Outfit', sans-serif; font-size: 1.125rem; font-weight: 700; color: var(--color-text, #F1F5F9); margin-bottom: 0.75rem; }
+  .privacy-body p, .privacy-body li { font-family: 'Outfit', sans-serif; font-size: 0.9375rem; line-height: 1.7; color: var(--color-text-alt, #94A3B8); margin-bottom: 0.5rem; }
+  .privacy-body ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+  .privacy-body li { margin-bottom: 0.375rem; }
+  .privacy-body a { color: #4DB9CA; text-decoration: underline; text-underline-offset: 2px; }
+  .privacy-body code { font-family: monospace; font-size: 0.875em; background: rgba(77, 185, 202, 0.1); padding: 0.1em 0.4em; border-radius: 4px; color: #4DB9CA; }
+  .privacy-body strong { color: var(--color-text, #F1F5F9); font-weight: 600; }
+</style>

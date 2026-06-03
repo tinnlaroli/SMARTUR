@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Prevent cron accumulation: exit immediately if another instance is running
+LOCK_FILE="/tmp/smartur_healthcheck.lock"
+exec 9>"$LOCK_FILE"
+flock -n 9 || { logger -t smartur-health "health check already running, skipping"; exit 0; }
+
 ENV_FILE="/opt/SMARTUR/.env"
 [ -f "$ENV_FILE" ] && source "$ENV_FILE"
 
@@ -14,7 +19,7 @@ COMPOSE_DIR="/opt/SMARTUR"
 send_alert() {
   local msg="$1"
   if [ -n "$TELEGRAM_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-    curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+    curl -s --max-time 10 -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
       -d chat_id="$TELEGRAM_CHAT_ID" \
       -d text="🚨 *SMARTUR VPS*: ${msg}" \
       -d parse_mode="Markdown" > /dev/null
@@ -25,8 +30,8 @@ send_alert() {
 SERVICES=("smartur-postgres" "smartur-api" "smartur-modelo" "smartur-plataforma" "smartur-landing" "smartur-nginx")
 
 for service in "${SERVICES[@]}"; do
-  status=$(docker inspect --format='{{.State.Status}}' "$service" 2>/dev/null || echo "missing")
-  health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$service" 2>/dev/null || echo "unknown")
+  status=$(timeout 10 docker inspect --format='{{.State.Status}}' "$service" 2>/dev/null || echo "missing")
+  health=$(timeout 10 docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$service" 2>/dev/null || echo "unknown")
 
   if [ "$status" != "running" ]; then
     send_alert "Contenedor *${service}* caído (status: ${status}). Intentando restart..."

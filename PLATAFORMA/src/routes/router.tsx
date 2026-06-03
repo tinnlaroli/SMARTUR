@@ -9,8 +9,9 @@ import { PageSpinner } from '../shared/components/PageSpinner';
 import { NotFound } from '../features/notfound/NotFound';
 
 // ── Public pages ──────────────────────────────────────────────────────────────
-const Landing       = lazy(() => import('../features/landing/pages/Landing'));
-const Form          = lazy(() => import('../features/form/pages/Form'));
+const Landing              = lazy(() => import('../features/landing/pages/Landing'));
+const Form                 = lazy(() => import('../features/form/pages/Form'));
+const RegisterEmpresaPage  = lazy(() => import('../features/empresa/pages/RegisterEmpresaPage').then(m => ({ default: m.RegisterEmpresaPage })));
 
 // ── Admin dashboard pages ─────────────────────────────────────────────────────
 const Home                = lazy(() => import('../features/home/Home').then(m => ({ default: m.Home })));
@@ -52,6 +53,10 @@ export const router = createBrowserRouter([
             {
                 path: '/',
                 element: <S><Landing /></S>,
+            },
+            {
+                path: '/registro-empresa',
+                element: <S><RegisterEmpresaPage /></S>,
             },
             {
                 children: [

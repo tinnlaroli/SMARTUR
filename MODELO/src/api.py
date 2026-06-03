@@ -39,6 +39,42 @@ _restmex_cache  = None   # tuple of (reviews_df, biz_df)
 _training_in_progress = False   # True mientras se entrena en background al arrancar
 _models_lock    = threading.RLock()  # Guards global model references during swap
 
+# Connection pool for /metrics — reuses DB connections instead of opening one per request
+_db_pool        = None
+_db_pool_lock   = threading.Lock()
+
+# Default context for cold-start users with no profile in DB (Altas Montañas region, Veracruz)
+_REGION_DEFAULT_CONTEXT = {
+    "presupuesto_bucket": "medio",
+    "edad_range": "25-34",
+    "tiposTurismo": ["cultural"],
+    "group_type": "pareja",
+    "wants_tours": False,
+    "needs_hotel": False,
+    "pref_food": True,
+    "requiere_accesibilidad": False,
+    "pref_outdoor": False,
+    "has_visited_region": False,
+}
+
+
+def _get_db_pool():
+    global _db_pool
+    if _db_pool is None:
+        with _db_pool_lock:
+            if _db_pool is None:
+                import psycopg2.pool as _pg_pool
+                _db_pool = _pg_pool.ThreadedConnectionPool(
+                    minconn=1,
+                    maxconn=5,
+                    host=os.environ.get("POI_DB_HOST", "localhost"),
+                    port=int(os.environ.get("POI_DB_PORT", 5432)),
+                    dbname=os.environ.get("POI_DB_NAME", "smartur"),
+                    user=os.environ.get("POI_DB_USER", "postgres"),
+                    password=os.environ.get("POI_DB_PASSWORD", os.environ.get("DB_PASSWORD", "")),
+                )
+    return _db_pool
+
 def _get_restmex_data():
     global _restmex_cache
     if _restmex_cache is None:
@@ -155,6 +191,11 @@ async def lifespan(app: FastAPI):
         gbm_model is not None
     )
     if not models_ready:
+        missing = [n for n, v in [("engine", engine), ("rf", context_model), ("gbm", gbm_model)] if v is None]
+        logger.warning(
+            f"[boot] ⚠️  API arrancando con modelos faltantes: {missing}. "
+            "Los endpoints /recommend devolverán 503 hasta que el entrenamiento termine."
+        )
         logger.info("[boot] Modelos faltantes — iniciando entrenamiento en hilo de fondo. "
                     "API disponible en modo degradado.")
         _training_in_progress = True
@@ -387,6 +428,11 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
         if profile_ctx:
             logger.info(f"Perfil de viajero cargado para usuario {user_id}")
 
+        # Cold-start fallback: use region defaults when no profile or form context is available
+        if not merged_context:
+            merged_context = dict(_REGION_DEFAULT_CONTEXT)
+            logger.info(f"[cold-start] Sin contexto para usuario {user_id} — usando defaults de región")
+
         with _models_lock:
             _engine = engine
             _ctx    = context_model
@@ -440,17 +486,10 @@ def get_metrics():
     _BASE = Path(_MODELS)
     data = {}
 
-    # 1. Try DB first
+    # 1. Try DB first (pooled connection — no new TCP handshake per request)
     try:
-        _persist_metrics_to_db  # ensure helper is defined (imported below function)
-        import psycopg2
-        conn = psycopg2.connect(
-            host=os.environ.get("DB_HOST", "localhost"),
-            port=int(os.environ.get("DB_PORT", 5432)),
-            dbname=os.environ.get("DB_NAME", "smartur"),
-            user=os.environ.get("DB_USER", "postgres"),
-            password=os.environ.get("DB_PASSWORD", ""),
-        )
+        pool = _get_db_pool()
+        conn = pool.getconn()
         try:
             with conn.cursor() as cur:
                 cur.execute(
@@ -458,7 +497,7 @@ def get_metrics():
                 )
                 row = cur.fetchone()
         finally:
-            conn.close()
+            pool.putconn(conn)
         if row:
             data = row[0]  # psycopg2 returns jsonb as dict automatically
     except Exception as db_err:
