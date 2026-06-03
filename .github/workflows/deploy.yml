@@ -35,24 +35,16 @@ jobs:
             set -e
             cd /opt/SMARTUR
 
-            # Asegura que estamos en main
-            git checkout main 2>/dev/null || true
-
-            # Inyecta Firebase service account desde GitHub Secret
+            # Inyecta Firebase service account desde GitHub Secret (.env está en .gitignore)
             sed -i '/^FIREBASE_SERVICE_ACCOUNT=/d' .env
             echo "FIREBASE_SERVICE_ACCOUNT=${{ secrets.FIREBASE_SERVICE_ACCOUNT_B64 }}" >> .env
 
-            # Guarda cambios locales (ej: docker-compose.yml de producción)
-            git stash
-
-            # Sincroniza forzado con origin/main (evita divergencia por commits locales)
+            # Limpia cualquier estado de merge/stash previo y resetea al último commit
+            git stash clear 2>/dev/null || true
             git fetch origin
             git reset --hard origin/main
 
-            # Restaura los cambios locales de producción
-            git stash pop || true
-
-            # Rebuild servicios de aplicación (modelo solo si su código cambió)
+            # Rebuild servicios de aplicación
             docker compose -f docker-compose.yml up -d --build \
               --no-deps api plataforma landing nginx modelo
 
