@@ -22,7 +22,7 @@ send_alert() {
   logger -t smartur-health "$msg"
 }
 
-SERVICES=("smartur-postgres" "smartur-redis" "smartur-api" "smartur-modelo" "smartur-plataforma" "smartur-landing" "smartur-nginx")
+SERVICES=("smartur-postgres" "smartur-api" "smartur-modelo" "smartur-plataforma" "smartur-landing" "smartur-nginx")
 
 for service in "${SERVICES[@]}"; do
   status=$(docker inspect --format='{{.State.Status}}' "$service" 2>/dev/null || echo "missing")
