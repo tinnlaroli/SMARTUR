@@ -390,7 +390,6 @@ class _GlassCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -620,113 +619,6 @@ class _BottomContent extends StatelessWidget {
           ),
         ),
     );
-  }
-}
-
-// ── Location tab — opens Google Maps if coordinates are available ──
-
-class _LocationTab extends StatelessWidget {
-  final double? lat;
-  final double? lon;
-  final String locationLine;
-  final String placeName;
-  final AppLocalizations l10n;
-
-  const _LocationTab({
-    required this.lat,
-    required this.lon,
-    required this.locationLine,
-    required this.placeName,
-    required this.l10n,
-  });
-
-  Future<void> _openMaps() async {
-    final encodedName = Uri.encodeComponent(placeName);
-    final Uri uri;
-    if (lat != null && lon != null) {
-      // Deep-link to the exact coordinates with place name as label
-      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon&query_place_id=$encodedName');
-    } else {
-      // Fallback: search by place name in the region
-      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent("$placeName, Veracruz, México")}');
-    }
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      // url_launcher couldn't open — silently degrade (Maps not installed)
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hasCoords = lat != null && lon != null;
-    final scheme = Theme.of(context).colorScheme;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 4),
-        if (hasCoords)
-            Row(
-              children: [
-                Icon(Icons.location_on_outlined, color: scheme.onSurfaceVariant, size: 13),
-                const SizedBox(width: 4),
-                Text(
-                  '${lat!.toStringAsFixed(5)}, ${lon!.toStringAsFixed(5)}',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 11,
-                    color: scheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            )
-          else
-            Row(
-              children: [
-                Icon(Icons.location_city_outlined, color: scheme.onSurfaceVariant, size: 13),
-                const SizedBox(width: 4),
-                Text(
-                  locationLine,
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 11,
-                    color: scheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: _openMaps,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: BoxDecoration(
-                color: SmarturStyle.blue.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: SmarturStyle.blue.withValues(alpha: 0.50),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.map_outlined, size: 15, color: SmarturStyle.blue),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.openInMaps,
-                    style: const TextStyle(
-                      fontFamily: 'Outfit',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: SmarturStyle.blue,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
   }
 }
 

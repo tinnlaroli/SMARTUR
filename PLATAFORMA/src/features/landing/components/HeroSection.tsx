@@ -54,7 +54,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
     const subtitle = t('heroSection.subtitle');
 
     useEffect(() => {
-        const hero = heroRef.current;
         if (!phoneContainerRef.current) return;
 
         const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
@@ -69,12 +68,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             }
         };
 
+        let cleanup: (() => void) | undefined;
         if ('requestIdleCallback' in window) {
             const id = requestIdleCallback(preload, { timeout: 1200 });
-            return () => cancelIdleCallback(id);
+            cleanup = () => cancelIdleCallback(id);
+        } else {
+            const timeoutId = (window as any).setTimeout(preload, 1);
+            cleanup = () => (window as any).clearTimeout(timeoutId);
         }
-        const t = window.setTimeout(preload, 1);
-        return () => window.clearTimeout(t);
+        return cleanup;
     }, []);
 
     useEffect(() => {

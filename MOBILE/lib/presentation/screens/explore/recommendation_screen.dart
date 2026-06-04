@@ -1610,25 +1610,6 @@ class _FeedbackBtn extends StatelessWidget {
 // Reusable UI components
 // ═══════════════════════════════════════════════════════════════════════════
 
-class _GlassCard extends StatelessWidget {
-  final Widget child;
-  const _GlassCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.12)),
-      ),
-      child: child,
-    );
-  }
-}
-
 // ── Form progress indicator ────────────────────────────────────────────────
 
 class _FormProgress extends StatelessWidget {
@@ -1815,95 +1796,6 @@ class _InlineSection extends StatelessWidget {
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final bool required;
-  final Widget child;
-
-  const _SectionCard({
-    required this.title,
-    this.subtitle,
-    this.required = false,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(title,
-                style: TextStyle(fontFamily: 'Outfit', fontSize: 13, fontWeight: FontWeight.w700,
-                    color: scheme.onSurface)),
-              if (required) ...[
-                const SizedBox(width: 4),
-                const Text('*', style: TextStyle(color: SmarturStyle.orange, fontSize: 14)),
-              ],
-              if (subtitle != null) ...[
-                const SizedBox(width: 6),
-                Text(subtitle!,
-                  style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
-                      color: scheme.onSurface.withValues(alpha: 0.4))),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _SelectChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _SelectChip({required this.label, required this.icon, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? SmarturStyle.purple : scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? SmarturStyle.purple : scheme.outline.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14,
-                color: selected ? semantic.onImageText : scheme.onSurface.withValues(alpha: 0.6)),
-            const SizedBox(width: 6),
-            Text(label,
-              style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600,
-                  color: selected ? semantic.onImageText : scheme.onSurface)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BudgetButton extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -2030,52 +1922,6 @@ class _ToggleChip extends StatelessWidget {
               size: 14, color: value ? SmarturStyle.orange : scheme.onSurface.withValues(alpha: 0.3)),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _RequiredStateChip extends StatelessWidget {
-  final String label;
-  final bool done;
-
-  const _RequiredStateChip({required this.label, required this.done});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: done
-            ? SmarturStyle.green.withValues(alpha: 0.14)
-            : scheme.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: done
-              ? SmarturStyle.green.withValues(alpha: 0.35)
-              : scheme.error.withValues(alpha: 0.30),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-            size: 13,
-            color: done ? SmarturStyle.green : scheme.error,
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Outfit',
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: done ? SmarturStyle.green : scheme.error,
-            ),
-          ),
-        ],
       ),
     );
   }
