@@ -256,6 +256,57 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
                 CHECK (place_kind IN ('poi','svc'));`,
     },
     {
+        name: 'v18_poi_images_verified',
+        sql: `
+-- URLs verificadas directamente en upload.wikimedia.org (sin doble redirect)
+-- Xalapa
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg/800px-Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg'
+  WHERE name IN ('Agora de la Ciudad Xalapa', 'Museo Interactivo', 'Museo Interactivo de Xalapa',
+                 'Parque Macuiltépetl', 'Ex-Hacienda de Toxpan');
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg/800px-Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg'
+  WHERE name = 'Museo de Antropología de Xalapa';
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/JardinBotanicoFJC.JPG/800px-JardinBotanicoFJC.JPG'
+  WHERE name IN ('Jardín Botánico Clavijero', 'Parque Macuiltépetl');
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Ex-Hacienda_%22El_Lencero%22_-_panoramio.jpg/800px-Ex-Hacienda_%22El_Lencero%22_-_panoramio.jpg'
+  WHERE name IN ('Ex-Hacienda El Lencero', 'Ex-Hacienda de Toxpan');
+
+-- Coatepec
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cascada_de_Texolo.jpg/800px-Cascada_de_Texolo.jpg'
+  WHERE name = 'Cascada de Texolo' AND latitude BETWEEN 19.44 AND 19.47;
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Iglesia_San_Jer%C3%B3nimo.JPG/800px-Iglesia_San_Jer%C3%B3nimo.JPG'
+  WHERE name IN ('Jardín Hidalgo Coatepec', 'Museo del Café Coatepec');
+
+-- Orizaba
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Pico_de_Orizaba%2C_Veracruz..JPG/800px-Pico_de_Orizaba%2C_Veracruz..JPG'
+  WHERE name = 'Pico de Orizaba';
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Palacio_de_hierro_de_Orizaba%2C_Veracruz.jpg/800px-Palacio_de_hierro_de_Orizaba%2C_Veracruz.jpg'
+  WHERE name IN ('Palacio de Hierro Orizaba', 'Cerro del Borrego Orizaba');
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Catedral_de_Orizaba%2C_Veracruz%2C_Mexico.jpg/800px-Catedral_de_Orizaba%2C_Veracruz%2C_Mexico.jpg'
+  WHERE name = 'Catedral de San Miguel Orizaba';
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Vaca_en_Parque_Castillo_en_Orizaba%2C_Veracruz.jpg/800px-Vaca_en_Parque_Castillo_en_Orizaba%2C_Veracruz.jpg'
+  WHERE name = 'Parque Apolinar Castillo';
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Puente_de_Metlac_%2829835614172%29.jpg/800px-Puente_de_Metlac_%2829835614172%29.jpg'
+  WHERE name = 'Cascada Río Metlac';
+
+-- Fortín de las Flores
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Fort%C3%ADn_de_las_flores%2C_Veracruz.jpg/800px-Fort%C3%ADn_de_las_flores%2C_Veracruz.jpg'
+  WHERE name = 'Jardín Botánico Fortín';
+
+-- Córdoba
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Riverwalk_with_Public_Art_-_Cordoba_-_Veracruz_-_Mexico_-_02.jpg/800px-Riverwalk_with_Public_Art_-_Cordoba_-_Veracruz_-_Mexico_-_02.jpg'
+  WHERE name IN ('Catedral de Córdoba', 'Los Portales de Córdoba', 'Parque Ecológico Cerro del Metate');
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Street_Scene_-_Cordoba_-_Veracruz_-_Mexico.jpg/800px-Street_Scene_-_Cordoba_-_Veracruz_-_Mexico.jpg'
+  WHERE name IN ('Barrio de La Villa', 'Municipio de La Villa', 'Cerro del Borrego Córdoba');
+
+-- Xico
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cascada_de_Texolo.jpg/800px-Cascada_de_Texolo.jpg'
+  WHERE name IN ('Cascada de Texolo', 'Cascada de Texolo (Xico)') AND latitude BETWEEN 19.41 AND 19.44;
+UPDATE point_of_interest SET image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Parroquia_de_Santa_Mar%C3%ADa_Magdalena_Xico_%28Veracruz%29.jpg/800px-Parroquia_de_Santa_Mar%C3%ADa_Magdalena_Xico_%28Veracruz%29.jpg'
+  WHERE name IN ('Santuario de María Magdalena', 'Mercado de Artesanías Xico',
+                 'Mirador Cafetal La Niebla', 'Mercado de Xico', 'Mirador de la Niebla');
+`,
+    },
+    {
         name: 'v17_poi_images_fix',
         sql: `
 -- Re-aplica imágenes sin restricción id_location IS NULL (v04 se saltó POIs ya asignados)
