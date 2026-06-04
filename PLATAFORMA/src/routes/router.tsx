@@ -42,8 +42,14 @@ const EmpresaAnalyticsPage   = lazy(() => import('../features/empresa/pages/Empr
 const EmpresaConfiguracionPage = lazy(() => import('../features/empresa/pages/EmpresaConfiguracionPage').then(m => ({ default: m.EmpresaConfiguracionPage })));
 
 // Suspense wrapper used inline for route elements
-function S({ children }: { children: React.ReactNode }) {
-    return <Suspense fallback={<PageSpinner />}>{children}</Suspense>;
+function S({
+    children,
+    fallback = <PageSpinner />,
+}: {
+    children: React.ReactNode;
+    fallback?: React.ReactNode;
+}) {
+    return <Suspense fallback={fallback}>{children}</Suspense>;
 }
 
 export const router = createBrowserRouter([
@@ -52,7 +58,11 @@ export const router = createBrowserRouter([
         children: [
             {
                 path: '/',
-                element: <S><Landing /></S>,
+                element: (
+                    <S fallback={null}>
+                        <Landing />
+                    </S>
+                ),
             },
             {
                 path: '/registro-empresa',

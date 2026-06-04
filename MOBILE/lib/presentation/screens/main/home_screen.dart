@@ -2034,7 +2034,8 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
                 builder: (ctx, child) {
                   double offset = 0;
                   if (_ctrl.hasClients && _ctrl.position.haveDimensions) {
-                    offset = ((_ctrl.page ?? i) - i).abs().clamp(0.0, 1.0);
+                    final page = _ctrl.page ?? i.toDouble();
+                    offset = (page - i).abs().clamp(0.0, 1.0);
                   }
                   return Transform.scale(
                     scale: 1.0 - offset * 0.05,

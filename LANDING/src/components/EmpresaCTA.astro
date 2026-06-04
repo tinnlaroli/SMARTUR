@@ -195,17 +195,6 @@ const ICONS: Record<string, string> = {
     background: var(--color-bg-alt);
     overflow: hidden;
 
-    /* Top border line — matches other sections */
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(var(--rgb-text), 0.07);
-    }
-
     @media (--mq-tablet) {
       padding: 4rem 0;
     }

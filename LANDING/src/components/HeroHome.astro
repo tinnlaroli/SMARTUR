@@ -17,38 +17,47 @@ const t = useTranslations(lang);
 
 <script>document.documentElement.classList.add('js-ready');</script>
 <div class="sy-hero-home" id="hero-section">
-  <!-- Background shimmer for post-load animation -->
   <div class="hero-shimmer"></div>
+  <div class="hero-bg-visual" aria-hidden="true">
+    <div class="hero-blob hero-blob-1" />
+    <div class="hero-blob hero-blob-2" />
+    <div class="hero-blob hero-blob-3" />
+    <div class="hero-grid-pattern" />
+  </div>
 
   <div class="u-container container">
     <div class="inner">
       <div class="content">
         <h1 class="u-heading title hero-title" set:html={title} />
-        {
-          subtitle ? (
-            <p class="u-text subtitle hero-subtitle">{subtitle}</p>
-          ) : null
-        }
-        {
-          cta ? (
-            <div class="cta-wrapper hero-cta">
-              <Button
-                {...cta}
-                arrow
-                color="cyan"
-                class="cta"
-                ariaLabel={t("hero.scrollDownAriaLabel")}
-              />
-              <div class="cta-shimmer" />
-            </div>
-          ) : null
-        }
-      </div>
-      <div class="video-wrapper hero-video-wrap">
-        <!-- 3D Phone Container -->
+        {subtitle ? (
+          <p class="u-text subtitle hero-subtitle">{subtitle}</p>
+        ) : null}
+        {cta ? (
+          <div class="cta-wrapper hero-cta">
+            <Button
+              {...cta}
+              arrow
+              color="primary-alt"
+              class="cta"
+              ariaLabel={t("hero.scrollDownAriaLabel")}
+            />
+            <div class="cta-shimmer" />
+          </div>
+        ) : null}
       </div>
     </div>
   </div>
+
+  <button
+    type="button"
+    class="scroll-indicator"
+    aria-label={t("hero.scrollDownAriaLabel")}
+  >
+    <span>{t("hero.scrollIndicator")}</span>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  </button>
 </div>
 
 <style>
@@ -79,47 +88,108 @@ const t = useTranslations(lang);
     opacity: 0;
   }
 
+  /* Background visual element — decorative blobs */
+  .hero-bg-visual {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    will-change: transform;
+  }
+
+  .hero-blob-1 {
+    width: 45vmax;
+    height: 45vmax;
+    right: -10vmax;
+    top: -5vmax;
+    background: radial-gradient(circle, rgba(var(--rgb-purple-accent), 0.6) 0%, transparent 70%);
+    animation: heroBlobFloat 20s ease-in-out infinite alternate;
+  }
+
+  .hero-blob-2 {
+    width: 35vmax;
+    height: 35vmax;
+    right: 5vmax;
+    bottom: -10vmax;
+    background: radial-gradient(circle, rgba(var(--rgb-cyan-accent), 0.5) 0%, transparent 70%);
+    animation: heroBlobFloat 25s ease-in-out infinite alternate-reverse;
+  }
+
+  .hero-blob-3 {
+    width: 25vmax;
+    height: 25vmax;
+    right: 20vmax;
+    top: 30%;
+    background: radial-gradient(circle, rgba(var(--rgb-pink-primary), 0.4) 0%, transparent 70%);
+    animation: heroBlobFloat 18s ease-in-out infinite alternate;
+  }
+
+  @keyframes heroBlobFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-3vmax, 2vmax) scale(1.1); }
+    66% { transform: translate(2vmax, -3vmax) scale(0.9); }
+    100% { transform: translate(-2vmax, 1vmax) scale(1.05); }
+  }
+
+  .hero-grid-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(var(--rgb-text), 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.5;
+  }
+
   .container {
     position: relative;
     z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
   }
 
   .inner {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: 5rem;
+    justify-content: center;
+    text-align: center;
     padding: 4rem 0;
     position: relative;
+    width: 100%;
 
     @media (--mq-desktop-lg) {
-      gap: 4rem;
       padding: 3rem 0;
     }
 
     @media (--mq-tablet) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4rem;
       padding: 3rem 0 2rem;
     }
 
     @media (--mq-phone) {
       padding: 5rem 0 1rem;
-      gap: 2.5rem;
     }
 
     @media (--mq-phone-sm) {
       padding: 4.5rem 0 1rem;
-      gap: 2rem;
     }
   }
 
   .content {
-    flex: 1;
-    max-width: 720px;
+    max-width: 860px;
     z-index: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
     @media (--mq-tablet) {
       max-width: 100%;
@@ -127,16 +197,13 @@ const t = useTranslations(lang);
   }
 
   .title {
-    --fs: var(--font-size-display-xl);
+    --fs: var(--font-size-display-lg);
     --lh: var(--line-height-display);
     --fw: 900;
     --ls: var(--letter-spacing-display);
     color: var(--color-text);
   }
 
-  /* Hero animation initial state set by GSAP in JS — not CSS.
-     CSS hides only when .js-ready is present (set by script before paint).
-     Without JS, content is fully visible for crawlers and no-JS users. */
   .js-ready .hero-title {
     opacity: 0;
     transform: translateY(40px);
@@ -153,16 +220,10 @@ const t = useTranslations(lang);
     transform: scale(0.7);
   }
 
-  .js-ready .hero-video-wrap {
-    opacity: 0;
-    transform: translateX(80px) scale(0.92);
-  }
-
-  /* Once hero is revealed (fallback or post-animation) */
   .sy-hero-home.hero-revealed .hero-title,
   .sy-hero-home.hero-revealed .hero-subtitle,
   .sy-hero-home.hero-revealed .hero-cta,
-  .sy-hero-home.hero-revealed .hero-video-wrap {
+  .sy-hero-home.hero-revealed .scroll-indicator {
     opacity: 1;
     transform: none;
     filter: none;
@@ -180,10 +241,7 @@ const t = useTranslations(lang);
     }
   }
 
-  .cta {
-    margin-top: 2.75rem;
-  }
-
+  /* ─── CTA Button ─── */
   .cta-wrapper {
     position: relative;
     display: inline-block;
@@ -208,61 +266,86 @@ const t = useTranslations(lang);
     z-index: 5;
   }
 
-  /* Seamless video integration — 3D phone only on desktop for performance */
-  .video-wrapper {
-    flex-shrink: 0;
-    width: 50%;
-    max-width: 850px;
-    aspect-ratio: 1 / 1;
-    position: relative;
-    z-index: 0;
+  /* ─── Scroll Indicator ─── */
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--color-text-alt);
+    z-index: 10;
+    opacity: 0;
 
-    -webkit-mask-image: radial-gradient(
-      ellipse 92% 92% at center,
-      rgba(0, 0, 0, 1) 40%,
-      rgba(0, 0, 0, 0.95) 60%,
-      rgba(0, 0, 0, 0.75) 75%,
-      rgba(0, 0, 0, 0.3) 88%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    mask-image: radial-gradient(
-      ellipse 92% 92% at center,
-      rgba(0, 0, 0, 1) 40%,
-      rgba(0, 0, 0, 0.95) 60%,
-      rgba(0, 0, 0, 0.75) 75%,
-      rgba(0, 0, 0, 0.3) 88%,
-      rgba(0, 0, 0, 0) 100%
-    );
-
-    @media (--mq-desktop-lg) {
-      width: 80%;
-      max-width: 750px;
+    @media (min-width: 768px) {
+      display: flex;
     }
 
-    @media (--mq-tablet) {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
+    span {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
     }
 
-    /* Hide video completely on phone to clear space */
-    @media (--mq-phone) {
-      display: none !important;
+    .chevron {
+      width: 2rem;
+      height: 2rem;
+      animation: chevronBounce 2.5s ease-in-out infinite;
+    }
+
+    &:hover {
+      color: var(--color-purple);
     }
   }
 
-  .hero-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 0;
+  @keyframes chevronBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(6px); opacity: 1; }
+  }
+
+  /* ─── Responsive blob adjustments ─── */
+  @media (--mq-tablet) {
+    .hero-blob-1 {
+      width: 60vmax;
+      height: 60vmax;
+      right: -15vmax;
+      opacity: 0.1;
+    }
+    .hero-blob-2 {
+      width: 50vmax;
+      height: 50vmax;
+      opacity: 0.1;
+    }
+    .hero-blob-3 {
+      display: none;
+    }
+  }
+
+  @media (--mq-phone) {
+    .hero-blob-1 {
+      width: 80vmax;
+      height: 80vmax;
+      right: -25vmax;
+      top: auto;
+      bottom: -10vmax;
+      opacity: 0.08;
+    }
+    .hero-blob-2 {
+      display: none;
+    }
   }
 </style>
 
 <script>
   import gsap from "gsap";
-  import { initPhoneScene } from "../assets/3d/phone";
 
   let heroAnimated = false;
 
@@ -273,39 +356,21 @@ const t = useTranslations(lang);
     const hero = document.getElementById("hero-section");
     if (!hero) return;
 
-    // Remove hero-revealed class to ensure GSAP animations are not overridden by CSS
     hero.classList.remove("hero-revealed");
 
     const titleEl = hero.querySelector(".hero-title") as HTMLElement;
     const subtitleEl = hero.querySelector(".hero-subtitle") as HTMLElement;
     const ctaEl = hero.querySelector(".hero-cta") as HTMLElement;
-    const phoneContainer = hero.querySelector(
-      ".hero-video-wrap",
-    ) as HTMLElement;
     const shimmerEl = hero.querySelector(".hero-shimmer") as HTMLElement;
     const ctaShimmer = hero.querySelector(".cta-shimmer") as HTMLElement;
+    const scrollIndicatorEl = hero.querySelector(".scroll-indicator") as HTMLElement;
 
-    // Explicitly set initial states to ensure they are hidden before animation starts
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    const elementsToHide = [titleEl, subtitleEl, ctaEl].filter(
-      (el) => el !== null,
-    );
-    if (phoneContainer) elementsToHide.push(phoneContainer);
-
-    gsap.set(elementsToHide, { opacity: 0 });
+    gsap.set([titleEl, subtitleEl, ctaEl], { opacity: 0 });
+    if (scrollIndicatorEl) gsap.set(scrollIndicatorEl, { opacity: 0, y: -12 });
 
     if (titleEl) gsap.set(titleEl, { y: 40 });
     if (subtitleEl) gsap.set(subtitleEl, { y: 30, filter: "blur(8px)" });
     if (ctaEl) gsap.set(ctaEl, { scale: 0.7 });
-
-    // Desktop: slide from right. Mobile: slide up slightly
-    if (phoneContainer) {
-      if (!isMobile) {
-        gsap.set(phoneContainer, { x: 80, scale: 0.92 });
-      } else {
-        gsap.set(phoneContainer, { y: 30 });
-      }
-    }
 
     const tl = gsap.timeline({
       defaults: { ease: "power3.out" },
@@ -314,186 +379,56 @@ const t = useTranslations(lang);
       },
     });
 
-    // ——— Background shimmer wash ———
+    // Background shimmer
     if (shimmerEl) {
-      tl.to(
-        shimmerEl,
-        {
-          opacity: 1,
-          x: "200%",
-          duration: 1.5,
-          ease: "power2.inOut",
-        },
-        0,
-      );
-
-      tl.to(
-        shimmerEl,
-        {
-          opacity: 0,
-          duration: 0.5,
-        },
-        1.2,
-      );
+      tl.to(shimmerEl, { opacity: 1, x: "200%", duration: 1.5, ease: "power2.inOut" }, 0);
+      tl.to(shimmerEl, { opacity: 0, duration: 0.5 }, 1.2);
     }
 
-    // ——— Title: words cascade on desktop; simple fade on mobile for performance ———
+    // Title
     if (titleEl) {
-      if (isMobile) {
-        gsap.set(titleEl, { opacity: 1, y: 0 });
-        tl.to(
-          titleEl,
-          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-          0.1,
-        );
-      } else {
-        const html = titleEl.innerHTML;
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-
-        function wrapWords(node: Node): void {
-          if (node.nodeType === Node.TEXT_NODE) {
-            const text = node.textContent || "";
-            const words = text.split(/(\s+)/);
-            const frag = document.createDocumentFragment();
-            words.forEach((w) => {
-              if (w.trim()) {
-                const span = document.createElement("span");
-                span.className = "hero-word";
-                span.style.display = "inline-block";
-                span.textContent = w;
-                frag.appendChild(span);
-              } else if (w) {
-                frag.appendChild(document.createTextNode(w));
-              }
-            });
-            node.parentNode?.replaceChild(frag, node);
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            const el = node as HTMLElement;
-            if (el.tagName === "SPAN" && el.style.color) {
-              el.classList.add("hero-word");
-              el.style.display = "inline-block";
-              return;
-            }
-            if (el.tagName === "BR") return;
-            Array.from(node.childNodes).forEach(wrapWords);
-          }
-        }
-
-        Array.from(tempDiv.childNodes).forEach(wrapWords);
-        titleEl.innerHTML = tempDiv.innerHTML;
-
-        const words = titleEl.querySelectorAll(".hero-word");
-        gsap.set(titleEl, { opacity: 1, y: 0 });
-        gsap.set(words, { opacity: 0, y: 50, rotateX: 45 });
-
-        tl.to(
-          words,
-          {
-            opacity: 1,
-            y: 0,
-            rotateX: 0,
-            duration: 0.8,
-            stagger: 0.08,
-            ease: "back.out(1.2)",
-          },
-          0.1,
-        );
-      }
+      tl.to(titleEl, { opacity: 1, y: 0, duration: 0.7 }, 0.1);
     }
 
-    // ——— Subtitle: blur-to-clear ———
+    // Subtitle
     if (subtitleEl) {
-      tl.to(
-        subtitleEl,
-        {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          duration: 1,
-        },
-        0.5,
-      );
+      tl.to(subtitleEl, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1 }, 0.5);
     }
 
-    // ——— CTA: scale with elastic ———
+    // CTA
     if (ctaEl) {
-      tl.to(
-        ctaEl,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 1,
-          ease: "elastic.out(1, 0.5)",
-        },
-        0.7,
-      );
-
+      tl.to(ctaEl, { opacity: 1, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" }, 0.7);
       if (ctaShimmer) {
-        tl.to(
-          ctaShimmer,
-          {
-            left: "150%",
-            duration: 0.8,
-            ease: "power2.inOut",
-          },
-          1.2,
-        );
+        tl.to(ctaShimmer, { left: "150%", duration: 0.8, ease: "power2.inOut" }, 1.2);
       }
     }
 
-    // ——— Video/Phone: slide from right (desktop) or up (mobile) ———
-    if (phoneContainer) {
-      if (!isMobile) {
-        tl.to(
-          phoneContainer,
-          {
-            opacity: 1,
-            x: 0,
-            scale: 1,
-            duration: 1.2,
-            ease: "back.out(1.5)",
-          },
-          0.3,
-        );
-      } else {
-        // Mobile simple fade up
-        tl.to(
-          phoneContainer,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power2.out",
-          },
-          0.3,
-        );
-      }
+    // Scroll indicator
+    if (scrollIndicatorEl) {
+      tl.to(scrollIndicatorEl, { opacity: 1, y: 0, duration: 1, ease: "power2.out" }, 1.5);
     }
   }
 
-  function init3DPhone() {
-    if (!window.matchMedia("(min-width: 768px)").matches) return;
-    const phoneContainer = document.querySelector(
-      ".hero-video-wrap",
-    ) as HTMLElement;
-    if (!phoneContainer) return;
-    try {
-      initPhoneScene(phoneContainer);
-    } catch (e) {
-      console.warn("Failed to initialize 3D Phone scene:", e);
-    }
-  }
-
-  // Listen for loader completion: animate hero + init Spline phone together
   window.addEventListener("smartur:loaded", () => {
     animateHero();
-    init3DPhone();
   }, { once: true });
 
-  // Fallback: if no loader (instant navigation), reveal after small delay
   if (!document.body.classList.contains("is-loading")) {
-    const _t = setTimeout(() => { animateHero(); init3DPhone(); }, 100);
+    const _t = setTimeout(() => { animateHero(); }, 100);
     document.addEventListener('astro:before-swap', () => clearTimeout(_t), { once: true });
+  }
+
+  // Scroll indicator click
+  const indicator = document.querySelector(".scroll-indicator");
+  if (indicator) {
+    indicator.addEventListener("click", () => {
+      const nextSection =
+        document.getElementById("region") ??
+        document.getElementById("nosotros") ??
+        document.getElementById("home");
+      if (nextSection) {
+        nextSection.scrollIntoView({ behavior: "smooth" });
+      }
+    });
   }
 </script>

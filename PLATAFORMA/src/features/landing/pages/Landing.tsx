@@ -50,6 +50,7 @@ export default function Landing() {
     const location = useLocation();
     const { openModal } = useAuthModal();
     const [loading, setLoading] = useState(true);
+    const [bootReady, setBootReady] = useState(document.readyState === 'complete');
     const [activeSection, setActiveSection] = useState('inicio');
     // const [isStandalonePwa, setIsStandalonePwa] = useState(false);
     const isStandalonePwa = false; // Forzado a false para ver landing en móvil
@@ -70,6 +71,20 @@ export default function Landing() {
     }, [location.state, location.pathname, navigate]);
 
     const { t } = useLanguage();
+
+    useEffect(() => {
+        if (document.readyState === 'complete') {
+            setBootReady(true);
+            return;
+        }
+        const onLoad = () => setBootReady(true);
+        window.addEventListener('load', onLoad, { once: true });
+        const fallback = window.setTimeout(() => setBootReady(true), 4000);
+        return () => {
+            window.removeEventListener('load', onLoad);
+            window.clearTimeout(fallback);
+        };
+    }, []);
 
     /* Comentado: infoCards para PWA
     const infoCards = useMemo<InfoCard[]>(
@@ -102,7 +117,6 @@ export default function Landing() {
 
     const navLinks = [
         { label: t('nav.home'), target: 'inicio', external: false },
-        { label: t('nav.howItWorks'), target: 'como-funciona', external: false },
         { label: t('nav.region'), target: 'region', external: false },
         { label: t('nav.technology'), target: 'tecnologia', external: false },
         { label: t('nav.about'), target: 'nosotros', external: false },
@@ -122,7 +136,7 @@ export default function Landing() {
             { threshold: 0.1, rootMargin: '-100px 0px -50% 0px' },
         );
 
-        ['inicio', 'como-funciona', 'region', 'tecnologia', 'nosotros', 'impacto', 'testimonios', 'faqs', 'contacto'].forEach((id) => {
+        ['inicio', 'region', 'tecnologia', 'nosotros', 'impacto', 'testimonios', 'faqs', 'contacto'].forEach((id) => {
             const el = document.getElementById(id);
             if (el) observer.observe(el);
         });
@@ -174,7 +188,11 @@ export default function Landing() {
 
     return (
         <div className="relative min-h-screen bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
-            {loading && createPortal(<SmartURLoader onFinished={() => setLoading(false)} />, document.body)}
+            {loading &&
+                createPortal(
+                    <SmartURLoader isReady={bootReady} onFinished={() => setLoading(false)} />,
+                    document.body,
+                )}
 
             <div className="page-blobs" aria-hidden="true">
               <div className="pblob pblob-pink-tr" />
@@ -186,7 +204,7 @@ export default function Landing() {
             </div>
 
             {!isStandalonePwa && (
-                <div className="relative overflow-x-hidden">
+                <div className="landing-page relative overflow-x-clip">
                     <FloatingNavbar 
                         navLinks={navLinks} 
                         handleStartExperience={handleStartExperience} 
@@ -197,11 +215,13 @@ export default function Landing() {
                     />
 
                     <main className="relative z-10 w-full">
-                        <div id="inicio">
-                            <HeroSection handleStartExperience={handleStartExperience} />
-                        </div>
+                        <div className="landing-hero-story landing-ambient-bg">
+                            <div id="inicio">
+                                <HeroSection handleStartExperience={handleStartExperience} />
+                            </div>
 
-                        <Statements handleStartExperience={handleStartExperience} />
+                            <Statements handleStartExperience={handleStartExperience} />
+                        </div>
 
                         <div id="region">
                             <VideoSection />
@@ -221,7 +241,7 @@ export default function Landing() {
 
                         <Testimonials />
 
-                        <div id="contacto">
+                        <div id="contacto" className="relative z-[2]">
                             <ContactForm />
                             <Faqs />
                         </div>

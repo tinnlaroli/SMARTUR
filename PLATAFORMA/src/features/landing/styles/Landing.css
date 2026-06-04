@@ -221,7 +221,7 @@
   }
 }
 
-@media (max-width: 987px) {
+@media (max-width: 1023px) {
   .sy-hero-home .inner {
     flex-direction: column;
     align-items: flex-start;
@@ -245,7 +245,7 @@
   padding-inline: 0;
 }
 
-@media (max-width: 987px) {
+@media (max-width: 1023px) {
   .sy-hero-home .content {
     flex: 1 1 auto;
     max-width: 100%;
@@ -268,7 +268,7 @@
   }
 }
 
-@media (max-width: 987px) {
+@media (max-width: 1023px) {
   .sy-hero-home .title {
     font-size: 4rem;
   }
@@ -349,35 +349,137 @@
   filter: none;
 }
 
-.sy-hero-home .video-wrapper {
+.sy-hero-home .hero-aside {
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.25rem;
   width: 50%;
   max-width: 850px;
-  aspect-ratio: 1 / 1;
-  position: relative;
-  z-index: 0;
   margin-inline-start: auto;
 }
 
+.sy-hero-home .hero-aside .video-wrapper {
+  width: 100%;
+}
+
+.sy-hero-home .video-wrapper {
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  z-index: 0;
+}
+
 @media (max-width: 1680px) {
-  .sy-hero-home .video-wrapper {
+  .sy-hero-home .hero-aside {
     width: 80%;
     max-width: 750px;
   }
 }
 
-@media (max-width: 987px) {
-  .sy-hero-home .video-wrapper {
+/* Tablet + móvil: sin teléfono 3D, solo descargas de app */
+@media (max-width: 1023px) {
+  .sy-hero-home .hero-aside .video-wrapper {
+    display: none !important;
+  }
+
+  .sy-hero-home .hero-aside {
     width: 100%;
-    max-width: 600px;
+    max-width: none;
+    align-items: stretch;
     margin-inline: auto;
+    margin-top: 0.5rem;
   }
 }
 
-@media (max-width: 767px) {
-  .sy-hero-home .video-wrapper {
-    display: none !important;
+/* Hero app download badges (APK + Play Store próximamente) */
+.sy-hero-home .hero-app-downloads {
+  width: 100%;
+  max-width: 22rem;
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.sy-hero-home.hero-revealed .hero-app-downloads {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 1023px) {
+  .sy-hero-home .hero-app-downloads {
+    max-width: 100%;
   }
+}
+
+.sy-hero-home .hero-app-downloads__hint {
+  margin: 0 0 0.75rem;
+  font: 400 0.8125rem / 1.5 var(--font-family-body);
+  color: var(--color-text-alt);
+}
+
+.sy-hero-home .hero-app-downloads__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.sy-hero-home .hero-app-downloads__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease;
+}
+
+.sy-hero-home .hero-app-downloads__btn--apk {
+  color: #fff;
+  background: var(--color-cyan);
+  box-shadow: 0 8px 20px rgba(var(--rgb-cyan-accent), 0.28);
+}
+
+.sy-hero-home .hero-app-downloads__btn--apk:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(var(--rgb-cyan-accent), 0.38);
+}
+
+.sy-hero-home .hero-app-downloads__btn--play {
+  cursor: default;
+  user-select: none;
+  color: var(--color-text-alt);
+  background: rgba(var(--rgb-text), 0.04);
+  border: 1px solid var(--color-border);
+  filter: grayscale(1);
+  opacity: 0.72;
+}
+
+.sy-hero-home .hero-app-downloads__play-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+}
+
+.sy-hero-home .hero-app-downloads__play-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-alt);
+}
+
+.sy-hero-home .hero-app-downloads__play-soon {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-alt);
+  opacity: 0.85;
 }
 
 /* ─── Hero ambient orb animations ───────────────────── */
@@ -406,7 +508,24 @@
   .hero-orb-1, .hero-orb-2, .hero-orb-3 { animation: none; }
 }
 
-/* ─── Testimonials mobile scroll ────────────────────── */
+/* ─── Testimonials: evitar solapamiento con contacto en móvil ─── */
+.landing-testimonials {
+  isolation: isolate;
+}
+
+@media (max-width: 767px) {
+  .landing-testimonials {
+    padding-bottom: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #contacto {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+/* Legacy horizontal scroll cards */
 .testimonial-card:first-child { margin-left: 1.5rem; }
 .testimonial-card:last-child  { margin-right: 1.5rem; }
 
@@ -759,6 +878,68 @@ section,
 footer,
 .section { background: transparent !important; }
 
+/* Hero + story: blobs fijos (.page-blobs) visibles detrás — sin capa opaca intermedia */
+.landing-ambient-bg,
+.landing-hero-story,
+.sy-hero-home {
+  background: transparent !important;
+}
+
+/* Story: mismo fondo que hero (blobs globales), sin corte ni sombra al pinchar */
+#inicio,
+#inicio .sy-hero-home,
+.sy-statements,
+.sy-rect-inner,
+.pin-spacer {
+  box-shadow: none !important;
+  border: none !important;
+}
+
+#inicio {
+  margin-bottom: 0;
+}
+
+#inicio .sy-hero-home {
+  margin-bottom: 0;
+}
+
+.pin-spacer {
+  background: transparent !important;
+}
+
+/* Primer statement (hook): fondo propio opaco + blobs locales, tapa el rosa del stack */
+.st-panel-hero-surface {
+  background: var(--color-bg) !important;
+}
+
+.st-panel-hero-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 320px 320px at -5% 35%, rgba(var(--rgb-purple-accent), 0.07), transparent 70%),
+    radial-gradient(ellipse 260px 260px at 88% 50%, rgba(var(--rgb-cyan-accent), 0.08), transparent 70%),
+    radial-gradient(ellipse 300px 300px at 8% 68%, rgba(var(--rgb-pink-primary), 0.07), transparent 70%),
+    radial-gradient(ellipse 280px 280px at 96% 80%, rgba(var(--rgb-purple-accent), 0.08), transparent 70%),
+    radial-gradient(ellipse 240px 240px at 38% 92%, rgba(var(--rgb-cyan-accent), 0.07), transparent 70%);
+}
+
+[data-theme="dark"] .st-panel-hero-surface::before {
+  background:
+    radial-gradient(ellipse 320px 320px at -5% 35%, rgba(var(--rgb-purple-accent), 0.10), transparent 70%),
+    radial-gradient(ellipse 260px 260px at 88% 50%, rgba(var(--rgb-cyan-accent), 0.11), transparent 70%),
+    radial-gradient(ellipse 300px 300px at 8% 68%, rgba(var(--rgb-pink-primary), 0.10), transparent 70%),
+    radial-gradient(ellipse 280px 280px at 96% 80%, rgba(var(--rgb-purple-accent), 0.11), transparent 70%),
+    radial-gradient(ellipse 240px 240px at 38% 92%, rgba(var(--rgb-cyan-accent), 0.09), transparent 70%);
+}
+
+html.story-section-active .page-blobs .pblob-pink-tr {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 @media (max-width: 768px) {
   .pblob { filter: blur(80px); }
   .pblob-pink-tr, .pblob-purple-ml, .pblob-pink-bl, .pblob-purple-br { width: 180px; height: 180px; }
@@ -801,15 +982,91 @@ footer,
   }
 }
 
-/* ─── Touch targets ─── */
-@media (pointer: coarse) {
-  a, button, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+/* ─── Landing responsive system ───────────────────────── */
+.landing-page {
+  width: 100%;
+  max-width: 100%;
+}
+
+.landing-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.landing-hero-story,
+.sy-statements,
+.pin-spacer {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.landing-story-content h2 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (max-width: 767px) {
+  .sy-hero-home {
+    min-height: 100svh;
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
-  nav a {
-    padding-block: 0.75rem;
-    padding-inline: 0.5rem;
+
+  .sy-hero-home .inner {
+    padding-bottom: 1.5rem;
+  }
+
+  .sy-hero-home .cta-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2rem;
+  }
+
+  .sy-hero-home .hero-cta-btn {
+    width: 100%;
+  }
+
+  .sy-hero-home .btn-premium > span,
+  .sy-hero-home .btn-premium > span > span {
+    width: 100%;
+  }
+
+  .landing-story-content h2 {
+    font-size: clamp(1.85rem, 9vw, 2.75rem) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sy-hero-home .hero-app-downloads__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sy-hero-home .hero-app-downloads__btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* ─── Touch targets (landing only — avoid breaking inline links) ─── */
+@media (pointer: coarse) {
+  .landing-page .btn-premium,
+  .landing-page .control-btn,
+  .landing-page .hero-app-downloads__btn--apk,
+  .landing-page .scroll-indicator,
+  .landing-page .bridge-action,
+  .landing-page .st-panel .btn-premium,
+  .landing-page .map-container button,
+  .landing-page .map-municipios-mobile button,
+  .landing-page footer ul button,
+  .landing-page .mobile-menu-overlay nav > button {
+    min-height: 44px;
+  }
+
+  .landing-page footer ul button {
+    min-width: auto;
+    padding-block: 0.35rem;
   }
 }
 

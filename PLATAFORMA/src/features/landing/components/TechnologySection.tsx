@@ -39,11 +39,11 @@ export const TechnologySection: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-24 md:py-36" style={{ background: 'var(--color-bg)' }}>
-            <div className="mx-auto max-w-[1240px] px-6">
+        <section ref={sectionRef} className="overflow-x-clip py-16 sm:py-24 md:py-36" style={{ background: 'var(--color-bg)' }}>
+            <div className="landing-container mx-auto w-full max-w-[1240px] px-4 sm:px-6">
 
                 {/* Header */}
-                <div className="how-section-header mb-16">
+                <div className="how-section-header mb-10 sm:mb-16">
                     <p className="mb-3 text-xs font-black uppercase tracking-[0.25em]" style={{ color: 'var(--color-purple)' }}>
                         {t('how.label')}
                     </p>
@@ -62,7 +62,7 @@ export const TechnologySection: React.FC = () => {
                         return (
                             <div
                                 key={step.title}
-                                className="how-step-row group flex flex-col gap-5 rounded-3xl p-8"
+                                className="how-step-row group flex flex-col gap-5 rounded-3xl p-5 sm:p-8"
                                 style={{
                                     background: 'var(--color-bg-alt)',
                                     border: '1px solid var(--color-border)',
@@ -77,7 +77,7 @@ export const TechnologySection: React.FC = () => {
                                         <Icon className="size-7" style={{ color: step.color }} />
                                     </div>
                                     <span
-                                        className="text-[3rem] font-black leading-none tabular-nums tracking-tighter"
+                                        className="text-[clamp(2rem,8vw,3rem)] font-black leading-none tabular-nums tracking-tighter"
                                         style={{ color: `rgba(${step.rgb}, 0.18)`, fontFamily: 'var(--font-heading)' }}
                                     >
                                         0{i + 1}

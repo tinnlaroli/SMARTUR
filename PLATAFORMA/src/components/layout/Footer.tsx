@@ -41,15 +41,14 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
 
     return (
         <footer
-            className="relative w-full border-t"
+            className="relative w-full"
             style={{
                 background: 'rgba(var(--rgb-bg), 0.96)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                borderColor: 'var(--color-border)',
             }}
         >
-            <div className="mx-auto max-w-[1280px] px-6 md:px-10 lg:px-16 pt-16 pb-8">
+            <div className="landing-container mx-auto max-w-[1280px] px-4 pt-12 pb-8 sm:px-6 md:px-10 lg:px-16 lg:pt-16">
                 {/* Main grid */}
                 <div className="mb-14 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_2.5fr] lg:gap-12">
 
@@ -113,7 +112,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                     <Mail className="mt-0.5 size-4 flex-shrink-0" style={{ color: 'var(--color-purple)' }} />
                                     <a
                                         href="mailto:smarturutcv@gmail.com"
-                                        className="text-sm font-medium transition-colors duration-200"
+                                        className="break-all text-sm font-medium transition-colors duration-200"
                                         style={{ color: 'var(--color-text-alt)' }}
                                         onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-cyan)')}
                                         onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-alt)')}
@@ -190,16 +189,16 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                     href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
                                     className="group inline-flex w-fit items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5"
                                     style={{
-                                        background: 'var(--color-pink)',
-                                        boxShadow: '0 8px 20px rgba(var(--rgb-pink-primary), 0.28)',
+                                        background: 'var(--color-cyan)',
+                                        boxShadow: '0 8px 20px rgba(var(--rgb-cyan-accent), 0.28)',
                                     }}
                                     onMouseEnter={e => {
                                         (e.currentTarget as HTMLAnchorElement).style.opacity = '0.88';
-                                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 12px 24px rgba(var(--rgb-pink-primary), 0.38)';
+                                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 12px 24px rgba(var(--rgb-cyan-accent), 0.38)';
                                     }}
                                     onMouseLeave={e => {
                                         (e.currentTarget as HTMLAnchorElement).style.opacity = '1';
-                                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 20px rgba(var(--rgb-pink-primary), 0.28)';
+                                        (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 20px rgba(var(--rgb-cyan-accent), 0.28)';
                                     }}
                                 >
                                     <Download className="size-4" />

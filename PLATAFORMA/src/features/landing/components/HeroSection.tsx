@@ -4,6 +4,7 @@ import { ChevronDown, ArrowRight } from 'lucide-react';
 import { initPhoneScene } from '../../../assets/3D/phone';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { prefersReducedMotion } from '../utils/motion';
+import { HeroAppDownloads } from './HeroAppDownloads';
 
 interface HeroSectionProps {
     handleStartExperience: () => void;
@@ -54,6 +55,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
 
     useEffect(() => {
         const hero = heroRef.current;
+        if (!phoneContainerRef.current) return;
+
+        const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+        if (!isDesktop) return;
+
+        const preload = () => {
+            try {
+                const cleanup = initPhoneScene(phoneContainerRef.current!);
+                if (cleanup) cleanupSplineRef.current = cleanup;
+            } catch (e) {
+                console.warn('3D phone init failed:', e);
+            }
+        };
+
+        if ('requestIdleCallback' in window) {
+            const id = requestIdleCallback(preload, { timeout: 1200 });
+            return () => cancelIdleCallback(id);
+        }
+        const t = window.setTimeout(preload, 1);
+        return () => window.clearTimeout(t);
+    }, []);
+
+    useEffect(() => {
+        const hero = heroRef.current;
         if (!hero) return;
 
         let heroAnimated = false;
@@ -72,27 +97,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             const subtitleEl = hero.querySelector('.hero-subtitle') as HTMLElement;
             const ctaEl = hero.querySelector('.hero-cta') as HTMLElement;
             const phoneContainer = phoneContainerRef.current;
+            const appDownloadsEl = hero.querySelector('.hero-app-downloads') as HTMLElement;
             const shimmerEl = hero.querySelector('.hero-shimmer') as HTMLElement;
             const ctaShimmerEl = hero.querySelector('.cta-shimmer') as HTMLElement | null;
             const scrollIndicatorEl = hero.querySelector('.scroll-indicator') as HTMLElement;
 
-            const isMobile = !window.matchMedia('(min-width: 768px)').matches;
+            const showPhone = window.matchMedia('(min-width: 1024px)').matches;
 
             // Initial states
             gsap.set([titleEl, subtitleEl, ctaEl], { opacity: 0 });
             if (phoneContainer) gsap.set(phoneContainer, { opacity: 0 });
+            if (appDownloadsEl) gsap.set(appDownloadsEl, { opacity: 0, y: 16 });
             if (scrollIndicatorEl) gsap.set(scrollIndicatorEl, { opacity: 0, y: -20 });
 
             if (titleEl) gsap.set(titleEl, { y: 40 });
             if (subtitleEl) gsap.set(subtitleEl, { y: 30, filter: 'blur(8px)' });
             if (ctaEl) gsap.set(ctaEl, { scale: 0.7 });
 
-            if (phoneContainer) {
-                if (!isMobile) {
-                    gsap.set(phoneContainer, { x: 80, scale: 0.92 });
-                } else {
-                    gsap.set(phoneContainer, { y: 30 });
-                }
+            if (phoneContainer && showPhone) {
+                gsap.set(phoneContainer, { x: 80, scale: 0.92 });
             }
 
             const tl = gsap.timeline({
@@ -128,8 +151,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                 }
             }
 
-            // 3D Phone
-            if (phoneContainer) {
+            // 3D Phone (solo desktop ≥1024px) + app downloads
+            if (phoneContainer && showPhone) {
                 tl.to(
                     phoneContainer,
                     {
@@ -143,6 +166,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                     0.3,
                 );
             }
+            if (appDownloadsEl) {
+                tl.to(appDownloadsEl, { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 0.85);
+            }
 
             // Scroll Indicator Fade In
             if (scrollIndicatorEl) {
@@ -150,28 +176,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             }
         };
 
-        const init3D = () => {
-            if (!phoneContainerRef.current) return;
-            if (!window.matchMedia('(min-width: 768px)').matches) return;
-            try {
-                const cleanup = initPhoneScene(phoneContainerRef.current);
-                if (cleanup) cleanupSplineRef.current = cleanup;
-            } catch (e) {
-                console.warn('3D phone init failed:', e);
-            }
+        const startHeroIntro = () => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(animateHero);
+            });
         };
 
-        // Listen for loader completion event
-        const handleLoaded = () => { animateHero(); init3D(); };
-        window.addEventListener('smartur:loaded', handleLoaded, { once: true });
+        window.addEventListener('smartur:loaded', startHeroIntro, { once: true });
 
-        // Fallback: if loader already finished before this mounted (instant navigation)
-        if (!document.body.classList.contains('is-loading')) {
-            setTimeout(() => { animateHero(); init3D(); }, 80);
+        const win = window as Window & { __SMARTUR_APP_READY__?: boolean };
+        if (win.__SMARTUR_APP_READY__ || !document.body.classList.contains('is-loading')) {
+            startHeroIntro();
         }
 
         return () => {
-            window.removeEventListener('smartur:loaded', handleLoaded);
+            window.removeEventListener('smartur:loaded', startHeroIntro);
             cleanupSplineRef.current?.();
         };
     }, []);
@@ -180,7 +199,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
         <section
             ref={heroRef}
             id="hero"
-            className={`sy-hero-home ${isRevealed ? 'hero-revealed' : ''}`}
+            className={`sy-hero-home landing-ambient-bg ${isRevealed ? 'hero-revealed' : ''}`}
         >
             {/* Background shimmer */}
             <div
@@ -205,7 +224,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                             </p>
                         ) : null}
 
-                        <div className="cta-wrapper hero-cta rounded-full">
+                        <div className="cta-wrapper hero-cta w-full max-w-full sm:w-auto sm:max-w-none rounded-full">
                             {/* Shimmer overlay — one-time GSAP animation on mount */}
                             <div
                                 className="cta-shimmer pointer-events-none absolute top-0 left-[-100%] z-[10] h-full w-[60%] -skew-x-[20deg]"
@@ -231,19 +250,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
                         </div>
                     </div>
 
-                    <div
-                        ref={phoneContainerRef}
-                        className="video-wrapper hero-video-wrap"
-                    />
+                    <div className="hero-aside">
+                        <div
+                            ref={phoneContainerRef}
+                            className="video-wrapper hero-video-wrap"
+                        />
+                        <HeroAppDownloads />
+                    </div>
                 </div>
             </div>
 
             {/* Scroll Indicator */}
             <button
                 type="button"
-                className="scroll-indicator absolute bottom-8 left-1/2 z-50 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-2 border-none bg-transparent p-0"
+                className="scroll-indicator absolute bottom-8 left-1/2 z-50 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 border-none bg-transparent p-0 min-[1024px]:flex"
                 onClick={() => {
-                    const nextSection = document.getElementById('como-funciona');
+                    const nextSection = document.getElementById('historia') ?? document.getElementById('region');
                     if (nextSection) {
                         nextSection.scrollIntoView({ behavior: 'smooth' });
                     }

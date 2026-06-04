@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 // @ts-ignore
@@ -233,10 +233,21 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
   const isReadyRef = useRef(isReady);
   const exitTriggered = useRef(false);
   const onFinishedRef = useRef(onFinished);
+  const tryExitRef = useRef<(() => void) | null>(null);
 
-  // Sincronizar el ref con el prop para que el closure de useGSAP lo vea
   isReadyRef.current = isReady;
   onFinishedRef.current = onFinished;
+
+  useEffect(() => {
+    document.body.classList.add("is-loading");
+    return () => {
+      document.body.classList.remove("is-loading");
+    };
+  }, []);
+
+  useEffect(() => {
+    tryExitRef.current?.();
+  }, [isReady]);
 
   useGSAP(
     () => {
@@ -253,17 +264,17 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
       const spinnerGs = root.querySelectorAll(".arc-spinner");
       const pinEls = root.querySelectorAll(".pin-path");
 
-      /* ─── Rastreo del progreso de carga ──────────────────────────── */
       const progressObj = { value: 0 };
-      let pageLoaded = false;
+      let pageLoaded = document.readyState === "complete";
+      let progressRaf = 0;
+      const mountTime = performance.now();
+      const MIN_VISIBLE_MS = 1400;
 
-      if (document.readyState === "complete") {
-        pageLoaded = true;
-      } else {
-        const onLoad = () => {
+      if (!pageLoaded) {
+        window.addEventListener("load", () => {
           pageLoaded = true;
-        };
-        window.addEventListener("load", onLoad, { once: true });
+          tryExitRef.current?.();
+        }, { once: true });
       }
 
       /* ─── Animación de entrada + spinners ─── */
@@ -288,8 +299,10 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
         const dir = i % 2 === 0 ? 1 : -1;
         const speed = 1.4 + i * 0.15;
 
+        gsap.set(el, { force3D: true });
+
         const tween = gsap.to(el, {
-          rotation: dir * 360,
+          rotation: `+=${dir * 360}`,
           duration: speed,
           repeat: -1,
           ease: "none",
@@ -297,46 +310,47 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
         spinTweens.push(tween);
       });
 
-      /* ─── Porcentaje simulado + lógica de espera ──────────────── */
-      gsap.to(progressObj, {
-        value: 85,
-        duration: 1.8,
-        ease: "power2.out",
-        onUpdate: () => {
-          if (percentRef.current)
-            (percentRef.current as HTMLElement).innerText = `${Math.floor(progressObj.value)}%`;
-          
-          // Si ya estamos listos y el progreso es razonable, aceleramos
-          if (isReadyRef.current && progressObj.value > 60 && !exitTriggered.current) {
-              checkLoadState();
-          }
-        },
-        onComplete: checkLoadState,
-      });
+      const updatePercentLabel = () => {
+        if (!percentRef.current) return;
+        percentRef.current.textContent = `${Math.floor(progressObj.value)}%`;
+      };
 
-      function checkLoadState() {
+      /* Progreso continuo (nunca se “congela” en 85%) hasta la salida */
+      const tickProgress = () => {
         if (exitTriggered.current) return;
 
-        if (pageLoaded || isReadyRef.current) {
-          triggerExitSequence();
+        const elapsed = (performance.now() - mountTime) / 1000;
+        let base: number;
+        if (elapsed < 1.1) {
+          base = (elapsed / 1.1) * 68;
         } else {
-          gsap.to(progressObj, {
-            value: 99,
-            duration: 10,
-            ease: "none",
-            onUpdate: () => {
-              if (percentRef.current)
-                (percentRef.current as HTMLElement).innerText = `${Math.floor(progressObj.value)}%`;
-              if ((pageLoaded || isReadyRef.current) && !exitTriggered.current) triggerExitSequence();
-            },
-          });
+          base = 68 + (elapsed - 1.1) * 5.5;
+        }
+        base += Math.sin(elapsed * 5.2) * 0.85;
+        progressObj.value = Math.min(97, Math.max(0, base));
+        updatePercentLabel();
+        tryExit();
+        progressRaf = requestAnimationFrame(tickProgress);
+      };
+
+      function tryExit() {
+        if (exitTriggered.current) return;
+        const visibleLongEnough = performance.now() - mountTime >= MIN_VISIBLE_MS;
+        if (visibleLongEnough && (pageLoaded || isReadyRef.current)) {
+          triggerExitSequence();
         }
       }
+
+      tryExitRef.current = tryExit;
+      progressRaf = requestAnimationFrame(tickProgress);
+      tryExit();
 
       function triggerExitSequence() {
         if (exitTriggered.current) return;
         exitTriggered.current = true;
-        
+        tryExitRef.current = null;
+        cancelAnimationFrame(progressRaf);
+
         gsap.killTweensOf(progressObj);
 
         /* Preparar interpoladores flubber */
@@ -425,6 +439,19 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
 
         const assembleStart = pinStart + 1.6;
 
+        const releaseApp = () => {
+          try {
+            (window as Window & { __SMARTUR_APP_READY__?: boolean }).__SMARTUR_APP_READY__ = true;
+            window.dispatchEvent(new CustomEvent("smartur:loaded"));
+            document.body.classList.remove("is-loading");
+          } catch {
+            /* ignore */
+          }
+          onFinishedRef.current?.();
+        };
+
+        tl.call(releaseApp, undefined, assembleStart);
+
         tl.to(progressObj, {
             value: 100,
             duration: assembleStart,
@@ -455,12 +482,15 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
                   display: "none",
                 });
               }
-              try { window.dispatchEvent(new CustomEvent("smartur:loaded")); } catch {}
-              try { document.body.classList.remove("is-loading"); } catch {}
-              onFinishedRef.current?.();
             },
           }, assembleStart + 0.3);
       }
+
+      return () => {
+        cancelAnimationFrame(progressRaf);
+        tryExitRef.current = null;
+        spinTweens.forEach((tw) => tw.kill());
+      };
     },
     { scope: containerRef }
   );

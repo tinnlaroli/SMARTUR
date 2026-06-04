@@ -62,4 +62,24 @@
   pointer-events: none;
   z-index: 10;
   margin-top: -10px;
+  animation: loader-percent-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes loader-percent-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-percentage {
+    animation: none;
+    opacity: 0.9;
+  }
 }

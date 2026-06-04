@@ -64,7 +64,7 @@ export const ImpactSection: React.FC = () => {
         <section
             ref={sectionRef}
             id="impacto"
-            className="relative overflow-hidden py-24 md:py-36"
+            className="relative overflow-x-clip py-16 sm:py-24 md:py-36"
             style={{ background: 'var(--color-bg)' }}
         >
             {/* Background accent */}
@@ -72,9 +72,9 @@ export const ImpactSection: React.FC = () => {
                 <div className="float-accent absolute -left-48 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full opacity-10 blur-3xl" style={{ background: 'var(--color-purple)' }} />
             </div>
 
-            <div className="relative mx-auto max-w-[1240px] px-6">
+            <div className="landing-container relative mx-auto w-full max-w-[1240px] px-4 sm:px-6">
                 {/* Header */}
-                <div className="mb-20 max-w-3xl">
+                <div className="mb-12 max-w-3xl sm:mb-20">
                     <p className="impact-header mb-4 text-xs font-black uppercase tracking-[0.25em]" style={{ color: 'var(--color-pink)' }}>
                         {t('impact.label')}
                     </p>
@@ -87,11 +87,11 @@ export const ImpactSection: React.FC = () => {
                 </div>
 
                 {/* Stats grid */}
-                <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-4">
                     {STAT_KEYS.map((stat, i) => (
                         <div
                             key={stat.num}
-                            className="impact-card relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8"
+                            className="impact-card relative overflow-hidden rounded-2xl p-4 sm:rounded-[1.5rem] sm:p-5 md:rounded-[2rem] md:p-8"
                             style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}
                         >
                             {/* Accent corner */}
@@ -102,7 +102,7 @@ export const ImpactSection: React.FC = () => {
                                     <span ref={el => { statRefs.current[i] = el; }}>0</span>
                                     <span className="text-[0.5em] font-black">{t(stat.suf)}</span>
                                 </div>
-                                <p className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
+                                <p className="text-[0.65rem] font-bold uppercase tracking-wide sm:text-sm sm:tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
                                     {t(stat.label)}
                                 </p>
                             </div>

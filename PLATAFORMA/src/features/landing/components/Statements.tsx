@@ -9,6 +9,30 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface StatementsProps { handleStartExperience?: () => void; }
 
+type StorySection =
+    | {
+          id: string;
+          label: () => string;
+          title: () => string;
+          text: () => string;
+          ambientMode: 'hero' | 'transparent';
+          textColor: string;
+          accentColor: string;
+          labelColor: string;
+          isVivid: false;
+      }
+    | {
+          id: string;
+          label: () => string;
+          title: () => string;
+          text: () => string;
+          bg: string;
+          textColor: string;
+          accentColor: string;
+          labelColor: string;
+          isVivid: boolean;
+      };
+
 function rotateSquarePercent(angle: number, sizePercent: number, w: number, h: number) {
     const square = [{ x: -0.5, y: -0.5 }, { x: 0.5, y: -0.5 }, { x: 0.5, y: 0.5 }, { x: -0.5, y: 0.5 }];
     const rad = (angle * Math.PI) / 180;
@@ -21,17 +45,93 @@ function rotateSquarePercent(angle: number, sizePercent: number, w: number, h: n
     });
 }
 
+function StoryPanelContent({
+    section,
+    showCta,
+    onStart,
+    ctaLabel,
+}: {
+    section: StorySection;
+    showCta?: boolean;
+    onStart?: () => void;
+    ctaLabel?: string;
+}) {
+    return (
+        <div className="st-panel-content landing-story-content relative z-[1] flex w-full max-w-[62rem] flex-col items-center px-4 sm:px-6">
+            <h2
+                className="landing-heading mb-6 text-center font-black uppercase"
+                style={{
+                    fontSize: 'clamp(2.8rem, 7.5vw, 7rem)',
+                    lineHeight: 1.05,
+                    letterSpacing: '-0.035em',
+                    color: section.textColor,
+                }}
+            >
+                {section.title().split('\n').map((line, i) => (
+                    <React.Fragment key={i}>
+                        {i === 0 ? (
+                            line
+                        ) : (
+                            <>
+                                <br />
+                                <span style={{ color: section.accentColor }}>{line}</span>
+                            </>
+                        )}
+                    </React.Fragment>
+                ))}
+            </h2>
+
+            <p
+                className="text-center font-medium"
+                style={{
+                    fontSize: 'clamp(1.05rem, 2.2vw, 1.3rem)',
+                    lineHeight: 1.7,
+                    color: section.textColor,
+                    opacity: section.isVivid ? 0.88 : 0.72,
+                    maxWidth: '52ch',
+                }}
+            >
+                {section.text()}
+            </p>
+
+            {showCta && onStart && ctaLabel ? (
+                <div className="mt-8 sm:mt-12 inline-block max-w-full">
+                    <button type="button" onClick={onStart} className="btn-premium group max-w-full">
+                        <span>
+                            <span
+                                className="btn-base gap-2 px-6 py-3.5 text-base font-bold sm:gap-3 sm:px-10 sm:py-5 sm:text-lg"
+                                style={{ '--bg-color': 'var(--color-pink)' } as React.CSSProperties}
+                            >
+                                {ctaLabel}
+                                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
+                            </span>
+                            <span
+                                className="btn-hover gap-2 px-6 py-3.5 text-base font-bold sm:gap-3 sm:px-10 sm:py-5 sm:text-lg"
+                                aria-hidden
+                                style={{ '--hover-text': 'var(--color-pink)' } as React.CSSProperties}
+                            >
+                                {ctaLabel}
+                                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
+                            </span>
+                        </span>
+                    </button>
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export const Statements: React.FC<StatementsProps> = ({ handleStartExperience }) => {
     const { t } = useLanguage();
     const innerRef = useRef<HTMLDivElement>(null);
 
-    const SECTIONS = [
+    const SECTIONS: StorySection[] = [
         {
             id: 'hook',
             label: () => t('story.hook.label'),
             title: () => t('story.hook.title'),
             text: () => t('story.hook.text'),
-            bg: 'var(--color-bg)',
+            ambientMode: 'hero',
             textColor: 'var(--color-text)',
             accentColor: 'var(--color-purple)',
             labelColor: 'var(--color-purple)',
@@ -64,13 +164,34 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
             label: () => t('story.cta.label'),
             title: () => t('story.cta.title'),
             text: () => t('story.cta.text'),
-            bg: 'var(--color-bg)',
+            ambientMode: 'transparent',
             textColor: 'var(--color-text)',
             accentColor: 'var(--color-purple)',
             labelColor: 'var(--color-purple)',
             isVivid: false,
         },
     ];
+
+    const panelSurfaceClass = (section: StorySection) => {
+        if (!('ambientMode' in section)) return '';
+        return section.ambientMode === 'hero' ? ' st-panel-hero-surface' : ' landing-ambient-bg';
+    };
+
+    useEffect(() => {
+        const root = innerRef.current?.closest('.sy-statements');
+        if (!root) return;
+
+        const onStoryVisibility = ([entry]: IntersectionObserverEntry[]) => {
+            document.documentElement.classList.toggle('story-section-active', entry.isIntersecting);
+        };
+        const visibilityObserver = new IntersectionObserver(onStoryVisibility, { threshold: 0.08 });
+        visibilityObserver.observe(root);
+
+        return () => {
+            visibilityObserver.disconnect();
+            document.documentElement.classList.remove('story-section-active');
+        };
+    }, []);
 
     useEffect(() => {
         const inner = innerRef.current;
@@ -84,10 +205,9 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
         const factor = (Math.abs(Math.cos(theta)) + Math.abs(Math.sin(theta))) *
             (window.innerHeight > window.innerWidth ? 1.8 : 1.0);
 
-        // Stack all panels absolutely — CSS already positions them, GSAP just adjusts z-index
         panels.forEach((el, i) => {
             gsap.set(el, {
-                zIndex: panels.length - i, // panel 0 on top
+                zIndex: panels.length - i,
                 clipPath: 'none',
             });
         });
@@ -100,13 +220,15 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
                 start: 'top top',
                 end: () => `+=${window.innerHeight * (window.innerWidth < 1024 ? 2 : 3)}`,
                 invalidateOnRefresh: true,
-                onRefresh: () => { sizes[0] = window.innerWidth; sizes[1] = window.innerHeight; },
+                onRefresh: () => {
+                    sizes[0] = window.innerWidth;
+                    sizes[1] = window.innerHeight;
+                },
             },
         });
 
-        // For each panel except the last: animate clip-path shrinking to reveal next panel
         panels.forEach((el, i) => {
-            if (i === panels.length - 1) return; // ignoreLast — stays fully visible at bottom
+            if (i === panels.length - 1) return;
 
             const p = { prog: 0 };
             tl.fromTo(p, { prog: 0 }, {
@@ -122,7 +244,7 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
                     const sizePercent = initSize * (1 - progress);
                     const rotated = rotateSquarePercent(angle, sizePercent, ww, wh);
                     el.style.clipPath = `polygon(${rotated.map(pt => `${pt.x}% ${pt.y}%`).join(', ')})`;
-                }
+                },
             });
         });
 
@@ -133,13 +255,7 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
     }, []);
 
     return (
-        <div className="sy-statements relative z-10">
-            {/*
-              .sy-rect-inner: height 100dvh, position relative, overflow hidden.
-              All panels are absolute full-size, stacked via CSS z-index set by GSAP.
-              Clip-path animation acts as a rotating-square "curtain" that peels away the top panel
-              to reveal the one below — no opacity juggling needed.
-            */}
+        <div id="historia" className="sy-statements relative z-10 max-w-full overflow-x-clip">
             <div
                 ref={innerRef}
                 className="sy-rect-inner"
@@ -148,84 +264,19 @@ export const Statements: React.FC<StatementsProps> = ({ handleStartExperience })
                 {SECTIONS.map((section, idx) => (
                     <div
                         key={section.id}
-                        className="st-panel absolute inset-0 flex flex-col items-center justify-center p-6 text-center"
+                        data-panel={section.id}
+                        className={`st-panel absolute inset-0 flex flex-col items-center justify-center p-4 text-center sm:p-6 md:p-8${panelSurfaceClass(section)}`}
                         style={{
-                            background: section.bg,
+                            ...('ambientMode' in section ? {} : { background: section.bg }),
                             color: section.textColor,
                         }}
                     >
-                        <div className="flex flex-col items-center" style={{ maxWidth: '62rem', width: '100%' }}>
-
-                            {/* Title */}
-                            <h2
-                                className="landing-heading mb-6 font-black uppercase text-center"
-                                style={{
-                                    fontSize: 'clamp(2.8rem, 7.5vw, 7rem)',
-                                    lineHeight: 1.05,
-                                    letterSpacing: '-0.035em',
-                                    color: section.textColor,
-                                }}
-                            >
-                                {section.title().split('\n').map((line, i) => (
-                                    <React.Fragment key={i}>
-                                        {i === 0
-                                            ? line
-                                            : (
-                                                <>
-                                                    <br />
-                                                    <span style={{ color: section.accentColor }}>
-                                                        {line}
-                                                    </span>
-                                                </>
-                                            )
-                                        }
-                                    </React.Fragment>
-                                ))}
-                            </h2>
-
-                            {/* Body */}
-                            <p
-                                className="text-center font-medium"
-                                style={{
-                                    fontSize: 'clamp(1.05rem, 2.2vw, 1.3rem)',
-                                    lineHeight: 1.7,
-                                    color: section.textColor,
-                                    opacity: section.isVivid ? 0.88 : 0.72,
-                                    maxWidth: '52ch',
-                                }}
-                            >
-                                {section.text()}
-                            </p>
-
-                            {/* CTA — último panel */}
-                            {idx === SECTIONS.length - 1 && handleStartExperience && (
-                                <div style={{ marginTop: '3rem', display: 'inline-block' }}>
-                                    <button
-                                        type="button"
-                                        onClick={handleStartExperience}
-                                        className="btn-premium group"
-                                    >
-                                        <span>
-                                            <span
-                                                className="btn-base gap-3 px-10 py-5 text-lg font-bold"
-                                                style={{ '--bg-color': 'var(--color-pink)' } as React.CSSProperties}
-                                            >
-                                                {t('story.cta.button')}
-                                                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span
-                                                className="btn-hover gap-3 px-10 py-5 text-lg font-bold"
-                                                aria-hidden
-                                                style={{ '--hover-text': 'var(--color-pink)' } as React.CSSProperties}
-                                            >
-                                                {t('story.cta.button')}
-                                                <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                        </span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <StoryPanelContent
+                            section={section}
+                            showCta={idx === SECTIONS.length - 1}
+                            onStart={handleStartExperience}
+                            ctaLabel={t('story.cta.button')}
+                        />
                     </div>
                 ))}
             </div>

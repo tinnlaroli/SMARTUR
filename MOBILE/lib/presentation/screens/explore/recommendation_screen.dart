@@ -42,16 +42,17 @@ class RecommendationScreen extends StatefulWidget {
 class _TourType {
   final String id;
   final IconData icon;
-  const _TourType(this.id, this.icon);
+  final Color color;
+  const _TourType(this.id, this.icon, this.color);
 }
 
 const _tourTypes = [
-  _TourType('cultural', Icons.museum_outlined),
-  _TourType('naturaleza', Icons.forest_outlined),
-  _TourType('gastronomico', Icons.restaurant_menu_outlined),
-  _TourType('aventura', Icons.hiking_outlined),
-  _TourType('descanso', Icons.self_improvement_outlined),
-  _TourType('nocturno', Icons.nightlife_outlined),
+  _TourType('cultural',     Icons.museum_outlined,           Color(0xFF984EFD)),
+  _TourType('naturaleza',   Icons.forest_outlined,           Color(0xFF9CCC44)),
+  _TourType('gastronomico', Icons.restaurant_menu_outlined,  Color(0xFFFF7D1F)),
+  _TourType('aventura',     Icons.hiking_outlined,           Color(0xFF9CCC44)),
+  _TourType('descanso',     Icons.self_improvement_outlined, Color(0xFF4DB9CA)),
+  _TourType('nocturno',     Icons.nightlife_outlined,        Color(0xFFFC478E)),
 ];
 
 // ── Budget model ─────────────────────────────────────────────────────────────
@@ -508,283 +509,263 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   }
 
   Widget _buildBody(ColorScheme scheme) {
+    final l10n = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
         final mq = MediaQuery.of(context);
-        final top = 16.0;
         final bottom = mq.padding.bottom + 24;
         final maxW = constraints.maxWidth;
-        final hPad = maxW > 600 ? (maxW - 560) / 2 + 16 : 16.0;
+        final hPad = maxW > 600 ? (maxW - 560) / 2 + 20 : 20.0;
         return SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(hPad, top, hPad, bottom),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight - top - bottom),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-          // ── Header ────────────────────────────────────────────────
-          _GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: SmarturStyle.purple.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(14),
+          padding: EdgeInsets.fromLTRB(hPad, 16, hPad, bottom),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+
+              // ── Banners condicionales ────────────────────────────────
+              if (_prefsWereLoaded) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: SmarturStyle.purple.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.20)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded,
+                          color: SmarturStyle.purple, size: 14),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(l10n.recoPreloadedBannerDesc,
+                          style: TextStyle(
+                            fontFamily: 'Outfit', fontSize: 11,
+                            color: scheme.onSurface.withValues(alpha: 0.75),
+                          )),
                       ),
-                      child: const Icon(Icons.auto_awesome_rounded,
-                          color: SmarturStyle.purple, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.recoDiscoverNext,
-                            style: SmarturStyle.calSansTitle.copyWith(
-                                fontSize: 18, color: scheme.onSurface),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (_showSavedDiaryHint) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: SmarturStyle.green.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: SmarturStyle.green.withValues(alpha: 0.28)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.bookmark_rounded,
+                          color: SmarturStyle.green, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(l10n.recoSavedInDiary,
+                          style: TextStyle(
+                            fontFamily: 'Outfit', fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface.withValues(alpha: 0.85),
+                          )),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _showSavedDiaryHint = false),
+                        child: Icon(Icons.close_rounded, size: 17,
+                            color: scheme.onSurface.withValues(alpha: 0.4)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // ── Tipos de turismo — grid visual 3×2 ──────────────────
+              _InlineSection(
+                label: l10n.recoTourismType,
+                required: true,
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.05,
+                  children: _tourTypes.map((t) {
+                    final sel = _selectedTypes.contains(t.id);
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        if (sel) _selectedTypes.remove(t.id);
+                        else _selectedTypes.add(t.id);
+                      }),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 170),
+                        curve: Curves.easeOut,
+                        decoration: BoxDecoration(
+                          color: sel
+                              ? t.color.withValues(alpha: 0.18)
+                              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: sel ? t.color : scheme.outlineVariant.withValues(alpha: 0.5),
+                            width: sel ? 1.5 : 1.0,
                           ),
-                          Text(
-                            AppLocalizations.of(context)!.recoAiPersonalizedFor,
-                            style: TextStyle(
-                              fontFamily: 'Outfit', fontSize: 11,
-                              color: scheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(t.icon,
+                                size: 26,
+                                color: sel ? t.color : scheme.onSurfaceVariant),
+                            const SizedBox(height: 6),
+                            Text(
+                              _tourTypeLabel(l10n, t.id),
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 11,
+                                fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                                color: sel ? t.color : scheme.onSurface,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Presupuesto ─────────────────────────────────────────
+              _InlineSection(
+                label: l10n.recoBudget,
+                required: true,
+                child: Row(
+                  children: _budgets.map((b) {
+                    final sel = _budget == b.$1;
+                    final texts = _budgetTexts(l10n, b.$1);
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: _BudgetButton(
+                          icon: b.$2,
+                          iconColor: b.$3,
+                          label: texts.$1,
+                          sub: texts.$2,
+                          selected: sel,
+                          onTap: () => setState(() => _budget = b.$1),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── ¿Con quién? ─────────────────────────────────────────
+              _InlineSection(
+                label: l10n.recoWithWho,
+                required: true,
+                child: Row(
+                  children: _groups.map((g) {
+                    final sel = _groupType == g.$1;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: _GroupButton(
+                          icon: g.$2,
+                          label: _groupLabel(l10n, g.$1),
+                          selected: sel,
+                          onTap: () => setState(() => _groupType = g.$1),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Rango de edad ───────────────────────────────────────
+              _InlineSection(
+                label: l10n.recoAgeRange,
+                required: true,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _ageRanges.map((a) {
+                      final sel = _ageRange == a;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _ageRange = a),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: sel
+                                  ? SmarturStyle.purple
+                                  : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: sel
+                                    ? SmarturStyle.purple
+                                    : scheme.outlineVariant.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            child: Text(a,
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: sel ? Colors.white : scheme.onSurface,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Preferencias adicionales ────────────────────────────
+              _InlineSection(
+                label: l10n.recoAdditionalPrefs,
+                subtitle: l10n.recoOptional,
+                child: Wrap(
+                  spacing: 8, runSpacing: 8,
+                  children: [
+                    _ToggleChip(icon: Icons.map_outlined,             label: l10n.recoGuidedTours, value: _wantsTours,       onChanged: (v) => setState(() => _wantsTours = v)),
+                    _ToggleChip(icon: Icons.hotel_outlined,           label: l10n.recoNeedHotel,   value: _needsHotel,       onChanged: (v) => setState(() => _needsHotel = v)),
+                    _ToggleChip(icon: Icons.restaurant_menu_outlined, label: l10n.recoFoodOptions, value: _prefFood,         onChanged: (v) => setState(() => _prefFood = v)),
+                    _ToggleChip(icon: Icons.accessible_outlined,      label: l10n.recoAccessible,  value: _reqAccesibilidad, onChanged: (v) => setState(() => _reqAccesibilidad = v)),
+                    _ToggleChip(icon: Icons.nature_outlined,          label: l10n.recoOutdoor,     value: _prefOutdoor,      onChanged: (v) => setState(() => _prefOutdoor = v)),
                   ],
                 ),
-              ],
-            ),
-          ),
-
-          // ── Saved in diary hint ───────────────────────────────────
-          if (_showSavedDiaryHint) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: SmarturStyle.green.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: SmarturStyle.green.withValues(alpha: 0.28),
-                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Badge(
-                    label: const Text('1'),
-                    backgroundColor: SmarturStyle.green,
-                    child: const Icon(
-                      Icons.bookmark_rounded,
-                      color: SmarturStyle.green,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)!.recoSavedInDiary,
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurface.withValues(alpha: 0.85),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                    icon: Icon(
-                      Icons.close_rounded,
-                      size: 18,
-                      color: scheme.onSurface.withValues(alpha: 0.45),
-                    ),
-                    onPressed: () => setState(() => _showSavedDiaryHint = false),
-                  ),
-                ],
+              const SizedBox(height: 28),
+
+              // ── Progreso + CTA ──────────────────────────────────────
+              _FormProgress(
+                l10n: l10n,
+                typeDone: _selectedTypes.isNotEmpty,
+                budgetDone: _budget != _none,
+                groupDone: _groupType != _none,
+                ageDone: _ageRange != _none,
               ),
-            ),
-          ],
-
-          // ── Preloaded preferences banner ──────────────────────────
-          if (_prefsWereLoaded) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: BoxDecoration(
-                color: SmarturStyle.purple.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: SmarturStyle.purple.withValues(alpha: 0.20)),
+              const SizedBox(height: 16),
+              _CTAButton(
+                loading: _isFetching,
+                disabled: false,
+                onTap: _fetchRecommendations,
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.auto_awesome_rounded,
-                      color: SmarturStyle.purple, size: 14),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)!.recoPreloadedBannerDesc,
-                      style: TextStyle(
-                        fontFamily: 'Outfit', fontSize: 11,
-                        color: scheme.onSurface.withValues(alpha: 0.75),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-
-          // ── Tourism types ─────────────────────────────────────────
-          _SectionCard(
-            title: AppLocalizations.of(context)!.recoTourismType,
-            subtitle: AppLocalizations.of(context)!.recoChooseOneOrMore,
-            required: true,
-            child: Wrap(
-              spacing: 8, runSpacing: 8,
-              children: _tourTypes.map((t) {
-                final sel = _selectedTypes.contains(t.id);
-                return _SelectChip(
-                  label: _tourTypeLabel(AppLocalizations.of(context)!, t.id),
-                  icon: t.icon,
-                  selected: sel,
-                  onTap: () => setState(() {
-                    if (sel) _selectedTypes.remove(t.id);
-                    else _selectedTypes.add(t.id);
-                  }),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Budget ────────────────────────────────────────────────
-          _SectionCard(
-            title: AppLocalizations.of(context)!.recoBudget,
-            child: Row(
-              children: _budgets.map((b) {
-                final sel = _budget == b.$1;
-                final texts = _budgetTexts(AppLocalizations.of(context)!, b.$1);
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: _BudgetButton(
-                      icon: b.$2,
-                      iconColor: b.$3,
-                      label: texts.$1,
-                      sub: texts.$2,
-                      selected: sel,
-                      onTap: () => setState(() => _budget = b.$1),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Group type ────────────────────────────────────────────
-          _SectionCard(
-            title: AppLocalizations.of(context)!.recoWithWho,
-            child: Row(
-              children: _groups.map((g) {
-                final sel = _groupType == g.$1;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: _GroupButton(
-                      icon: g.$2,
-                      label: _groupLabel(AppLocalizations.of(context)!, g.$1),
-                      selected: sel,
-                      onTap: () => setState(() => _groupType = g.$1),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Age range ─────────────────────────────────────────────
-          _SectionCard(
-            title: AppLocalizations.of(context)!.recoAgeRange,
-            child: Wrap(
-              spacing: 6, runSpacing: 6,
-              children: _ageRanges.map((a) {
-                final sel = _ageRange == a;
-                return GestureDetector(
-                  onTap: () => setState(() => _ageRange = a),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: sel
-                          ? SmarturStyle.purple
-                          : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: sel ? SmarturStyle.purple : Colors.transparent),
-                    ),
-                    child: Text(a,
-                      style: TextStyle(
-                        fontFamily: 'Outfit', fontSize: 13, fontWeight: FontWeight.w600,
-                        color: sel ? Colors.white : scheme.onSurface,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // ── Preferences ───────────────────────────────────────────
-          _SectionCard(
-            title: AppLocalizations.of(context)!.recoAdditionalPrefs,
-            subtitle: AppLocalizations.of(context)!.recoOptional,
-            child: Wrap(
-              spacing: 8, runSpacing: 8,
-              children: [
-                _ToggleChip(icon: Icons.map_outlined,            label: AppLocalizations.of(context)!.recoGuidedTours,  value: _wantsTours,        onChanged: (v) => setState(() => _wantsTours = v)),
-                _ToggleChip(icon: Icons.hotel_outlined,          label: AppLocalizations.of(context)!.recoNeedHotel,    value: _needsHotel,        onChanged: (v) => setState(() => _needsHotel = v)),
-                _ToggleChip(icon: Icons.restaurant_menu_outlined,label: AppLocalizations.of(context)!.recoFoodOptions,  value: _prefFood,          onChanged: (v) => setState(() => _prefFood = v)),
-                _ToggleChip(icon: Icons.accessible_outlined,     label: AppLocalizations.of(context)!.recoAccessible,   value: _reqAccesibilidad,  onChanged: (v) => setState(() => _reqAccesibilidad = v)),
-                _ToggleChip(icon: Icons.nature_outlined,         label: AppLocalizations.of(context)!.recoOutdoor,      value: _prefOutdoor,       onChanged: (v) => setState(() => _prefOutdoor = v)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // ── Progreso de campos requeridos ─────────────────────────
-          _FormProgress(
-            l10n: AppLocalizations.of(context)!,
-            typeDone: _selectedTypes.isNotEmpty,
-            budgetDone: _budget != _none,
-            groupDone: _groupType != _none,
-            ageDone: _ageRange != _none,
-          ),
-          const SizedBox(height: 16),
-
-          // ── CTA ───────────────────────────────────────────────────
-          _CTAButton(
-            loading: _isFetching,
-            disabled: false,
-            onTap: _fetchRecommendations,
-          ),
-              ],
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
         );
       },
@@ -928,20 +909,18 @@ class _ResultsSheetState extends State<_ResultsSheet> {
         maxChildSize: 0.95,
         builder: (ctx, controller) => ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
+          child: Container(
               decoration: BoxDecoration(
-                color: scheme.surface.withValues(alpha: 0.98),
+                color: scheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 border: Border(
                   top: BorderSide(color: scheme.outline.withValues(alpha: 0.12)),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: scheme.shadow.withValues(alpha: 0.18),
-                    blurRadius: 24,
-                    offset: const Offset(0, -6),
+                    color: scheme.shadow.withValues(alpha: 0.15),
+                    blurRadius: 18,
+                    offset: const Offset(0, -4),
                   ),
                 ],
               ),
@@ -1137,7 +1116,6 @@ class _ResultsSheetState extends State<_ResultsSheet> {
             ),
           ),
         ),
-      ),
     );
   }
 }
@@ -1763,6 +1741,76 @@ class _FormProgress extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _InlineSection extends StatelessWidget {
+  final String label;
+  final String? subtitle;
+  final bool required;
+  final Widget child;
+
+  const _InlineSection({
+    required this.label,
+    this.subtitle,
+    this.required = false,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 3,
+              height: 14,
+              decoration: BoxDecoration(
+                color: SmarturStyle.purple,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+                color: scheme.onSurface,
+              ),
+            ),
+            if (required) ...[
+              const SizedBox(width: 4),
+              Container(
+                width: 5, height: 5,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: SmarturStyle.orange,
+                ),
+              ),
+            ],
+            if (subtitle != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  fontFamily: 'Outfit', fontSize: 10,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 12),
+        child,
+      ],
     );
   }
 }

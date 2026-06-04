@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
@@ -206,11 +206,14 @@ class _FavoritesTab extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     if (url.isNotEmpty)
-                      Image.network(url, fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                      CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => Container(
                           color: scheme.outlineVariant,
                           child: Icon(Icons.place_outlined, color: scheme.onSurfaceVariant),
                         ),
+                        placeholder: (_, __) => Container(color: scheme.outlineVariant),
                       )
                     else
                       Container(color: scheme.outlineVariant,
@@ -636,11 +639,9 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
       maxChildSize: 0.95,
       builder: (ctx, controller) => ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: scheme.surface.withValues(alpha: 0.96),
+              color: scheme.surface,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
               border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.15))),
             ),
@@ -743,13 +744,16 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                       topLeft: Radius.circular(18),
                                       bottomLeft: Radius.circular(18),
                                     ),
-                                    child: Image.network(imageUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl: imageUrl,
                                       width: 80, height: 80, fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      errorWidget: (_, __, ___) => Container(
                                         width: 80, height: 80,
                                         color: SmarturStyle.purple.withValues(alpha: 0.1),
                                         child: const Icon(Icons.landscape_outlined, color: Colors.white38),
                                       ),
+                                      placeholder: (_, __) => Container(width: 80, height: 80,
+                                        color: SmarturStyle.purple.withValues(alpha: 0.05)),
                                     ),
                                   )
                                 else
@@ -837,7 +841,6 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
             ),
           ),
         ),
-      ),
     );
   }
 }

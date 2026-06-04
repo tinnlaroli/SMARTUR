@@ -70,14 +70,14 @@ export const Faqs: React.FC = () => {
 
     return (
         <>
-        <section id="faqs" className="relative overflow-hidden py-24 md:py-36" style={{ background: 'var(--color-bg)' }}>
+        <section id="faqs" className="relative overflow-x-clip py-16 sm:py-24 md:py-36" style={{ background: 'var(--color-bg)' }}>
             {/* Background Accent */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
                 <div className="absolute -left-24 top-1/2 size-80 -translate-y-1/2 rounded-full opacity-[0.04] blur-[100px]" style={{ background: 'var(--color-purple)' }} />
             </div>
 
-            <div className="container mx-auto px-4 max-w-2xl">
-                <div className="mb-16 text-center">
+            <div className="landing-container container mx-auto max-w-2xl px-4 sm:px-6">
+                <div className="mb-10 text-center sm:mb-16">
                     <p className="mb-3 text-xs font-black uppercase tracking-[0.25em]" style={{ color: 'var(--color-purple)' }}>
                         {t('faqs.label')}
                     </p>
@@ -95,7 +95,7 @@ export const Faqs: React.FC = () => {
                         >
                             <button
                                 onClick={() => toggleFaq(i)}
-                                className="group flex w-full items-center justify-start text-left gap-6 appearance-none bg-transparent border-none p-0 cursor-pointer"
+                                className="group flex w-full min-h-[44px] items-center justify-start gap-4 text-left appearance-none border-none bg-transparent p-0 cursor-pointer sm:gap-6"
                                 aria-expanded={openIndex === i}
                             >
                                 {/* Plus Icon Left */}
@@ -111,7 +111,7 @@ export const Faqs: React.FC = () => {
                                 </div>
 
                                 <h3
-                                    className="text-lg md:text-xl font-bold transition-colors duration-300 m-0"
+                                    className="m-0 text-base font-bold transition-colors duration-300 sm:text-lg md:text-xl"
                                     style={{ color: openIndex === i ? 'var(--color-text)' : 'var(--color-text-alt)' }}
                                 >
                                     {t(faq.q)}

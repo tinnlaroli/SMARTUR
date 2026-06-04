@@ -6,8 +6,8 @@ import Faqs from "../components/Faqs.astro";
 import VideoSection from "../components/VideoSection.astro";
 
 import TechnologySection from "../components/TechnologySection.astro";
-import Testimonials from "../components/Testimonials.astro";
-import About from "../components/About.astro";
+import { Testimonials } from "../components/Testimonials";
+import { About } from "../components/About";
 import PlansNew from "../components/PlansNew.astro";
 import ContactForm from "../components/ContactForm.astro";
 import Statements from "../components/Statements.astro";
@@ -24,7 +24,7 @@ import { ui, defaultLang } from "../i18n/ui";
       subtitle={ui.es["hero.subtitle"]}
       cta={{
         title: ui.es["hero.cta"],
-        url: "#nosotros",
+        url: "#empresa",
       }}
     />
   </section>
@@ -77,7 +77,7 @@ import { ui, defaultLang } from "../i18n/ui";
     ]}
   />
 
-  <About
+  <About client:visible
     id="nosotros"
     title={ui.es["about.title"]}
     subtitle={ui.es["about.subtitle"]}
@@ -126,7 +126,7 @@ import { ui, defaultLang } from "../i18n/ui";
 
   {/* StepsTimeline moved to About */}
 
-  <Testimonials
+  <Testimonials client:visible
     title={ui.es["testimonials.title"]}
     testimonials={[
       {
@@ -150,7 +150,9 @@ import { ui, defaultLang } from "../i18n/ui";
     ]}
   />
 
-  <EmpresaCTA lang="es" />
+  <section id="empresa">
+    <EmpresaCTA lang="es" />
+  </section>
 
   <PlansNew
     id="pricing"

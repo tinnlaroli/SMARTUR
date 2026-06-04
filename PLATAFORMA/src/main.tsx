@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { createRoot } from 'react-dom/client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes/router.tsx';
@@ -36,23 +36,13 @@ if (sentryDsn) {
 }
 
 function SessionGate({ children }: { children: React.ReactNode }) {
-    // Si no hay refreshToken, no hay sesión que hidratar — arranca directo.
-    const hasRefresh = !!sessionStorage.getItem('refreshToken');
-    const [ready, setReady] = useState(!hasRefresh);
-
     useEffect(() => {
-        if (ready) return;
-        initSession().finally(() => setReady(true));
+        void initSession();
+        const path = window.location.pathname;
+        if (path === '/' || path === '') {
+            void import('./features/landing/pages/Landing');
+        }
     }, []);
-
-    if (!ready) {
-        return (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--color-bg, #0f172a)' }}>
-                <div style={{ width: 40, height: 40, border: '3px solid #984EFD33', borderTopColor: '#984EFD', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            </div>
-        );
-    }
 
     return <>{children}</>;
 }

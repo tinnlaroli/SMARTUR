@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-separator": "^1.1.8",
     "@sentry/react": "^10.55.0",
     "@splinetool/runtime": "^1.12.67",
     "@tailwindcss/vite": "^4.1.18",

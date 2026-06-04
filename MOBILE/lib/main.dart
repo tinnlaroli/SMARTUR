@@ -320,7 +320,6 @@ class _SplashGate extends StatefulWidget {
 
 class _SplashGateState extends State<_SplashGate> {
   bool _showLoader = true;
-  bool _loaderAnimDone = false;
   bool _sessionReady = false;
   bool? _hasSession;
   String? _userName;
@@ -332,15 +331,10 @@ class _SplashGateState extends State<_SplashGate> {
     if (!widget.seenOnboarding) {
       _showLoader = false;
       _sessionReady = true;
-      _loaderAnimDone = true;
     } else {
-      // Si el loader o la red se cuelgan, no dejar la pantalla sin toques.
-      Future.delayed(const Duration(seconds: 12), () {
-        if (!mounted || !_showLoader) return;
-        setState(() {
-          _loaderAnimDone = true;
-          _showLoader = false;
-        });
+      // Safety timeout — never leave the loader stuck.
+      Future.delayed(const Duration(seconds: 10), () {
+        if (mounted && _showLoader) setState(() => _showLoader = false);
       });
     }
     _checkSession();
@@ -384,7 +378,7 @@ class _SplashGateState extends State<_SplashGate> {
         _hasSession = false;
         _userName = null;
         _sessionReady = true;
-        if (_loaderAnimDone) _showLoader = false;
+        _showLoader = false;
       });
       return;
     }
@@ -396,7 +390,7 @@ class _SplashGateState extends State<_SplashGate> {
         _hasSession = false;
         _userName = null;
         _sessionReady = true;
-        if (_loaderAnimDone) _showLoader = false;
+        _showLoader = false;
       });
       return;
     }
@@ -407,7 +401,7 @@ class _SplashGateState extends State<_SplashGate> {
         _hasSession = true;
         _userName = name;
         _sessionReady = true;
-        if (_loaderAnimDone) _showLoader = false;
+        _showLoader = false;
       });
     }
   }
@@ -425,15 +419,17 @@ class _SplashGateState extends State<_SplashGate> {
         // Tras onFinished, deja pasar los toques aunque la sesión siga validándose.
         if (shouldShowLoader)
           Positioned.fill(
-            child: IgnorePointer(
-              ignoring: _loaderAnimDone,
-              child: SmartURLoader(
-                key: const ValueKey('loader'),
-                showBackground: true,
-                onFinished: () => setState(() {
-                  _loaderAnimDone = true;
-                  if (_sessionReady) _showLoader = false;
-                }),
+            child: AnimatedOpacity(
+              opacity: _sessionReady ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 300),
+              onEnd: () {
+                if (_sessionReady && mounted) setState(() => _showLoader = false);
+              },
+              child: const ColoredBox(
+                color: Colors.white,
+                child: Center(
+                  child: SmartURLoader(continuous: true),
+                ),
               ),
             ),
           ),

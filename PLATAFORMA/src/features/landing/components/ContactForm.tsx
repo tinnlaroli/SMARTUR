@@ -9,13 +9,13 @@ import { isValidEmail } from '../../../shared/contact';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/** Motivos visibles en la landing — enfoque turista */
 const REASON_KEYS = [
-    'contact.reason.download',
-    'contact.reason.join',
     'contact.reason.tourist',
-    'contact.reason.pricing',
-    'contact.reason.evaluation',
+    'contact.reason.trip',
+    'contact.reason.download',
     'contact.reason.suggestion',
+    'contact.reason.pricing',
     'contact.reason.other',
 ] as const;
 
@@ -106,11 +106,10 @@ export const ContactForm: React.FC = () => {
         <>
             <section
                 ref={sectionRef}
-                id="contacto"
                 className="cta-minimal py-16 sm:py-20 md:py-24 lg:py-32"
                 style={{ background: 'var(--color-bg)' }}
             >
-                <div className="container mx-auto max-w-7xl px-4 sm:px-6 md:px-12">
+                <div className="landing-container container mx-auto max-w-7xl px-4 sm:px-6 md:px-12">
                     <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-16 lg:gap-24">
 
                         {/* Left: title */}

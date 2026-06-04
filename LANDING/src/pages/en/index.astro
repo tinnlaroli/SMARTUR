@@ -6,8 +6,8 @@ import Faqs from "../../components/Faqs.astro";
 import VideoSection from "../../components/VideoSection.astro";
 
 import TechnologySection from "../../components/TechnologySection.astro";
-import Testimonials from "../../components/Testimonials.astro";
-import About from "../../components/About.astro";
+import { Testimonials } from "../../components/Testimonials";
+import { About } from "../../components/About";
 import PlansNew from "../../components/PlansNew.astro";
 import ContactForm from "../../components/ContactForm.astro";
 import Statements from "../../components/Statements.astro";
@@ -27,7 +27,7 @@ const t = ui[lang];
       subtitle={t["hero.subtitle"]}
       cta={{
         title: t["hero.cta"],
-        url: "#about",
+        url: "#empresa",
       }}
     />
   </section>
@@ -81,7 +81,7 @@ const t = ui[lang];
     ]}
   />
 
-  <About
+  <About client:visible
     id="about"
     title={t["about.title"]}
     subtitle={t["about.subtitle"]}
@@ -130,7 +130,7 @@ const t = ui[lang];
 
   {/* StepsTimeline moved to About */}
 
-  <Testimonials
+  <Testimonials client:visible
     title={t["testimonials.title"]}
     testimonials={[
       {
@@ -154,7 +154,9 @@ const t = ui[lang];
     ]}
   />
 
-  <EmpresaCTA lang="en" />
+  <section id="empresa">
+    <EmpresaCTA lang="en" />
+  </section>
 
   <PlansNew
     id="pricing"

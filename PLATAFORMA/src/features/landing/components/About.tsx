@@ -81,7 +81,7 @@ export const About: React.FC = () => {
         const items = section.querySelectorAll('.step-item');
         let mm = gsap.matchMedia();
 
-        mm.add("(min-width: 768px)", () => {
+        mm.add("(min-width: 1024px)", () => {
             ScrollTrigger.create({
                 trigger: section,
                 start: "top top",
@@ -95,7 +95,7 @@ export const About: React.FC = () => {
             });
         });
 
-        mm.add("(max-width: 767px)", () => {
+        mm.add("(max-width: 1023px)", () => {
             ScrollTrigger.create({
                 trigger: section,
                 start: "top center",
@@ -117,15 +117,15 @@ export const About: React.FC = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} id="nosotros" className="sy-about relative min-h-screen py-20 flex items-center overflow-hidden" style={{ background: 'var(--color-bg)' }}>
+        <section ref={sectionRef} id="nosotros" className="sy-about relative flex min-h-0 items-center overflow-x-clip py-16 sm:py-20 lg:min-h-screen lg:py-20" style={{ background: 'var(--color-bg)' }}>
             {/* Background accents */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                <div className="absolute -left-32 top-1/4 h-[500px] w-[500px] rounded-full opacity-[0.05] blur-[120px]" style={{ background: 'var(--color-purple)' }} />
-                <div className="absolute -right-32 bottom-1/4 h-[450px] w-[450px] rounded-full opacity-[0.05] blur-[100px]" style={{ background: 'var(--color-green)' }} />
+                <div className="absolute -left-32 top-1/4 h-[280px] w-[280px] rounded-full opacity-[0.05] blur-[80px] sm:h-[400px] sm:w-[400px] sm:blur-[100px] lg:h-[500px] lg:w-[500px] lg:blur-[120px]" style={{ background: 'var(--color-purple)' }} />
+                <div className="absolute -right-32 bottom-1/4 h-[240px] w-[240px] rounded-full opacity-[0.05] blur-[80px] sm:h-[350px] sm:w-[350px] lg:h-[450px] lg:w-[450px] lg:blur-[100px]" style={{ background: 'var(--color-green)' }} />
             </div>
 
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-start">
+            <div className="landing-container container mx-auto w-full max-w-[1240px] px-4 sm:px-6">
+                <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-12 lg:gap-20">
                     
                     {/* Left Column */}
                     <div className="content-column">
@@ -134,7 +134,7 @@ export const About: React.FC = () => {
                             <span className="label-text text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--color-purple)' }}>{t('about.sectionLabel')}</span>
                         </div>
 
-                        <h2 className="landing-heading text-4xl md:text-5xl lg:text-7xl font-black mb-6 leading-tight" style={{ color: 'var(--color-text)' }} data-reveal>
+                        <h2 className="landing-heading mb-6 text-[clamp(2rem,6vw,4.5rem)] font-black leading-tight lg:text-7xl" style={{ color: 'var(--color-text)' }} data-reveal>
                             {t('about.headingPrefix')}<span style={{ color: 'var(--color-purple)' }}>{t('about.headingHighlight')}</span>
                         </h2>
 
@@ -143,7 +143,7 @@ export const About: React.FC = () => {
                         </p>
 
                         {/* Award Seal */}
-                        <div className="award-seal flex items-start gap-6 mb-12 p-6 rounded-2xl" 
+                        <div className="award-seal mb-12 flex flex-col gap-4 rounded-2xl p-4 sm:flex-row sm:items-start sm:gap-6 sm:p-6" 
                             style={{ background: 'rgba(163, 209, 79, 0.05)', border: '1px solid rgba(163, 209, 79, 0.2)' }} 
                             data-reveal
                         >
@@ -179,16 +179,16 @@ export const About: React.FC = () => {
                     </div>
 
                     {/* Right Column: Stepper Timeline */}
-                    <div className="stepper-column py-12">
-                        <div className="relative border-l-2 pl-8 ml-4" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="stepper-column py-4 sm:py-8 lg:py-12">
+                        <div className="relative ml-2 border-l-2 pl-6 sm:ml-4 sm:pl-8" style={{ borderColor: 'var(--color-border)' }}>
                             {TIMELINE_ITEMS.map((item, i) => (
                                 <div
                                     key={item.titleKey}
-                                    className={`step-item relative mb-12 transition-all duration-700 ${i === activeStep ? 'opacity-100 scale-100' : 'opacity-30 scale-95'}`}
+                                    className={`step-item relative mb-8 transition-all duration-700 last:mb-0 sm:mb-12 ${i === activeStep ? 'opacity-100 scale-100' : 'opacity-30 scale-95'}`}
                                 >
                                     {/* Dot Indicator */}
                                     <div
-                                        className={`absolute -left-[39px] top-2 size-4 rounded-full border-2 transition-all duration-300 ${i === activeStep ? 'scale-125' : ''}`}
+                                        className={`absolute -left-[31px] top-2 size-4 rounded-full border-2 transition-all duration-300 sm:-left-[39px] ${i === activeStep ? 'scale-125' : ''}`}
                                         style={i === activeStep
                                             ? { background: 'var(--color-purple)', borderColor: 'var(--color-purple)', boxShadow: '0 0 0 4px rgba(var(--rgb-purple-accent), 0.2)' }
                                             : { background: 'var(--color-bg)', borderColor: 'var(--color-border)' }
@@ -196,7 +196,7 @@ export const About: React.FC = () => {
                                     />
                                     
                                     <div
-                                        className={`p-6 rounded-2xl border transition-all duration-500 ${i === activeStep ? 'shadow-xl' : 'border-transparent'}`}
+                                        className={`rounded-2xl border p-4 transition-all duration-500 sm:p-6 ${i === activeStep ? 'shadow-xl' : 'border-transparent'}`}
                                         style={{
                                             background: 'var(--color-bg-alt)',
                                             ...(i === activeStep ? { borderColor: 'rgba(var(--rgb-purple-accent), 0.2)' } : {})

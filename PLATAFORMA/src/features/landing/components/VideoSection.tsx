@@ -157,26 +157,26 @@ export const VideoSection: React.FC = () => {
     return (
     <section
       ref={sectionRef}
-      className="video-section relative py-16 md:py-24 overflow-hidden"
+      className="video-section relative overflow-x-clip py-12 sm:py-16 md:py-24"
       style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}
     >
-      <div className="container mx-auto px-4 text-center">
-        <div className="header mb-12">
+      <div className="landing-container container mx-auto w-full max-w-[1240px] px-4 text-center sm:px-6">
+        <div className="header mb-8 sm:mb-12">
           <h2
-            className="title landing-heading text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight"
+            className="title landing-heading mb-4 text-[clamp(1.75rem,5vw,3.75rem)] font-black leading-tight sm:mb-6"
             style={{ color: 'var(--color-text)' }}
           >
             {renderTitle(t('map.header.titleHtml'))}
           </h2>
-          <p className="description text-lg md:text-xl max-w-3xl mx-auto leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+          <p className="description mx-auto max-w-3xl text-base leading-relaxed sm:text-lg md:text-xl" style={{ color: 'var(--color-text-alt)' }}>
             {t('map.header.description')}
           </p>
         </div>
 
         <div
           ref={containerRef}
-          className="map-container relative max-w-[1000px] mx-auto rounded-3xl overflow-hidden border border-[var(--color-border)] shadow-[0_0_50px_rgba(var(--rgb-text),0.12)] transition-all duration-500"
-          style={{ height: 'clamp(280px, 50vw, 560px)' }}
+          className="map-container relative mx-auto max-w-[1000px] overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_0_50px_rgba(var(--rgb-text),0.12)] transition-all duration-500 sm:rounded-3xl"
+          style={{ height: 'clamp(240px, 58vw, 560px)' }}
         >
           <Map
             initialViewport={REGION_CENTER}
@@ -247,7 +247,7 @@ export const VideoSection: React.FC = () => {
             ))}
           </Map>
 
-          <div className="absolute top-4 right-4 z-10 mapcn-panel rounded-xl p-1.5 flex items-center gap-1.5 md:top-6 md:right-6 md:p-2 md:gap-2">
+          <div className="absolute top-3 right-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1.5 rounded-xl p-1.5 mapcn-panel sm:top-4 sm:right-4 md:top-6 md:right-6 md:gap-2 md:p-2">
             <button
               type="button"
               className="rounded-lg border border-[var(--color-border)] bg-[rgba(var(--rgb-bg-alt),0.95)] px-3 py-2 text-[11px] font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg)]"
@@ -266,7 +266,7 @@ export const VideoSection: React.FC = () => {
           </div>
 
           <div
-            className="absolute top-4 left-4 z-10 rounded-2xl p-4 flex flex-col gap-3 min-w-0 w-[min(180px,42vw)] mapcn-panel md:top-6 md:left-6 md:p-5 md:gap-3.5 md:min-w-[200px] md:w-auto"
+            className="map-municipios-panel absolute top-4 left-4 z-10 hidden min-w-0 w-[min(200px,38vw)] flex-col gap-3 rounded-2xl p-4 mapcn-panel lg:left-6 lg:top-6 lg:flex lg:w-auto lg:min-w-[200px] lg:gap-3.5 lg:p-5"
           >
             <p className="mb-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-alt)]">
               {t('map.panel.title')}
@@ -306,13 +306,37 @@ export const VideoSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="absolute bottom-4 right-4 z-10 mapcn-panel rounded-xl px-3 py-2.5 text-left max-w-[200px] hidden md:block md:bottom-6 md:right-6 md:px-4 md:py-3 md:max-w-[260px]">
+          <div className="absolute bottom-4 right-4 z-10 hidden max-w-[200px] rounded-xl px-3 py-2.5 text-left mapcn-panel md:block md:bottom-6 md:right-6 md:max-w-[260px] md:px-4 md:py-3">
             <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--color-text-alt)]">
               {t('map.visualization.title')}
             </p>
             <p className="text-xs leading-relaxed text-[var(--color-text-alt)]">
               {t('map.visualization.hint')}
             </p>
+          </div>
+        </div>
+
+        {/* Mobile: horizontal municipality picker (panel hidden on map overlay) */}
+        <div className="map-municipios-mobile mt-4 lg:hidden">
+          <p className="mb-2 text-left text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-alt)' }}>
+            {t('map.panel.title')}
+          </p>
+          <div className="-mx-1 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {MUNICIPIOS.map((m) => (
+              <button
+                type="button"
+                key={m.id}
+                onClick={() => focusMunicipio(m.id)}
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-bold transition-colors ${
+                  activePopup === m.id
+                    ? 'border-[var(--color-purple)] bg-[rgba(var(--rgb-purple-accent),0.14)] text-[var(--color-text)]'
+                    : 'border-[var(--color-border)] bg-[var(--color-bg-alt)] text-[var(--color-text-alt)]'
+                }`}
+              >
+                <span className="size-2 shrink-0 rounded-full" style={{ background: m.color }} />
+                {m.nombre}
+              </button>
+            ))}
           </div>
         </div>
       </div>

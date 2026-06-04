@@ -90,22 +90,13 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
                 ),
               ),
             ),
-            // Soft blur on band — ClipRect evita artefactos negros en el borde superior
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               height: bandH,
-              child: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: widget.blurSigma,
-                    sigmaY: widget.blurSigma,
-                  ),
-                  child: ColoredBox(
-                    color: surface.withValues(alpha: widget.opacity),
-                  ),
-                ),
+              child: ColoredBox(
+                color: surface.withValues(alpha: widget.opacity * 0.5),
               ),
             ),
             Positioned.fill(child: widget.child),
@@ -199,16 +190,8 @@ class _SmarturBackgroundState extends State<SmarturBackground> with SingleTicker
               ),
             ),
             Positioned.fill(
-              child: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: widget.blurSigma,
-                    sigmaY: widget.blurSigma,
-                  ),
-                  child: Container(
-                    color: surface.withValues(alpha: widget.opacity),
-                  ),
-                ),
+              child: ColoredBox(
+                color: surface.withValues(alpha: widget.opacity * 0.45),
               ),
             ),
             Positioned.fill(child: widget.child),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/avatar_icon_map.dart';
@@ -63,12 +64,13 @@ class SmarturUserAvatar extends StatelessWidget {
     if (url.isNotEmpty && url.startsWith('https://')) {
       final size = radius * 2;
       return ClipOval(
-        child: Image.network(
-          url,
+        child: CachedNetworkImage(
+          imageUrl: url,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _fallback(context),
+          errorWidget: (context, _, __) => _fallback(context),
+          placeholder: (_, __) => _fallback(context),
         ),
       );
     }

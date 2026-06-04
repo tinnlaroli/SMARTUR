@@ -36,10 +36,10 @@ export const ui = {
 
     // Hero
     "hero.title":
-      'IA que <span style="color: var(--color-purple)">guía,</span><br><span style="color: var(--color-cyan)">turismo</span> que une.',
+      'Únete a la <span style="color: var(--color-purple)">plataforma</span><br>que <span style="color: var(--color-cyan)">conecta</span> el turismo regional.',
     "hero.subtitle":
-      "SMARTUR conecta turistas con experiencias auténticas mediante IA, impulsando a las MiPyMEs de Veracruz en su transformación digital.",
-    "hero.cta": "Sé Parte De SMARTUR",
+      "SMARTUR usa IA para conectar tu negocio turístico con viajeros que buscan experiencias auténticas en Veracruz.",
+    "hero.cta": "Registra tu negocio",
 
     // About
     "about.title":
@@ -146,13 +146,13 @@ export const ui = {
       "Iniciativa desarrollada en la Universidad Tecnológica del Centro de Veracruz, integrando talento estudiantil y tecnología para el desarrollo regional.",
 
     // Statements
-    "statement1.title": "Innovación",
+    "statement1.title": "Innovación que Transforma el Turismo Regional",
     "statement1.text":
       "Utilizamos inteligencia artificial y tecnología de vanguardia para revolucionar la forma en que se descubre y experimenta el turismo en Las Altas Montañas.",
-    "statement2.title": "Identidad Regional",
+    "statement2.title": "Identidad Regional que Conecta Culturas y Destinos",
     "statement2.text":
       "Celebramos y promovemos la riqueza cultural, natural y gastronómica única de Veracruz, conectando a viajeros con experiencias auténticas.",
-    "statement3.title": "Sostenibilidad Tecnológica",
+    "statement3.title": "Sostenibilidad Tecnológica para el Futuro del Turismo",
     "statement3.text":
       "Empoderamos a las MiPyMEs locales con herramientas digitales accesibles que fortalecen su competitividad y crecimiento sostenible.",
 
@@ -220,7 +220,7 @@ export const ui = {
 
     // Testimonials
     "testimonials.title":
-      'Testimonios: ¿Qué dicen los <span style="color: var(--color-pink)">servicios asociados</span> ?',
+      'Testimonios: ¿Qué dicen los <span style="color: var(--color-cyan)">servicios asociados</span> ?',
     "testimonials.item1.name": "Cha Ji-Hun",
     "testimonials.item1.role": "Propietario",
     "testimonials.item1.business": "Café Las Montañas",
@@ -399,6 +399,10 @@ export const ui = {
 
     // Hero
     "hero.scrollDownAriaLabel": "Descubrir más sobre SMARTUR",
+    "hero.appHint": "Descarga la app",
+    "hero.playStore": "Google Play",
+    "hero.playStoreSoon": "Próximamente",
+    "hero.scrollIndicator": "Descubre más",
 
     // Benefits
     "benefits.ariaLabel": "Beneficios",
@@ -481,14 +485,14 @@ export const ui = {
 
     // Hero
     "hero.title":
-      'AI that <span style="color: var(--color-purple)">guides,</span><br><span style="color: var(--color-cyan)">tourism</span> that unites.',
+      'Join the <span style="color: var(--color-purple)">platform</span><br>that <span style="color: var(--color-cyan)">connects</span> regional tourism.',
     "hero.subtitle":
-      "SMARTUR connects tourists with authentic experiences through AI, empowering Veracruz SMEs in their digital transformation.",
-    "hero.cta": "Discover SMARTUR",
+      "SMARTUR uses AI to connect your tourism business with travelers seeking authentic experiences in Veracruz.",
+    "hero.cta": "Register your business",
 
     // Testimonials
     "testimonials.title":
-      'Testimonials: What do <span style="color: var(--color-pink)">associated services</span> say?',
+      'Testimonials: What do <span style="color: var(--color-cyan)">associated services</span> say?',
     "testimonials.item1.name": "Cha Ji-Hun",
     "testimonials.item1.role": "Owner",
     "testimonials.item1.business": "Café Las Montañas",
@@ -609,13 +613,13 @@ export const ui = {
       "Developed at the Technological University of Central Veracruz, integrating student talent and technology for regional development.",
 
     // Statements
-    "statement1.title": "Innovation",
+    "statement1.title": "Innovation That Transforms Regional Tourism",
     "statement1.text":
       "We use artificial intelligence and cutting-edge technology to revolutionize how tourism is discovered and experienced in the High Mountains.",
-    "statement2.title": "Regional Identity",
+    "statement2.title": "Regional Identity That Connects Cultures",
     "statement2.text":
       "We celebrate and promote Veracruz's unique cultural, natural, and gastronomic richness, connecting travelers with authentic experiences.",
-    "statement3.title": "Technological Sustainability",
+    "statement3.title": "Technological Sustainability for the Future of Tourism",
     "statement3.text":
       "We empower local SMEs with accessible digital tools that strengthen their competitiveness and sustainable growth.",
 
@@ -830,6 +834,10 @@ export const ui = {
 
     // Hero
     "hero.scrollDownAriaLabel": "Discover more about SMARTUR",
+    "hero.appHint": "Download the app",
+    "hero.playStore": "Google Play",
+    "hero.playStoreSoon": "Coming soon",
+    "hero.scrollIndicator": "Discover more",
 
     // Benefits
     "benefits.ariaLabel": "Benefits",
@@ -913,14 +921,14 @@ export const ui = {
 
     // Hero
     "hero.title":
-      'L\'IA qui <span style="color: var(--color-purple)">guide,</span><br>le <span style="color: var(--color-cyan)">tourisme</span> qui unit.',
+      'Rejoignez la <span style="color: var(--color-purple)">plateforme</span><br>qui <span style="color: var(--color-cyan)">connecte</span> le tourisme régional.',
     "hero.subtitle":
-      "SMARTUR connecte les touristes avec des expériences authentiques grâce à l'IA, en soutenant les PME de Veracruz dans leur transformation numérique.",
-    "hero.cta": "Découvrir SMARTUR",
+      "SMARTUR utilise l'IA pour connecter votre entreprise touristique aux voyageurs en quête d'expériences authentiques au Veracruz.",
+    "hero.cta": "Inscrivez votre entreprise",
 
     // Testimonials
     "testimonials.title":
-      'Témoignages : Que disent les <span style="color: var(--color-pink)">services associés</span> ?',
+      'Témoignages : Que disent les <span style="color: var(--color-cyan)">services associés</span> ?',
     "testimonials.item1.name": "Cha Ji-Hun",
     "testimonials.item1.role": "Propriétaire",
     "testimonials.item1.business": "Café Las Montañas",
@@ -1046,13 +1054,13 @@ export const ui = {
       "Développé à l'Université Technologique du Centre de Veracruz, intégrant talents étudiants et technologie pour le développement régional.",
 
     // Statements
-    "statement1.title": "Innovation",
+    "statement1.title": "L'Innovation qui Transforme le Tourisme Régional",
     "statement1.text":
       "Nous utilisons l'intelligence artificielle et la technologie de pointe pour révolutionner la façon dont le tourisme est découvert et vécu dans les Hautes Montagnes.",
-    "statement2.title": "Identité Régionale",
+    "statement2.title": "Identité Régionale qui Connecte les Cultures",
     "statement2.text":
       "Nous célébrons et promouvons la richesse culturelle, naturelle et gastronomique unique de Veracruz, en connectant les voyageurs avec des expériences authentiques.",
-    "statement3.title": "Durabilité Technologique",
+    "statement3.title": "Durabilité Technologique pour l'Avenir du Tourisme",
     "statement3.text":
       "Nous autonomisons les PME locales avec des outils numériques accessibles qui renforcent leur compétitivité et leur croissance durable.",
 
@@ -1248,6 +1256,10 @@ export const ui = {
 
     // Hero
     "hero.scrollDownAriaLabel": "En savoir plus sur SMARTUR",
+    "hero.appHint": "Téléchargez l'application",
+    "hero.playStore": "Google Play",
+    "hero.playStoreSoon": "Bientôt disponible",
+    "hero.scrollIndicator": "Découvrir plus",
 
     // Benefits
     "benefits.ariaLabel": "Bénéfices",
@@ -1317,10 +1329,10 @@ export const ui = {
 
     // Hero
     "hero.title":
-      'IA que <span style="color: var(--color-purple)">guia,</span><br><span style="color: var(--color-cyan)">turismo</span> que une.',
+      'Junte-se à <span style="color: var(--color-purple)">plataforma</span><br>que <span style="color: var(--color-cyan)">conecta</span> o turismo regional.',
     "hero.subtitle":
-      "SMARTUR conecta turistas com experiências autênticas através de IA, impulsionando as MiPyMEs de Veracruz em sua transformação digital.",
-    "hero.cta": "Seja Parte da SMARTUR",
+      "SMARTUR usa IA para conectar seu negócio turístico com viajantes que buscam experiências autênticas em Veracruz.",
+    "hero.cta": "Registre seu negócio",
 
     // About
     "about.title":
@@ -1427,13 +1439,13 @@ export const ui = {
       "Iniciativa desenvolvida na Universidade Tecnológica do Centro de Veracruz, integrando talento estudantil e tecnologia para o desenvolvimento regional.",
 
     // Statements
-    "statement1.title": "Inovação",
+    "statement1.title": "Inovação que Transforma o Turismo Regional",
     "statement1.text":
       "Utilizamos inteligência artificial e tecnologia de ponta para revolucionar a forma como o turismo é descoberto e vivenciado nas Altas Montanhas.",
-    "statement2.title": "Identidade Regional",
+    "statement2.title": "Identidade Regional que Conecta Culturas",
     "statement2.text":
       "Celebramos e promovemos a riqueza cultural, natural e gastronômica única de Veracruz, conectando viajantes com experiências autênticas.",
-    "statement3.title": "Sustentabilidade Tecnológica",
+    "statement3.title": "Sustentabilidade Tecnológica para o Futuro do Turismo",
     "statement3.text":
       "Empoderamos as MiPyMEs locais com ferramentas digitais acessíveis que fortalecem sua competitividade e crescimento sustentável.",
 
@@ -1501,7 +1513,7 @@ export const ui = {
 
     // Testimonials
     "testimonials.title":
-      'Depoimentos: O que dizem os <span style="color: var(--color-pink)">serviços associados</span>?',
+      'Depoimentos: O que dizem os <span style="color: var(--color-cyan)">serviços associados</span>?',
     "testimonials.item1.name": "Cha Ji-Hun",
     "testimonials.item1.role": "Proprietário",
     "testimonials.item1.business": "Café Las Montañas",
@@ -1680,6 +1692,10 @@ export const ui = {
 
     // Hero
     "hero.scrollDownAriaLabel": "Descobrir mais sobre a SMARTUR",
+    "hero.appHint": "Baixe o aplicativo",
+    "hero.playStore": "Google Play",
+    "hero.playStoreSoon": "Em breve",
+    "hero.scrollIndicator": "Descobrir mais",
 
     // Benefits
     "benefits.ariaLabel": "Benefícios",
