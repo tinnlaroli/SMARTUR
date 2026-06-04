@@ -239,7 +239,9 @@ export default function Landing() {
                             <ImpactSection />
                         </div>
 
-                        <Testimonials />
+                        <div id="testimonios">
+                            <Testimonials />
+                        </div>
 
                         <div id="contacto" className="relative z-[2]">
                             <ContactForm />
