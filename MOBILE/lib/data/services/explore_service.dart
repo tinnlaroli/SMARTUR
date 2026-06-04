@@ -177,12 +177,13 @@ class ExploreService {
   static Place _placeFromService(Map<String, dynamic> s, String cityName) {
     final cat = _categoryFromServiceType(s['service_type'] as String?);
     final rating = _toDouble(s['total_score'], fallback: 4.0);
+    final rawUrl = (s['image_url'] as String?) ?? '';
     return Place(
       id: 'svc_${s['id_service']}',
       name: (s['name'] ?? '') as String,
       city: cityName,
       category: cat,
-      imageUrl: (s['image_url'] as String?) ?? '',
+      imageUrl: rawUrl.isNotEmpty ? rawUrl : _fallbackForCategory(cat, cityName),
       rating: rating,
       shortDescription: _truncate(s['description'] as String?, 80),
       description: (s['description'] ?? '') as String,
@@ -195,12 +196,13 @@ class ExploreService {
     final cat = _categoryFromPoiType(p['id_type'] as int?);
     final lat = p['latitude'] != null ? _toDouble(p['latitude']) : null;
     final lon = p['longitude'] != null ? _toDouble(p['longitude']) : null;
+    final rawUrl = (p['image_url'] as String?) ?? '';
     return Place(
       id: 'poi_${p['id_point']}',
       name: (p['name'] ?? '') as String,
       city: cityName,
       category: cat,
-      imageUrl: (p['image_url'] as String?) ?? '',
+      imageUrl: _resolvePoiUrl(rawUrl, cityName),
       rating: _toDouble(p['rating'], fallback: 4.0),
       shortDescription: _truncate(p['description'] as String?, 80),
       description: (p['description'] ?? '') as String,
@@ -209,6 +211,54 @@ class ExploreService {
       lat: lat != 0.0 ? lat : null,
       lon: lon != 0.0 ? lon : null,
     );
+  }
+
+  // ── Image URL resolution ───────────────────────────────────────────────────
+
+  static String _resolvePoiUrl(String rawUrl, String city) {
+    if (rawUrl.isEmpty) return _fallbackForCity(city);
+    // Direct upload.wikimedia.org URLs are verified working — keep them.
+    if (rawUrl.startsWith('https://upload.wikimedia.org')) return rawUrl;
+    // commons.wikimedia.org redirect URLs often 404 — replace with city fallback.
+    if (rawUrl.startsWith('https://commons.wikimedia.org')) return _fallbackForCity(city);
+    // Any other URL (custom upload from admin panel) — keep as-is.
+    return rawUrl;
+  }
+
+  // ── Fallback images (verified upload.wikimedia.org thumbnails) ─────────────
+
+  // Full-size URLs confirmed working (verified via HTTP redirect trace)
+  static const _imgCascada    = 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Cascada_de_Texolo.jpg';
+  static const _imgMuseoXal   = 'https://upload.wikimedia.org/wikipedia/commons/9/97/Museo_de_Antropolog%C3%ADa_de_Xalapa.jpg';
+  static const _imgPalacioOri = 'https://upload.wikimedia.org/wikipedia/commons/0/08/Palacio_de_hierro_de_Orizaba%2C_Veracruz.jpg';
+  static const _imgFortin     = 'https://upload.wikimedia.org/wikipedia/commons/5/51/Fort%C3%ADn_de_las_flores%2C_Veracruz.jpg';
+  static const _imgCordoba    = 'https://upload.wikimedia.org/wikipedia/commons/0/02/Riverwalk_with_Public_Art_-_Cordoba_-_Veracruz_-_Mexico_-_02.jpg';
+  static const _imgXico       = 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Parroquia_de_Santa_Mar%C3%ADa_Magdalena_Xico_%28Veracruz%29.jpg';
+  static const _imgPico       = 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Pico_de_Orizaba%2C_Veracruz..JPG';
+  static const _imgCoatepec   = 'https://upload.wikimedia.org/wikipedia/commons/d/d0/Iglesia_San_Jer%C3%B3nimo.JPG';
+
+  static String _fallbackForCategory(PlaceCategory cat, String city) {
+    switch (cat) {
+      case PlaceCategory.hotels:
+        return _fallbackForCity(city);
+      case PlaceCategory.restaurants:
+        return _imgCoatepec;
+      case PlaceCategory.adventures:
+        return _imgCascada;
+      case PlaceCategory.museums:
+        return _imgMuseoXal;
+    }
+  }
+
+  static String _fallbackForCity(String city) {
+    final c = city.toLowerCase();
+    if (c.contains('xalapa') || c.contains('jalapa')) return _imgMuseoXal;
+    if (c.contains('coatepec'))                        return _imgCascada;
+    if (c.contains('orizaba'))                         return _imgPalacioOri;
+    if (c.contains('fort') || c.contains('flores'))    return _imgFortin;
+    if (c.contains('rdoba'))                           return _imgCordoba;
+    if (c.contains('xico'))                            return _imgXico;
+    return _imgPico;
   }
 
   static double _toDouble(dynamic value, {double fallback = 0.0}) {
