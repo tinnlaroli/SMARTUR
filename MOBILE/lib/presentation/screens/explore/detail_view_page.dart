@@ -623,6 +623,7 @@ class _BottomContent extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
+              ),
             ],
           ),
         ),
