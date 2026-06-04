@@ -496,7 +496,7 @@ class _BottomContent extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(Icons.place_outlined,
-                            color: semantic.onImageMuted, size: 14),
+                            color: scheme.onSurfaceVariant, size: 14),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -506,7 +506,7 @@ class _BottomContent extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 11,
-                              color: semantic.onImageMuted,
+                              color: scheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -526,7 +526,7 @@ class _BottomContent extends StatelessWidget {
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   height: 1.0,
-                  color: semantic.onImageText,
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 14),
@@ -540,13 +540,13 @@ class _BottomContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionLabel(label: l10n.tabHistory, semantic: semantic),
+                      _SectionLabel(label: l10n.tabHistory),
                       _TabText(
                         text: subtitle.isNotEmpty
                             ? subtitle
                             : 'Próximamente — agrega una reseña sobre este lugar.',
                       ),
-                      _SectionLabel(label: l10n.tabLocation, semantic: semantic),
+                      _SectionLabel(label: l10n.tabLocation),
                       _LocationTab(
                         lat: lat,
                         lon: lon,
@@ -554,9 +554,9 @@ class _BottomContent extends StatelessWidget {
                         placeName: title,
                         l10n: l10n,
                       ),
-                      _SectionLabel(label: l10n.tabGastronomy, semantic: semantic),
+                      _SectionLabel(label: l10n.tabGastronomy),
                       _TabText(text: _gastronomyForCity(locationLine)),
-                      _SectionLabel(label: l10n.tabRate, semantic: semantic),
+                      _SectionLabel(label: l10n.tabRate),
                       _RatingTab(
                         userRating: userRating,
                         busy: ratingBusy,
@@ -573,7 +573,7 @@ class _BottomContent extends StatelessWidget {
               ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: SmarturStyle.orange,
-                        foregroundColor: semantic.onImageText,
+                        foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -666,7 +666,7 @@ class _LocationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCoords = lat != null && lon != null;
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -676,14 +676,14 @@ class _LocationTab extends StatelessWidget {
         if (hasCoords)
             Row(
               children: [
-                Icon(Icons.location_on_outlined, color: semantic.onImageMuted, size: 13),
+                Icon(Icons.location_on_outlined, color: scheme.onSurfaceVariant, size: 13),
                 const SizedBox(width: 4),
                 Text(
                   '${lat!.toStringAsFixed(5)}, ${lon!.toStringAsFixed(5)}',
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 11,
-                    color: semantic.onImageText.withValues(alpha: 0.55),
+                    color: scheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -691,14 +691,14 @@ class _LocationTab extends StatelessWidget {
           else
             Row(
               children: [
-                Icon(Icons.location_city_outlined, color: semantic.onImageMuted, size: 13),
+                Icon(Icons.location_city_outlined, color: scheme.onSurfaceVariant, size: 13),
                 const SizedBox(width: 4),
                 Text(
                   locationLine,
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 11,
-                    color: semantic.onImageText.withValues(alpha: 0.55),
+                    color: scheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -742,11 +742,11 @@ class _LocationTab extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   final String label;
-  final SmarturSemanticColors semantic;
-  const _SectionLabel({required this.label, required this.semantic});
+  const _SectionLabel({required this.label});
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 6),
       child: Row(
@@ -767,7 +767,7 @@ class _SectionLabel extends StatelessWidget {
               fontWeight: FontWeight.w700,
               fontSize: 10,
               letterSpacing: 0.8,
-              color: semantic.onImageMuted,
+              color: scheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -782,11 +782,11 @@ class _RatingPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: SmarturStyle.orange.withValues(alpha: 0.25),
+        color: SmarturStyle.orange.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: SmarturStyle.orange.withValues(alpha: 0.45)),
       ),
@@ -800,7 +800,7 @@ class _RatingPill extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Outfit',
               fontWeight: FontWeight.w800,
-              color: semantic.onImageText,
+              color: scheme.onSurface,
               fontSize: 12,
             ),
           ),
@@ -889,7 +889,7 @@ class _TabText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 4),
       child: Text(
@@ -898,7 +898,7 @@ class _TabText extends StatelessWidget {
           fontFamily: 'Outfit',
           fontSize: 12,
           height: 1.4,
-          color: semantic.onImageText.withValues(alpha: 0.72),
+          color: scheme.onSurface.withValues(alpha: 0.8),
         ),
       ),
     );
@@ -975,6 +975,7 @@ class _RatingTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final hasRated = userRating != null;
 
@@ -988,7 +989,7 @@ class _RatingTab extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 11,
-                color: semantic.onImageText.withValues(alpha: 0.7),
+                color: scheme.onSurface.withValues(alpha: 0.65),
               ),
               textAlign: TextAlign.center,
             ),
@@ -1007,7 +1008,7 @@ class _RatingTab extends StatelessWidget {
                   child: Icon(
                     filled ? Icons.star_rounded : Icons.star_border_rounded,
                     size: 32,
-                    color: filled ? semantic.warning : semantic.onImageMuted,
+                    color: filled ? semantic.warning : scheme.onSurfaceVariant,
                   ),
                 ),
               );
@@ -1038,7 +1039,7 @@ class _RatingTab extends StatelessWidget {
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 1.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(semantic.onImageMuted),
+                  valueColor: AlwaysStoppedAnimation<Color>(scheme.onSurfaceVariant),
                 ),
               ),
             ),
@@ -1128,12 +1129,12 @@ class DayPlanSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final itinerary = _buildItinerary();
     final cityName = currentPlace.city;
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
-        color: Theme.of(context).colorScheme.surface,
+        color: scheme.surface,
         child: SafeArea(
           top: false,
           child: Padding(
@@ -1149,7 +1150,7 @@ class DayPlanSheet extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: semantic.onImageMuted.withValues(alpha: 0.5),
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -1164,7 +1165,7 @@ class DayPlanSheet extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'CalSans',
                         fontSize: 22,
-                        color: semantic.onImageText,
+                        color: scheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1176,7 +1177,7 @@ class DayPlanSheet extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 12,
-                    color: semantic.onImageText.withValues(alpha: 0.55),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -1192,12 +1193,12 @@ class DayPlanSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: semantic.onImageText.withValues(alpha: 0.05),
+                      color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.explore_outlined, color: semantic.onImageMuted, size: 16),
+                        Icon(Icons.explore_outlined, color: scheme.onSurfaceVariant, size: 16),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -1205,7 +1206,7 @@ class DayPlanSheet extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 11,
-                              color: semantic.onImageText.withValues(alpha: 0.50),
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -1237,20 +1238,20 @@ class _DayStepTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isCurrent
-              ? slot.color.withValues(alpha: 0.15)
-              : semantic.onImageText.withValues(alpha: 0.06),
+              ? slot.color.withValues(alpha: 0.12)
+              : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isCurrent
                 ? slot.color.withValues(alpha: 0.40)
-                : semantic.onImageText.withValues(alpha: 0.08),
+                : scheme.outlineVariant.withValues(alpha: 0.5),
           ),
         ),
         child: Row(
@@ -1260,7 +1261,7 @@ class _DayStepTile extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: slot.color.withValues(alpha: 0.20),
+                color: slot.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(slot.icon, color: slot.color, size: 20),
@@ -1287,7 +1288,7 @@ class _DayStepTile extends StatelessWidget {
                       fontFamily: 'Outfit',
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: semantic.onImageText,
+                      color: scheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1310,20 +1311,20 @@ class _DayStepTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: semantic.onImageText.withValues(alpha: 0.08),
+                  color: scheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.map_outlined, size: 12, color: semantic.onImageMuted),
+                    Icon(Icons.map_outlined, size: 12, color: scheme.onSurfaceVariant),
                     const SizedBox(width: 4),
                     Text(
                       AppLocalizations.of(context)!.mapsLabel,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 10,
-                        color: semantic.onImageMuted,
+                        color: scheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
