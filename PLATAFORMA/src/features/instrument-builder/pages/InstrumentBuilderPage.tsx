@@ -360,7 +360,7 @@ export const InstrumentBuilderPage = () => {
                                                         </span>
                                                         <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 dark:bg-violet-950/30 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-400">
                                                             <Star className="size-3" />
-                                                            {previewRubric.criteria.reduce((sum, c) => sum + Math.max(...c.levels.map((l) => Number(l.score)), 0), 0)} pts máx
+                                                            {previewRubric.criteria.reduce((sum, c) => sum + Math.max(...(c.levels ?? []).map((l) => Number(l.score)), 0), 0)} pts máx
                                                         </span>
                                                     </>
                                                 )}
@@ -377,7 +377,7 @@ export const InstrumentBuilderPage = () => {
                                                     {previewRubric.criteria
                                                         .sort((a, b) => a.order_index - b.order_index)
                                                         .map((criterion, i) => {
-                                                            const maxScore = Math.max(...criterion.levels.map((l) => Number(l.score)), 0);
+                                                            const maxScore = Math.max(...(criterion.levels ?? []).map((l) => Number(l.score)), 0);
                                                             return (
                                                                 <div key={criterion.id_criterion} className="flex items-start gap-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2.5">
                                                                     <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-violet-100 dark:bg-violet-900/40 text-[10px] font-bold text-violet-600 dark:text-violet-400 mt-0.5">
