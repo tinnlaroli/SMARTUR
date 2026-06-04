@@ -121,6 +121,15 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function() {
+        var theme = localStorage.getItem("smartur-theme");
+        if (!theme) {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
     <meta name="google-site-verification" content="XkhhFJUQntUbRcnxirHrfxc9bwGFdOLx71tjWAHtwPk" />
 
     <!-- SMARTUR SEO Metadata -->

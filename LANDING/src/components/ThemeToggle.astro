@@ -4,9 +4,8 @@
 
 <button
   type="button"
-  class="theme-toggle"
+  class="theme-toggle js-theme-toggle"
   aria-label="Toggle theme"
-  id="theme-toggle"
 >
   <svg
     class="sun-icon"
@@ -153,11 +152,10 @@
   const initialTheme = getPreferredTheme();
   setTheme(initialTheme);
 
-  // Add click handler
-  const toggleButton = document.getElementById("theme-toggle");
-  if (toggleButton) {
-    toggleButton.addEventListener("click", toggleTheme);
-  }
+  // Add click handler to all instances (desktop + mobile)
+  document.querySelectorAll(".js-theme-toggle").forEach((btn) => {
+    btn.addEventListener("click", toggleTheme);
+  });
 
   // Listen for system theme changes
   if (window.matchMedia) {

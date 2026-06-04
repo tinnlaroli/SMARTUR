@@ -160,7 +160,7 @@ export function About({
 
             <div
               className="flex items-start gap-6 mb-12 p-6 rounded-2xl"
-              style={{ background: 'rgba(163, 209, 79, 0.05)', border: '1px solid rgba(163, 209, 79, 0.2)' }}
+              style={{ background: 'rgba(var(--rgb-green-accent), 0.05)', border: '1px solid rgba(var(--rgb-green-accent), 0.2)' }}
               data-reveal
             >
               <div className="flex flex-col items-center gap-2">
@@ -211,7 +211,7 @@ export function About({
                     <div
                       className={`absolute -left-[39px] top-2 size-4 rounded-full border-2 transition-all duration-300 ${i === activeStep ? 'scale-125' : ''}`}
                       style={i === activeStep
-                        ? { background: 'var(--color-purple)', borderColor: 'var(--color-purple)', boxShadow: '0 0 0 4px rgba(158, 110, 230, 0.2)' }
+                        ? { background: 'var(--color-purple)', borderColor: 'var(--color-purple)', boxShadow: '0 0 0 4px rgba(var(--rgb-purple-accent), 0.2)' }
                         : { background: 'var(--color-bg)', borderColor: 'var(--color-border)' }
                       }
                     />
@@ -219,7 +219,7 @@ export function About({
                       className={`p-6 rounded-2xl transition-all duration-500 ${i === activeStep ? 'shadow-xl' : ''}`}
                       style={{
                         background: 'var(--color-bg-alt)',
-                        ...(i === activeStep ? { border: '1px solid rgba(158, 110, 230, 0.2)' } : { border: '1px solid transparent' }),
+                        ...(i === activeStep ? { border: '1px solid rgba(var(--rgb-purple-accent), 0.2)' } : { border: '1px solid transparent' }),
                       }}
                     >
                       <h3

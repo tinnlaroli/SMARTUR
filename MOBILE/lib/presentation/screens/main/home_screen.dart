@@ -55,7 +55,7 @@ class HomeScreenState extends State<HomeScreen> {
   /// 0 = header expandido (transparente), 1 = colapsado (fondo surface del tema).
   double _homeHeaderCollapseT = 0;
 
-  bool _isLoadingContent = true;
+  static bool _isLoadingContent = true;
   bool _welcomeShown = false;
   static bool _welcomeShownOnce = false;
   static bool _preferencesCheckedOnce = false;

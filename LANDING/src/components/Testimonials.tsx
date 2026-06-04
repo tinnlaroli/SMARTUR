@@ -163,7 +163,7 @@ export function Testimonials({ title, testimonials }: TestimonialsProps) {
                   style={{
                     background: 'var(--color-bg)',
                     borderColor: 'var(--color-border)',
-                    boxShadow: '0 12px 40px -18px rgba(158, 110, 230, 0.2)',
+                    boxShadow: '0 12px 40px -18px rgba(var(--rgb-purple-accent), 0.2)',
                   }}
                 >
                   <div className="mb-6 flex gap-1">
@@ -204,7 +204,7 @@ export function Testimonials({ title, testimonials }: TestimonialsProps) {
                       ) : (
                         <div
                           className="h-full w-full flex items-center justify-center text-sm font-bold"
-                          style={{ background: 'rgba(158, 110, 230, 0.15)', color: 'var(--color-purple)' }}
+                          style={{ background: 'rgba(var(--rgb-purple-accent), 0.15)', color: 'var(--color-purple)' }}
                         >
                           {testimonial.name.charAt(0)}
                         </div>
@@ -226,12 +226,12 @@ export function Testimonials({ title, testimonials }: TestimonialsProps) {
 
             <div
               className="absolute -bottom-6 -left-6 h-24 w-24 rounded-xl"
-              style={{ background: 'rgba(158, 110, 230, 0.08)' }}
+              style={{ background: 'rgba(var(--rgb-purple-accent), 0.08)' }}
               aria-hidden
             />
             <div
               className="absolute -top-6 -right-6 h-24 w-24 rounded-xl"
-              style={{ background: 'rgba(233, 94, 136, 0.08)' }}
+              style={{ background: 'rgba(var(--rgb-pink-primary), 0.08)' }}
               aria-hidden
             />
           </motion.div>
