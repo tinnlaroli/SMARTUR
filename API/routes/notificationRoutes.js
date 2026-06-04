@@ -17,6 +17,16 @@ router.post(
 );
 
 /**
+ * DELETE /api/v2/me/device-token
+ * Elimina el token FCM del usuario autenticado.
+ */
+router.delete(
+    '/me/device-token',
+    verifyToken,
+    NotificationController.deleteToken,
+);
+
+/**
  * POST /api/v2/admin/notifications/send
  * Solo admin (role_id=1) puede enviar push a todos o por segmento.
  * body: { title: string, body: string, target: 'all' | 'user' | 'empresa' }

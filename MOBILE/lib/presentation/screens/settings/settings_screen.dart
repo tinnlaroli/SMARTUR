@@ -5,6 +5,7 @@ import '../../../core/settings/app_settings_scope.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/notification_service.dart';
 import '../../../data/services/update_service.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
@@ -26,12 +27,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _language = 'Sistema';
   String _appVersion = '…';
   bool _checkingUpdate = false;
+  NotificationStatus _notifStatus = NotificationStatus.enabled;
+  bool _loadingNotif = false;
 
   @override
   void initState() {
     super.initState();
     UpdateService.currentVersion().then((v) {
       if (mounted) setState(() => _appVersion = v);
+    });
+    NotificationService.getStatus().then((s) {
+      if (mounted) setState(() => _notifStatus = s);
     });
   }
 
@@ -122,24 +128,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => _showLanguageDialog(),
           ),
 
-          ListTile(
-            leading:
-                const Icon(Icons.notifications_outlined, color: SmarturStyle.blue),
+          SwitchListTile(
+            secondary: _loadingNotif
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.notifications_outlined, color: SmarturStyle.blue),
             title: Text(l10n.notifications,
                 style: const TextStyle(fontFamily: 'Outfit')),
             subtitle: Text(
-              l10n.notificationsSubtitle,
+              _notifStatus == NotificationStatus.permissionDenied
+                  ? 'Permiso denegado — actívalo en Ajustes del sistema'
+                  : l10n.notificationsSubtitle,
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 12,
                 color: scheme.onSurfaceVariant,
               ),
             ),
-            trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-            onTap: () => SmarturNotifications.showInfo(
-                  context,
-                  l10n.notificationsSubtitle,
-                ),
+            value: _notifStatus == NotificationStatus.enabled,
+            onChanged: (_loadingNotif || _notifStatus == NotificationStatus.unavailable)
+                ? null
+                : (val) => _toggleNotifications(val),
           ),
 
           const Divider(height: 32),
@@ -309,6 +321,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 
   // ── Idioma ──────────────────────────────────────────────────────────────
+
+  Future<void> _toggleNotifications(bool enable) async {
+    setState(() => _loadingNotif = true);
+    if (enable) {
+      final status = await NotificationService.enable();
+      if (mounted) setState(() { _notifStatus = status; _loadingNotif = false; });
+    } else {
+      await NotificationService.disable();
+      if (mounted) setState(() { _notifStatus = NotificationStatus.disabled; _loadingNotif = false; });
+    }
+  }
 
   void _showLanguageDialog() {
     final l10n = AppLocalizations.of(context)!;

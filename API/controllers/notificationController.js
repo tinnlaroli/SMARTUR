@@ -41,6 +41,21 @@ class NotificationController {
     }
 
     /**
+     * DELETE /api/v2/me/device-token
+     * Elimina el token FCM del usuario autenticado (desactiva notificaciones).
+     */
+    static async deleteToken(req, res) {
+        const userId = req.user.id;
+        try {
+            await pool.query(`DELETE FROM device_token WHERE user_id = $1`, [userId]);
+            return res.json({ message: 'Token eliminado.' });
+        } catch (error) {
+            console.error('Error eliminando token FCM:', error);
+            return res.status(500).json({ message: 'Error del servidor.', error: error.message });
+        }
+    }
+
+    /**
      * POST /api/v2/admin/notifications/send
      * Envía push notification a todos los usuarios o filtrado por rol.
      * body: { title: string, body: string, target: 'all' | 'user' | 'empresa' }
