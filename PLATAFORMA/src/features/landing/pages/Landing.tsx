@@ -214,7 +214,7 @@ export default function Landing() {
                         logout={logout} 
                     />
 
-                    <main className="relative z-10 w-full px-6 lg:px-12 xl:px-16 max-w-7xl mx-auto">
+                    <main className="relative z-10 w-full">
                         <div className="landing-hero-story landing-ambient-bg">
                             <div id="inicio">
                                 <HeroSection handleStartExperience={handleStartExperience} />
