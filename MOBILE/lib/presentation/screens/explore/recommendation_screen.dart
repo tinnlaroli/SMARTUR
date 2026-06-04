@@ -767,49 +767,22 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           ),
           const SizedBox(height: 24),
 
+          // ── Progreso de campos requeridos ─────────────────────────
+          _FormProgress(
+            l10n: AppLocalizations.of(context)!,
+            typeDone: _selectedTypes.isNotEmpty,
+            budgetDone: _budget != _none,
+            groupDone: _groupType != _none,
+            ageDone: _ageRange != _none,
+          ),
+          const SizedBox(height: 16),
+
           // ── CTA ───────────────────────────────────────────────────
           _CTAButton(
             loading: _isFetching,
             disabled: false,
             onTap: _fetchRecommendations,
           ),
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            alignment: WrapAlignment.center,
-            children: [
-              _RequiredStateChip(
-                label: AppLocalizations.of(context)!.recoTourismType,
-                done: _selectedTypes.isNotEmpty,
-              ),
-              _RequiredStateChip(
-                label: AppLocalizations.of(context)!.recoBudget,
-                done: _budget != _none,
-              ),
-              _RequiredStateChip(
-                label: AppLocalizations.of(context)!.recoWithWho,
-                done: _groupType != _none,
-              ),
-              _RequiredStateChip(
-                label: AppLocalizations.of(context)!.recoAgeRange,
-                done: _ageRange != _none,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (!_isFormReady)
-            Center(
-              child: Text(
-                AppLocalizations.of(context)!.recoSelectAtLeastOneToContinue,
-                style: TextStyle(
-                  fontFamily: 'Outfit', fontSize: 11,
-                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
               ],
             ),
           ),
@@ -1674,6 +1647,122 @@ class _GlassCard extends StatelessWidget {
         border: Border.all(color: scheme.outline.withValues(alpha: 0.12)),
       ),
       child: child,
+    );
+  }
+}
+
+// ── Form progress indicator ────────────────────────────────────────────────
+
+class _FormProgress extends StatelessWidget {
+  final AppLocalizations l10n;
+  final bool typeDone;
+  final bool budgetDone;
+  final bool groupDone;
+  final bool ageDone;
+
+  const _FormProgress({
+    required this.l10n,
+    required this.typeDone,
+    required this.budgetDone,
+    required this.groupDone,
+    required this.ageDone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final steps = [
+      (typeDone, l10n.recoTourismType),
+      (budgetDone, l10n.recoBudget),
+      (groupDone, l10n.recoWithWho),
+      (ageDone, l10n.recoAgeRange),
+    ];
+    final doneCount = steps.where((s) => s.$1).length;
+    final progress = doneCount / steps.length;
+    final allDone = doneCount == steps.length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: allDone
+            ? SmarturStyle.purple.withValues(alpha: 0.08)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: allDone
+              ? SmarturStyle.purple.withValues(alpha: 0.25)
+              : scheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                allDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+                size: 15,
+                color: allDone ? SmarturStyle.purple : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                allDone ? '¡Todo listo! Puedes generar tu ruta' : '$doneCount / ${steps.length} campos completados',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: allDone ? SmarturStyle.purple : scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 5,
+              backgroundColor: scheme.outlineVariant.withValues(alpha: 0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                allDone ? SmarturStyle.purple : SmarturStyle.orange,
+              ),
+            ),
+          ),
+          if (!allDone) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: steps.map((s) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      s.$1 ? Icons.check_circle_outline : Icons.circle_outlined,
+                      size: 13,
+                      color: s.$1
+                          ? SmarturStyle.green
+                          : scheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      s.$2,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 11,
+                        color: s.$1
+                            ? scheme.onSurface
+                            : scheme.onSurfaceVariant.withValues(alpha: 0.55),
+                        decoration: s.$1 ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

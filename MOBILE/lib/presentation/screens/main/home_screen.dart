@@ -858,7 +858,9 @@ class HomeScreenState extends State<HomeScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    l10n.weatherNow,
+                                    _weatherCity != null
+                                        ? '${l10n.weatherNow} en ${_weatherCity!.name}'
+                                        : l10n.weatherNow,
                                     style: TextStyle(
                                       fontFamily: 'Outfit',
                                       fontSize: 11,
