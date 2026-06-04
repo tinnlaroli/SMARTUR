@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText, Edit3, Search, ListChecks, Loader2, AlertCircle, Download, X, ChevronRight, Hash, Star } from 'lucide-react';
 import { instrumentApi } from '../api/instrumentApi';
-import type { InstrumentTemplate } from '../types/types';
+import type { InstrumentTemplate, FullRubric } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { generateBlankEvaluationForm } from '../../evaluations/utils/pdfGenerator';
@@ -24,7 +24,7 @@ export const InstrumentBuilderPage = () => {
 
     // Preview panel state
     const [previewTemplate, setPreviewTemplate] = useState<InstrumentTemplate | null>(null);
-    const [previewRubric, setPreviewRubric] = useState<EvaluationRubric | null>(null);
+    const [previewRubric, setPreviewRubric] = useState<FullRubric | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const gridRef = useRef<HTMLDivElement>(null);
 
@@ -86,7 +86,7 @@ export const InstrumentBuilderPage = () => {
         try {
             const rubric = await instrumentApi.getRubric(downloadModal.template.id);
             const dateFormatted = new Date(downloadDate + 'T12:00:00').toLocaleDateString('es-MX');
-            generateBlankEvaluationForm(rubric, downloadSelectedService.name, dateFormatted);
+            generateBlankEvaluationForm(rubric as unknown as EvaluationRubric, downloadSelectedService.name, dateFormatted);
             setDownloadModal(null);
         } catch {
             setError('Error al generar el PDF. Intenta de nuevo.');
@@ -143,15 +143,6 @@ export const InstrumentBuilderPage = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm(m.common.confirmDeleteInstrument)) return;
-        try {
-            await instrumentApi.deleteTemplate(id);
-            fetchTemplates();
-        } catch {
-            setError(m.instruments.deleteError);
-        }
-    };
 
     const filtered = templates.filter(
         (t) =>
@@ -397,7 +388,7 @@ export const InstrumentBuilderPage = () => {
                                                                         {criterion.description && (
                                                                             <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-2">{criterion.description}</p>
                                                                         )}
-                                                                        <p className="text-[10px] text-zinc-400 mt-1">{criterion.levels.length} niveles · {maxScore} pts máx</p>
+                                                                        <p className="text-[10px] text-zinc-400 mt-1">{(criterion.levels ?? []).length} niveles · {maxScore} pts máx</p>
                                                                     </div>
                                                                 </div>
                                                             );
