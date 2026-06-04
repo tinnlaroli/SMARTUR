@@ -470,19 +470,17 @@ class _BottomContent extends StatelessWidget {
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
-          decoration: BoxDecoration(
-            color: semantic.imageScrimStrong.withValues(alpha: 0.55),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(
-                color: semantic.overlayBorder,
-              ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2136),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(
+            top: BorderSide(
+              color: semantic.overlayBorder,
             ),
           ),
+        ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -533,89 +531,50 @@ class _BottomContent extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // Tabs
-              TabBar(
-                isScrollable: true,
-                indicatorColor: SmarturStyle.orange,
-                indicatorSize: TabBarIndicatorSize.label,
-                labelColor: semantic.onImageText,
-                unselectedLabelColor: semantic.onImageMuted,
-                labelStyle: const TextStyle(
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
+              // Contenido unificado — todas las secciones en vista continua
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight: (MediaQuery.sizeOf(context).height * 0.35).clamp(240.0, 320.0),
                 ),
-                dividerHeight: 0,
-                tabAlignment: TabAlignment.start,
-                tabs: [
-                  Tab(text: l10n.tabHistory),
-                  Tab(text: l10n.tabLocation),
-                  Tab(text: l10n.tabGastronomy),
-                  Tab(text: l10n.tabRate),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              SizedBox(
-                height: (MediaQuery.sizeOf(context).height * 0.17).clamp(120.0, 160.0),
-                child: TabBarView(
-                  children: [
-                    _TabText(
-                      text: subtitle.isNotEmpty
-                          ? subtitle
-                          : 'Próximamente — agrega una reseña sobre este lugar.',
-                    ),
-                    _LocationTab(
-                      lat: lat,
-                      lon: lon,
-                      locationLine: locationLine,
-                      placeName: title,
-                      l10n: l10n,
-                    ),
-                    _TabText(text: _gastronomyForCity(locationLine)),
-                    _RatingTab(
-                      userRating: userRating,
-                      busy: ratingBusy,
-                      onRate: onRate,
-                    ),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionLabel(label: l10n.tabHistory, semantic: semantic),
+                      _TabText(
+                        text: subtitle.isNotEmpty
+                            ? subtitle
+                            : 'Próximamente — agrega una reseña sobre este lugar.',
+                      ),
+                      _SectionLabel(label: l10n.tabLocation, semantic: semantic),
+                      _LocationTab(
+                        lat: lat,
+                        lon: lon,
+                        locationLine: locationLine,
+                        placeName: title,
+                        l10n: l10n,
+                      ),
+                      _SectionLabel(label: l10n.tabGastronomy, semantic: semantic),
+                      _TabText(text: _gastronomyForCity(locationLine)),
+                      _SectionLabel(label: l10n.tabRate, semantic: semantic),
+                      _RatingTab(
+                        userRating: userRating,
+                        busy: ratingBusy,
+                        onRate: onRate,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // CTA row: price + button
-              Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.fromPrice,
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 10,
-                          color: semantic.onImageText.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      Text(
-                        l10n.free,
-                        style: TextStyle(
-                          fontFamily: 'CalSans',
-                          fontSize: 22,
-                          color: semantic.onImageText,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: ElevatedButton.icon(
+              // CTA button — full width
+              ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: SmarturStyle.orange,
                         foregroundColor: semantic.onImageText,
-                        minimumSize: const Size(0, 52),
+                        minimumSize: const Size(double.infinity, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -631,7 +590,7 @@ class _BottomContent extends StatelessWidget {
                           showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
-                            backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0),
+                            backgroundColor: Colors.transparent,
                             builder: (_) => DayPlanSheet(
                               currentPlace: fakeCurrentPlace,
                               cityPlaces: cityPlaces!,
@@ -664,14 +623,9 @@ class _BottomContent extends StatelessWidget {
                           fontSize: 14,
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
-      ),
     );
   }
 }
@@ -713,13 +667,12 @@ class _LocationTab extends StatelessWidget {
     final hasCoords = lat != null && lon != null;
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasCoords)
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 4),
+        if (hasCoords)
             Row(
               children: [
                 Icon(Icons.location_on_outlined, color: semantic.onImageMuted, size: 13),
@@ -780,12 +733,47 @@ class _LocationTab extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 }
 
 // ── Reusable small widgets ──
+
+class _SectionLabel extends StatelessWidget {
+  final String label;
+  final SmarturSemanticColors semantic;
+  const _SectionLabel({required this.label, required this.semantic});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, bottom: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 13,
+            decoration: BoxDecoration(
+              color: SmarturStyle.orange,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 7),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontWeight: FontWeight.w700,
+              fontSize: 10,
+              letterSpacing: 0.8,
+              color: semantic.onImageMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _RatingPill extends StatelessWidget {
   final double rating;
@@ -901,17 +889,15 @@ class _TabText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontFamily: 'Outfit',
-            fontSize: 12,
-            height: 1.4,
-            color: semantic.onImageText.withValues(alpha: 0.72),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 12,
+          height: 1.4,
+          color: semantic.onImageText.withValues(alpha: 0.72),
         ),
       ),
     );
@@ -991,12 +977,11 @@ class _RatingTab extends StatelessWidget {
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final hasRated = userRating != null;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!hasRated) ...[
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 4),
+        if (!hasRated) ...[
             Text(
               l10n.rateHint,
               style: TextStyle(
@@ -1057,8 +1042,7 @@ class _RatingTab extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
+      );
   }
 }
 
@@ -1068,10 +1052,10 @@ class _RatingTab extends StatelessWidget {
 
 /// Categorías de lugares para el día plan
 enum _DaySlot {
-  morning('🌅 Mañana', 'Naturaleza / Aventura', Icons.terrain_rounded, Color(0xFF9CCC44)),
-  midday('🍴 Mediodía', 'Gastronomía / Restaurante', Icons.restaurant_rounded, Color(0xFFFF7D1F)),
-  afternoon('🏛️ Tarde', 'Cultural / Museo', Icons.museum_rounded, Color(0xFF984EFD)),
-  sunset('🌆 Atardecer', 'Mirador / Parque', Icons.landscape_rounded, Color(0xFF4DB9CA));
+  morning('Mañana', 'Naturaleza / Aventura', Icons.terrain_rounded, Color(0xFF9CCC44)),
+  midday('Mediodía', 'Gastronomía / Restaurante', Icons.restaurant_rounded, Color(0xFFFF7D1F)),
+  afternoon('Tarde', 'Cultural / Museo', Icons.museum_rounded, Color(0xFF984EFD)),
+  sunset('Atardecer', 'Mirador / Parque', Icons.landscape_rounded, Color(0xFF4DB9CA));
 
   final String label;
   final String categoryHint;
@@ -1148,7 +1132,7 @@ class DayPlanSheet extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
-        color: semantic.imageScrimStrong,
+        color: const Color(0xFF1C2136),
         child: SafeArea(
           top: false,
           child: Padding(

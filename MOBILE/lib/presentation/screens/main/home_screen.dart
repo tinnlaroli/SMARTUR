@@ -1428,28 +1428,71 @@ class HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    // Remaining cards in 2-column grid
+    // Remaining cards in bento grid
     if (places.length > 1) {
+      // Pattern: (leftFlex, rightFlex, rowHeight)
+      const bentoPat = [
+        (3, 2, 200.0),
+        (1, 1, 175.0),
+        (2, 3, 200.0),
+        (1, 1, 175.0),
+      ];
+      final rowCount = ((places.length - 1) / 2).ceil();
       slivers.add(
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 14,
-              childAspectRatio: 0.82,
-            ),
+          sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final place = places[index + 1];
-                return _PlaceCard(
-                  place: place,
-                  isHero: false,
-                  onTap: () => _openPlaceDetail(places, index + 1),
+              (context, rowIndex) {
+                final leftIdx = rowIndex * 2 + 1;
+                final rightIdx = leftIdx + 1;
+                final pat = bentoPat[rowIndex % bentoPat.length];
+                final rowHeight = pat.$3;
+
+                if (rightIdx >= places.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: SizedBox(
+                      height: rowHeight,
+                      child: _PlaceCard(
+                        place: places[leftIdx],
+                        isHero: false,
+                        onTap: () => _openPlaceDetail(places, leftIdx),
+                      ),
+                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: SizedBox(
+                    height: rowHeight,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Flexible(
+                          flex: pat.$1,
+                          child: _PlaceCard(
+                            place: places[leftIdx],
+                            isHero: false,
+                            onTap: () => _openPlaceDetail(places, leftIdx),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Flexible(
+                          flex: pat.$2,
+                          child: _PlaceCard(
+                            place: places[rightIdx],
+                            isHero: false,
+                            onTap: () => _openPlaceDetail(places, rightIdx),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
-              childCount: places.length - 1,
+              childCount: rowCount,
             ),
           ),
         ),
