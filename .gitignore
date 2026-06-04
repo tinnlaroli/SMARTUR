@@ -53,6 +53,7 @@ logs/
 
 # Docker
 *.override.yml
+docker-compose.local.yml
 
 # Modelos ML — archivos grandes que no van en git
 MODELO/src/models/

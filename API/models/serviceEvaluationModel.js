@@ -129,6 +129,7 @@ class ServiceEvaluation {
                 evaluation_time,
                 general_observations,
                 evaluation_date,
+                pdf_url,
             } = evaluationData;
 
             // 1. Validar que el servicio existe
@@ -147,9 +148,9 @@ class ServiceEvaluation {
 
             // 3. Insertar Cabecera
             const headerResult = await client.query(
-                `INSERT INTO service_evaluation 
-                (id_service, id_template, evaluation_date, evaluator_id, status, total_score, evaluation_time, general_observations, created_at, updated_at) 
-                VALUES ($1, $2, $3, $4, 'completed', $5, $6, $7, NOW(), NOW()) 
+                `INSERT INTO service_evaluation
+                (id_service, id_template, evaluation_date, evaluator_id, status, total_score, evaluation_time, general_observations, pdf_url, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, 'completed', $5, $6, $7, $8, NOW(), NOW())
                 RETURNING id_evaluation, total_score`,
                 [
                     id_service,
@@ -159,6 +160,7 @@ class ServiceEvaluation {
                     totalScore,
                     evaluation_time,
                     general_observations,
+                    pdf_url || null,
                 ]
             );
 

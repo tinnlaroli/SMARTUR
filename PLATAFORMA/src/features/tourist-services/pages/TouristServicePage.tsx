@@ -15,6 +15,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useConfirm } from '../../../components/ui/ConfirmModal';
 import { SelectionBar } from '../../../components/ui/SelectionBar';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import { instrumentApi } from '../../instrument-builder/api/instrumentApi';
 
 type ModalState = {
     isCreateOpen: boolean; isDetailOpen: boolean;
@@ -81,6 +82,29 @@ export const TouristServicePage = () => {
     const selectedServiceName = selectedService?.name || '';
     const selectedServiceType = selectedService?.service_type || '';
 
+    // Load all active templates once on mount — used to check hasTemplates instantly
+    const [activeTemplateTypes, setActiveTemplateTypes] = useState<Set<string>>(new Set());
+    useEffect(() => {
+        const TYPE_MAP: Record<string, string> = {
+            hotel: 'hotel', restaurant: 'restaurante', restaurante: 'restaurante',
+            tour: 'tour', transporte: 'transporte', spa: 'spa',
+        };
+        instrumentApi.getTemplates(1, 200).then((res) => {
+            const types = new Set(
+                res.templates
+                    .filter((t) => t.estado)
+                    .map((t) => TYPE_MAP[t.servicio.toLowerCase()] ?? t.servicio.toLowerCase())
+            );
+            setActiveTemplateTypes(types);
+        }).catch(() => {});
+    }, []);
+
+    const hasTemplates: boolean | null = selectedServices.length === 1 && selectedServiceType
+        ? activeTemplateTypes.size > 0
+            ? activeTemplateTypes.has(selectedServiceType.toLowerCase())
+            : null
+        : null;
+
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {confirmModal}
@@ -115,13 +139,25 @@ export const TouristServicePage = () => {
                     <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder={m.touristServices.searchPlaceholder} />
 
                     {selectedServices.length === 1 && (
-                        <button
-                            onClick={() => dispatchModal({ type: 'OPEN_EVALUATION' })}
-                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 active:scale-95"
-                        >
-                            <ClipboardCheck className="size-4" />
-                            {m.touristServices.evaluate}
-                        </button>
+                        <div className="relative group/eval">
+                            <button
+                                onClick={() => hasTemplates && dispatchModal({ type: 'OPEN_EVALUATION' })}
+                                disabled={hasTemplates === false}
+                                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-95 ${
+                                    hasTemplates === false
+                                        ? 'bg-zinc-300 dark:bg-zinc-700 cursor-not-allowed opacity-60'
+                                        : 'bg-emerald-600 hover:bg-emerald-500 cursor-pointer'
+                                }`}
+                            >
+                                <ClipboardCheck className="size-4" />
+                                {m.touristServices.evaluate}
+                            </button>
+                            {hasTemplates === false && (
+                                <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-zinc-800 px-2 py-1 text-xs text-white opacity-0 group-hover/eval:opacity-100 transition-opacity pointer-events-none z-10">
+                                    Sin instrumentos para este tipo de servicio
+                                </div>
+                            )}
+                        </div>
                     )}
 
                     <button

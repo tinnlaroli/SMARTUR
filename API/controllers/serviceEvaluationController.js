@@ -76,6 +76,7 @@ class ServiceEvaluationController {
                     totalScore: evaluation.total_score,
                     evaluationTime: evaluation.evaluation_time,
                     generalObservations: evaluation.general_observations,
+                    pdfUrl: evaluation.pdf_url || null,
                     createdAt: evaluation.created_at,
                     updatedAt: evaluation.updated_at,
                     details: details,
@@ -126,6 +127,7 @@ class ServiceEvaluationController {
                 general_observations,
                 details,
                 evaluation_date,
+                pdf_url,
             } = req.body;
 
             if (!details || !Array.isArray(details) || details.length === 0) {
@@ -142,6 +144,7 @@ class ServiceEvaluationController {
                     evaluation_time,
                     general_observations,
                     evaluation_date,
+                    pdf_url: pdf_url || null,
                 },
                 details
             );

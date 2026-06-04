@@ -421,6 +421,11 @@ UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Spe
     AND (image_url IS NULL OR image_url = '');
 `,
     },
+    {
+        name: 'v20_evaluation_pdf_url',
+        sql: `ALTER TABLE service_evaluation
+              ADD COLUMN IF NOT EXISTS pdf_url VARCHAR(1024) NULL;`,
+    },
 ];
 
 export async function runMigrations() {

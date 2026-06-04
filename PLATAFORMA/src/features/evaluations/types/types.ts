@@ -42,6 +42,7 @@ export interface FullEvaluationRegisterDTO {
     evaluator_id: number;
     evaluation_time?: number;
     general_observations?: string;
+    pdf_url?: string | null;
     details: EvaluationDetailDTO[];
 }
 
@@ -58,6 +59,7 @@ export interface EvaluationSummary {
     totalScore: number;
     evaluationTime: number;
     generalObservations: string;
+    pdfUrl?: string | null;
     createdAt: string;
     updatedAt: string;
 }

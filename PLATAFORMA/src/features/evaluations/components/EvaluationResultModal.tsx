@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
-import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer } from 'lucide-react';
+import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer, FileText, ExternalLink, Download } from 'lucide-react';
 import { evaluationsApi } from '../api/evaluationsApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -255,6 +255,38 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
                                         </div>
                                     )}
                                 </div>
+
+                                {/* PDF escaneado */}
+                                {evaluation.pdfUrl && (
+                                    <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4 flex items-start gap-3">
+                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                                            <FileText className="size-5" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Formulario escaneado</p>
+                                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Esta evaluación fue registrada a partir de un formulario en papel.</p>
+                                            <div className="mt-3 flex items-center gap-2">
+                                                <a
+                                                    href={evaluation.pdfUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors"
+                                                >
+                                                    <ExternalLink className="size-3.5" />
+                                                    Ver PDF
+                                                </a>
+                                                <a
+                                                    href={evaluation.pdfUrl}
+                                                    download
+                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                                                >
+                                                    <Download className="size-3.5" />
+                                                    Descargar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-semibold uppercase tracking-widest text-zinc-500 flex items-center gap-2 pt-2">

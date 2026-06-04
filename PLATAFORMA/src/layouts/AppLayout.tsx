@@ -2,10 +2,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEOHelmet } from '../shared/components/SEOHelmet';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import Sidebar from './Sidebar';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // AnimatePresence used for notification panel
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
 import { clearAccessToken } from '../shared/api/axiosClient';
 import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
@@ -356,7 +355,8 @@ export default function AppLayout() {
     const { openModal } = useAuthModal();
     const { lang, t } = useLanguage();
     const { user, clearUser } = useUserPreferences();
-    const { pathname } = useLocation();
+    const location = useLocation();
+    const { pathname } = location;
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
     const copy = useMemo(() => getDashboardText(lang), [lang]);
@@ -365,12 +365,12 @@ export default function AppLayout() {
     const userRole = user?.role_id || 2;
 
     const handleToggleNotifications = useCallback(() => {
-        setNotifOpen((current) => {
-            const next = !current;
-            if (next) markAllAsRead();
-            return next;
-        });
-    }, [markAllAsRead]);
+        setNotifOpen((prev) => !prev);
+    }, []);
+
+    useEffect(() => {
+        if (notifOpen) markAllAsRead();
+    }, [notifOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleLogout = useCallback(() => {
         clearAccessToken();

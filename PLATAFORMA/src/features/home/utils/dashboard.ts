@@ -10,7 +10,7 @@ export const DASHBOARD_COLORS = {
     orange: '#FF7D1F',
     success: '#10B981',
     warning: '#F59E0B',
-    danger: '#EF4444',
+    danger: '#F97316',
 } as const;
 
 export const DASHBOARD_STORAGE_KEY = 'smartur-dashboard-preferences';
