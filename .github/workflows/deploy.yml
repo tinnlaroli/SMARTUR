@@ -48,6 +48,9 @@ jobs:
             docker compose -f docker-compose.yml up -d --build \
               --no-deps api plataforma landing nginx modelo
 
+            # Fuerza reload de nginx (el config es volume-mount, up -d no lo recarga solo)
+            docker compose -f docker-compose.yml exec -T nginx nginx -s reload
+
             # Limpia imágenes huérfanas
             docker image prune -f
 
