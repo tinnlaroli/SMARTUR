@@ -38,12 +38,12 @@ class SmarturRouteTransitions {
     final curved = CurvedAnimation(
       parent: animation,
       curve: SmarturMotion.standard,
-      reverseCurve: SmarturMotion.exit,
+      reverseCurve: SmarturMotion.standard,
     );
 
     final slideBegin = kind == SmarturRouteKind.detail
         ? const Offset(0.06, 0)
-        : const Offset(0.03, 0.01);
+        : const Offset(0.04, 0);
 
     final slide = Tween<Offset>(begin: slideBegin, end: Offset.zero).animate(curved);
     final fade = Tween<double>(begin: 0.92, end: 1.0).animate(curved);

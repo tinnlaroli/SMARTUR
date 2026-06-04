@@ -473,7 +473,7 @@ class _BottomContent extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C2136),
+          color: semantic.panelBackground,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           border: Border(
             top: BorderSide(
@@ -1133,7 +1133,7 @@ class DayPlanSheet extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
-        color: const Color(0xFF1C2136),
+        color: semantic.panelBackground,
         child: SafeArea(
           top: false,
           child: Padding(

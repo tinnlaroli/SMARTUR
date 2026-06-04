@@ -255,6 +255,71 @@ WHERE name = 'Mirador de la Niebla' AND id_location IS NULL;
               ADD COLUMN IF NOT EXISTS place_kind VARCHAR(10) NOT NULL DEFAULT 'poi'
                 CHECK (place_kind IN ('poi','svc'));`,
     },
+    {
+        name: 'v17_poi_images_fix',
+        sql: `
+-- Re-aplica imágenes sin restricción id_location IS NULL (v04 se saltó POIs ya asignados)
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Macuiltepetl.jpg?width=800'
+  WHERE name = 'Parque Macuiltépetl' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Museo_de_Antropologia_de_Xalapa.jpg?width=800'
+  WHERE name IN ('Museo Interactivo', 'Museo Interactivo de Xalapa') AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xalapa_Veracruz_Mexico.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Xalapa' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800'
+  WHERE name = 'Cascada de Texolo' AND latitude BETWEEN 19.44 AND 19.47 AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Hacienda_el_Lencero_Veracruz_Mexico.jpg?width=800'
+  WHERE name = 'Ex-Hacienda de Toxpan' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Coatepec_Veracruz_Mexico.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Coatepec' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Pico_de_Orizaba_from_Tlachichuca.jpg?width=800'
+  WHERE name = 'Pico de Orizaba' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Palacio_de_Hierro_Orizaba.jpg?width=800'
+  WHERE name = 'Palacio de Hierro Orizaba' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Orizaba_Veracruz_Mexico.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Orizaba' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Fortin_de_las_Flores_Veracruz.jpg?width=800'
+  WHERE name = 'Jardín Botánico Fortín' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Fortin_de_las_Flores_Veracruz.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Fortín de las Flores' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Catedral_de_Cordoba_Veracruz.jpg?width=800'
+  WHERE name = 'Catedral de Córdoba' AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800'
+  WHERE name IN ('Los Portales de Córdoba', 'Parque Ecológico Cerro del Metate', 'Municipio de La Villa')
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/C%C3%B3rdoba_Veracruz_Mexico.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Córdoba' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Cascada_de_Texolo.jpg?width=800'
+  WHERE name IN ('Cascada de Texolo', 'Cascada de Texolo (Xico)')
+    AND latitude BETWEEN 19.41 AND 19.44 AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800'
+  WHERE name IN ('Santuario de María Magdalena', 'Mercado de Xico', 'Mirador de la Niebla')
+    AND (image_url IS NULL OR image_url = '');
+
+UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Special:FilePath/Xico_Veracruz.jpg?width=800'
+  WHERE id_location = (SELECT id_location FROM location WHERE name = 'Xico' LIMIT 1)
+    AND (image_url IS NULL OR image_url = '');
+`,
+    },
 ];
 
 export async function runMigrations() {
