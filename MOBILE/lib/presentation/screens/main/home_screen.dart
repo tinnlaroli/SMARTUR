@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -137,15 +137,24 @@ class HomeScreenState extends State<HomeScreen> {
       _greetingName = w;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _applyGreetingName();
+      // Greeting: local storage, no network — fire immediately.
+      _applyGreetingName();
+
+      // Start city load in parallel so network round-trip overlaps setup checks.
+      final cityFuture = _loadCitiesFromApi();
+
+      // Setup checks must finish before home content appears (original UX).
       await _showWelcome();
       await _checkPreferences();
       await _offerBiometricSetup();
-      await _loadCitiesFromApi();
-      if (mounted) setState(() => _isLoadingContent = false);
-      await _loadWeatherForSelectedCity();
-      await _loadHeaderAvatar();
-      // Passive update check — shows dialog only once per session, never blocks
+
+      // Wait for cities if they haven't loaded yet (often already done).
+      await cityFuture;
+      if (!mounted) return;
+      setState(() => _isLoadingContent = false);
+
+      _loadWeatherForSelectedCity();
+      _loadHeaderAvatar();
       if (mounted) UpdateService.checkAndPromptIfNeeded(context);
     });
   }
@@ -748,8 +757,8 @@ class HomeScreenState extends State<HomeScreen> {
                   slivers: [
                     _buildHeaderAppBar(),
                     SliverToBoxAdapter(child: _buildExploreIntro()),
-                    SliverToBoxAdapter(child: _buildCityFilter()),
                     SliverToBoxAdapter(child: _buildSearchBar()),
+                    SliverToBoxAdapter(child: _buildCityFilter()),
                     ..._buildPlaceShowcaseSlivers(),
                     const SliverToBoxAdapter(child: SizedBox(height: 32)),
                   ],
@@ -858,24 +867,31 @@ class HomeScreenState extends State<HomeScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    _weatherCity != null
-                                        ? '${l10n.weatherNow} en ${_weatherCity!.name}'
-                                        : l10n.weatherNow,
+                                    l10n.weatherNow,
                                     style: TextStyle(
                                       fontFamily: 'Outfit',
-                                      fontSize: 11,
+                                      fontSize: 10,
                                       color: scheme.onSurfaceVariant,
                                     ),
                                   ),
+                                  if (_weatherCity != null)
+                                    Text(
+                                      _weatherCity!.name,
+                                      style: TextStyle(
+                                        fontFamily: 'Outfit',
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: scheme.onSurface,
+                                      ),
+                                    ),
                                   Text(
                                     _weatherLoading
                                         ? l10n.loading
                                         : (_weatherSummary ?? l10n.notAvailable),
                                     style: TextStyle(
                                       fontFamily: 'Outfit',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: scheme.onSurface,
+                                      fontSize: 11,
+                                      color: scheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -905,7 +921,7 @@ class HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
       child: TextField(
         controller: _searchController,
         onChanged: (v) => setState(() => _searchQuery = v.trim()),
@@ -1434,10 +1450,10 @@ class HomeScreenState extends State<HomeScreen> {
     if (places.length > 1) {
       // Pattern: (leftFlex, rightFlex, rowHeight)
       const bentoPat = [
-        (3, 2, 200.0),
-        (1, 1, 175.0),
-        (2, 3, 200.0),
-        (1, 1, 175.0),
+        (3, 2, 210.0),
+        (1, 1, 160.0),
+        (2, 3, 215.0),
+        (1, 2, 185.0),
       ];
       final rowCount = ((places.length - 1) / 2).ceil();
       slivers.add(
@@ -1451,23 +1467,18 @@ class HomeScreenState extends State<HomeScreen> {
                 final pat = bentoPat[rowIndex % bentoPat.length];
                 final rowHeight = pat.$3;
 
+                Widget rowContent;
                 if (rightIdx >= places.length) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: SizedBox(
-                      height: rowHeight,
-                      child: _PlaceCard(
-                        place: places[leftIdx],
-                        isHero: false,
-                        onTap: () => _openPlaceDetail(places, leftIdx),
-                      ),
+                  rowContent = SizedBox(
+                    height: rowHeight,
+                    child: _PlaceCard(
+                      place: places[leftIdx],
+                      isHero: false,
+                      onTap: () => _openPlaceDetail(places, leftIdx),
                     ),
                   );
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: SizedBox(
+                } else {
+                  rowContent = SizedBox(
                     height: rowHeight,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1491,7 +1502,12 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                  ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: rowContent,
                 );
               },
               childCount: rowCount,
@@ -1628,7 +1644,8 @@ class _PlaceCardState extends State<_PlaceCard>
     final place = widget.place;
     final isHero = widget.isHero;
 
-    return GestureDetector(
+    return RepaintBoundary(
+      child: GestureDetector(
       onTap: widget.onTap,
       onDoubleTap: _onDoubleTap,
       child: Hero(
@@ -1673,7 +1690,7 @@ class _PlaceCardState extends State<_PlaceCard>
                         ),
                       ),
 
-                // ── Gradient overlay ──
+                // ── Gradient overlay — tinted with category color ──
                 DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -1681,61 +1698,72 @@ class _PlaceCardState extends State<_PlaceCard>
                       end: Alignment.bottomCenter,
                       stops: isHero
                           ? const [0.0, 0.3, 0.7, 1.0]
-                          : const [0.0, 0.35, 1.0],
+                          : const [0.0, 0.30, 1.0],
                       colors: isHero
                           ? [
                               Colors.transparent,
                               semantic.imageScrimSoft.withValues(alpha: 0.12),
                               semantic.imageScrimStrong.withValues(alpha: 0.55),
-                              semantic.imageScrimStrong.withValues(alpha: 0.90),
+                              semantic.imageScrimStrong.withValues(alpha: 0.92),
                             ]
                           : [
-                              semantic.imageScrimSoft.withValues(alpha: 0.06),
-                              semantic.imageScrimSoft.withValues(alpha: 0.18),
-                              semantic.imageScrimStrong.withValues(alpha: 0.85),
+                              place.category.color.withValues(alpha: 0.04),
+                              semantic.imageScrimSoft.withValues(alpha: 0.22),
+                              Color.lerp(semantic.imageScrimStrong,
+                                      place.category.color, 0.12)!
+                                  .withValues(alpha: 0.90),
                             ],
                     ),
                   ),
                 ),
 
-                // ── Category pill (glassmorphism) ──
+                // ── Category accent bar (top) ──
+                if (!isHero)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: place.category.color,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(18),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ── Category pill ──
                 Positioned(
                   top: isHero ? 12 : 10,
                   left: isHero ? 12 : 10,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isHero ? 10 : 8,
-                          vertical: isHero ? 5 : 4,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isHero ? 10 : 8,
+                      vertical: isHero ? 5 : 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: place.category.color.withValues(alpha: 0.88),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(place.category.icon,
+                            size: isHero ? 13 : 11, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text(
+                          place.category.label,
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: isHero ? 10 : 9,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white, letterSpacing: 0.3,
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: place.category.color.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                              color: semantic.overlayBorder.withValues(alpha: 0.8), width: 0.5),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(place.category.icon,
-                                size: isHero ? 13 : 11, color: semantic.onImageText),
-                            const SizedBox(width: 4),
-                            Text(
-                              place.category.label,
-                              maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'Outfit',
-                                fontSize: isHero ? 10 : 9,
-                                fontWeight: FontWeight.w700,
-                                color: semantic.onImageText, letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -1746,24 +1774,18 @@ class _PlaceCardState extends State<_PlaceCard>
                   right: isHero ? 10 : 8,
                   child: GestureDetector(
                     onTap: _toggleLike,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: _liked
-                                ? SmarturStyle.pink.withValues(alpha: 0.85)
-                                : semantic.imageScrimStrong.withValues(alpha: 0.50),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            size: isHero ? 18 : 15,
-                            color: semantic.onImageText,
-                          ),
-                        ),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _liked
+                            ? SmarturStyle.pink.withValues(alpha: 0.92)
+                            : Colors.black.withValues(alpha: 0.40),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        size: isHero ? 18 : 15,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -1841,7 +1863,27 @@ class _PlaceCardState extends State<_PlaceCard>
                               fontSize: isHero ? 12 : 11, color: semantic.onImageText,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          if (place.rating >= 4.7) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: SmarturStyle.orange,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'TOP',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(width: 6),
                           Icon(Icons.location_on_outlined,
                               size: isHero ? 13 : 11, color: semantic.onImageText.withValues(alpha: 0.7)),
                           const SizedBox(width: 2),
@@ -1866,9 +1908,12 @@ class _PlaceCardState extends State<_PlaceCard>
           ),
         ),
       ),
+      ),
     );
   }
 }
+
+// ── Swipe view — fixed chrome + animated page transition ──────────────────
 
 class _HomePlaceSwipeView extends StatefulWidget {
   final List<Place> places;
@@ -1881,42 +1926,202 @@ class _HomePlaceSwipeView extends StatefulWidget {
 }
 
 class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
-  late final PageController _controller;
+  late final PageController _ctrl;
+  int _idx = 0;
+
+  // Favorite state per place — populated lazily as pages are viewed
+  final Map<String, bool> _favs = {};
+  final Map<String, bool> _favBusy = {};
 
   @override
   void initState() {
     super.initState();
-    _controller = PageController(initialPage: widget.initialIndex);
+    _idx = widget.initialIndex;
+    _ctrl = PageController(initialPage: _idx);
+    _ctrl.addListener(_onScroll);
+    _loadFav(widget.places[_idx]);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ctrl.removeListener(_onScroll);
+    _ctrl.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final p = (_ctrl.page ?? _idx).round().clamp(0, widget.places.length - 1);
+    if (p != _idx) {
+      setState(() => _idx = p);
+      _loadFav(widget.places[p]);
+    }
+  }
+
+  Future<void> _loadFav(Place place) async {
+    if (_favs.containsKey(place.id)) return;
+    final ref = _parsePlaceRef(place.id);
+    if (ref == null) return;
+    try {
+      final v = await UserContentService().isFavorite(ref.$1, ref.$2);
+      if (mounted) setState(() => _favs[place.id] = v);
+    } catch (_) {}
+  }
+
+  Future<void> _toggleFav() async {
+    final place = widget.places[_idx];
+    if (_favBusy[place.id] == true) return;
+    final ref = _parsePlaceRef(place.id);
+    if (ref == null) return;
+    final was = _favs[place.id] ?? false;
+    HapticFeedback.lightImpact();
+    setState(() { _favs[place.id] = !was; _favBusy[place.id] = true; });
+    try {
+      if (was) await UserContentService().removeFavorite(ref.$1, ref.$2);
+      else     await UserContentService().addFavorite(ref.$1, ref.$2);
+    } catch (_) {
+      if (mounted) setState(() => _favs[place.id] = was);
+    } finally {
+      if (mounted) setState(() => _favBusy[place.id] = false);
+    }
+  }
+
+  void _share() {
+    final p = widget.places[_idx];
+    final String url;
+    if (p.lat != null && p.lon != null) {
+      url = 'https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lon}';
+    } else {
+      url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent('${p.name}, Veracruz, México')}';
+    }
+    SharePlus.instance.share(ShareParams(
+      text: '${p.name}\n${p.city}\n$url',
+      subject: p.name,
+    ));
+  }
+
+  // Parse 'svc_12' or 'poi_5' → ('svc', 12) / ('poi', 5)
+  (String, int)? _parsePlaceRef(String id) {
+    if (id.startsWith('svc_')) {
+      final n = int.tryParse(id.substring(4));
+      if (n != null) return ('svc', n);
+    }
+    if (id.startsWith('poi_')) {
+      final n = int.tryParse(id.substring(4));
+      if (n != null) return ('poi', n);
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
-      controller: _controller,
-      itemCount: widget.places.length,
-      itemBuilder: (context, index) {
-        final place = widget.places[index];
-        return DetailViewPage(
-          key: ValueKey('home_place_swipe_${place.id}'),
-          title: place.name,
-          heroTag: 'home_swipe_${place.id}_$index',
-          heroImageUrl: place.imageUrl,
-          subtitle: place.description,
-          locationLine: '${place.locationLine} · ${place.city}',
-          rating: place.rating,
-          galleryUrls: place.galleryUrls,
-          placeId: place.id,
-          lat: place.lat,
-          lon: place.lon,
-          cityPlaces: widget.places,
-        );
-      },
+    final isFav = _favs[widget.places[_idx].id] ?? false;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // ── Animated page view ────────────────────────────────────
+          PageView.builder(
+            controller: _ctrl,
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            itemCount: widget.places.length,
+            itemBuilder: (ctx, i) {
+              final place = widget.places[i];
+              return AnimatedBuilder(
+                animation: _ctrl,
+                builder: (ctx, child) {
+                  double offset = 0;
+                  if (_ctrl.hasClients && _ctrl.position.haveDimensions) {
+                    offset = ((_ctrl.page ?? i) - i).abs().clamp(0.0, 1.0);
+                  }
+                  return Transform.scale(
+                    scale: 1.0 - offset * 0.05,
+                    child: child,
+                  );
+                },
+                child: DetailViewPage(
+                  key: ValueKey('swipe_${place.id}_$i'),
+                  showTopButtons: false,
+                  title: place.name,
+                  heroTag: 'home_swipe_${place.id}_$i',
+                  heroImageUrl: place.imageUrl,
+                  subtitle: place.description,
+                  locationLine: '${place.locationLine} · ${place.city}',
+                  rating: place.rating,
+                  galleryUrls: place.galleryUrls,
+                  placeId: place.id,
+                  lat: place.lat,
+                  lon: place.lon,
+                  cityPlaces: widget.places,
+                ),
+              );
+            },
+          ),
+
+          // ── Fixed chrome overlay ──────────────────────────────────
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Row(
+                children: [
+                  _SwipeOverlayButton(
+                    icon: Icons.arrow_back_rounded,
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  const Spacer(),
+                  _SwipeOverlayButton(
+                    icon: Icons.share_rounded,
+                    onTap: _share,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  _SwipeOverlayButton(
+                    icon: isFav
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    iconColor: isFav ? SmarturStyle.pink : Colors.white,
+                    onTap: _toggleFav,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Simple circular button for the fixed overlay
+class _SwipeOverlayButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color iconColor;
+  final double size;
+
+  const _SwipeOverlayButton({
+    required this.icon,
+    required this.onTap,
+    this.iconColor = Colors.white,
+    this.size = 22,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.38),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: iconColor, size: size),
+      ),
     );
   }
 }

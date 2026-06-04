@@ -33,6 +33,10 @@ class DetailViewPage extends StatefulWidget {
   /// Pasar null en callers que no tienen acceso a la lista de ciudad.
   final List<Place>? cityPlaces;
 
+  /// When false, the top buttons (back/share/like) are not rendered.
+  /// Used when the caller provides its own fixed overlay (e.g. swipe view).
+  final bool showTopButtons;
+
   const DetailViewPage({
     super.key,
     required this.title,
@@ -46,6 +50,7 @@ class DetailViewPage extends StatefulWidget {
     this.lat,
     this.lon,
     this.cityPlaces,
+    this.showTopButtons = true,
   });
 
   @override
@@ -303,44 +308,41 @@ class _DetailViewPageState extends State<DetailViewPage>
                     ),
                   ),
 
-                  // Top row — atrás + favoritos (diario)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _GlassCircle(
-                      onTap: () => Navigator.pop(context),
-                      child: Icon(Icons.arrow_back_rounded,
-                          color: semantic.onImageText, size: 22),
-                    ),
-                  ),
-                  // Share button — top-right, left of favorite
-                  Positioned(
-                    top: 8,
-                    right: 60,
-                    child: _GlassCircle(
-                      onTap: _sharePlace,
-                      child: Icon(
-                        Icons.share_rounded,
-                        color: semantic.onImageText,
-                        size: 20,
+                  // Top buttons — hidden when caller provides its own overlay
+                  if (widget.showTopButtons) ...[
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: _GlassCircle(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.arrow_back_rounded,
+                            color: semantic.onImageText, size: 22),
                       ),
                     ),
-                  ),
-                  // Favorite button — top-right
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: _GlassCircle(
-                      onTap: _kind != null && _pid != null ? _toggleFavorite : () {},
-                      child: Icon(
-                        _isFavorite
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        color: _isFavorite ? SmarturStyle.pink : semantic.onImageText,
-                        size: 22,
+                    Positioned(
+                      top: 8,
+                      right: 60,
+                      child: _GlassCircle(
+                        onTap: _sharePlace,
+                        child: Icon(Icons.share_rounded,
+                            color: semantic.onImageText, size: 20),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: _GlassCircle(
+                        onTap: _kind != null && _pid != null ? _toggleFavorite : () {},
+                        child: Icon(
+                          _isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: _isFavorite ? SmarturStyle.pink : semantic.onImageText,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
 
                   // Right mosaic thumbnails
                   if (widget.galleryUrls.length > 1)
@@ -391,17 +393,15 @@ class _GlassCircle extends StatelessWidget {
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
-      child: ClipOval(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            color: semantic.onImageText.withValues(alpha: 0.12),
-            child: child,
-          ),
+      child: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.38),
+          shape: BoxShape.circle,
         ),
+        child: child,
       ),
     );
   }
@@ -467,6 +467,7 @@ class _BottomContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -546,17 +547,8 @@ class _BottomContent extends StatelessWidget {
                             ? subtitle
                             : 'Próximamente — agrega una reseña sobre este lugar.',
                       ),
-                      _SectionLabel(label: l10n.tabLocation),
-                      _LocationTab(
-                        lat: lat,
-                        lon: lon,
-                        locationLine: locationLine,
-                        placeName: title,
-                        l10n: l10n,
-                      ),
                       _SectionLabel(label: l10n.tabGastronomy),
                       _TabText(text: _gastronomyForCity(locationLine)),
-                      _SectionLabel(label: l10n.tabRate),
                       _RatingTab(
                         userRating: userRating,
                         busy: ratingBusy,
