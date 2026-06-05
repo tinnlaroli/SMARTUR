@@ -22,13 +22,14 @@ export function useCompany() {
     const location = locationParam ? Number(locationParam) : undefined;
     const sectorParam = searchParams.get('sector');
     const sector = sectorParam ? Number(sectorParam) : undefined;
+    const status = searchParams.get('status') || 'active';
 
     const fetchCompanies = useCallback(async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const data = await companyServices.findAll(page, limit, search, location, sector);
+            const data = await companyServices.findAll(page, limit, search, location, sector, status);
             setCompanies(data.companies);
             setTotalPages(data.totalPages);
         } catch (error: any) {
@@ -36,7 +37,7 @@ export function useCompany() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit, search, location, sector]);
+    }, [page, limit, search, location, sector, status]);
 
     useEffect(() => {
         fetchCompanies();
@@ -139,6 +140,14 @@ export function useCompany() {
         });
     };
 
+    const setStatus = (value: string) => {
+        setSearchParams((prev) => {
+            prev.set('status', value);
+            prev.set('page', '1');
+            return prev;
+        });
+    };
+
     return {
         companies,
         isLoading,
@@ -156,5 +165,7 @@ export function useCompany() {
         setLocation,
         sector,
         setSector,
+        status,
+        setStatus,
     };
 }

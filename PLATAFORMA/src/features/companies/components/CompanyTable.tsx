@@ -51,6 +51,8 @@ interface Props {
     onViewDetail: (id: number) => void;
     sector: number | undefined;
     setSector: (sectorId: number | undefined) => void;
+    status: string;
+    setStatus: (value: string) => void;
 }
 
 export default function CompanyTable({
@@ -60,6 +62,8 @@ export default function CompanyTable({
     onViewDetail,
     sector,
     setSector,
+    status,
+    setStatus,
 }: Props) {
     const { t } = useLanguage();
     const [sort, setSort] = useState<SortState | null>(null);
@@ -111,7 +115,20 @@ export default function CompanyTable({
                                 </div>
                             </DataTableHeadCell>
                             <SortableHeadCell sortKey="registration_date" sort={sort} onSort={handleSort} className="w-36">Registro</SortableHeadCell>
-                            <DataTableHeadCell className="w-44">Estado</DataTableHeadCell>
+                            <DataTableHeadCell className="w-44">
+                                <div className="flex items-center gap-2">
+                                    <span>Estado</span>
+                                    <DataTableHeaderSelect
+                                        value={status}
+                                        onChange={(value) => setStatus(value || 'active')}
+                                    >
+                                        <option value="active">Activas</option>
+                                        <option value="pending">Pendientes</option>
+                                        <option value="suspended">Suspendidas</option>
+                                        <option value="all">Todas</option>
+                                    </DataTableHeaderSelect>
+                                </div>
+                            </DataTableHeadCell>
                         </tr>
                     </DataTableHead>
                     <DataTableBody>

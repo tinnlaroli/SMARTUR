@@ -11,8 +11,9 @@ class CompanyController {
             const search = req.query.search || '';
             const location = req.query.location ? parseInt(req.query.location) : null;
             const sector = req.query.sector ? parseInt(req.query.sector) : null;
+            const status = req.query.status || 'active';
 
-            const result = await Company.findAll(page, limit, search, location, sector);
+            const result = await Company.findAll(page, limit, search, location, sector, status);
 
             res.json({
                 message: 'Compañías obtenidas exitosamente',

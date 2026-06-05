@@ -37,6 +37,7 @@ export const CompanyPage = () => {
         companies, isLoading, error, totalPages,
         createCompany, updateCompany, deleteCompany,
         sector, setSector,
+        status, setStatus,
         search: urlSearch, setSearch: setUrlSearch,
     } = useCompany();
 
@@ -139,6 +140,8 @@ export const CompanyPage = () => {
                         onViewDetail={(id) => dispatchModal({ type: 'OPEN_DETAIL', id })}
                         sector={sector}
                         setSector={setSector}
+                        status={status}
+                        setStatus={setStatus}
                     />
                 )}
             </div>

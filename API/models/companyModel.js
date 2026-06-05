@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 
 class Company {
-    static async findAll(page = 1, limit = 50, search = '', location = null, sector = null) {
+    static async findAll(page = 1, limit = 50, search = '', location = null, sector = null, status = 'active') {
         const offset = (page - 1) * limit;
 
         const values = [];
@@ -9,6 +9,12 @@ class Company {
         let index = 1;
 
         conditions.push(`is_active = TRUE`);
+
+        if (status && status !== 'all') {
+            conditions.push(`status = $${index}`);
+            values.push(status);
+            index++;
+        }
 
         if (search) {
             conditions.push(`name ILIKE $${index}`);

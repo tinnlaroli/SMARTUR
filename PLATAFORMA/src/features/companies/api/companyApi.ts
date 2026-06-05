@@ -13,7 +13,8 @@ export const companyServices = {
         limit: number,
         search?: string,
         location?: number,
-        sector?: number
+        sector?: number,
+        status?: string
     ): Promise<CompanyResponse> => {
         const response = await api.get('/companies', {
             params: {
@@ -22,6 +23,7 @@ export const companyServices = {
                 search: search || undefined,
                 location: location || undefined,
                 sector: sector || undefined,
+                status: status || undefined,
             },
         });
         return response.data;
