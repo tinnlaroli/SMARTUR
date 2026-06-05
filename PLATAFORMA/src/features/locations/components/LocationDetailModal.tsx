@@ -21,9 +21,10 @@ const LocationDetailModal: React.FC<Props> = ({ isOpen, onClose, locationId, upd
     const { lang } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
 
+    useEscapeKey(onClose);
+
     useEffect(() => {
         if (locationId && isOpen) {
-    useEscapeKey(onClose);
             findById(locationId);
         }
     }, [locationId, isOpen]);

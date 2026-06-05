@@ -29,7 +29,6 @@ interface Props {
 type Tab = 'profile' | 'sessions' | 'recommendations';
 
 function formatDate(iso: string, locale: string) {
-    useEscapeKey(onClose);
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
         new Date(iso),
     );
@@ -58,6 +57,7 @@ const SectionLabel = ({ icon, label }: { icon: React.ReactNode; label: string })
 );
 
 const ProfileDetailModal: React.FC<Props> = ({ isOpen, onClose, profile }) => {
+    useEscapeKey(onClose);
     const { lang } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
     const dateLocale = useMemo(
