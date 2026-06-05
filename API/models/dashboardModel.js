@@ -12,6 +12,7 @@ class Dashboard {
             totalCompanies: pool.query(`SELECT COUNT(*) FROM company WHERE is_active = TRUE`),
             totalPOI: pool.query(`SELECT COUNT(*) FROM point_of_interest WHERE is_active = TRUE`),
             pendingContacts: pool.query(`SELECT COUNT(*) FROM contact_subscription WHERE status = 'pending'`),
+            pendingCompanies: pool.query(`SELECT COUNT(*) FROM company WHERE status = 'pending' AND is_active = TRUE`),
             evaluationsByMonth: pool.query(`
                 SELECT
                     TO_CHAR(created_at, 'YYYY-MM') as month,
@@ -77,6 +78,7 @@ class Dashboard {
             total_companies: parseInt(data.totalCompanies[0]?.count || 0),
             total_poi: parseInt(data.totalPOI[0]?.count || 0),
             pending_contacts: parseInt(data.pendingContacts[0]?.count || 0),
+            pending_companies: parseInt(data.pendingCompanies[0]?.count || 0),
             evaluations_by_month: data.evaluationsByMonth,
             top_services: data.topServices,
             recent_evaluations: data.recentEvaluations,

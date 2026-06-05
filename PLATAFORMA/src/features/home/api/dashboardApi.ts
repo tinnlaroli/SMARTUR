@@ -32,6 +32,7 @@ export interface DashboardStats {
         role_id: number;
         count: number;
     }[];
+    pending_companies?: number;
 }
 
 interface DashboardResponse {

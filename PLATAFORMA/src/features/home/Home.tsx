@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { dashboardApi, type DashboardStats } from './api/dashboardApi';
 import {
     DashboardHeader,
@@ -50,6 +51,8 @@ const DashboardLoader = ({ label }: { label: string }) => (
 export const Home = () => {
     const { lang } = useLanguage();
     const copy = getDashboardText(lang);
+
+    const navigate = useNavigate();
 
     /* Data state */
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -274,6 +277,32 @@ export const Home = () => {
                 onOpenCatalog={openCatalog}
                 onResetGrid={resetGrid}
             />
+
+            {/* ── Pending companies banner ────────────────────────── */}
+            {(stats.pending_companies ?? 0) > 0 && (
+                <button
+                    type="button"
+                    onClick={() => { navigate('/dashboard/empresas?status=pending'); }}
+                    className="flex w-full items-center gap-3 rounded-[20px] border px-4 py-3 text-left transition hover:opacity-90 sy-fade-up"
+                    style={{
+                        borderColor: `${DASHBOARD_COLORS.warning}50`,
+                        background: `${DASHBOARD_COLORS.warning}0f`,
+                    }}
+                >
+                    <div
+                        className="flex size-8 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ background: `${DASHBOARD_COLORS.warning}20` }}
+                    >
+                        <AlertTriangle className="size-4" style={{ color: DASHBOARD_COLORS.warning }} />
+                    </div>
+                    <p className="flex-1 text-sm font-semibold" style={{ color: DASHBOARD_COLORS.warning }}>
+                        {stats.pending_companies === 1
+                            ? '1 empresa pendiente de revisión'
+                            : `${stats.pending_companies} empresas pendientes de revisión`}
+                    </p>
+                    <ArrowRight className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />
+                </button>
+            )}
 
             {/* ── Widget grid ─────────────────────────────────────── */}
             <WidgetGrid
