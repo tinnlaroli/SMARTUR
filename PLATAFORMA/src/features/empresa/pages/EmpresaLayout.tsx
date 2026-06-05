@@ -3,7 +3,7 @@ import { SEOHelmet } from '../../../shared/components/SEOHelmet';
 import { clearAccessToken } from '../../../shared/api/axiosClient';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-    Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
+    Menu, Bell, HelpCircle, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
 } from 'lucide-react';
 import { useUserPreferences } from '../../../contexts/LanguageContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast, type NotificationType, type ToastNotification } from '../../../shared/context/ToastContext';
+import { useEmpresaTour } from '../../../shared/hooks/useEmpresaTour';
 
 const NOTIFICATION_ICON_MAP: Record<NotificationType, typeof CheckCircle> = {
     success: CheckCircle,
@@ -151,6 +152,7 @@ export function EmpresaLayout() {
     const { lang, t } = useLanguage();
     const copy = getDashboardText(lang);
     const { notifications, unreadCount, markAllAsRead, clearNotifications } = useToast();
+    const { startTour } = useEmpresaTour(navigate);
 
     useEffect(() => {
         if (!notifOpen) return;
@@ -215,6 +217,14 @@ export function EmpresaLayout() {
                     </nav>
 
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={startTour}
+                            title="Ver tour del portal"
+                            className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <HelpCircle className="size-[18px]" style={{ color: 'var(--color-purple)' }} />
+                        </button>
+
                         <button
                             onClick={toggleTheme}
                             className="rounded-xl p-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
