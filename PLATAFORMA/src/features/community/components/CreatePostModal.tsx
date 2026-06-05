@@ -5,6 +5,7 @@ import { poiApi } from '../../points-of-interest/api/poiApi';
 import type { TouristService } from '../../tourist-services/types/types';
 import type { POI } from '../../points-of-interest/types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     onClose: () => void;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function CreatePostModal({ onClose, onSubmit }: Props) {
+    useEscapeKey(onClose);
     const { t } = useLanguage();
     const [caption, setCaption] = useState('');
     const [placeKind, setPlaceKind] = useState<'svc' | 'poi'>('svc');

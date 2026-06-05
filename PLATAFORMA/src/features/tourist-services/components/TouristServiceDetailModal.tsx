@@ -10,6 +10,7 @@ import { locationApi } from '../../locations/api/locationApi';
 import { instrumentApi } from '../../instrument-builder/api/instrumentApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const SERVICE_TYPE_MAP: Record<string, string> = {
     hotel: 'hotel', restaurant: 'restaurante', tour: 'tour',
@@ -32,6 +33,7 @@ const TouristServiceDetailModal: React.FC<Props> = ({
     serviceId,
     updateService,
 }) => {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const serviceTypeLabel = (t: string) =>

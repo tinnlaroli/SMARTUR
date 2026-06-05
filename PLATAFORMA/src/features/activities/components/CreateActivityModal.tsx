@@ -4,6 +4,7 @@ import { companyServices } from '../../companies/api/companyApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import type { Company } from '../../companies/types/types';
 import type { CreateActivityDTO } from '../types/types';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const selectClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 cursor-pointer disabled:opacity-50';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function CreateActivityModal({ onClose, onSubmit }: Props) {
+    useEscapeKey(onClose);
     const { t } = useLanguage();
     const impactOptions = useMemo(() => [
         { label: t('activity.modal.impactLow'), value: 'bajo' },

@@ -9,6 +9,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { AuthStep } from '../context/AuthModalContext';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface AuthStepContentProps {
     step: AuthStep;
@@ -41,6 +42,7 @@ export const AuthModal: React.FC = () => {
 
     useEffect(() => {
         if (isOpen) {
+    useEscapeKey(onClose);
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';

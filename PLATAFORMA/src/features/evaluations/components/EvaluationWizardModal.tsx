@@ -24,6 +24,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { PdfUploadSection } from './PdfUploadSection';
 import { ScanValidationStep } from './ScanValidationStep';
 import { usePdfParsing } from '../hooks/usePdfParsing';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     isOpen: boolean;
@@ -192,6 +193,7 @@ const EvaluationWizardModal: React.FC<Props> = ({
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+    useEscapeKey(onClose);
             const newFiles = Array.from(e.target.files).map((f) => ({
                 id: `${f.name}-${f.lastModified}-${f.size}`,
                 url: URL.createObjectURL(f),

@@ -6,6 +6,7 @@ import type { UpdateLocationDTO } from '../types/types';
 import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     isOpen: boolean;
@@ -22,6 +23,7 @@ const LocationDetailModal: React.FC<Props> = ({ isOpen, onClose, locationId, upd
 
     useEffect(() => {
         if (locationId && isOpen) {
+    useEscapeKey(onClose);
             findById(locationId);
         }
     }, [locationId, isOpen]);

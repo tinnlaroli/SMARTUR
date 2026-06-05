@@ -3,6 +3,7 @@ import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer, FileTe
 import { evaluationsApi } from '../api/evaluationsApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     isOpen: boolean;
@@ -35,6 +36,7 @@ function modalReducer(state: ModalState, action: ModalAction): ModalState {
 
 const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId }) => {
     const { lang, t } = useLanguage();
+    useEscapeKey(onClose);
     const res = useMemo(() => getDashboardText(lang).modules.modals.evaluations.result, [lang]);
     const [{ evaluation, isLoading }, dispatch] = useReducer(modalReducer, {
         evaluation: null,

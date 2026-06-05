@@ -4,6 +4,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import type { POI, UpdatePOIDTO } from '../types/types';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
+    useEscapeKey(onClose);
     const { t } = useLanguage();
     const poiTypes = useMemo(() => [
         { label: t('poi.type.natural'), value: 1 },

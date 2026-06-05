@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 type ModalType = 'terms' | 'privacy';
 
@@ -168,6 +169,7 @@ interface TermsModalProps {
 }
 
 export function TermsModal({ type, onClose }: TermsModalProps) {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const safeLang = lang in TITLES ? lang : 'es';
     const title = TITLES[safeLang][type];

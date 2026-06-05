@@ -6,6 +6,7 @@ import type { Location } from '../../locations/types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import type { SectorId } from '../../../shared/i18n/dashboardModalsLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const SECTOR_IDS: SectorId[] = [1, 2, 3, 4, 5];
 
@@ -18,6 +19,7 @@ const selectClass =
     'w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 focus:ring-2 focus:ring-violet-500 outline-none transition-all cursor-pointer disabled:opacity-50';
 
 export default function CreateCompanyModal({ onClose, onSubmit }: Props) {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<CreateCompanyDTO>({

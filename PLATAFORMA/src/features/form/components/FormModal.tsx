@@ -9,6 +9,7 @@ import { X } from 'lucide-react';
 import type { FormContext, RecommendationsResponse } from '../types/types';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface FormModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ interface FormModalProps {
 }
 
 export function FormModal({ isOpen, onClose }: FormModalProps) {
+    useEscapeKey(onClose);
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<Partial<FormContext>>({});
     const [isStep4Loading, setIsStep4Loading] = useState(false);

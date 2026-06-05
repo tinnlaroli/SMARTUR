@@ -3,6 +3,7 @@ import type { TouristService, UpdateTouristServiceDTO } from '../types/types';
 import { X, Save, ImagePlus, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const SERVICE_TYPE_KEYS = ['tour', 'hotel', 'restaurant', 'transporte'] as const;
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function EditTouristServiceModal({ onClose, onSubmit, service }: Props) {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<UpdateTouristServiceDTO>({

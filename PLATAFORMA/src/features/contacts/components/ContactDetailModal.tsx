@@ -3,6 +3,7 @@ import { X, Mail, Globe, Calendar } from 'lucide-react';
 import type { ContactSubscription, ContactStatus } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 const STATUS_STYLE: Record<ContactStatus, { bg: string; color: string }> = {
     pending:     { bg: 'rgba(245,158,11,0.12)',  color: '#d97706' },
@@ -42,6 +43,7 @@ interface Props {
 }
 
 export default function ContactDetailModal({ contact, onClose, onStatusChange }: Props) {
+    useEscapeKey(onClose);
     const { lang } = useLanguage();
     const copy = useMemo(() => getDashboardText(lang).modules.contacts, [lang]);
     const [status, setStatus] = useState<ContactStatus>(contact.status);

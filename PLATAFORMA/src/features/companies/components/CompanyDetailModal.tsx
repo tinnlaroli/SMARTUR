@@ -8,6 +8,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import type { SectorId } from '../../../shared/i18n/dashboardModalsLocale';
 import { activityApi } from '../../activities/api/activityApi';
 import type { Activity } from '../../activities/types/types';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     isOpen: boolean;
@@ -43,6 +44,7 @@ const impactBadge = (value: string | undefined) => {
 };
 
 const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updateCompany }) => {
+    useEscapeKey(onClose);
     const { company, isLoading, error, findById } = useCompany();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);

@@ -18,6 +18,7 @@ import { userServices } from '../../users/api/userApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     isOpen: boolean;
@@ -28,6 +29,7 @@ interface Props {
 type Tab = 'profile' | 'sessions' | 'recommendations';
 
 function formatDate(iso: string, locale: string) {
+    useEscapeKey(onClose);
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
         new Date(iso),
     );

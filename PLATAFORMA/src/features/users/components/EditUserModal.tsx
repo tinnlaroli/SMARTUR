@@ -4,6 +4,7 @@ import { Save, X, Camera, User as UserIcon, AlertCircle, Building2, Loader2 } fr
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { api } from '../../../shared/api/axiosClient';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Company { id: number; name: string; }
 
@@ -22,6 +23,7 @@ interface Props {
 
 
 export default function EditUserModal({ user, onClose, onSubmit }: Props) {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
 

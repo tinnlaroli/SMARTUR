@@ -6,6 +6,7 @@ import EditUserModal from './EditUserModal';
 import type { UpdateUserDTO } from '../types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface AiMetrics {
     total_sessions: number;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const UserDetailModal: React.FC<Props> = ({ isOpen, onClose, userId, updateUser }) => {
+    useEscapeKey(onClose);
     const { user, isLoading, error, findById } = useUser();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [aiMetrics, setAiMetrics] = useState<AiMetrics | null>(null);

@@ -4,6 +4,7 @@ import { X, Save, MapPin, Navigation, AlertCircle } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 interface Props {
     onClose: () => void;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function EditLocationModal({ onClose, onSubmit, location }: Props) {
+    useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const [formData, setFormData] = useState<UpdateLocationDTO>({
