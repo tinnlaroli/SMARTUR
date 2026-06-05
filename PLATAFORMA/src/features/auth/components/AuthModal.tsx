@@ -40,9 +40,10 @@ export const AuthModal: React.FC = () => {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
+    useEscapeKey(closeModal);
+
     useEffect(() => {
         if (isOpen) {
-    useEscapeKey(onClose);
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';

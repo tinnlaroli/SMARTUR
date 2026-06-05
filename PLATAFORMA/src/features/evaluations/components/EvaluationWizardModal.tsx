@@ -109,6 +109,7 @@ function normalizeType(s: string): string {
 const EvaluationWizardModal: React.FC<Props> = ({
     isOpen, onClose, serviceId, serviceName, serviceType = '',
 }) => {
+    useEscapeKey(onClose);
     const { lang } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const ev = mod.evaluations;
@@ -193,7 +194,6 @@ const EvaluationWizardModal: React.FC<Props> = ({
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-    useEscapeKey(onClose);
             const newFiles = Array.from(e.target.files).map((f) => ({
                 id: `${f.name}-${f.lastModified}-${f.size}`,
                 url: URL.createObjectURL(f),
