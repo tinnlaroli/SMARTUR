@@ -307,6 +307,7 @@ export function EmpresaServiciosPage() {
     } = useEmpresaServices();
 
     const [companyLocationId, setCompanyLocationId] = useState<number | null>(null);
+    const [companyStatus, setCompanyStatus] = useState<'active' | 'pending' | 'suspended' | null>(null);
 
     const [selectedServices, setSelectedServices] = useState<number[]>([]);
     const toggleService = (id: number) =>
@@ -322,7 +323,10 @@ export function EmpresaServiciosPage() {
 
     useEffect(() => {
         empresaApi.getProfile()
-            .then(({ company }) => setCompanyLocationId(company.id_location))
+            .then(({ company }) => {
+                setCompanyLocationId(company.id_location);
+                setCompanyStatus(company.status);
+            })
             .catch(() => setCompanyLocationId(null));
     }, []);
 
@@ -441,7 +445,9 @@ export function EmpresaServiciosPage() {
                         <button
                             type="button"
                             onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
-                            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95"
+                            disabled={companyStatus !== null && companyStatus !== 'active'}
+                            title={companyStatus === 'pending' ? 'Tu empresa está en revisión' : companyStatus === 'suspended' ? 'Tu empresa está suspendida' : undefined}
+                            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                             style={{ background: MODULE_COLORS.services }}
                         >
                             <Plus className="size-4" />

@@ -70,6 +70,27 @@ export interface AnalyticsResponse {
     timeline_30d: TimelineDay[];
 }
 
+export interface EvaluationSummaryItem {
+    id_evaluation: number;
+    total_score: number;
+    created_at: string;
+    service_name: string;
+    evaluator_name: string;
+}
+
+export interface CriterionSummary {
+    criterion_name: string;
+    avg_score: number;
+    max_score: number | null;
+}
+
+export interface EvaluationsResponse {
+    recent_evaluations: EvaluationSummaryItem[];
+    all_criteria: CriterionSummary[];
+    weak_criteria: CriterionSummary[];
+    last_evaluation_at: string | null;
+}
+
 export interface RegisterEmpresaPayload {
     name: string;
     email: string;
@@ -117,6 +138,11 @@ export const empresaApi = {
 
     getAnalytics: async (): Promise<AnalyticsResponse> => {
         const { data } = await api.get('/empresa/analytics');
+        return data;
+    },
+
+    getEvaluations: async (): Promise<EvaluationsResponse> => {
+        const { data } = await api.get('/empresa/evaluations');
         return data;
     },
 };

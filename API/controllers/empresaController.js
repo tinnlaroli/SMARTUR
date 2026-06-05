@@ -566,6 +566,57 @@ class EmpresaController {
     }
 
     /**
+     * GET /api/v2/empresa/evaluations
+     * Evaluaciones recibidas por los servicios de la empresa, con desglose por criterio.
+     */
+    static async getEvaluations(req, res) {
+        const { id_company } = req.user;
+        try {
+            const [evalsResult, criteriaResult] = await Promise.all([
+                pool.query(
+                    `SELECT se.id_evaluation, se.total_score, se.created_at,
+                            ts.name AS service_name, u.name AS evaluator_name
+                     FROM service_evaluation se
+                     INNER JOIN tourist_service ts ON se.id_service = ts.id_service
+                     INNER JOIN "user" u ON se.evaluator_id = u.user_id
+                     WHERE ts.id_company = $1 AND se.is_active = TRUE
+                     ORDER BY se.created_at DESC
+                     LIMIT 10`,
+                    [id_company],
+                ),
+                pool.query(
+                    `SELECT ec.name AS criterion_name,
+                            ROUND(AVG(ed.assigned_score)::numeric, 2) AS avg_score,
+                            MAX(es.score) AS max_score
+                     FROM evaluation_detail ed
+                     INNER JOIN evaluation_criterion ec ON ed.id_criterion = ec.id_criterion
+                     INNER JOIN service_evaluation se ON ed.id_evaluation = se.id_evaluation
+                     INNER JOIN tourist_service ts ON se.id_service = ts.id_service
+                     LEFT JOIN (
+                         SELECT id_criterion, MAX(score::numeric) AS score
+                         FROM evaluation_subcriterion
+                         GROUP BY id_criterion
+                     ) es ON es.id_criterion = ec.id_criterion
+                     WHERE ts.id_company = $1 AND se.is_active = TRUE
+                     GROUP BY ec.name
+                     ORDER BY avg_score ASC`,
+                    [id_company],
+                ),
+            ]);
+
+            const recent_evaluations = evalsResult.rows;
+            const all_criteria = criteriaResult.rows;
+            const weak_criteria = all_criteria.slice(0, 3);
+            const last_evaluation_at = recent_evaluations[0]?.created_at ?? null;
+
+            return res.json({ recent_evaluations, all_criteria, weak_criteria, last_evaluation_at });
+        } catch (err) {
+            console.error('[empresa] getEvaluations error:', err.message);
+            return res.status(500).json({ message: 'Error al obtener evaluaciones.' });
+        }
+    }
+
+    /**
      * DELETE /api/v2/empresa/services/:id
      * Soft-delete: pone active=false en vez de borrar la fila.
      */

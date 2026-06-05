@@ -67,6 +67,18 @@ router.get(
 );
 
 /**
+ * GET /api/v2/empresa/evaluations
+ * Evaluaciones recibidas + desglose por criterio + criterios débiles.
+ */
+router.get(
+    '/empresa/evaluations',
+    verifyToken,
+    requireRole([1, 3]),
+    requireOwnsCompany,
+    EmpresaController.getEvaluations,
+);
+
+/**
  * POST /api/v2/empresa/services
  * Crea un servicio turístico para la empresa autenticada.
  */

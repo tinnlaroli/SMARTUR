@@ -9,12 +9,15 @@ import {
     CheckCircle2,
     Circle,
     ArrowRight,
+    Clock,
+    Lock,
+    TrendingDown,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { empresaApi, type AnalyticsResponse } from '../api/empresaApi';
+import { empresaApi, type AnalyticsResponse, type EvaluationsResponse } from '../api/empresaApi';
 import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { DATA_TABLE_SHELL_CLASS, TableBadge, TABLE_BADGE_COLORS } from '../../../components/ui/DataTable';
 import {
@@ -58,15 +61,54 @@ function KpiCard({
     );
 }
 
+function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
+    const isPending = status === 'pending';
+    return (
+        <div className="flex flex-1 items-center justify-center">
+            <div
+                className="flex max-w-sm flex-col items-center gap-4 rounded-[28px] border p-8 text-center shadow-sm"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+            >
+                <div
+                    className="flex size-14 items-center justify-center rounded-full"
+                    style={{ background: isPending ? '#F59E0B18' : '#EF444418' }}
+                >
+                    <Lock className="size-6" style={{ color: isPending ? '#F59E0B' : '#EF4444' }} />
+                </div>
+                <div>
+                    <p className="font-bold" style={{ color: 'var(--color-text)' }}>
+                        {isPending ? 'Empresa en revisión' : 'Empresa suspendida'}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                        {isPending
+                            ? 'Analytics se activa una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function EmpresaAnalyticsPage() {
     const { t } = useLanguage();
     const [data, setData] = useState<AnalyticsResponse | null>(null);
+    const [evals, setEvals] = useState<EvaluationsResponse | null>(null);
+    const [companyStatus, setCompanyStatus] = useState<'active' | 'pending' | 'suspended' | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        empresaApi.getAnalytics()
-            .then(setData)
+        Promise.all([
+            empresaApi.getAnalytics(),
+            empresaApi.getEvaluations(),
+            empresaApi.getProfile(),
+        ])
+            .then(([analyticsRes, evalsRes, profileRes]) => {
+                setData(analyticsRes);
+                setEvals(evalsRes);
+                setCompanyStatus(profileRes.company.status);
+            })
             .catch(() => setError(t('empresa.analytics.errorLoading')))
             .finally(() => setLoading(false));
     }, []);
@@ -79,11 +121,28 @@ export function EmpresaAnalyticsPage() {
     const hasData = timeline30d.length > 0 || topServicios.length > 0;
 
     const hasServices = (summary?.total_servicios_activos ?? 0) > 0;
-    const hasProfile = true; // profile exists if they reached this page
+    const hasProfile = true;
     const interactionTotal = useMemo(
         () => timeline30d.reduce((acc, row) => acc + row.interacciones, 0),
         [timeline30d],
     );
+
+    const lastEvalDate = evals?.last_evaluation_at
+        ? new Date(evals.last_evaluation_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+        : null;
+
+    if (!loading && companyStatus && companyStatus !== 'active') {
+        return (
+            <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4">
+                <div className="shrink-0">
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {t('empresa.analytics.title')}
+                    </h1>
+                </div>
+                <StatusBlocker status={companyStatus} />
+            </div>
+        );
+    }
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -124,11 +183,17 @@ export function EmpresaAnalyticsPage() {
             )}
 
             {!loading && !error && summary && (
-                <div className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-4">
+                <div className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-5">
                     <KpiCard label={t('empresa.analytics.recomendaciones')} value={summary.total_recomendaciones} icon={TrendingUp} color="#9CCC44" />
                     <KpiCard label={t('empresa.analytics.favoritos')} value={summary.total_favoritos} icon={Star} color="#FF7D1F" />
                     <KpiCard label={t('empresa.analytics.visitas')} value={summary.total_visitas} icon={BarChart3} color="#4DB9CA" />
                     <KpiCard label={t('empresa.analytics.ratingPromedio')} value={avgRating} icon={Award} color="var(--color-purple)" />
+                    <KpiCard
+                        label="Última evaluación"
+                        value={lastEvalDate ?? '—'}
+                        icon={Clock}
+                        color="#984EFD"
+                    />
                 </div>
             )}
 
@@ -347,6 +412,74 @@ export function EmpresaAnalyticsPage() {
                                 style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
                             >
                                 {t('empresa.analytics.noQualityScore')}
+                            </div>
+                        )}
+
+                        {/* ── Criterios a mejorar ── */}
+                        {evals && evals.weak_criteria.length > 0 && (
+                            <div
+                                className="rounded-2xl border p-5"
+                                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                            >
+                                <p className="mb-3 flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    <TrendingDown size={15} style={{ color: '#EF4444' }} />
+                                    Criterios a mejorar
+                                </p>
+                                <div className="space-y-3">
+                                    {evals.weak_criteria.map((c) => {
+                                        const max = Number(c.max_score) || 4;
+                                        const pct = Math.min((Number(c.avg_score) / max) * 100, 100);
+                                        const color = pct >= 75 ? '#10B981' : pct >= 50 ? '#F59E0B' : '#EF4444';
+                                        return (
+                                            <div key={c.criterion_name}>
+                                                <div className="mb-1 flex items-center justify-between text-xs">
+                                                    <span className="truncate font-medium" style={{ color: 'var(--color-text)' }}>{c.criterion_name}</span>
+                                                    <span className="ml-2 shrink-0 font-bold" style={{ color }}>
+                                                        {Number(c.avg_score).toFixed(1)}/{max}
+                                                    </span>
+                                                </div>
+                                                <div className="h-2 overflow-hidden rounded-full" style={{ background: 'var(--color-bg-alt)' }}>
+                                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ── Últimas evaluaciones ── */}
+                        {evals && evals.recent_evaluations.length > 0 && (
+                            <div
+                                className="min-h-0 flex-1 overflow-y-auto rounded-2xl border p-5"
+                                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                            >
+                                <p className="mb-3 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    Últimas evaluaciones
+                                </p>
+                                <div className="space-y-2">
+                                    {evals.recent_evaluations.slice(0, 5).map((ev) => {
+                                        const score = Number(ev.total_score);
+                                        const color = score >= 4 ? '#10B981' : score >= 3 ? '#F59E0B' : '#EF4444';
+                                        return (
+                                            <div
+                                                key={ev.id_evaluation}
+                                                className="flex items-center gap-3 rounded-xl border px-3 py-2"
+                                                style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                                            >
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{ev.service_name}</p>
+                                                    <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                                        {new Date(ev.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
+                                                    </p>
+                                                </div>
+                                                <span className="shrink-0 text-sm font-bold" style={{ color }}>
+                                                    {score.toFixed(1)}★
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
                     </div>
