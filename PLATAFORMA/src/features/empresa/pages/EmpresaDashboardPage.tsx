@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import { DashboardHeader, DashboardLoadingShell } from '../../home/components/DashboardWidgets';
 import { WidgetCatalog } from '../../home/components/WidgetCatalog';
 import { WidgetGrid } from '../../home/components/WidgetGrid';
@@ -237,6 +237,26 @@ export function EmpresaDashboardPage() {
                 onOpenCatalog={openCatalog}
                 onResetGrid={resetGrid}
             />
+
+            {profile.status === 'pending' && (
+                <div
+                    className="flex items-center gap-3 rounded-[20px] border px-4 py-3 sy-fade-up"
+                    style={{
+                        borderColor: `${DASHBOARD_COLORS.warning}50`,
+                        background: `${DASHBOARD_COLORS.warning}0f`,
+                    }}
+                >
+                    <div
+                        className="flex size-8 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ background: `${DASHBOARD_COLORS.warning}20` }}
+                    >
+                        <AlertTriangle className="size-4" style={{ color: DASHBOARD_COLORS.warning }} />
+                    </div>
+                    <p className="flex-1 text-sm font-semibold" style={{ color: DASHBOARD_COLORS.warning }}>
+                        Tu empresa está pendiente de revisión. El equipo de SMARTUR revisará tu información pronto.
+                    </p>
+                </div>
+            )}
 
             <WidgetGrid
                 instances={instances}
