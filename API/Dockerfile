@@ -8,16 +8,36 @@ FROM node:22-alpine AS deps
 
 WORKDIR /app
 
+# Herramientas de compilación para módulos nativos (canvas, etc.)
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    pkgconfig
+
 # Copiar manifiestos para aprovechar cache de capas
 COPY package.json package-lock.json ./
 
-RUN npm install --omit=dev --no-audit --prefer-offline
+RUN npm install --omit=dev --no-audit
 
 # ── Etapa 2: Imagen Final ──────────────────────────────────
 FROM node:22-alpine AS runner
 
-# Instalar curl para healthcheck
-RUN apk add --no-cache curl
+# Instalar curl y libs de runtime para canvas
+RUN apk add --no-cache \
+    curl \
+    cairo \
+    pango \
+    jpeg \
+    giflib \
+    librsvg \
+    pixman
 
 WORKDIR /app
 
