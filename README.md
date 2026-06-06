@@ -428,3 +428,15 @@ Ayuda a que más personas lo descubran y motiva a seguir mejorándolo.
 Desarrollado por el equipo **SMARTUR**
 
 </div>
+
+## Documentación
+
+El proyecto SMARTUR cuenta con documentación técnica y administrativa para apoyar las actividades de desarrollo y mantenimiento.
+
+### Estructura General
+
+- codigo/
+- documentacion/
+- recursos/
+
+La carpeta documentacion contiene manuales, diagramas y documentos relacionados con el proyecto.
