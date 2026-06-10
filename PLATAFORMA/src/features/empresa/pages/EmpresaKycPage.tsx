@@ -403,6 +403,12 @@ export function EmpresaKycPage() {
             return 'El nombre completo es requerido.';
         if (step === 1 && !form.owner_street.trim())
             return 'La calle y número son requeridos.';
+        if (step === 2) {
+            const hasFront = ineFront !== null || !!kycData?.verification?.ine_front_url;
+            const hasBack  = ineBack  !== null || !!kycData?.verification?.ine_back_url;
+            if (!hasFront || !hasBack)
+                return 'Sube el INE frente y reverso para enviar tu solicitud.';
+        }
         return null;
     };
 
@@ -421,6 +427,8 @@ export function EmpresaKycPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Pressing Enter on steps 0/1 should advance, not submit
+        if (step < 2) { handleNext(); return; }
         const err = validateStep();
         if (err) { setError(err); return; }
         setError(null);
@@ -686,7 +694,10 @@ export function EmpresaKycPage() {
                         ) : (
                             <button
                                 type="submit"
-                                disabled={submitting}
+                                disabled={submitting || (
+                                    (ineFront === null && !kycData?.verification?.ine_front_url) ||
+                                    (ineBack  === null && !kycData?.verification?.ine_back_url)
+                                )}
                                 className="flex-1 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                                 style={{ backgroundColor: PURPLE }}
                             >

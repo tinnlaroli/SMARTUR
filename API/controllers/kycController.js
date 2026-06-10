@@ -39,8 +39,20 @@ class KycController {
             : null;
 
         try {
-            // Subir documentos a Cloudinary si se enviaron
             const files = req.files || {};
+
+            // Primera solicitud: INE frente y reverso son obligatorios
+            const preCheck = await pool.query(
+                'SELECT id_verification FROM company_verification WHERE id_company = $1',
+                [id_company]
+            );
+            if (preCheck.rows.length === 0 && (!files.ine_front?.[0] || !files.ine_back?.[0])) {
+                return res.status(400).json({
+                    message: 'El INE frente y reverso son obligatorios para la primera verificación.'
+                });
+            }
+
+            // Subir documentos a Cloudinary si se enviaron
             let ine_front_url = null;
             let ine_back_url = null;
             let address_proof_url = null;
