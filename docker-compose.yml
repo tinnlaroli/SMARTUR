@@ -136,6 +136,7 @@ services:
       VITE_API_URL: /api/v2
       VITE_BUSINESS_URL: /
       VITE_MODELO_URL: http://modelo:8000
+      VITE_API_PROXY_TARGET: http://api:3000
     depends_on:
       - api
     healthcheck:

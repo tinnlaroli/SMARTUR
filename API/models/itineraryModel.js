@@ -38,8 +38,8 @@ export async function getMyItineraries(userId) {
 export async function getPredefined() {
     const r = await pool.query(
         `SELECT i.*,
-                u.full_name AS owner_name,
-                u.profile_image_url AS owner_avatar_url,
+                u.name AS owner_name,
+                u.photo_url AS owner_avatar_url,
                 COALESCE(json_agg(
                   json_build_object(
                     'id_stop', s.id_stop,
@@ -52,7 +52,7 @@ export async function getPredefined() {
          JOIN "user" u ON u.user_id = i.user_id
          LEFT JOIN itinerary_stop s ON s.id_itinerary = i.id_itinerary
          WHERE i.is_certified = TRUE AND i.is_public = TRUE
-         GROUP BY i.id_itinerary, u.full_name, u.profile_image_url
+         GROUP BY i.id_itinerary, u.name, u.photo_url
          ORDER BY i.copy_count DESC
          LIMIT 20`,
     );
@@ -62,8 +62,8 @@ export async function getPredefined() {
 export async function getCommunity() {
     const r = await pool.query(
         `SELECT i.*,
-                u.full_name AS owner_name,
-                u.profile_image_url AS owner_avatar_url,
+                u.name AS owner_name,
+                u.photo_url AS owner_avatar_url,
                 COALESCE(json_agg(
                   json_build_object(
                     'id_stop', s.id_stop,
@@ -76,7 +76,7 @@ export async function getCommunity() {
          JOIN "user" u ON u.user_id = i.user_id
          LEFT JOIN itinerary_stop s ON s.id_itinerary = i.id_itinerary
          WHERE i.is_public = TRUE AND i.is_certified = FALSE
-         GROUP BY i.id_itinerary, u.full_name, u.profile_image_url
+         GROUP BY i.id_itinerary, u.name, u.photo_url
          ORDER BY i.copy_count DESC
          LIMIT 30`,
     );
@@ -85,7 +85,7 @@ export async function getCommunity() {
 
 export async function searchItineraries(query) {
     const r = await pool.query(
-        `SELECT i.*, u.full_name AS owner_name, u.profile_image_url AS owner_avatar_url
+        `SELECT i.*, u.name AS owner_name, u.photo_url AS owner_avatar_url
          FROM itinerary i
          JOIN "user" u ON u.user_id = i.user_id
          WHERE i.is_public = TRUE
@@ -99,7 +99,7 @@ export async function searchItineraries(query) {
 
 export async function getItineraryById(id) {
     const r = await pool.query(
-        `SELECT i.*, u.full_name AS owner_name, u.profile_image_url AS owner_avatar_url
+        `SELECT i.*, u.name AS owner_name, u.photo_url AS owner_avatar_url
          FROM itinerary i
          JOIN "user" u ON u.user_id = i.user_id
          WHERE i.id_itinerary = $1`,
@@ -408,7 +408,7 @@ export async function adminListPublic({ limit = 50, offset = 0, certified }) {
 
     const rows = await pool.query(
         `SELECT i.id_itinerary, i.title, i.is_certified, i.copy_count, i.created_at,
-                u.full_name AS owner_name
+                u.name AS owner_name
          FROM itinerary i
          JOIN "user" u ON u.user_id = i.user_id
          WHERE ${where}
