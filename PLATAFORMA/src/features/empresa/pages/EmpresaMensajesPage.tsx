@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageSquare, Send, RefreshCw, Lock } from 'lucide-react';
 import { chatEmpresaApi, type EmpresaConversation, type ChatMessage } from '../api/chatApi';
 import { empresaApi } from '../api/empresaApi';
-import { useUserPreferences } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../shared/context/ToastContext';
 
 const ACCENT = '#a855f7';
@@ -132,7 +131,6 @@ function MessageBubble({ msg, isMine }: MessageBubbleProps) {
 }
 
 export function EmpresaMensajesPage() {
-    const { user } = useUserPreferences();
     const { error } = useToast();
 
     const [conversations, setConversations] = useState<EmpresaConversation[]>([]);

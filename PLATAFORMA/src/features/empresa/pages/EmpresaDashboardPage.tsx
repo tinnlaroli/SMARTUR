@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { DashboardHeader, DashboardLoadingShell } from '../../home/components/DashboardWidgets';
 import { WidgetCatalog } from '../../home/components/WidgetCatalog';
@@ -50,7 +49,6 @@ const DashboardLoader = ({ label }: { label: string }) => (
 export function EmpresaDashboardPage() {
     const { user, lang } = useUserPreferences();
     const copy = getDashboardText(lang);
-    const navigate = useNavigate();
 
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);

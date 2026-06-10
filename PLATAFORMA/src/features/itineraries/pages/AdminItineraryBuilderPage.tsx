@@ -146,7 +146,7 @@ export function AdminItineraryBuilderPage() {
         background: 'var(--color-bg-alt)',
         border: '1px solid var(--color-border)',
         color: 'var(--color-text)',
-        '--tw-ring-color': COLOR,
+        outlineColor: COLOR,
     };
 
     return (

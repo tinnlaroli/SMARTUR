@@ -66,7 +66,7 @@ interface WalkinModalProps {
 }
 
 function WalkinModal({ services, onClose, onSaved }: WalkinModalProps) {
-    const { success, error, info } = useToast();
+    const { success, error } = useToast();
     const today = new Date().toISOString().split('T')[0];
     const [form, setForm] = useState<WalkinPayload>({
         id_service: services[0]?.id_service ?? 0,
@@ -210,7 +210,7 @@ export function EmpresaCalendarioPage() {
                 empresaApi.getServices(),
             ]);
             setBookings(bookingData);
-            setServices(svcData);
+            setServices(Array.isArray(svcData) ? svcData : (svcData as { services: EmpresaService[] }).services ?? []);
         } catch {
             error('Error al cargar reservas');
         } finally {

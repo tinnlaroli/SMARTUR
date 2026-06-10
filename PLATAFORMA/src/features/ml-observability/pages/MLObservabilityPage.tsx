@@ -593,7 +593,8 @@ export const MLObservabilityPage = () => {
                                             </Pie>
                                             <Tooltip
                                                 contentStyle={tooltipStyle}
-                                                formatter={(v: number, name: string) => [v.toLocaleString(locale), name]}
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                formatter={((v: number, name: string) => [v.toLocaleString(locale), name]) as any}
                                             />
                                         </PieChart>
                                     </ResponsiveContainer>
@@ -962,8 +963,10 @@ export const MLObservabilityPage = () => {
                                         />
                                         <Tooltip
                                             contentStyle={tooltipStyle}
-                                            formatter={(v: number) => [`${v}%`, 'Ahorro acumulado']}
-                                            labelFormatter={(l: number) => `Iteración ${l}`}
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            formatter={((v: number) => [`${v}%`, 'Ahorro acumulado']) as any}
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            labelFormatter={((l: number) => `Iteración ${l}`) as any}
                                         />
                                         <Area
                                             type="monotone"
