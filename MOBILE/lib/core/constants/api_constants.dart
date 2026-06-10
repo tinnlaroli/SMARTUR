@@ -25,11 +25,12 @@ class ApiConstants {
   // communityPostReport: replace {id} with actual post ID
   static const String communityReports = '/community/reports';
 
-  // ML interaction telemetry
+  // ML interaction telemetry & recommendations
   static const String meInteractions = '/me/interactions';
   static const String meRating = '/me/rating';
   static const String mlFeedback = '/ml/feedback';
   static const String mlSessionsMe = '/ml/sessions/me';
+  static const String mlRecommend = '/ml/recommend';
 
   // Session management
   static const String meSessions = '/me/sessions';

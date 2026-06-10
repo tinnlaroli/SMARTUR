@@ -13,7 +13,9 @@ import '../../../core/motion/smartur_motion.dart';
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
+import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/env_config.dart';
+import '../../../data/services/api_client.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/update_service.dart';
@@ -28,7 +30,7 @@ import '../../widgets/offline_banner.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
-import '../auth/genre_picker_screen.dart';
+import '../preferences/preferences_screen.dart';
 import '../../widgets/add_to_route_sheet.dart';
 import '../explore/detail_view_page.dart';
 
@@ -73,6 +75,9 @@ class HomeScreenState extends State<HomeScreen> {
   List<CityData> _cities = [];
   String? _exploreError;
   bool _exploreLoaded = false;
+
+  // ── Recommendations ──
+  List<Place> _recommendedPlaces = [];
 
   // ── Offline mode ──
   bool _isOffline = false;
@@ -157,6 +162,7 @@ class HomeScreenState extends State<HomeScreen> {
 
       _loadWeatherForSelectedCity();
       _loadHeaderAvatar();
+      _loadRecommendations();
       if (mounted) UpdateService.checkAndPromptIfNeeded(context);
     });
   }
@@ -235,14 +241,12 @@ class HomeScreenState extends State<HomeScreen> {
     if (_preferencesCheckedOnce) return;
     _preferencesCheckedOnce = true;
 
-    // Nuevo onboarding: solo se muestra al primer login sin géneros guardados.
-    // GenrePickerScreen reemplaza el formulario de 3 pasos anterior.
     if (!widget.isNewLogin) return;
     final saved = await ProfileService.hasPreferencesSaved();
     if (!saved && mounted) {
       Navigator.push(
         context,
-        smarturFadeRoute(GenrePickerScreen(userName: widget.userName)),
+        smarturFadeRoute(PreferencesScreen(userName: widget.userName)),
       );
     }
   }
@@ -477,6 +481,39 @@ class HomeScreenState extends State<HomeScreen> {
           _headerAvatarIconKey = icon;
         });
       }
+    }
+  }
+
+  Future<void> _loadRecommendations() async {
+    final userId = await _authService.getUserId();
+    if (userId == null || _cities.isEmpty) return;
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.mlRecommend}/$userId');
+    try {
+      final resp = await ApiClient.post(
+        uri,
+        body: jsonEncode({'top_n': 6, 'alpha': 0.3}),
+        extraHeaders: {'Content-Type': 'application/json'},
+        timeout: const Duration(seconds: 15),
+      );
+      if (resp.statusCode == 200 && mounted) {
+        final data = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+        final recs = data['recommendations'] as List<dynamic>? ?? [];
+        final placeById = {
+          for (final c in _cities)
+            for (final p in c.places) p.id: p,
+        };
+        final recommended = <Place>[];
+        for (final rec in recs) {
+          final raw = rec as Map<String, dynamic>;
+          final itemId = raw['item_id'] as String?;
+          if (itemId == null) continue;
+          final place = placeById[itemId];
+          if (place != null) recommended.add(place);
+        }
+        if (mounted) setState(() => _recommendedPlaces = recommended);
+      }
+    } catch (_) {
+      // Recommendations are best-effort — silently ignore failures
     }
   }
 
@@ -1433,6 +1470,54 @@ class HomeScreenState extends State<HomeScreen> {
     }
 
     final List<Widget> slivers = [];
+
+    // "Para ti" personalized section (only when recommendations are available)
+    if (_recommendedPlaces.isNotEmpty && _searchQuery.isEmpty && _selectedCategory == null) {
+      final l10nRec = l10n;
+      final name = _greetingName ?? widget.userName ?? '';
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Row(
+              children: [
+                Icon(Icons.auto_awesome_rounded, size: 16, color: SmarturStyle.purple),
+                const SizedBox(width: 6),
+                Text(
+                  name.isNotEmpty ? l10nRec.recommendationsForYou(name) : 'Para ti',
+                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 15),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      slivers.add(
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: _recommendedPlaces.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, i) {
+                final place = _recommendedPlaces[i];
+                return SizedBox(
+                  width: 140,
+                  child: _PlaceCard(
+                    place: place,
+                    isHero: false,
+                    onTap: () => _openPlaceDetail(_recommendedPlaces, i),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 8)));
+    }
 
     // Hero card (first place)
     slivers.add(

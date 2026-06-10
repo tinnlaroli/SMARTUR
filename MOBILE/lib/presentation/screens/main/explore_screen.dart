@@ -11,7 +11,6 @@ import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
-import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
 import '../../widgets/smartur_user_avatar.dart';
@@ -62,14 +61,12 @@ class _ExploreScreenState extends State<ExploreScreen>
           ],
         ),
       ),
-      body: SmarturBackgroundTop(
-        child: TabBarView(
-          controller: _tabCtrl,
-          children: const [
-            _RoutesTab(),
-            _CommunityTab(),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabCtrl,
+        children: const [
+          _RoutesTab(),
+          _CommunityTab(),
+        ],
       ),
     );
   }
@@ -666,79 +663,85 @@ class _CommunityTabState extends State<_CommunityTab>
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateSheet,
-        backgroundColor: SmarturStyle.purple,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ),
-      body: _error != null && !_loading
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SmarturEmptyState(
-                  icon: Icons.cloud_off_outlined,
-                  title: l10n.connectionError,
-                  subtitle: _error,
-                  action: FilledButton.icon(
-                    onPressed: _load,
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: Text(l10n.mapRetry),
-                  ),
+    final body = _error != null && !_loading
+        ? ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SmarturEmptyState(
+                icon: Icons.cloud_off_outlined,
+                title: l10n.connectionError,
+                subtitle: _error,
+                action: FilledButton.icon(
+                  onPressed: _load,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: Text(l10n.mapRetry),
                 ),
-              ],
-            )
-          : RefreshIndicator(
-              color: SmarturStyle.purple,
-              onRefresh: _load,
-              child: SmarturLoadTransition(
-                loading: _loading,
-                loadingChild: SmarturShimmer(
-                  enabled: true,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 80),
-                    children: const [
-                      SkeletonCommunityPostCard(),
-                      SkeletonCommunityPostCard(),
-                      SkeletonCommunityPostCard(),
-                    ],
-                  ),
-                ),
-                child: _posts.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: [
-                          SmarturEmptyState(
-                            icon: Icons.people_outline,
-                            title: l10n.communityEmpty,
-                            subtitle: l10n.communityEmptyHint,
-                            action: FilledButton.icon(
-                              onPressed: _showCreateSheet,
-                              icon: const Icon(Icons.add_rounded, size: 18),
-                              label: Text(l10n.communityFirstPost),
-                            ),
-                          ),
-                        ],
-                      )
-                    : ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 8, bottom: 80),
-                        itemCount: _posts.length,
-                        itemBuilder: (ctx, i) {
-                          final post = _posts[i];
-                          return _CommunityPostCard(
-                            post: post,
-                            currentUserId: _currentUserId,
-                            onDelete: () => _deletePost(post['id_post'] as int),
-                            onReport: (reason) =>
-                                _reportPost(post['id_post'] as int, reason),
-                          );
-                        },
-                      ),
               ),
+            ],
+          )
+        : RefreshIndicator(
+            color: SmarturStyle.purple,
+            onRefresh: _load,
+            child: SmarturLoadTransition(
+              loading: _loading,
+              loadingChild: SmarturShimmer(
+                enabled: true,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 80),
+                  children: const [
+                    SkeletonCommunityPostCard(),
+                    SkeletonCommunityPostCard(),
+                    SkeletonCommunityPostCard(),
+                  ],
+                ),
+              ),
+              child: _posts.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SmarturEmptyState(
+                          icon: Icons.people_outline,
+                          title: l10n.communityEmpty,
+                          subtitle: l10n.communityEmptyHint,
+                          action: FilledButton.icon(
+                            onPressed: _showCreateSheet,
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: Text(l10n.communityFirstPost),
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(top: 8, bottom: 80),
+                      itemCount: _posts.length,
+                      itemBuilder: (ctx, i) {
+                        final post = _posts[i];
+                        return _CommunityPostCard(
+                          post: post,
+                          currentUserId: _currentUserId,
+                          onDelete: () => _deletePost(post['id_post'] as int),
+                          onReport: (reason) =>
+                              _reportPost(post['id_post'] as int, reason),
+                        );
+                      },
+                    ),
             ),
+          );
+    return Stack(
+      children: [
+        body,
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            onPressed: _showCreateSheet,
+            backgroundColor: SmarturStyle.purple,
+            child: const Icon(Icons.add_rounded, color: Colors.white),
+          ),
+        ),
+      ],
     );
   }
 }
