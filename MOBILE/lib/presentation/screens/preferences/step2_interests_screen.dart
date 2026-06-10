@@ -29,29 +29,29 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     {'key': 'Nightlife', 'label': l10n.interestNightlife, 'icon': Icons.nightlife},
   ];
 
-  List<Map<String, String>> _activityOptions(AppLocalizations l10n) => [
-    {'key': 'Bajo', 'label': l10n.activityLow},
-    {'key': 'Moderado', 'label': l10n.activityModerate},
-    {'key': 'Alto', 'label': l10n.activityHigh},
-    {'key': 'Extremo', 'label': l10n.activityExtreme},
+  List<Map<String, dynamic>> _activityOptions(AppLocalizations l10n) => [
+    {'key': 'Bajo', 'label': l10n.activityLow, 'icon': Icons.directions_walk},
+    {'key': 'Moderado', 'label': l10n.activityModerate, 'icon': Icons.directions_run},
+    {'key': 'Alto', 'label': l10n.activityHigh, 'icon': Icons.fitness_center},
+    {'key': 'Extremo', 'label': l10n.activityExtreme, 'icon': Icons.electric_bolt},
   ];
 
-  List<Map<String, String>> _travelOptions(AppLocalizations l10n) => [
-    {'key': 'Mochilero', 'label': l10n.travelBackpacker},
-    {'key': 'Familiar', 'label': l10n.travelFamily},
-    {'key': 'Lujo', 'label': l10n.travelLuxury},
-    {'key': 'Aventura', 'label': l10n.travelAdventure},
-    {'key': 'Romántico', 'label': l10n.travelRomantic},
-    {'key': 'De negocios', 'label': l10n.travelBusiness},
+  List<Map<String, dynamic>> _travelOptions(AppLocalizations l10n) => [
+    {'key': 'Mochilero', 'label': l10n.travelBackpacker, 'icon': Icons.backpack_outlined},
+    {'key': 'Familiar', 'label': l10n.travelFamily, 'icon': Icons.family_restroom},
+    {'key': 'Lujo', 'label': l10n.travelLuxury, 'icon': Icons.star_outline_rounded},
+    {'key': 'Aventura', 'label': l10n.travelAdventure, 'icon': Icons.terrain},
+    {'key': 'Romántico', 'label': l10n.travelRomantic, 'icon': Icons.favorite_outline_rounded},
+    {'key': 'De negocios', 'label': l10n.travelBusiness, 'icon': Icons.business_center_outlined},
   ];
 
-  List<Map<String, String>> _placeOptions(AppLocalizations l10n) => [
-    {'key': 'Playa', 'label': l10n.placeBeach},
-    {'key': 'Montaña', 'label': l10n.placeMountain},
-    {'key': 'Ciudad', 'label': l10n.placeCity},
-    {'key': 'Campo', 'label': l10n.placeCountryside},
-    {'key': 'Bosque', 'label': l10n.placeForest},
-    {'key': 'Desierto', 'label': l10n.placeDesert},
+  List<Map<String, dynamic>> _placeOptions(AppLocalizations l10n) => [
+    {'key': 'Playa', 'label': l10n.placeBeach, 'icon': Icons.beach_access},
+    {'key': 'Montaña', 'label': l10n.placeMountain, 'icon': Icons.landscape_outlined},
+    {'key': 'Ciudad', 'label': l10n.placeCity, 'icon': Icons.location_city_outlined},
+    {'key': 'Campo', 'label': l10n.placeCountryside, 'icon': Icons.agriculture_outlined},
+    {'key': 'Bosque', 'label': l10n.placeForest, 'icon': Icons.forest_outlined},
+    {'key': 'Desierto', 'label': l10n.placeDesert, 'icon': Icons.wb_sunny_outlined},
   ];
 
   Set<String> _selectedInterests = {};
@@ -184,9 +184,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           spacing: 8,
           runSpacing: 8,
           children: activities.map((item) {
-            final selected = _activityLevel == item['key'];
+            final selected = _activityLevel == item['key'] as String;
             return ChoiceChip(
-              label: Text(item['label']!, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.pink),
+              label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
               selectedColor: SmarturStyle.pink,
@@ -195,7 +196,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(color: selected ? SmarturStyle.pink : SmarturStyle.pink.withValues(alpha: 0.2)),
               ),
-              onSelected: (_) => setState(() => _activityLevel = item['key']),
+              onSelected: (_) => setState(() => _activityLevel = item['key'] as String),
             );
           }).toList(),
         ),
@@ -207,9 +208,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           spacing: 8,
           runSpacing: 8,
           children: travels.map((item) {
-            final selected = _travelType == item['key'];
+            final selected = _travelType == item['key'] as String;
             return ChoiceChip(
-              label: Text(item['label']!, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.blue),
+              label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
               selectedColor: SmarturStyle.blue,
@@ -218,7 +220,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(color: selected ? SmarturStyle.blue : SmarturStyle.blue.withValues(alpha: 0.2)),
               ),
-              onSelected: (_) => setState(() => _travelType = item['key']),
+              onSelected: (_) => setState(() => _travelType = item['key'] as String),
             );
           }).toList(),
         ),
@@ -230,9 +232,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           spacing: 8,
           runSpacing: 8,
           children: places.map((item) {
-            final selected = _preferredPlace == item['key'];
+            final selected = _preferredPlace == item['key'] as String;
             return ChoiceChip(
-              label: Text(item['label']!, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.green),
+              label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
               selectedColor: SmarturStyle.green,
@@ -241,7 +244,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(color: selected ? SmarturStyle.green : SmarturStyle.green.withValues(alpha: 0.2)),
               ),
-              onSelected: (_) => setState(() => _preferredPlace = item['key']),
+              onSelected: (_) => setState(() => _preferredPlace = item['key'] as String),
             );
           }).toList(),
         ),

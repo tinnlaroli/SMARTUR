@@ -12,6 +12,7 @@ import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/user_content_service.dart';
+import '../../widgets/add_to_route_sheet.dart';
 
 class DetailViewPage extends StatefulWidget {
   final String title;
@@ -333,6 +334,20 @@ class _DetailViewPageState extends State<DetailViewPage>
                             color: semantic.onImageText, size: 22),
                       ),
                     ),
+                    if (widget.placeId != null)
+                      Positioned(
+                        top: 8,
+                        right: 112,
+                        child: _GlassCircle(
+                          onTap: () => showAddToRouteSheet(
+                            context,
+                            placeName: widget.title,
+                            placeId: widget.placeId!,
+                          ),
+                          child: Icon(Icons.add_rounded,
+                              color: semantic.onImageText, size: 22),
+                        ),
+                      ),
                     Positioned(
                       top: 8,
                       right: 60,

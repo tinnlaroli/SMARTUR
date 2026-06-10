@@ -9,8 +9,10 @@ import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../data/services/booking_service.dart';
 import '../../../data/services/itinerary_service.dart';
+import '../../../data/services/profile_service.dart';
 import '../social/public_profile_screen.dart';
 import 'planner_screen.dart';
 
@@ -588,11 +590,41 @@ class _BookingSheetState extends State<_BookingSheet> {
   String? _time;
   int _guests = 1;
   bool _saving = false;
+  String? _userName;
+  String? _userEmail;
+  String? _activityLevel;
+  String? _travelType;
 
   @override
   void initState() {
     super.initState();
     _date = widget.initialDate ?? DateTime.now().add(const Duration(days: 1));
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final auth = AuthService();
+      final name = await auth.getUserName();
+      final email = await auth.getUserEmail();
+      final prefs = await ProfileService.fetchMyProfileForPreferences();
+      String? activityLabel;
+      final al = prefs['activity_level'];
+      if (al is int) {
+        if (al <= 1) activityLabel = 'Bajo';
+        else if (al <= 3) activityLabel = 'Moderado';
+        else if (al <= 4) activityLabel = 'Alto';
+        else activityLabel = 'Extremo';
+      }
+      if (mounted) {
+        setState(() {
+          _userName = name;
+          _userEmail = email;
+          _activityLevel = activityLabel;
+          _travelType = prefs['travel_type'] as String?;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -687,6 +719,89 @@ class _BookingSheetState extends State<_BookingSheet> {
             ),
           ),
           const SizedBox(height: 20),
+
+          // Traveler info
+          if (_userName != null || _userEmail != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: const BoxDecoration(
+                          color: SmarturStyle.purple,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          (_userName ?? '?')
+                              .split(' ')
+                              .where((w) => w.isNotEmpty)
+                              .take(2)
+                              .map((w) => w[0])
+                              .join()
+                              .toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_userName != null)
+                              Text(
+                                _userName!,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                            if (_userEmail != null)
+                              Text(
+                                _userEmail!,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_activityLevel != null || _travelType != null) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      children: [
+                        if (_activityLevel != null)
+                          _PrefChip(label: _activityLevel!, color: SmarturStyle.pink),
+                        if (_travelType != null)
+                          _PrefChip(label: _travelType!, color: SmarturStyle.blue),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
 
           // Date row
           _Row(
@@ -828,6 +943,34 @@ class _Row extends StatelessWidget {
           ),
           trailing,
         ],
+      ),
+    );
+  }
+}
+
+class _PrefChip extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _PrefChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 12,
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
