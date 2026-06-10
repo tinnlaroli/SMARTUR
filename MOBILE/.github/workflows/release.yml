@@ -115,30 +115,48 @@ jobs:
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
           TAG="${GITHUB_REF_NAME}"
-          NOTES="$(gh release view "$TAG" --json body --jq '.body' 2>/dev/null || true)"
+          REPO="${GITHUB_REPOSITORY}"
 
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Release $TAG exists — uploading artifacts..."
-            gh release upload "$TAG" \
-              build/app/outputs/flutter-apk/app-release.apk \
-              build/app/outputs/bundle/release/app-release.aab \
-              --clobber
+          # gh CLI is pre-authenticated via GITHUB_TOKEN
+          # Check if release exists
+          EXISTING_ID=$(gh api "repos/${REPO}/releases/tags/${TAG}" --jq '.id' 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING_ID" ]; then
+            echo "Release $TAG exists (id=$EXISTING_ID) — uploading artifacts..."
           else
             echo "Creating release $TAG..."
-            if [ -z "$NOTES" ]; then
-              gh release create "$TAG" \
-                build/app/outputs/flutter-apk/app-release.apk \
-                build/app/outputs/bundle/release/app-release.aab \
-                --generate-notes
-            else
-              gh release create "$TAG" \
-                build/app/outputs/flutter-apk/app-release.apk \
-                build/app/outputs/bundle/release/app-release.aab \
-                --notes "$NOTES"
-            fi
+            gh api "repos/${REPO}/releases" --method POST \
+              --field "tag_name=$TAG" \
+              --field "name=$TAG" \
+              --field "generate_release_notes=true" > /dev/null
+            EXISTING_ID=$(gh api "repos/${REPO}/releases/tags/${TAG}" --jq '.id')
+            echo "Created release id=$EXISTING_ID"
+          fi
+
+          # Upload APK
+          echo "Uploading app-release.apk..."
+          gh api "repos/${REPO}/releases/${EXISTING_ID}/assets?name=app-release.apk" \
+            --method POST \
+            --input "build/app/outputs/flutter-apk/app-release.apk" \
+            --field "content_type=application/vnd.android.package-archive" \
+            --jq '.state' 2>/dev/null || \
+          curl -s -X POST \
+            -H "Authorization: token $(gh auth token)" \
+            "https://uploads.github.com/repos/${REPO}/releases/${EXISTING_ID}/assets?name=app-release.apk" \
+            -H "Content-Type: application/vnd.android.package-archive" \
+            --data-binary "@build/app/outputs/flutter-apk/app-release.apk" | grep -o '"state":"[^"]*"' || echo "APK upload done"
+
+          # Upload AAB
+          if [ -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+            echo "Uploading app-release.aab..."
+            curl -s -X POST \
+              -H "Authorization: token $(gh auth token)" \
+              "https://uploads.github.com/repos/${REPO}/releases/${EXISTING_ID}/assets?name=app-release.aab" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@build/app/outputs/bundle/release/app-release.aab" | grep -o '"state":"[^"]*"' || echo "AAB upload done"
+          else
+            echo "Warning: AAB not found, skipping"
           fi
