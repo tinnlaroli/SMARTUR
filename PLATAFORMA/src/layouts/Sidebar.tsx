@@ -3,6 +3,7 @@ import {
     X, Users, Building2, Wrench, Settings, MapPin,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
     Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
+    ShieldCheck, ClipboardCheck, Route, GitCompare,
 } from 'lucide-react';
 import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,12 +21,13 @@ interface MenuItem {
 }
 
 const MENU_GROUP_KEYS = [
-    { labelKey: 'sidebar.group.principal',      items: ['home'] },
-    { labelKey: 'sidebar.group.gestion',        items: ['users', 'companies', 'services', 'poi', 'locations'] },
-    { labelKey: 'sidebar.group.mobile',         items: ['community', 'contacts', 'profiles'] },
-    { labelKey: 'sidebar.group.certifications', items: ['certifications', 'instruments'] },
-    { labelKey: 'sidebar.group.reports',        items: ['stats'] },
-    { labelKey: 'sidebar.group.system',         items: ['ml', 'notifications', 'settings'] },
+    { labelKey: 'sidebar.group.principal',       items: ['home'] },
+    { labelKey: 'sidebar.group.gestion',         items: ['users', 'companies', 'services', 'poi', 'locations'] },
+    { labelKey: 'sidebar.group.verificacion',    items: ['company-verification', 'services-approval', 'disputes'] },
+    { labelKey: 'sidebar.group.mobile',          items: ['community', 'itineraries', 'contacts', 'profiles'] },
+    { labelKey: 'sidebar.group.certifications',  items: ['certifications', 'templates', 'instruments'] },
+    { labelKey: 'sidebar.group.reports',         items: ['stats'] },
+    { labelKey: 'sidebar.group.system',          items: ['ml', 'notifications', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -48,21 +50,25 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     }, [location.pathname]);
 
     const allItems = useMemo<MenuItem[]>(() => [
-        { id: 'home',           label: t('sidebar.home'),           icon: Home,       path: '/dashboard',                 end: true, roles: [1] },
-        { id: 'users',          label: t('sidebar.users'),          icon: Users,      path: '/dashboard/usuarios',                   roles: [1] },
-        { id: 'companies',      label: t('sidebar.companies'),      icon: Building2,  path: '/dashboard/companias',                  roles: [1] },
-        { id: 'services',       label: t('sidebar.services'),       icon: Wrench,     path: '/dashboard/servicios',                  roles: [1] },
-        { id: 'locations',      label: t('sidebar.locations'),      icon: MapPin,     path: '/dashboard/ubicaciones',                roles: [1] },
-        { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle, path: '/dashboard/perfiles',                   roles: [1] },
-        { id: 'certifications', label: t('sidebar.certifications'), icon: Award,      path: '/dashboard/certificaciones',            roles: [1] },
-        { id: 'poi',            label: t('sidebar.poi'),            icon: Star,       path: '/dashboard/poi',                        roles: [1] },
-        { id: 'community',      label: t('sidebar.community'),      icon: MessageSquare, path: '/dashboard/comunidad',               roles: [1] },
-        { id: 'contacts',       label: t('sidebar.contacts'),       icon: Mail,       path: '/dashboard/contactos',                  roles: [1] },
-        { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,  path: '/dashboard/estadisticas',               roles: [1] },
-        { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,   path: '/dashboard/instrumentos',               roles: [1] },
-        { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit, path: '/dashboard/ml',                       roles: [1] },
-        { id: 'notifications',  label: t('sidebar.notifications'),  icon: Bell,       path: '/dashboard/notificaciones',             roles: [1] },
-        { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,   path: '/dashboard/configuracion',              roles: [1] },
+        { id: 'home',           label: t('sidebar.home'),           icon: Home,          path: '/dashboard',                          end: true, roles: [1, 4] },
+        { id: 'users',          label: t('sidebar.users'),          icon: Users,         path: '/dashboard/usuarios',                            roles: [1] },
+        { id: 'companies',      label: t('sidebar.companies'),      icon: Building2,     path: '/dashboard/companias',                           roles: [1] },
+        { id: 'services',              label: t('sidebar.services'),              icon: Wrench,         path: '/dashboard/servicios',                 roles: [1, 4] },
+        { id: 'locations',             label: t('sidebar.locations'),             icon: MapPin,         path: '/dashboard/ubicaciones',               roles: [1] },
+        { id: 'company-verification',  label: t('sidebar.companyVerification'),   icon: ShieldCheck,    path: '/dashboard/verificacion-empresas',     roles: [1] },
+        { id: 'services-approval',     label: t('sidebar.servicesApproval'),      icon: ClipboardCheck, path: '/dashboard/servicios-pendientes',      roles: [1] },
+        { id: 'disputes',              label: t('sidebar.disputes'),              icon: GitCompare,     path: '/dashboard/disputas',                  roles: [1] },
+        { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle,    path: '/dashboard/perfiles',                            roles: [1] },
+        { id: 'certifications', label: t('sidebar.certifications'), icon: Award,         path: '/dashboard/certificaciones',                     roles: [1, 4] },
+        { id: 'poi',            label: t('sidebar.poi'),            icon: Star,          path: '/dashboard/poi',                                 roles: [1] },
+        { id: 'community',      label: t('sidebar.community'),      icon: MessageSquare, path: '/dashboard/comunidad',                           roles: [1] },
+        { id: 'itineraries',    label: t('sidebar.itineraries'),    icon: Route,         path: '/dashboard/itinerarios',                         roles: [1] },
+        { id: 'contacts',       label: t('sidebar.contacts'),       icon: Mail,          path: '/dashboard/contactos',                           roles: [1] },
+        { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,     path: '/dashboard/estadisticas',                        roles: [1, 4] },
+        { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,      path: '/dashboard/instrumentos',                        roles: [1, 4] },
+        { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit,  path: '/dashboard/ml',                                  roles: [1] },
+        { id: 'notifications',  label: t('sidebar.notifications'),  icon: Bell,          path: '/dashboard/notificaciones',                      roles: [1] },
+        { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,      path: '/dashboard/configuracion',                       roles: [1, 4] },
     ], [t]);
 
     const itemMap = useMemo(() => Object.fromEntries(allItems.map((i) => [i.id, i])), [allItems]);

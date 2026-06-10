@@ -3,6 +3,14 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import { ensureImagePassesModeration } from "../services/imageModerationService.js";
 import { toPublicUser } from "../utils/userPublic.js";
+import AdminChangeLog from "../models/adminChangeLogModel.js";
+import pool from "../config/db.js";
+import { sendFcmToUser } from "../services/fcmService.js";
+
+const USER_FIELD_LABELS = {
+    name:  'Nombre',
+    email: 'Email',
+};
 import {
   validateEmail,
   validatePassword,
@@ -208,6 +216,12 @@ class UserController {
       const targetId = parseInt(req.params.id, 10);
       const isAdmin = req.user && req.user.role_id === 1;
 
+      // Capture old state when admin edits an empresa user
+      let oldTargetUser = null;
+      if (isAdmin) {
+        oldTargetUser = await User.findById(targetId);
+      }
+
       const updates = {};
 
       if (req.body.name !== undefined) {
@@ -244,6 +258,14 @@ class UserController {
       }
 
       if (isAdmin) {
+        if (req.body.email !== undefined) {
+          validateEmail(req.body.email);
+          const existing = await User.findByEmail(req.body.email);
+          if (existing && String(existing.user_id) !== String(targetId)) {
+            return res.status(400).json({ message: 'El email ya está en uso por otro usuario.' });
+          }
+          updates.email = req.body.email.trim().toLowerCase();
+        }
         if (req.body.role_id !== undefined) {
           const roleId = Number(req.body.role_id);
           validateRole(roleId);
@@ -302,6 +324,44 @@ class UserController {
 
       if (!user) {
         return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      // Build change log if admin edited a role_id=3 (empresa) user's name or email
+      if (isAdmin && oldTargetUser && oldTargetUser.role_id === 3 && oldTargetUser.id_company) {
+        const changes = {};
+        for (const field of ['name', 'email']) {
+          const newVal = updates[field];
+          if (newVal === undefined) continue;
+          const oldVal = oldTargetUser[field];
+          if (String(newVal) !== String(oldVal ?? '')) {
+            changes[field] = { old: oldVal, new: newVal, label: USER_FIELD_LABELS[field] };
+          }
+        }
+        if (Object.keys(changes).length > 0) {
+          pool.query('SELECT owner_user_id FROM company WHERE id_company = $1', [oldTargetUser.id_company])
+            .then(async ({ rows }) => {
+              const ownerUserId = rows[0]?.owner_user_id ?? oldTargetUser.user_id;
+              try {
+                const log = await AdminChangeLog.create({
+                  target_type: 'user',
+                  target_id: targetId,
+                  admin_id: req.user.id,
+                  id_company: oldTargetUser.id_company,
+                  changes,
+                });
+                if (ownerUserId) {
+                  await sendFcmToUser(pool, ownerUserId, {
+                    title: 'Smartur actualizó tu perfil',
+                    body: 'Un administrador modificó datos de tu cuenta. Revisa los cambios.',
+                    data: { type: 'admin_change', change_log_id: String(log.id) },
+                  });
+                }
+              } catch (logErr) {
+                console.warn('[user patch] change log/FCM error:', logErr.message);
+              }
+            })
+            .catch(() => {});
+        }
       }
 
       res.json({

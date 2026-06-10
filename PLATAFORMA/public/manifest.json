@@ -1,0 +1,27 @@
+{
+  "name": "SMARTUR Empresa",
+  "short_name": "SMARTUR",
+  "description": "Portal de empresa SMARTUR — Gestiona tus servicios turísticos",
+  "start_url": "/empresa/dashboard",
+  "scope": "/empresa/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f10",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/smartur.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/smartur.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "travel"],
+  "lang": "es-MX"
+}

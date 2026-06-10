@@ -1,13 +1,5 @@
 import jwt from "jsonwebtoken";
 
-export function requireRole(roles) {
-  return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role_id))
-      return res.status(403).json({ message: 'Acceso denegado.' });
-    next();
-  };
-}
-
 /**
  * Middleware: verifyToken
  * Verifica que el request tenga un JWT válido en el header Authorization.

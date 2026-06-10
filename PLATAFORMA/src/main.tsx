@@ -9,7 +9,34 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { UserPreferencesProvider } from './contexts/LanguageContext.tsx';
 import { AuthModalProvider } from './features/auth/context/AuthModalContext.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
-import { initSession } from './shared/api/axiosClient.ts';
+import { initSession, setAccessToken } from './shared/api/axiosClient.ts';
+
+// Consume registration token from LANDING redirect (/empresa/dashboard#token=...&user=...)
+// Must run synchronously before React renders so ProtectedRoute sees the token.
+(function consumeHashToken() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#token=') && !hash.includes('token=')) return;
+    try {
+        const params = new URLSearchParams(hash.replace(/^#/, ''));
+        const token = params.get('token');
+        const userEncoded = params.get('user');
+        if (token) {
+            setAccessToken(token);
+            if (userEncoded) {
+                const user = JSON.parse(atob(decodeURIComponent(userEncoded)));
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+    } catch { /* invalid hash — ignore */ }
+}());
+
+// Register service worker (PWA — empresa portal)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}
 
 // Developer easter egg
 if (import.meta.env.PROD) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AlertCircle, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { DashboardHeader, DashboardLoadingShell } from '../../home/components/DashboardWidgets';
 import { WidgetCatalog } from '../../home/components/WidgetCatalog';
 import { WidgetGrid } from '../../home/components/WidgetGrid';
@@ -7,6 +8,7 @@ import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import { useUserPreferences } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { empresaApi, type AnalyticsResponse, type EmpresaProfile } from '../api/empresaApi';
+import { ActivationStepper } from '../components/ActivationStepper';
 import {
     EmpresaEngagementTrendCard,
     EmpresaKpiStrip,
@@ -48,9 +50,11 @@ const DashboardLoader = ({ label }: { label: string }) => (
 export function EmpresaDashboardPage() {
     const { user, lang } = useUserPreferences();
     const copy = getDashboardText(lang);
+    const navigate = useNavigate();
 
     const [profile, setProfile] = useState<EmpresaProfile | null>(null);
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
+    const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -79,12 +83,22 @@ export function EmpresaDashboardPage() {
         }
         setError(null);
         try {
-            const [profileRes, analyticsRes] = await Promise.all([
-                empresaApi.getProfile(),
-                empresaApi.getAnalytics(),
-            ]);
+            const profileRes = await empresaApi.getProfile();
             setProfile(profileRes.company);
-            setAnalytics(analyticsRes);
+
+            // Only fetch analytics if the company is active
+            if (profileRes.company.status === 'active') {
+                const analyticsRes = await empresaApi.getAnalytics();
+                setAnalytics(analyticsRes);
+            } else {
+                // Fetch KYC status to get rejection reason if any
+                try {
+                    const kycRes = await empresaApi.getKycStatus();
+                    setKycRejectionReason(kycRes.verification?.rejection_reason ?? null);
+                } catch {
+                    // non-critical
+                }
+            }
         } catch {
             setError('dashboard-error');
         } finally {
@@ -223,7 +237,27 @@ export function EmpresaDashboardPage() {
         );
     }
 
-    if (!profile || !analytics || !viewModel) return null;
+    if (!profile) return null;
+
+    // If not active, show activation stepper instead of analytics
+    if (profile.status !== 'active') {
+        return (
+            <div className="max-w-xl mx-auto py-6 px-4">
+                <h1 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+                    Bienvenido, {user?.name?.split(' ')[0] ?? 'Empresa'}
+                </h1>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+                    Activa tu cuenta para empezar a publicar tus servicios turísticos en SMARTUR.
+                </p>
+                <ActivationStepper
+                    status={profile.status}
+                    rejectionReason={kycRejectionReason}
+                />
+            </div>
+        );
+    }
+
+    if (!analytics || !viewModel) return null;
 
     return (
         <div className="relative flex flex-col gap-4">
@@ -237,26 +271,6 @@ export function EmpresaDashboardPage() {
                 onOpenCatalog={openCatalog}
                 onResetGrid={resetGrid}
             />
-
-            {profile.status === 'pending' && (
-                <div
-                    className="flex items-center gap-3 rounded-[20px] border px-4 py-3 sy-fade-up"
-                    style={{
-                        borderColor: `${DASHBOARD_COLORS.warning}50`,
-                        background: `${DASHBOARD_COLORS.warning}0f`,
-                    }}
-                >
-                    <div
-                        className="flex size-8 shrink-0 items-center justify-center rounded-2xl"
-                        style={{ background: `${DASHBOARD_COLORS.warning}20` }}
-                    >
-                        <AlertTriangle className="size-4" style={{ color: DASHBOARD_COLORS.warning }} />
-                    </div>
-                    <p className="flex-1 text-sm font-semibold" style={{ color: DASHBOARD_COLORS.warning }}>
-                        Tu empresa está pendiente de revisión. El equipo de SMARTUR revisará tu información pronto.
-                    </p>
-                </div>
-            )}
 
             <WidgetGrid
                 instances={instances}

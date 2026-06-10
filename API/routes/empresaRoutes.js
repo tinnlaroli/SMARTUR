@@ -3,6 +3,7 @@ import EmpresaController from '../controllers/empresaController.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/rbacMiddleware.js';
 import { requireOwnsCompany } from '../middleware/requireOwnsCompany.js';
+import upload from '../middleware/multer.js';
 
 const router = Router();
 
@@ -87,6 +88,7 @@ router.post(
     verifyToken,
     requireRole([3]),
     requireOwnsCompany,
+    upload.single('image'),
     EmpresaController.createService,
 );
 
@@ -99,6 +101,7 @@ router.patch(
     verifyToken,
     requireRole([3]),
     requireOwnsCompany,
+    upload.single('image'),
     EmpresaController.updateService,
 );
 

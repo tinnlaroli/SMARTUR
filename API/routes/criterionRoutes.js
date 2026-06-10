@@ -14,19 +14,19 @@ router.get(
 router.post(
     '/criterion/register',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     CriterionController.createCriterionController
 );
 router.delete(
     '/criterion/delete/:id_criterion',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     CriterionController.deleteCriterionController
 );
 router.patch(
     '/criterion/update/:id_criterion',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     CriterionController.updateCriterionController
 );
 

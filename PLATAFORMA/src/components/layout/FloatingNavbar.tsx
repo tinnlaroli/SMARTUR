@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage, languages } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Globe, Sun, Moon, LogOut, Menu, X, ExternalLink } from 'lucide-react';
+import { Globe, Sun, Moon, LogOut, Menu, X } from 'lucide-react';
 import logoSrc from '../../assets/landing/logo.png';
 import gsap from 'gsap';
 
@@ -48,6 +49,7 @@ const PremiumButton: React.FC<{
 export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handleStartExperience, scrollToSection, activeSection, user, logout }) => {
     const { theme, toggleTheme } = useTheme();
     const { lang, changeLanguage, t } = useLanguage();
+    const navigate = useNavigate();
 
     const [isNavSmall, setIsNavSmall] = useState(false);
     const [isNavHidden, setIsNavHidden] = useState(false);
@@ -234,25 +236,23 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-5 ml-auto z-[110]">
-                                            {/* "Negocios" — external link, btn-cyan style */}
-                                            <a
-                                                href={import.meta.env.VITE_BUSINESS_URL ?? 'https://smartur.online/'}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                            {/* "Negocios" — navigates to empresa dashboard */}
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate('/empresa/dashboard')}
                                                 className="nav-business-btn hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-px lg:flex whitespace-nowrap"
                                                 style={{ color: 'var(--color-cyan)' }}
                                                 onMouseEnter={e => {
-                                                    (e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-cyan)';
-                                                    (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                                                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-cyan)';
+                                                    (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
                                                 }}
                                                 onMouseLeave={e => {
-                                                    (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
-                                                    (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-cyan)';
+                                                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                                                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-cyan)';
                                                 }}
                                             >
                                                 {t('nav.business')}
-                                                <ExternalLink size={14} className="flex-shrink-0" />
-                                            </a>
+                                            </button>
 
                                             {user ? (
                                                 <button onClick={logout} className="p-2 rounded-full transition-colors" style={{ background: 'rgba(255,71,142,0.1)', color: 'var(--color-pink)' }}>

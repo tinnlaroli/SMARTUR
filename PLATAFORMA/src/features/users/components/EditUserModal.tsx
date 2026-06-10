@@ -1,10 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { UpdateUserDTO } from '../types/types';
-import { Save, X, Camera, User as UserIcon, AlertCircle, Building2, Loader2 } from 'lucide-react';
+import { Save, X, Camera, User as UserIcon, AlertCircle, Building2, Loader2, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { api } from '../../../shared/api/axiosClient';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
+
+function PasswordStrengthRow({ ok, label }: { ok: boolean; label: string }) {
+    return (
+        <div className="flex items-center gap-2 text-xs">
+            {ok
+                ? <CheckCircle className="size-3.5 shrink-0 text-emerald-400" />
+                : <XCircle className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-600" />
+            }
+            <span className={ok ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}>{label}</span>
+        </div>
+    );
+}
+
+const ROLE_LABELS: Record<number, Record<string, string>> = {
+    1: { es: 'Administrador',     en: 'Administrator',   fr: 'Administrateur'         },
+    2: { es: 'Turista',           en: 'Tourist',         fr: 'Touriste'               },
+    3: { es: 'Empresa turística', en: 'Tourism company', fr: 'Entreprise touristique' },
+    4: { es: 'Turismólogo',       en: 'Turismologist',   fr: 'Touristologue'          },
+};
 
 interface Company { id: number; name: string; }
 
@@ -12,6 +31,7 @@ interface Props {
     user: {
         id: number;
         name: string;
+        email: string;
         role_id: number;
         is_active: boolean;
         photo_url: string | null;
@@ -26,9 +46,11 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
     useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
+    const locale = lang === 'fr' ? 'fr' : lang === 'en' ? 'en' : 'es';
 
     const [formData, setFormData] = useState({
         name: user.name,
+        email: user.email,
         password: '',
         role_id: user.role_id,
         is_active: user.is_active,
@@ -37,6 +59,15 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(user.photo_url);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
+
+    const pwChecks = {
+        minLength:    formData.password.length >= 8,
+        hasUpperCase: /[A-Z]/.test(formData.password),
+        hasNumber:    /[0-9]/.test(formData.password),
+        hasSpecial:   /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+    };
+    const pwScore = Object.values(pwChecks).filter(Boolean).length;
 
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loadingCo, setLoadingCo]  = useState(false);
@@ -54,6 +85,8 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
         const e: Record<string, string> = {};
         if (!formData.name.trim()) e.name = mod.users.namePlaceholderShort + ' es obligatorio.';
         else if (/\d/.test(formData.name)) e.name = t('validation.nameNoNumbers');
+        if (!formData.email.trim()) e.email = t('validation.emailRequired');
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = t('validation.emailValid');
         if (formData.password && formData.password.length < 8) e.password = t('validation.passwordMinLength');
         if (formData.role_id === 3 && !formData.id_company) e.id_company = mod.users.companySelect;
         return e;
@@ -89,6 +122,7 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
 
         const dataToSend: UpdateUserDTO = {};
         if (formData.name      !== user.name)      dataToSend.name      = formData.name;
+        if (formData.email     !== user.email)     dataToSend.email     = formData.email;
         if (formData.password.trim())               dataToSend.password  = formData.password;
         if (formData.role_id   !== user.role_id)   dataToSend.role_id   = formData.role_id;
         if (formData.is_active !== user.is_active) dataToSend.is_active = formData.is_active;
@@ -168,19 +202,69 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
                             {errors.name && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.name}</p>}
                         </div>
 
+                        {/* Email */}
+                        <div className="gap-y-1.5 flex flex-col">
+                            <label htmlFor="edit-user-email" className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{mod.users.email}</label>
+                            <input
+                                id="edit-user-email" name="email" type="email" value={formData.email} onChange={handleFieldChange}
+                                className={`w-full rounded-lg px-4 py-2.5 text-sm ${inputFocusCls}`}
+                                style={{ ...inputStyle, ...(errors.email ? { borderColor: '#f87171' } : {}) }}
+                                placeholder="correo@ejemplo.com"
+                            />
+                            {errors.email && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.email}</p>}
+                        </div>
+
                         {/* Contraseña */}
                         <div className="gap-y-1.5 flex flex-col">
                             <label htmlFor="edit-user-password" className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                                 {mod.users.newPassword}
                                 <span className="text-xs font-normal ml-2" style={{ color: 'var(--color-text-alt)' }}>{mod.users.optionalHint}</span>
                             </label>
-                            <input
-                                id="edit-user-password" name="password" type="password" value={formData.password} onChange={handleFieldChange}
-                                className={`w-full rounded-lg px-4 py-2.5 text-sm ${inputFocusCls}`}
-                                style={{ ...inputStyle, ...(errors.password ? { borderColor: '#f87171' } : {}) }}
-                                placeholder={mod.users.passwordLeaveBlank}
-                            />
+                            <div className="relative">
+                                <input
+                                    id="edit-user-password" name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password} onChange={handleFieldChange}
+                                    className={`w-full rounded-lg px-4 py-2.5 pr-11 text-sm ${inputFocusCls}`}
+                                    style={{ ...inputStyle, ...(errors.password ? { borderColor: '#f87171' } : {}) }}
+                                    placeholder={mod.users.passwordLeaveBlank}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(v => !v)}
+                                    className="absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                                    style={{ color: 'var(--color-text-alt)' }}
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {errors.password && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.password}</p>}
+
+                            {formData.password && (
+                                <div className="mt-1 space-y-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3">
+                                    <PasswordStrengthRow ok={pwChecks.minLength}    label={t('auth.password.min')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasUpperCase} label={t('auth.password.uppercase')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasNumber}    label={t('auth.password.number')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasSpecial}   label={t('auth.password.special')} />
+                                    <div className="mt-2 flex gap-1">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <div
+                                                key={i}
+                                                className="h-1 flex-1 rounded-full transition-colors duration-300"
+                                                style={{
+                                                    background: i < pwScore
+                                                        ? pwScore <= 1 ? '#f87171'
+                                                          : pwScore <= 2 ? '#fb923c'
+                                                          : pwScore <= 3 ? '#facc15'
+                                                          : '#34d399'
+                                                        : 'rgb(212,212,216)',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Rol */}
@@ -191,9 +275,9 @@ export default function EditUserModal({ user, onClose, onSubmit }: Props) {
                                 className={`w-full rounded-lg px-4 py-2.5 text-sm cursor-pointer ${inputFocusCls}`}
                                 style={inputStyle}
                             >
-                                <option value={1}>{mod.users.roleAdmin}</option>
-                                <option value={2}>{mod.users.roleUser}</option>
-                                <option value={3}>{mod.users.roleEmpresa}</option>
+                                {[1, 2, 3, 4].map(id => (
+                                    <option key={id} value={id}>{ROLE_LABELS[id][locale]}</option>
+                                ))}
                             </select>
                         </div>
 

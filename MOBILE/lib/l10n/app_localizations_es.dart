@@ -189,6 +189,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navHome => 'Inicio';
 
   @override
+  String get navExplore => 'Explorar';
+
+  @override
+  String get navRoutes => 'Mis Rutas';
+
+  @override
   String get navDiary => 'Diario';
 
   @override
@@ -199,6 +205,82 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get navUser => 'Usuario';
+
+  @override
+  String get exploreTitle => 'Explorar';
+
+  @override
+  String get routesSectionLabel => 'Rutas';
+
+  @override
+  String get routesSectionCertified => 'Rutas certificadas SMARTUR';
+
+  @override
+  String get routesSectionMostCopied => 'Más copiadas';
+
+  @override
+  String get routesSectionFollowing => 'De personas que sigues';
+
+  @override
+  String get routesFollowingEmpty => 'Sigue a viajeros para ver sus rutas aquí';
+
+  @override
+  String get searchRoutesHint => 'Buscar rutas o usuarios...';
+
+  @override
+  String get seeAll => 'Ver todo';
+
+  @override
+  String get misRutasTitle => 'Mis Rutas';
+
+  @override
+  String get misRutasEmptyTitle => 'Aún no tienes rutas';
+
+  @override
+  String get misRutasEmptySubtitle =>
+      'Crea tu primera ruta y comienza a planificar tu próxima aventura';
+
+  @override
+  String get misRutasCreate => 'Nueva ruta';
+
+  @override
+  String get profileTabProfile => 'Perfil';
+
+  @override
+  String get addToRoute => 'Agregar a ruta';
+
+  @override
+  String get createNewRoute => 'Nueva ruta';
+
+  @override
+  String get genrePickerTitle => '¿Qué te gusta explorar?';
+
+  @override
+  String get genrePickerSubtitle => 'Elige hasta 3 temas que más te interesan';
+
+  @override
+  String get genrePickerContinue => 'Continuar';
+
+  @override
+  String get genrePickerSkip => 'Saltar por ahora';
+
+  @override
+  String get genreNature => 'Naturaleza';
+
+  @override
+  String get genreAdventure => 'Aventura';
+
+  @override
+  String get genreGastronomy => 'Gastronomía';
+
+  @override
+  String get genreCulture => 'Cultura';
+
+  @override
+  String get genreRelax => 'Relax';
+
+  @override
+  String get genreHistory => 'Historia';
 
   @override
   String get communityTitle => 'Comunidad';
@@ -1281,4 +1363,227 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get googleSignInReleaseConfig =>
       'Esta versión de la app no tiene Google Sign-In configurado. El administrador debe registrar el SHA del keystore de release en Firebase.';
+
+  @override
+  String get communityEmpty => 'No hay publicaciones todavía';
+
+  @override
+  String get communityEmptyHint => 'Sé el primero en compartir tu experiencia';
+
+  @override
+  String get communityFirstPost => 'Crear publicación';
+
+  @override
+  String get communityPostHint => '¿Qué quieres compartir?';
+
+  @override
+  String get communityReport => 'Reportar';
+
+  @override
+  String get communityReportTitle => '¿Por qué reportas esta publicación?';
+
+  @override
+  String get communityReportOther => 'Otro motivo';
+
+  @override
+  String get plannerTitle => 'Planificador';
+
+  @override
+  String get plannerDelete => 'Eliminar ruta';
+
+  @override
+  String get plannerDeleteConfirm => '¿Eliminar esta ruta permanentemente?';
+
+  @override
+  String get plannerAddStop => 'Agregar parada';
+
+  @override
+  String get plannerNoStops => 'Sin paradas';
+
+  @override
+  String get plannerNoStopsSubtitle =>
+      'Toca + en cualquier lugar para agregar paradas';
+
+  @override
+  String get plannerOptimize => 'Optimizar con IA';
+
+  @override
+  String get plannerOptimizeComingSoon => 'Próximamente en SMARTUR';
+
+  @override
+  String get plannerRouteName => 'Nombre de la ruta';
+
+  @override
+  String get plannerRouteNameHint => 'Ej: Mi ruta en Xalapa';
+
+  @override
+  String get plannerMakePublic => 'Hacer ruta pública';
+
+  @override
+  String get plannerStopDate => 'Fecha de visita';
+
+  @override
+  String get plannerStopNotes => 'Notas';
+
+  @override
+  String get plannerStopDelete => 'Quitar parada';
+
+  @override
+  String itineraryNStops(int n) {
+    return '$n paradas';
+  }
+
+  @override
+  String get itineraryCertified => 'Certificada SMARTUR';
+
+  @override
+  String get itineraryCopy => 'Copiar ruta';
+
+  @override
+  String get itineraryCopied => 'Ruta copiada';
+
+  @override
+  String get itineraryDetail => 'Detalle de ruta';
+
+  @override
+  String get itineraryPublic => 'Pública';
+
+  @override
+  String get itineraryPrivate => 'Privada';
+
+  @override
+  String get itineraryStops => 'Paradas';
+
+  @override
+  String get routesLoadError => 'Error al cargar rutas';
+
+  @override
+  String get socialFollow => 'Seguir';
+
+  @override
+  String get socialFollowing => 'Siguiendo';
+
+  @override
+  String get socialUnfollow => 'Dejar de seguir';
+
+  @override
+  String get socialFollowers => 'Seguidores';
+
+  @override
+  String socialFollowersCount(int n) {
+    return '$n seguidores';
+  }
+
+  @override
+  String socialFollowingCount(int n) {
+    return '$n siguiendo';
+  }
+
+  @override
+  String get socialSearchUsers => 'Buscar usuarios...';
+
+  @override
+  String get socialNoResults => 'No se encontraron usuarios';
+
+  @override
+  String get publicRoutes => 'Rutas públicas';
+
+  @override
+  String get noPublicRoutes => 'Sin rutas públicas aún';
+
+  @override
+  String get copyToMyRoutes => 'Copiar a mis rutas';
+
+  @override
+  String get routeCopied => 'Ruta copiada a Mis Rutas';
+
+  @override
+  String get viewProfile => 'Ver perfil';
+
+  @override
+  String get compareTitle => 'Comparar Rutas';
+
+  @override
+  String get compareYourRoute => 'Tu ruta';
+
+  @override
+  String get compareOptimized => 'Ruta optimizada';
+
+  @override
+  String get compareDistanceLabel => 'Distancia';
+
+  @override
+  String get compareSavingsLabel => 'Ahorro';
+
+  @override
+  String get compareMoreEfficient => 'más eficiente';
+
+  @override
+  String get compareKeep => 'Mantener mi ruta';
+
+  @override
+  String get compareApply => 'Usar ruta optimizada';
+
+  @override
+  String get compareLoading => 'Optimizando con IA...';
+
+  @override
+  String get compareApplied => 'Ruta optimizada aplicada';
+
+  @override
+  String get compareMinStops => 'Necesitas al menos 2 paradas con ubicación';
+
+  @override
+  String get bookingTitle => 'Reservar servicio';
+
+  @override
+  String get bookingDate => 'Fecha de visita';
+
+  @override
+  String get bookingTime => 'Hora (opcional)';
+
+  @override
+  String get bookingGuests => 'Personas';
+
+  @override
+  String get bookingNotes => 'Notas (opcional)';
+
+  @override
+  String get bookingConfirm => 'Confirmar reserva';
+
+  @override
+  String get bookingSuccess => 'Reserva enviada con éxito';
+
+  @override
+  String get bookingStatusPending => 'Pendiente';
+
+  @override
+  String get bookingStatusConfirmed => 'Confirmada';
+
+  @override
+  String get bookingStatusCancelled => 'Cancelada';
+
+  @override
+  String get bookingMyBookings => 'Mis reservas';
+
+  @override
+  String get bookingNoBookings => 'Sin reservas aún';
+
+  @override
+  String get bookingCancel => 'Cancelar reserva';
+
+  @override
+  String get chatTitle => 'Mensajes';
+
+  @override
+  String get chatSend => 'Enviar';
+
+  @override
+  String get chatNoConversations => 'Sin conversaciones aún';
+
+  @override
+  String get chatTypeHere => 'Escribe un mensaje...';
+
+  @override
+  String get chatContact => 'Contactar empresa';
 }

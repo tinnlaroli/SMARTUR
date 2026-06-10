@@ -48,7 +48,6 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
     const { company, isLoading, error, findById } = useCompany();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
-    const [updatingStatus, setUpdatingStatus] = useState(false);
     const { t, lang } = useLanguage();
     const impactOptions = useMemo(() => [
         { label: t('activity.modal.impactLow'), value: 'bajo' },
@@ -130,17 +129,6 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
             // noop
         } finally {
             setSavingActivity(false);
-        }
-    };
-
-    const handleStatusChange = async (newStatus: CompanyStatus) => {
-        if (!companyId) return;
-        setUpdatingStatus(true);
-        try {
-            await updateCompany(companyId, { status: newStatus });
-            await findById(companyId); // refrescar datos del modal
-        } finally {
-            setUpdatingStatus(false);
         }
     };
 
@@ -232,47 +220,14 @@ const CompanyDetailModal: React.FC<Props> = ({ isOpen, onClose, companyId, updat
                             </div>
 
                             {/* ── Estado de la empresa ── */}
-                            <div className="flex items-center justify-between rounded-xl border px-4 py-3"
+                            <div className="flex items-center gap-2 rounded-xl border px-4 py-3"
                                 style={{ borderColor: 'var(--color-border, #e4e4e7)', background: 'var(--color-bg-alt, #f4f4f5)' }}>
-                                <div className="flex items-center gap-2">
-                                    {company.status === 'active'    && <ShieldCheck className="size-4 text-emerald-500" />}
-                                    {company.status === 'pending'   && <ShieldAlert className="size-4 text-amber-500" />}
-                                    {company.status === 'suspended' && <ShieldX className="size-4 text-rose-500" />}
-                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLASS[company.status ?? 'active']}`}>
-                                        {STATUS_LABEL[company.status ?? 'active']}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {updatingStatus && <Loader2 className="size-4 animate-spin text-zinc-400" />}
-                                    {!updatingStatus && company.status !== 'active' && (
-                                        <button
-                                            onClick={() => handleStatusChange('active')}
-                                            className="flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
-                                        >
-                                            <ShieldCheck className="size-3" />
-                                            Aprobar
-                                        </button>
-                                    )}
-                                    {!updatingStatus && company.status !== 'suspended' && (
-                                        <button
-                                            onClick={() => handleStatusChange('suspended')}
-                                            className="flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition-colors"
-                                        >
-                                            <ShieldX className="size-3" />
-                                            Suspender
-                                        </button>
-                                    )}
-                                    {!updatingStatus && company.status !== 'pending' && (
-                                        <button
-                                            onClick={() => handleStatusChange('pending')}
-                                            className="flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                                            style={{ borderColor: 'var(--color-border, #e4e4e7)' }}
-                                        >
-                                            <ShieldAlert className="size-3" />
-                                            Marcar pendiente
-                                        </button>
-                                    )}
-                                </div>
+                                {company.status === 'active'    && <ShieldCheck className="size-4 text-emerald-500" />}
+                                {company.status === 'pending'   && <ShieldAlert className="size-4 text-amber-500" />}
+                                {company.status === 'suspended' && <ShieldX className="size-4 text-rose-500" />}
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLASS[company.status ?? 'active']}`}>
+                                    {STATUS_LABEL[company.status ?? 'active']}
+                                </span>
                             </div>
 
                             <div className="grid grid-cols-2 gap-y-5 gap-x-4">

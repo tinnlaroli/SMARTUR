@@ -38,7 +38,7 @@ const t = useTranslations(lang);
               {...cta}
               arrow
               color="primary-alt"
-              class="cta"
+              class="cta hero-cta-btn"
               ariaLabel={t("hero.scrollDownAriaLabel")}
             />
             <div class="cta-shimmer" />
@@ -431,4 +431,26 @@ const t = useTranslations(lang);
       }
     });
   }
+
+  // Hero CTA → scroll to #empresa (prevents page reload on hash click)
+  function bindHeroCta() {
+    const ctaBtn = document.querySelector("a.hero-cta-btn");
+    if (!ctaBtn) return;
+    ctaBtn.addEventListener("click", (e) => {
+      const href = (ctaBtn as HTMLAnchorElement).getAttribute("href");
+      if (!href || !href.startsWith("#")) return;
+      e.preventDefault();
+      const target = document.getElementById(href.slice(1));
+      if (!target) return;
+      const smoother = (window as any).__smoother__;
+      if (smoother) {
+        smoother.scrollTo(href, true, "top top");
+      } else {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, { once: false });
+  }
+
+  bindHeroCta();
+  document.addEventListener("astro:page-load", bindHeroCta);
 </script>

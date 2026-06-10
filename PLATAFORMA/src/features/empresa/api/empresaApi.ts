@@ -1,17 +1,51 @@
 import { api } from '../../../shared/api/axiosClient';
 import axios from 'axios';
 
+export type EmpresaStatus =
+    | 'pending_docs'
+    | 'documents_submitted'
+    | 'active'
+    | 'rejected'
+    | 'suspended';
+
 export interface EmpresaProfile {
     id_company: number;
     name: string;
     address: string | null;
     phone: string | null;
-    status: 'pending' | 'active' | 'suspended';
+    status: EmpresaStatus;
     id_sector: number;
     id_location: number | null;
     registration_date: string;
     sector_name: string;
     location_name: string | null;
+}
+
+export interface KycVerification {
+    id_verification: number;
+    id_company: number;
+    owner_full_name: string | null;
+    owner_birth_date: string | null;
+    owner_curp: string | null;
+    owner_rfc: string | null;
+    owner_street: string | null;
+    owner_colonia: string | null;
+    owner_municipio: string | null;
+    owner_state: string | null;
+    owner_zip: string | null;
+    ine_front_url: string | null;
+    ine_back_url: string | null;
+    address_proof_url: string | null;
+    submitted_at: string | null;
+    reviewed_at: string | null;
+    rejection_reason: string | null;
+    resubmission_count: number;
+}
+
+export interface KycStatusResponse {
+    status: EmpresaStatus;
+    company_name: string;
+    verification: KycVerification | null;
 }
 
 export interface EmpresaService {
@@ -20,9 +54,15 @@ export interface EmpresaService {
     description: string | null;
     service_type: string | null;
     active: boolean;
+    status: 'pending_review' | 'active' | 'rejected';
     image_url: string | null;
     id_location: number | null;
     id_company?: number;
+    price_from?: number | null;
+    price_to?: number | null;
+    currency?: string;
+    duration_minutes?: number | null;
+    contact_phone?: string | null;
 }
 
 export interface ServiceCreatePayload {
@@ -31,6 +71,12 @@ export interface ServiceCreatePayload {
     service_type: string;
     id_location?: number;
     active?: boolean;
+    price_from?: number | null;
+    price_to?: number | null;
+    currency?: string;
+    duration_minutes?: number | null;
+    contact_phone?: string;
+    image?: File | null;
 }
 
 export interface ServiceUpdatePayload {
@@ -39,6 +85,12 @@ export interface ServiceUpdatePayload {
     service_type?: string;
     active?: boolean;
     id_location?: number;
+    price_from?: number | null;
+    price_to?: number | null;
+    currency?: string;
+    duration_minutes?: number | null;
+    contact_phone?: string;
+    image?: File | null;
 }
 
 export interface AnalyticsSummary {
@@ -123,12 +175,24 @@ export const empresaApi = {
     },
 
     createService: async (payload: ServiceCreatePayload): Promise<{ service: EmpresaService }> => {
-        const { data } = await api.post('/empresa/services', payload);
+        const fd = new FormData();
+        const { image, ...rest } = payload;
+        Object.entries(rest).forEach(([k, v]) => { if (v !== undefined && v !== null) fd.append(k, String(v)); });
+        if (image) fd.append('image', image);
+        const { data } = await api.post('/empresa/services', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         return data;
     },
 
     updateService: async (id: number, payload: ServiceUpdatePayload): Promise<{ service: EmpresaService }> => {
-        const { data } = await api.patch(`/empresa/services/${id}`, payload);
+        const fd = new FormData();
+        const { image, ...rest } = payload;
+        Object.entries(rest).forEach(([k, v]) => { if (v !== undefined) fd.append(k, v === null ? '' : String(v)); });
+        if (image) fd.append('image', image);
+        const { data } = await api.patch(`/empresa/services/${id}`, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         return data;
     },
 
@@ -143,6 +207,23 @@ export const empresaApi = {
 
     getEvaluations: async (): Promise<EvaluationsResponse> => {
         const { data } = await api.get('/empresa/evaluations');
+        return data;
+    },
+
+    getKycStatus: async (): Promise<KycStatusResponse> => {
+        const { data } = await api.get('/empresa/verification');
+        return data;
+    },
+
+    submitKyc: async (formData: FormData): Promise<{ message: string; verification: KycVerification }> => {
+        const { data } = await api.post('/empresa/verification', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return data;
+    },
+
+    getLocations: async (): Promise<{ id_location: number; name: string }[]> => {
+        const { data } = await api.get('/locations');
         return data;
     },
 };

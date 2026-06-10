@@ -18,7 +18,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
             description: `Este tour rápido te guiará por los módulos del panel. Usa ${kw('→ / ←')} para avanzar o retroceder, ${kw('Esc')} para salir. ${dim('El tour navega automáticamente a cada módulo.')}`,
         },
         {
-            title: 'Dashboard',
+            title: 'Panel',
             description: `Tu panel central. Ve ${kw('KPIs de calidad')}, gráfica de actividad mensual, distribución de usuarios y el ranking de servicios mejor evaluados. ${dim('Se actualiza en tiempo real.')}`,
         },
         {
@@ -64,6 +64,22 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
         {
             title: 'Instrumentos de Evaluación',
             description: `Crea y edita ${kw('rúbricas de evaluación')} para servicios. Define criterios, pesos y niveles de calificación. ${dim('Las plantillas se aplican cuando un evaluador califica un servicio.')}`,
+        },
+        {
+            title: 'Notificaciones Push',
+            description: `Envía ${kw('notificaciones push')} a turistas, empresas o todos los usuarios a la vez. Incluye vista previa en tiempo real del mensaje. ${dim('Requiere Firebase configurado en el servidor.')}`,
+        },
+        {
+            title: 'Verificación de Empresas',
+            description: `Revisa las ${kw('solicitudes KYC')} de empresas: INE, comprobante de domicilio, CURP y RFC del propietario. Aprueba o rechaza con motivo. ${dim('Las empresas aprobadas acceden al portal B2B completo.')}`,
+        },
+        {
+            title: 'Servicios Pendientes',
+            description: `Aprueba o rechaza ${kw('servicios turísticos')} enviados por empresas antes de que sean visibles en la app. ${dim('Solo los servicios aprobados aparecen en recomendaciones.')}`,
+        },
+        {
+            title: 'Rutas Certificadas',
+            description: `Gestiona itinerarios públicos y otorga el ${kw('sello SMARTUR')} a las mejores rutas de la comunidad. Las rutas certificadas tienen prioridad en el explorador. ${dim('Selección masiva disponible con checkboxes.')}`,
         },
         {
             title: 'Configuración',
@@ -124,6 +140,22 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
             description: `Create and edit ${kw('evaluation rubrics')} for services. Define criteria, weights and scoring levels. ${dim('Templates are applied when an evaluator rates a service.')}`,
         },
         {
+            title: 'Push Notifications',
+            description: `Send ${kw('push notifications')} to tourists, businesses or all users at once. Includes live message preview. ${dim('Requires Firebase configured on the server.')}`,
+        },
+        {
+            title: 'Company Verification',
+            description: `Review ${kw('KYC requests')} from businesses: owner ID, proof of address, CURP and RFC. Approve or reject with a reason. ${dim('Approved companies get full access to the B2B portal.')}`,
+        },
+        {
+            title: 'Pending Services',
+            description: `Approve or reject ${kw('tourist services')} submitted by companies before they appear in the app. ${dim('Only approved services appear in recommendations.')}`,
+        },
+        {
+            title: 'Certified Routes',
+            description: `Manage public itineraries and award the ${kw('SMARTUR badge')} to the best community routes. Certified routes get priority in the explorer. ${dim('Bulk selection available with checkboxes.')}`,
+        },
+        {
             title: 'Settings',
             description: `Adjust ${kw('language')}, visual theme (light/dark), panel alerts and account details. ${dim('Changes are saved automatically in this browser.')}`,
         },
@@ -182,6 +214,22 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
             description: `Créez et éditez des ${kw('grilles d\'évaluation')} pour les services. Définissez critères, poids et niveaux. ${dim('Les modèles sont appliqués quand un évaluateur note un service.')}`,
         },
         {
+            title: 'Notifications Push',
+            description: `Envoyez des ${kw('notifications push')} aux touristes, aux entreprises ou à tous les utilisateurs. Aperçu du message en temps réel. ${dim('Nécessite Firebase configuré sur le serveur.')}`,
+        },
+        {
+            title: 'Vérification des Entreprises',
+            description: `Examinez les ${kw('demandes KYC')} des entreprises : CNI, justificatif de domicile, CURP et RFC du propriétaire. Approuvez ou refusez avec un motif. ${dim('Les entreprises approuvées accèdent au portail B2B complet.')}`,
+        },
+        {
+            title: 'Services en Attente',
+            description: `Approuvez ou refusez les ${kw('services touristiques')} soumis par les entreprises avant leur publication. ${dim('Seuls les services approuvés apparaissent dans les recommandations.')}`,
+        },
+        {
+            title: 'Itinéraires Certifiés',
+            description: `Gérez les itinéraires publics et attribuez le ${kw('label SMARTUR')} aux meilleures routes communautaires. Les routes certifiées sont prioritaires dans l'explorateur. ${dim('Sélection multiple disponible avec les cases à cocher.')}`,
+        },
+        {
             title: 'Paramètres',
             description: `Ajustez la ${kw('langue')}, le thème visuel, les alertes et les détails du compte. ${dim('Les modifications sont enregistrées automatiquement dans ce navigateur.')}`,
         },
@@ -205,8 +253,12 @@ const STEP_ELEMENTS: (string | undefined)[] = [
     '#sidebar-item-contacts',        // 9 Contacts
     '#sidebar-item-stats',           // 10 Statistics
     '#sidebar-item-ml',              // 11 ML
-    '#sidebar-item-instruments',     // 12 Instruments
-    '#sidebar-item-settings',        // 13 Settings
+    '#sidebar-item-instruments',          // 12 Instruments
+    '#sidebar-item-notifications',        // 13 Notifications
+    '#sidebar-item-company-verification', // 14 Company verification
+    '#sidebar-item-services-approval',    // 15 Services approval
+    '#sidebar-item-itineraries',          // 16 Certified routes
+    '#sidebar-item-settings',             // 17 Settings
 ];
 
 /** Route to navigate to when each step highlights */
@@ -224,6 +276,10 @@ const STEP_ROUTES: (string | undefined)[] = [
     '/dashboard/estadisticas',
     '/dashboard/ml',
     '/dashboard/instrumentos',
+    '/dashboard/notificaciones',
+    '/dashboard/verificacion-empresas',
+    '/dashboard/servicios-pendientes',
+    '/dashboard/itinerarios',
     '/dashboard/configuracion',
 ];
 

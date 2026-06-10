@@ -371,13 +371,13 @@ export const StatisticsPage = () => {
 
             {/* Content */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync" initial={false}>
                     <motion.div
                         key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.18 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.12 }}
                         className="rounded-2xl border p-5 shadow-sm"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >

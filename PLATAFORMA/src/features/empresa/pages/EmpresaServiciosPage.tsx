@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import axios from 'axios';
-import { Wrench, Plus, Loader2, X, AlertCircle } from 'lucide-react';
+import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle } from 'lucide-react';
 import {
     empresaApi,
     type EmpresaService,
@@ -27,34 +27,50 @@ interface ServiceModalProps {
     onSaved: (svc: EmpresaService) => void;
 }
 
+const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+    pending_review: { label: 'En revisión',  color: '#F59E0B', bg: '#F59E0B18' },
+    active:         { label: 'Aprobado',     color: '#10B981', bg: '#10B98118' },
+    rejected:       { label: 'Rechazado',    color: '#EF4444', bg: '#EF444418' },
+};
+
 function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceModalProps) {
     const toast = useToast();
     const { t } = useLanguage();
     const isEdit = !!initial;
+    const imgInputRef = useRef<HTMLInputElement>(null);
+
     const [form, setForm] = useState({
-        name: initial?.name ?? '',
-        description: initial?.description ?? '',
-        service_type: initial?.service_type ?? 'tour',
-        active: initial?.active ?? true,
+        name:             initial?.name            ?? '',
+        description:      initial?.description     ?? '',
+        service_type:     initial?.service_type    ?? 'tour',
+        active:           initial?.active          ?? true,
+        price_from:       initial?.price_from      != null ? String(initial.price_from) : '',
+        price_to:         initial?.price_to        != null ? String(initial.price_to)   : '',
+        currency:         initial?.currency        ?? 'MXN',
+        duration_minutes: initial?.duration_minutes != null ? String(initial.duration_minutes) : '',
+        contact_phone:    initial?.contact_phone   ?? '',
     });
+    const [imageFile, setImageFile]       = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(initial?.image_url ?? null);
+    const [saving, setSaving]             = useState(false);
+    const [error, setError]               = useState<string | null>(null);
+
     const typeOptions = useMemo(() => {
-        const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((option) => option.value);
+        const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((o) => o.value);
         if (form.service_type && !known.includes(form.service_type as typeof known[number])) {
             return [{ value: form.service_type, label: form.service_type }, ...EMPRESA_SERVICE_TYPE_OPTIONS];
         }
         return EMPRESA_SERVICE_TYPE_OPTIONS;
     }, [form.service_type]);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-    ) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setForm((f) => ({
-            ...f,
-            [name]: name === 'active' ? value === 'true' : value,
-        }));
+        setForm((f) => ({ ...f, [name]: name === 'active' ? value === 'true' : value }));
+    };
+
+    const handleImage = (file: File) => {
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -71,22 +87,27 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
         setSaving(true);
         setError(null);
         try {
-            const payload = {
-                name: form.name.trim(),
-                description: form.description?.trim() || undefined,
-                service_type: form.service_type,
+            const base = {
+                name:             form.name.trim(),
+                description:      form.description?.trim() || undefined,
+                service_type:     form.service_type,
+                price_from:       form.price_from  ? parseFloat(form.price_from)  : null,
+                price_to:         form.price_to    ? parseFloat(form.price_to)    : null,
+                currency:         form.currency    || 'MXN',
+                duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null,
+                contact_phone:    form.contact_phone?.trim() || undefined,
+                image:            imageFile,
             };
 
             if (isEdit && initial) {
                 const { service } = await empresaApi.updateService(initial.id_service, {
-                    ...payload,
-                    active: form.active,
+                    ...base, active: form.active,
                 } as ServiceUpdatePayload);
                 toast.success(t('empresa.servicios.toast.updated'));
                 onSaved(service);
             } else {
                 const { service } = await empresaApi.createService({
-                    ...payload,
+                    ...base,
                     id_location: defaultLocationId ?? undefined,
                     active: form.active,
                 } as ServiceCreatePayload);
@@ -95,8 +116,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
             }
         } catch (err) {
             const message = axios.isAxiosError(err)
-                ? (err.response?.data as { message?: string } | undefined)?.message
-                    ?? 'Error al guardar el servicio.'
+                ? (err.response?.data as { message?: string } | undefined)?.message ?? 'Error al guardar el servicio.'
                 : 'Error al guardar el servicio.';
             setError(message);
             toast.error(message);
@@ -105,161 +125,262 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
         }
     };
 
+    const inputCls = "w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 transition";
+    const inputStyle = {
+        background: 'var(--color-bg-alt)',
+        borderColor: 'var(--color-border)',
+        color: 'var(--color-text)',
+        ['--tw-ring-color' as string]: 'var(--color-purple)',
+    };
+    const labelCls = "block text-xs font-semibold uppercase tracking-wider mb-1.5";
+    const labelStyle = { color: 'var(--color-text-alt)' };
+
+    const approvalBadge = isEdit && initial?.status ? STATUS_BADGE[initial.status] : null;
+
     return (
-        /* Backdrop */
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
             <div
-                className="w-full max-w-lg rounded-2xl border p-6 space-y-5"
-                style={{
-                    background: 'var(--color-bg)',
-                    borderColor: 'var(--color-border)',
-                }}
+                className="w-full max-w-2xl rounded-2xl border flex flex-col max-h-[92vh]"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
-                        {isEdit ? t('empresa.servicios.modal.editTitle') : t('empresa.servicios.modal.createTitle')}
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-lg p-1.5 transition-colors hover:bg-white/10"
-                        style={{ color: 'var(--color-text-alt)' }}
-                    >
-                        <X size={16} />
-                    </button>
+                <div className="flex items-center justify-between px-6 py-4 border-b shrink-0"
+                    style={{ borderColor: 'var(--color-border)' }}>
+                    <div>
+                        <h2 className="text-base font-bold" style={{ color: 'var(--color-text)' }}>
+                            {isEdit ? t('empresa.servicios.modal.editTitle') : t('empresa.servicios.modal.createTitle')}
+                        </h2>
+                        {!isEdit && (
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                El servicio será revisado por el equipo SMARTUR antes de publicarse.
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {approvalBadge && (
+                            <span className="flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-semibold"
+                                style={{ color: approvalBadge.color, background: approvalBadge.bg, borderColor: `${approvalBadge.color}30` }}>
+                                {initial?.status === 'active' && <CheckCircle className="size-3" />}
+                                {approvalBadge.label}
+                            </span>
+                        )}
+                        <button type="button" onClick={onClose}
+                            className="rounded-lg p-1.5 hover:opacity-70 transition-opacity"
+                            style={{ color: 'var(--color-text-alt)' }}>
+                            <X size={16} />
+                        </button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Nombre */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            {t('empresa.servicios.modal.name')} <span style={{ color: 'var(--color-pink)' }}>*</span>
-                        </label>
-                        <input
-                            name="name"
-                            value={form.name}
-                            onChange={handleChange}
-                            maxLength={120}
-                            placeholder={t('empresa.servicios.modal.namePlaceholder')}
-                            className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text)',
-                            }}
-                        />
-                    </div>
+                {/* Body — scrollable */}
+                <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
+                    <div className="px-6 py-5 space-y-5">
 
-                    {/* Tipo */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            {t('empresa.servicios.modal.serviceType')} <span style={{ color: 'var(--color-pink)' }}>*</span>
-                        </label>
-                        <select
-                            name="service_type"
-                            value={form.service_type}
-                            onChange={handleChange}
-                            className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none appearance-none"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: form.service_type ? 'var(--color-text)' : 'var(--color-text-alt)',
-                            }}
-                        >
-                            <option value="">{t('empresa.servicios.modal.selectType')}</option>
-                            {typeOptions.map((option) => (
-                                <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {isEdit && (
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                                {t('empresa.servicios.modal.status')}
+                        {/* Image upload */}
+                        <div>
+                            <label className={labelCls} style={labelStyle}>
+                                <span className="flex items-center gap-1.5"><ImageIcon className="size-3" /> Foto del servicio</span>
                             </label>
-                            <select
-                                name="active"
-                                value={form.active ? 'true' : 'false'}
-                                onChange={handleChange}
-                                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none appearance-none"
-                                style={{
-                                    background: 'var(--color-bg-alt)',
-                                    borderColor: 'var(--color-border)',
-                                    color: 'var(--color-text)',
-                                }}
-                            >
-                                <option value="true">{t('empresa.servicios.modal.active')}</option>
-                                <option value="false">{t('empresa.servicios.modal.inactive')}</option>
-                            </select>
+                            {imagePreview ? (
+                                <div className="relative rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--color-border)' }}>
+                                    <img src={imagePreview} alt="preview" className="w-full h-44 object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => { setImageFile(null); setImagePreview(null); }}
+                                        className="absolute top-2 right-2 rounded-xl p-1.5 text-white"
+                                        style={{ background: 'rgba(0,0,0,0.55)' }}
+                                    >
+                                        <X className="size-3.5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => imgInputRef.current?.click()}
+                                        className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white"
+                                        style={{ background: 'rgba(0,0,0,0.55)' }}
+                                    >
+                                        <Upload className="size-3" /> Cambiar
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => imgInputRef.current?.click()}
+                                    onDragOver={e => e.preventDefault()}
+                                    onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleImage(f); }}
+                                    className="flex w-full items-center gap-3 rounded-2xl border-2 border-dashed px-4 py-5 transition-colors hover:border-purple-400"
+                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}
+                                >
+                                    <Upload className="size-5 shrink-0" style={{ color: 'var(--color-text-alt)' }} />
+                                    <div className="text-left">
+                                        <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                                            Seleccionar o arrastrar imagen
+                                        </p>
+                                        <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                            JPG, PNG, WebP · máx. 10 MB · recomendado 16:9
+                                        </p>
+                                    </div>
+                                </button>
+                            )}
+                            <input ref={imgInputRef} type="file" accept="image/*" className="hidden"
+                                onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
                         </div>
-                    )}
 
-                    {/* Descripción */}
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                            {t('empresa.servicios.modal.description')}
-                        </label>
-                        <textarea
-                            name="description"
-                            value={form.description ?? ''}
-                            onChange={handleChange}
-                            rows={3}
-                            maxLength={400}
-                            placeholder="Describe brevemente tu servicio…"
-                            className="w-full resize-none rounded-xl border px-3 py-2.5 text-sm outline-none"
-                            style={{
-                                background: 'var(--color-bg-alt)',
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text)',
-                            }}
-                        />
+                        {/* Basic info */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="sm:col-span-2">
+                                <label className={labelCls} style={labelStyle}>
+                                    Nombre del servicio <span className="text-rose-400">*</span>
+                                </label>
+                                <input name="name" value={form.name} onChange={handleChange}
+                                    maxLength={120} placeholder="Ej. Tour por la zona cafetalera"
+                                    className={inputCls} style={inputStyle} />
+                            </div>
+
+                            <div>
+                                <label className={labelCls} style={labelStyle}>
+                                    Tipo <span className="text-rose-400">*</span>
+                                </label>
+                                <select name="service_type" value={form.service_type} onChange={handleChange}
+                                    className={`${inputCls} appearance-none`} style={inputStyle}>
+                                    <option value="">Seleccionar…</option>
+                                    {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                            </div>
+
+                            {isEdit && (
+                                <div>
+                                    <label className={labelCls} style={labelStyle}>Visibilidad</label>
+                                    <select name="active" value={form.active ? 'true' : 'false'} onChange={handleChange}
+                                        className={`${inputCls} appearance-none`} style={inputStyle}>
+                                        <option value="true">Activo — visible en la app</option>
+                                        <option value="false">Inactivo — oculto</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className={isEdit ? '' : 'sm:col-span-2'}>
+                                <label className={labelCls} style={labelStyle}>
+                                    <span className="flex items-center gap-1.5"><Phone className="size-3" /> Teléfono de contacto</span>
+                                </label>
+                                <input name="contact_phone" value={form.contact_phone} onChange={handleChange}
+                                    placeholder="228 123 4567" className={inputCls} style={inputStyle} />
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label className={labelCls} style={labelStyle}>Descripción</label>
+                            <textarea name="description" value={form.description ?? ''} onChange={handleChange}
+                                rows={3} maxLength={500} placeholder="Describe brevemente tu servicio…"
+                                className={`${inputCls} resize-none`} style={inputStyle} />
+                        </div>
+
+                        {/* Pricing */}
+                        <div>
+                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
+                                <DollarSign className="size-3" /> Precio
+                            </label>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Desde (MXN)</p>
+                                    <input name="price_from" type="number" min="0" step="0.01"
+                                        value={form.price_from} onChange={handleChange}
+                                        placeholder="0.00" className={inputCls} style={inputStyle} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Hasta (MXN)</p>
+                                    <input name="price_to" type="number" min="0" step="0.01"
+                                        value={form.price_to} onChange={handleChange}
+                                        placeholder="0.00" className={inputCls} style={inputStyle} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Moneda</p>
+                                    <select name="currency" value={form.currency} onChange={handleChange}
+                                        className={`${inputCls} appearance-none`} style={inputStyle}>
+                                        <option value="MXN">MXN</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Duration */}
+                        <div>
+                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
+                                <Clock className="size-3" /> Duración (minutos)
+                            </label>
+                            <input name="duration_minutes" type="number" min="0" step="5"
+                                value={form.duration_minutes} onChange={handleChange}
+                                placeholder="Ej. 120 = 2 horas" className={`${inputCls} max-w-xs`} style={inputStyle} />
+                        </div>
+
+                        {/* Approval notice for new services */}
+                        {!isEdit && (
+                            <div className="flex items-start gap-3 rounded-xl border px-4 py-3"
+                                style={{ background: '#F59E0B0D', borderColor: '#F59E0B30' }}>
+                                <AlertCircle className="size-4 shrink-0 mt-0.5" style={{ color: '#F59E0B' }} />
+                                <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                                    Tu servicio iniciará como <strong style={{ color: 'var(--color-text)' }}>En revisión</strong> y
+                                    será publicado en la app una vez que el equipo SMARTUR lo apruebe (1–2 días hábiles).
+                                </p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="flex items-center gap-2 rounded-xl border p-3 text-xs"
+                                style={{ background: '#EF444410', borderColor: '#EF444440', color: '#EF4444' }}>
+                                <AlertCircle size={14} className="shrink-0" />
+                                {error}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div
-                            className="flex items-center gap-2 rounded-xl border p-3 text-xs"
-                            style={{
-                                background: 'var(--color-pink)10',
-                                borderColor: 'var(--color-pink)40',
-                                color: 'var(--color-pink)',
-                            }}
-                        >
-                            <AlertCircle size={14} className="shrink-0" />
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Acciones */}
-                    <div className="flex gap-3 pt-1">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
-                            style={{
-                                borderColor: 'var(--color-border)',
-                                color: 'var(--color-text-alt)',
-                            }}
-                        >
+                    {/* Footer */}
+                    <div className="flex gap-3 px-6 pb-5">
+                        <button type="button" onClick={onClose}
+                            className="flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-80"
+                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
                             {t('empresa.servicios.modal.cancel')}
                         </button>
-                        <button
-                            type="submit"
-                            disabled={saving}
+                        <button type="submit" disabled={saving}
                             className="flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-50"
-                            style={{ background: 'var(--color-purple)' }}
-                        >
+                            style={{ background: 'var(--color-purple)' }}>
                             {saving && <Loader2 size={14} className="animate-spin" />}
                             {saving ? t('empresa.servicios.modal.saving') : isEdit ? t('empresa.servicios.modal.saveChanges') : t('empresa.servicios.modal.createService')}
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    );
+}
+
+function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
+    const isPending = status === 'pending';
+    return (
+        <div className="flex flex-1 items-center justify-center">
+            <div
+                className="flex max-w-sm flex-col items-center gap-4 rounded-[28px] border p-8 text-center shadow-sm"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+            >
+                <div className="flex size-14 items-center justify-center rounded-full"
+                    style={{ background: isPending ? '#F59E0B18' : '#EF444418' }}>
+                    <Lock className="size-6" style={{ color: isPending ? '#F59E0B' : '#EF4444' }} />
+                </div>
+                <div>
+                    <p className="font-bold" style={{ color: 'var(--color-text)' }}>
+                        {isPending ? 'Empresa en revisión' : 'Empresa suspendida'}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                        {isPending
+                            ? 'Los servicios se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                    </p>
+                </div>
             </div>
         </div>
     );
@@ -307,7 +428,7 @@ export function EmpresaServiciosPage() {
     } = useEmpresaServices();
 
     const [companyLocationId, setCompanyLocationId] = useState<number | null>(null);
-    const [companyStatus, setCompanyStatus] = useState<'active' | 'pending' | 'suspended' | null>(null);
+    const [companyStatus, setCompanyStatus] = useState<string | null>(null);
 
     const [selectedServices, setSelectedServices] = useState<number[]>([]);
     const toggleService = (id: number) =>
@@ -395,6 +516,22 @@ export function EmpresaServiciosPage() {
         await fetchServices();
         setSelectedServices([]);
     };
+
+    if (!isLoading && companyStatus && companyStatus !== 'active') {
+        return (
+            <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4">
+                <div className="shrink-0">
+                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
+                        {t('empresa.servicios.title')}
+                    </h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {t('empresa.servicios.description')}
+                    </p>
+                </div>
+                <StatusBlocker status={companyStatus === 'suspended' ? 'suspended' : 'pending'} />
+            </div>
+        );
+    }
 
     return (
         <>

@@ -32,6 +32,13 @@ import CreatePOIModal from '../components/CreatePOIModal';
 import EditPOIModal from '../components/EditPOIModal';
 import type { POI } from '../types/types';
 
+const POI_TYPE_LABELS: Record<number, string> = {
+    1: 'Natural',
+    2: 'Cultural',
+    3: 'Histórico',
+    4: 'Recreativo',
+};
+
 export const POIPage = () => {
     const { lang, t } = useLanguage();
     const m = useMemo(() => getDashboardText(lang).modules, [lang]);
@@ -201,7 +208,7 @@ export const POIPage = () => {
                                                         color: 'var(--color-purple)',
                                                     }}
                                                 >
-                                                    {poi.typeId}
+                                                    {POI_TYPE_LABELS[poi.typeId] ?? '—'}
                                                 </span>
                                             </DataTableCell>
                                             <DataTableCell>

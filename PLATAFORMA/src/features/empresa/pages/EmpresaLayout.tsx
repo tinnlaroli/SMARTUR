@@ -192,6 +192,12 @@ export function EmpresaLayout() {
             ? t('empresa.layout.configuracion')
           : pathname.startsWith('/empresa/perfil')
             ? t('empresa.layout.perfil')
+          : pathname.startsWith('/empresa/calendario')
+            ? 'Reservas'
+          : pathname.startsWith('/empresa/mensajes')
+            ? 'Mensajes'
+          : pathname.startsWith('/empresa/verificacion')
+            ? 'Verificación'
             : t('empresa.layout.inicio');
 
     return (

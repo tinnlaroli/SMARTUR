@@ -2,8 +2,18 @@ import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import cloudinary from '../config/cloudinary.js';
 import { validatePassword } from '../validators/userValidators.js';
 import { sendRegistrationConfirmation, sendExistingAccountNotification } from '../utils/mailer.js';
+
+async function uploadServiceImage(buffer, id_company) {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            { folder: `smartur/services/${id_company}`, resource_type: 'image' },
+            (error, result) => { if (error) return reject(error); resolve(result.secure_url); }
+        ).end(buffer);
+    });
+}
 
 const SALT_ROUNDS = 10;
 
@@ -352,7 +362,8 @@ class EmpresaController {
             params.push(limit, offset);
             const result = await pool.query(
                 `SELECT ts.id_service, ts.name, ts.description, ts.service_type,
-                        ts.active, ts.image_url, ts.id_location, ts.id_company
+                        ts.active, ts.status, ts.image_url, ts.id_location, ts.id_company,
+                        ts.price_from, ts.price_to, ts.currency, ts.duration_minutes, ts.contact_phone
                    FROM tourist_service ts
                    ${whereClause}
                    ORDER BY ts.name
@@ -481,7 +492,10 @@ class EmpresaController {
      */
     static async createService(req, res) {
         const { id_company } = req.user;
-        const { name, description, service_type, id_location, active } = req.body;
+        const {
+            name, description, service_type, id_location, active,
+            price_from, price_to, currency, duration_minutes, contact_phone,
+        } = req.body;
 
         if (!name || !service_type) {
             return res.status(400).json({ message: 'name y service_type son requeridos.' });
@@ -504,12 +518,29 @@ class EmpresaController {
                 });
             }
 
+            let image_url = null;
+            if (req.file) {
+                image_url = await uploadServiceImage(req.file.buffer, id_company);
+            }
+
             const result = await pool.query(
                 `INSERT INTO tourist_service
-                   (name, description, service_type, id_location, id_company, active)
-                 VALUES ($1, $2, $3, $4, $5, $6)
-                 RETURNING id_service, name, description, service_type, id_location, active, image_url, id_company`,
-                [name.trim(), description ?? null, service_type, locationId, id_company, active ?? true],
+                   (name, description, service_type, id_location, id_company, active,
+                    image_url, price_from, price_to, currency, duration_minutes, contact_phone)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                 RETURNING id_service, name, description, service_type, id_location, active,
+                           image_url, price_from, price_to, currency, duration_minutes, contact_phone,
+                           id_company, status`,
+                [
+                    name.trim(), description?.trim() ?? null, service_type, locationId, id_company,
+                    active === 'false' ? false : (active ?? true),
+                    image_url,
+                    price_from ? parseFloat(price_from) : null,
+                    price_to   ? parseFloat(price_to)   : null,
+                    currency   ?? 'MXN',
+                    duration_minutes ? parseInt(duration_minutes) : null,
+                    contact_phone?.trim() ?? null,
+                ],
             );
             return res.status(201).json({ service: result.rows[0] });
         } catch (err) {
@@ -525,7 +556,10 @@ class EmpresaController {
     static async updateService(req, res) {
         const { id_company } = req.user;
         const { id } = req.params;
-        const { name, description, service_type, active, id_location } = req.body;
+        const {
+            name, description, service_type, active, id_location,
+            price_from, price_to, currency, duration_minutes, contact_phone,
+        } = req.body;
 
         try {
             if (!await assertNotSuspended(id_company, res)) return;
@@ -541,11 +575,22 @@ class EmpresaController {
             const values = [];
             let idx = 1;
 
+            // Upload new image if provided
+            if (req.file) {
+                const imageUrl = await uploadServiceImage(req.file.buffer, id_company);
+                fields.push(`image_url=$${idx++}`); values.push(imageUrl);
+            }
+
             if (name !== undefined) { fields.push(`name=$${idx++}`); values.push(name.trim()); }
-            if (description !== undefined) { fields.push(`description=$${idx++}`); values.push(description); }
+            if (description !== undefined) { fields.push(`description=$${idx++}`); values.push(description?.trim() ?? null); }
             if (service_type !== undefined) { fields.push(`service_type=$${idx++}`); values.push(service_type); }
-            if (active !== undefined) { fields.push(`active=$${idx++}`); values.push(active); }
+            if (active !== undefined) { fields.push(`active=$${idx++}`); values.push(active === 'false' ? false : active); }
             if (id_location !== undefined) { fields.push(`id_location=$${idx++}`); values.push(id_location); }
+            if (price_from !== undefined) { fields.push(`price_from=$${idx++}`); values.push(price_from ? parseFloat(price_from) : null); }
+            if (price_to !== undefined) { fields.push(`price_to=$${idx++}`); values.push(price_to ? parseFloat(price_to) : null); }
+            if (currency !== undefined) { fields.push(`currency=$${idx++}`); values.push(currency); }
+            if (duration_minutes !== undefined) { fields.push(`duration_minutes=$${idx++}`); values.push(duration_minutes ? parseInt(duration_minutes) : null); }
+            if (contact_phone !== undefined) { fields.push(`contact_phone=$${idx++}`); values.push(contact_phone?.trim() ?? null); }
 
             if (fields.length === 0) {
                 return res.status(400).json({ message: 'No hay campos para actualizar.' });
@@ -555,7 +600,9 @@ class EmpresaController {
             const result = await pool.query(
                 `UPDATE tourist_service SET ${fields.join(', ')}
                  WHERE id_service=$${idx}
-                 RETURNING id_service, name, description, service_type, active, id_location, image_url, id_company`,
+                 RETURNING id_service, name, description, service_type, active, id_location,
+                           image_url, price_from, price_to, currency, duration_minutes, contact_phone,
+                           id_company, status`,
                 values,
             );
             return res.json({ service: result.rows[0] });

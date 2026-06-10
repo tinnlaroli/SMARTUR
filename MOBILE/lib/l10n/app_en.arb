@@ -58,10 +58,37 @@
   "start": "Start",
   "loginWithBiometrics": "Sign in with fingerprint",
   "navHome": "Home",
+  "navExplore": "Explore",
+  "navRoutes": "My Routes",
   "navDiary": "Diary",
   "navRecommend": "Recommend",
   "navCommunity": "Community",
   "navUser": "User",
+  "exploreTitle": "Explore",
+  "routesSectionLabel": "Routes",
+  "routesSectionCertified": "SMARTUR Certified Routes",
+  "routesSectionMostCopied": "Most Copied",
+  "routesSectionFollowing": "From people you follow",
+  "routesFollowingEmpty": "Follow travelers to see their routes here",
+  "searchRoutesHint": "Search routes or users...",
+  "seeAll": "See all",
+  "misRutasTitle": "My Routes",
+  "misRutasEmptyTitle": "No routes yet",
+  "misRutasEmptySubtitle": "Create your first route and start planning your next adventure",
+  "misRutasCreate": "New route",
+  "profileTabProfile": "Profile",
+  "addToRoute": "Add to route",
+  "createNewRoute": "New route",
+  "genrePickerTitle": "What do you like to explore?",
+  "genrePickerSubtitle": "Choose up to 3 topics that interest you most",
+  "genrePickerContinue": "Continue",
+  "genrePickerSkip": "Skip for now",
+  "genreNature": "Nature",
+  "genreAdventure": "Adventure",
+  "genreGastronomy": "Gastronomy",
+  "genreCulture": "Culture",
+  "genreRelax": "Relax",
+  "genreHistory": "History",
   "communityTitle": "Community",
   "uploadPhotoAction": "Add a photo",
   "communityCreatePost": "Create post",
@@ -434,4 +461,79 @@
   "recoResultsDone":"Done",
   "recoResultsRankHint":"Ranked by match with your profile",
   "googleSignInReleaseConfig":"Google Sign-In is not configured for this app build. Register the release keystore SHA in Firebase."
+  ,"communityEmpty":"No posts yet"
+  ,"communityEmptyHint":"Be the first to share your experience"
+  ,"communityFirstPost":"Create post"
+  ,"communityPostHint":"What do you want to share?"
+  ,"communityReport":"Report"
+  ,"communityReportTitle":"Why are you reporting this post?"
+  ,"communityReportOther":"Other reason"
+  ,"plannerTitle":"Planner"
+  ,"plannerDelete":"Delete route"
+  ,"plannerDeleteConfirm":"Delete this route permanently?"
+  ,"plannerAddStop":"Add stop"
+  ,"plannerNoStops":"No stops"
+  ,"plannerNoStopsSubtitle":"Tap + anywhere to add stops"
+  ,"plannerOptimize":"Optimize with AI"
+  ,"plannerOptimizeComingSoon":"Coming soon in SMARTUR"
+  ,"plannerRouteName":"Route name"
+  ,"plannerRouteNameHint":"E.g.: My Xalapa route"
+  ,"plannerMakePublic":"Make route public"
+  ,"plannerStopDate":"Visit date"
+  ,"plannerStopNotes":"Notes"
+  ,"plannerStopDelete":"Remove stop"
+  ,"itineraryNStops":"{n} stops"
+  ,"@itineraryNStops":{"placeholders":{"n":{"type":"int"}}}
+  ,"itineraryCertified":"SMARTUR Certified"
+  ,"itineraryCopy":"Copy route"
+  ,"itineraryCopied":"Route copied"
+  ,"itineraryDetail":"Route detail"
+  ,"itineraryPublic":"Public"
+  ,"itineraryPrivate":"Private"
+  ,"itineraryStops":"Stops"
+  ,"routesLoadError":"Error loading routes"
+  ,"socialFollow":"Follow"
+  ,"socialFollowing":"Following"
+  ,"socialUnfollow":"Unfollow"
+  ,"socialFollowers":"Followers"
+  ,"socialFollowersCount":"{n} followers"
+  ,"@socialFollowersCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialFollowingCount":"{n} following"
+  ,"@socialFollowingCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialSearchUsers":"Search users..."
+  ,"socialNoResults":"No users found"
+  ,"publicRoutes":"Public routes"
+  ,"noPublicRoutes":"No public routes yet"
+  ,"copyToMyRoutes":"Copy to my routes"
+  ,"routeCopied":"Route copied to My Routes"
+  ,"viewProfile":"View profile"
+  ,"compareTitle":"Compare Routes"
+  ,"compareYourRoute":"Your route"
+  ,"compareOptimized":"Optimized route"
+  ,"compareDistanceLabel":"Distance"
+  ,"compareSavingsLabel":"Savings"
+  ,"compareMoreEfficient":"more efficient"
+  ,"compareKeep":"Keep my route"
+  ,"compareApply":"Use optimized route"
+  ,"compareLoading":"Optimizing with AI..."
+  ,"compareApplied":"Optimized route applied"
+  ,"compareMinStops":"You need at least 2 stops with a location"
+  ,"bookingTitle":"Book service"
+  ,"bookingDate":"Visit date"
+  ,"bookingTime":"Time (optional)"
+  ,"bookingGuests":"Guests"
+  ,"bookingNotes":"Notes (optional)"
+  ,"bookingConfirm":"Confirm booking"
+  ,"bookingSuccess":"Booking sent successfully"
+  ,"bookingStatusPending":"Pending"
+  ,"bookingStatusConfirmed":"Confirmed"
+  ,"bookingStatusCancelled":"Cancelled"
+  ,"bookingMyBookings":"My bookings"
+  ,"bookingNoBookings":"No bookings yet"
+  ,"bookingCancel":"Cancel booking"
+  ,"chatTitle":"Messages"
+  ,"chatSend":"Send"
+  ,"chatNoConversations":"No conversations yet"
+  ,"chatTypeHere":"Type a message..."
+  ,"chatContact":"Contact company"
 }

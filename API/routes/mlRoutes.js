@@ -295,4 +295,99 @@ router.get('/ml/sessions/user/:userId', verifyToken, requireRole([1]), async (re
     }
 });
 
+/**
+ * GET /api/v2/ml/extended-stats
+ * Returns extended ML metrics for the redesigned observability dashboard:
+ *   - user_distribution: cold-start vs warm session counts (30d)
+ *   - top_places: TOP 10 recommended items with click stats (30d)
+ *   - score_histogram: predicted score distribution across 0.5-unit buckets
+ *   - active_users: distinct users in last 7d and 30d
+ *   - category_error: placeholder for future per-category error breakdown
+ */
+router.get('/ml/extended-stats', verifyToken, requireRole([1]), async (req, res) => {
+    const safeQuery = async (sql, fallback) => {
+        try {
+            const result = await db.query(sql);
+            return result;
+        } catch (err) {
+            console.warn('[ml/extended-stats] query fallback:', err.message);
+            return { rows: fallback };
+        }
+    };
+
+    try {
+        const [distRes, topRes, histRes, usersRes] = await Promise.all([
+            safeQuery(
+                `SELECT
+                   COUNT(*) FILTER (WHERE best_algorithm IN ('lightfm','content','content_tfidf','cold_start'))::int AS cold_start,
+                   COUNT(*) FILTER (WHERE best_algorithm NOT IN ('lightfm','content','content_tfidf','cold_start'))::int AS warm,
+                   COUNT(*)::int AS total
+                 FROM ml_recommendation_session
+                 WHERE created_at > NOW() - INTERVAL '30 days'`,
+                [{ cold_start: 0, warm: 0, total: 0 }],
+            ),
+            safeQuery(
+                `SELECT
+                   f.item_id,
+                   COUNT(*)::int                                                              AS recommended_count,
+                   COUNT(*) FILTER (WHERE f.clicked = true)::int                             AS clicked_count,
+                   ROUND(
+                     CASE WHEN COUNT(*) > 0
+                     THEN COUNT(*) FILTER (WHERE f.clicked = true)::numeric / COUNT(*) * 100
+                     ELSE 0 END, 1
+                   )                                                                          AS ctr_pct
+                 FROM ml_recommendation_feedback f
+                 WHERE f.created_at > NOW() - INTERVAL '30 days'
+                 GROUP BY f.item_id
+                 ORDER BY recommended_count DESC
+                 LIMIT 10`,
+                [],
+            ),
+            safeQuery(
+                `SELECT
+                   CASE
+                     WHEN score < 1.5 THEN '1.0-1.5'
+                     WHEN score < 2.0 THEN '1.5-2.0'
+                     WHEN score < 2.5 THEN '2.0-2.5'
+                     WHEN score < 3.0 THEN '2.5-3.0'
+                     WHEN score < 3.5 THEN '3.0-3.5'
+                     WHEN score < 4.0 THEN '3.5-4.0'
+                     WHEN score < 4.5 THEN '4.0-4.5'
+                     ELSE '4.5-5.0'
+                   END AS bucket,
+                   COUNT(*)::int AS count
+                 FROM (
+                   SELECT (rec->>'score')::numeric AS score
+                   FROM ml_recommendation_session s,
+                        jsonb_array_elements((s.context_json::jsonb)->'recommendations') AS rec
+                   WHERE s.created_at > NOW() - INTERVAL '30 days'
+                     AND s.context_json IS NOT NULL
+                 ) sub
+                 WHERE score IS NOT NULL AND score BETWEEN 1.0 AND 5.0
+                 GROUP BY 1
+                 ORDER BY 1`,
+                [],
+            ),
+            safeQuery(
+                `SELECT
+                   COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '7 days')::int AS last_7d,
+                   COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '30 days')::int AS last_30d
+                 FROM ml_recommendation_session`,
+                [{ last_7d: 0, last_30d: 0 }],
+            ),
+        ]);
+
+        res.json({
+            user_distribution: distRes.rows[0] ?? { cold_start: 0, warm: 0, total: 0 },
+            top_places: topRes.rows,
+            score_histogram: histRes.rows,
+            active_users: usersRes.rows[0] ?? { last_7d: 0, last_30d: 0 },
+            category_error: [],
+        });
+    } catch (err) {
+        console.error('[ml/extended-stats] fatal error:', err.message);
+        res.status(500).json({ message: 'Error al obtener estadísticas extendidas ML.' });
+    }
+});
+
 export default router;

@@ -43,4 +43,23 @@ class ApiConstants {
   static const String locations = '/locations';
   static const String touristServices = '/tourist-services';
   static const String pointsOfInterest = '/points-of-interest';
+
+  // Itineraries
+  static const String itineraries = '/itineraries';
+  static const String itinerariesMe = '/itineraries/me';
+  static const String itinerariesPredefined = '/itineraries/predefined';
+  static const String itinerariesCommunity = '/itineraries/community';
+  static const String itinerariesSearch = '/itineraries/search';
+  static const String itinerariesFollowing = '/itineraries/following';
+
+  // Social
+  static const String usersSearch = '/users/search';
+
+  // Bookings
+  static const String bookings = '/bookings';
+  static const String bookingsMe = '/bookings/me';
+
+  // Chat
+  static const String conversations = '/conversations';
+  static const String conversationsMe = '/conversations/me';
 }

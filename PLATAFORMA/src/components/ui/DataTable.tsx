@@ -11,7 +11,7 @@ export const DATA_TABLE_SCROLL_CLASS = 'flex-1 min-h-0 overflow-y-auto';
 export const DATA_TABLE_CLASS = 'min-w-full';
 
 export const DATA_TABLE_HEAD_CLASS =
-    'border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-[#18181b]';
+    'sticky top-0 z-10 border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-[#18181b]';
 
 export const DATA_TABLE_HEAD_CELL_CLASS =
     'px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider';

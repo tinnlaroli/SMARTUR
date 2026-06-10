@@ -13,25 +13,25 @@ router.get(
 router.post(
     '/subcriteria',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     SubcriterionController.create
 );
 router.patch(
     '/subcriteria/:id_subcriterion',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     SubcriterionController.update
 );
 router.delete(
     '/subcriteria/:id_subcriterion',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     SubcriterionController.delete
 );
 router.put(
     '/subcriteria/criterion/:id_criterion/batch',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     SubcriterionController.batchUpdate
 );
 

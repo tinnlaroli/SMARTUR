@@ -1,6 +1,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { verifyToken, requireRole } from '../middleware/authMiddleware.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
+import { requireRole } from '../middleware/rbacMiddleware.js';
 import db from '../config/db.js';
 
 const router = express.Router();

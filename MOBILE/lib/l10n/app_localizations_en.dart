@@ -187,6 +187,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHome => 'Home';
 
   @override
+  String get navExplore => 'Explore';
+
+  @override
+  String get navRoutes => 'My Routes';
+
+  @override
   String get navDiary => 'Diary';
 
   @override
@@ -197,6 +203,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navUser => 'User';
+
+  @override
+  String get exploreTitle => 'Explore';
+
+  @override
+  String get routesSectionLabel => 'Routes';
+
+  @override
+  String get routesSectionCertified => 'SMARTUR Certified Routes';
+
+  @override
+  String get routesSectionMostCopied => 'Most Copied';
+
+  @override
+  String get routesSectionFollowing => 'From people you follow';
+
+  @override
+  String get routesFollowingEmpty =>
+      'Follow travelers to see their routes here';
+
+  @override
+  String get searchRoutesHint => 'Search routes or users...';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get misRutasTitle => 'My Routes';
+
+  @override
+  String get misRutasEmptyTitle => 'No routes yet';
+
+  @override
+  String get misRutasEmptySubtitle =>
+      'Create your first route and start planning your next adventure';
+
+  @override
+  String get misRutasCreate => 'New route';
+
+  @override
+  String get profileTabProfile => 'Profile';
+
+  @override
+  String get addToRoute => 'Add to route';
+
+  @override
+  String get createNewRoute => 'New route';
+
+  @override
+  String get genrePickerTitle => 'What do you like to explore?';
+
+  @override
+  String get genrePickerSubtitle =>
+      'Choose up to 3 topics that interest you most';
+
+  @override
+  String get genrePickerContinue => 'Continue';
+
+  @override
+  String get genrePickerSkip => 'Skip for now';
+
+  @override
+  String get genreNature => 'Nature';
+
+  @override
+  String get genreAdventure => 'Adventure';
+
+  @override
+  String get genreGastronomy => 'Gastronomy';
+
+  @override
+  String get genreCulture => 'Culture';
+
+  @override
+  String get genreRelax => 'Relax';
+
+  @override
+  String get genreHistory => 'History';
 
   @override
   String get communityTitle => 'Community';
@@ -1276,4 +1360,226 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get googleSignInReleaseConfig =>
       'Google Sign-In is not configured for this app build. Register the release keystore SHA in Firebase.';
+
+  @override
+  String get communityEmpty => 'No posts yet';
+
+  @override
+  String get communityEmptyHint => 'Be the first to share your experience';
+
+  @override
+  String get communityFirstPost => 'Create post';
+
+  @override
+  String get communityPostHint => 'What do you want to share?';
+
+  @override
+  String get communityReport => 'Report';
+
+  @override
+  String get communityReportTitle => 'Why are you reporting this post?';
+
+  @override
+  String get communityReportOther => 'Other reason';
+
+  @override
+  String get plannerTitle => 'Planner';
+
+  @override
+  String get plannerDelete => 'Delete route';
+
+  @override
+  String get plannerDeleteConfirm => 'Delete this route permanently?';
+
+  @override
+  String get plannerAddStop => 'Add stop';
+
+  @override
+  String get plannerNoStops => 'No stops';
+
+  @override
+  String get plannerNoStopsSubtitle => 'Tap + anywhere to add stops';
+
+  @override
+  String get plannerOptimize => 'Optimize with AI';
+
+  @override
+  String get plannerOptimizeComingSoon => 'Coming soon in SMARTUR';
+
+  @override
+  String get plannerRouteName => 'Route name';
+
+  @override
+  String get plannerRouteNameHint => 'E.g.: My Xalapa route';
+
+  @override
+  String get plannerMakePublic => 'Make route public';
+
+  @override
+  String get plannerStopDate => 'Visit date';
+
+  @override
+  String get plannerStopNotes => 'Notes';
+
+  @override
+  String get plannerStopDelete => 'Remove stop';
+
+  @override
+  String itineraryNStops(int n) {
+    return '$n stops';
+  }
+
+  @override
+  String get itineraryCertified => 'SMARTUR Certified';
+
+  @override
+  String get itineraryCopy => 'Copy route';
+
+  @override
+  String get itineraryCopied => 'Route copied';
+
+  @override
+  String get itineraryDetail => 'Route detail';
+
+  @override
+  String get itineraryPublic => 'Public';
+
+  @override
+  String get itineraryPrivate => 'Private';
+
+  @override
+  String get itineraryStops => 'Stops';
+
+  @override
+  String get routesLoadError => 'Error loading routes';
+
+  @override
+  String get socialFollow => 'Follow';
+
+  @override
+  String get socialFollowing => 'Following';
+
+  @override
+  String get socialUnfollow => 'Unfollow';
+
+  @override
+  String get socialFollowers => 'Followers';
+
+  @override
+  String socialFollowersCount(int n) {
+    return '$n followers';
+  }
+
+  @override
+  String socialFollowingCount(int n) {
+    return '$n following';
+  }
+
+  @override
+  String get socialSearchUsers => 'Search users...';
+
+  @override
+  String get socialNoResults => 'No users found';
+
+  @override
+  String get publicRoutes => 'Public routes';
+
+  @override
+  String get noPublicRoutes => 'No public routes yet';
+
+  @override
+  String get copyToMyRoutes => 'Copy to my routes';
+
+  @override
+  String get routeCopied => 'Route copied to My Routes';
+
+  @override
+  String get viewProfile => 'View profile';
+
+  @override
+  String get compareTitle => 'Compare Routes';
+
+  @override
+  String get compareYourRoute => 'Your route';
+
+  @override
+  String get compareOptimized => 'Optimized route';
+
+  @override
+  String get compareDistanceLabel => 'Distance';
+
+  @override
+  String get compareSavingsLabel => 'Savings';
+
+  @override
+  String get compareMoreEfficient => 'more efficient';
+
+  @override
+  String get compareKeep => 'Keep my route';
+
+  @override
+  String get compareApply => 'Use optimized route';
+
+  @override
+  String get compareLoading => 'Optimizing with AI...';
+
+  @override
+  String get compareApplied => 'Optimized route applied';
+
+  @override
+  String get compareMinStops => 'You need at least 2 stops with a location';
+
+  @override
+  String get bookingTitle => 'Book service';
+
+  @override
+  String get bookingDate => 'Visit date';
+
+  @override
+  String get bookingTime => 'Time (optional)';
+
+  @override
+  String get bookingGuests => 'Guests';
+
+  @override
+  String get bookingNotes => 'Notes (optional)';
+
+  @override
+  String get bookingConfirm => 'Confirm booking';
+
+  @override
+  String get bookingSuccess => 'Booking sent successfully';
+
+  @override
+  String get bookingStatusPending => 'Pending';
+
+  @override
+  String get bookingStatusConfirmed => 'Confirmed';
+
+  @override
+  String get bookingStatusCancelled => 'Cancelled';
+
+  @override
+  String get bookingMyBookings => 'My bookings';
+
+  @override
+  String get bookingNoBookings => 'No bookings yet';
+
+  @override
+  String get bookingCancel => 'Cancel booking';
+
+  @override
+  String get chatTitle => 'Messages';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatNoConversations => 'No conversations yet';
+
+  @override
+  String get chatTypeHere => 'Type a message...';
+
+  @override
+  String get chatContact => 'Contact company';
 }

@@ -62,6 +62,29 @@ export interface SchedulerConfig {
     next_run: string | null;  // ISO datetime string UTC, or null if disabled
 }
 
+export interface ExtendedStats {
+    user_distribution: {
+        cold_start: number;
+        warm: number;
+        total: number;
+    };
+    top_places: {
+        item_id: number;
+        recommended_count: number;
+        clicked_count: number;
+        ctr_pct: number;
+    }[];
+    score_histogram: {
+        bucket: string;
+        count: number;
+    }[];
+    active_users: {
+        last_7d: number;
+        last_30d: number;
+    };
+    category_error: unknown[];
+}
+
 export const mlApi = {
     getHealth: async (): Promise<MLHealth> => {
         const { data } = await api.get<MLHealth>('/ml/health');
@@ -87,6 +110,11 @@ export const mlApi = {
         config: Omit<SchedulerConfig, 'next_run'>
     ): Promise<{ ok: boolean; next_run?: string | null }> => {
         const { data } = await api.put('/ml/scheduler-config', config);
+        return data;
+    },
+
+    getExtendedStats: async (): Promise<ExtendedStats> => {
+        const { data } = await api.get<ExtendedStats>('/ml/extended-stats');
         return data;
     },
 };

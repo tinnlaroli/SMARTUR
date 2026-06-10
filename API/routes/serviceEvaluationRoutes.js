@@ -18,31 +18,31 @@ router.get(
 router.post(
     '/service-evaluation/register',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceEvaluationController.createServiceEvaluationController
 );
 router.post(
     '/service-evaluation/batch-register',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceEvaluationController.createFullEvaluationController
 );
 router.delete(
     '/service-evaluation/delete/:id_evaluation',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceEvaluationController.deleteServiceEvaluationController
 );
 router.patch(
     '/service-evaluation/update/:id_evaluation',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceEvaluationController.updateServiceEvaluationController
 );
 router.patch(
     '/service-evaluation/status/:id_evaluation',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceEvaluationController.updateStatusController
 );
 

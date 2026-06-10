@@ -28,6 +28,8 @@ import '../../widgets/offline_banner.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
+import '../auth/genre_picker_screen.dart';
+import '../../widgets/add_to_route_sheet.dart';
 import '../explore/detail_view_page.dart';
 
 /// Module-level like cache — liked state persists across widget rebuilds and scroll recycling.
@@ -233,11 +235,14 @@ class HomeScreenState extends State<HomeScreen> {
     if (_preferencesCheckedOnce) return;
     _preferencesCheckedOnce = true;
 
+    // Nuevo onboarding: solo se muestra al primer login sin géneros guardados.
+    // GenrePickerScreen reemplaza el formulario de 3 pasos anterior.
+    if (!widget.isNewLogin) return;
     final saved = await ProfileService.hasPreferencesSaved();
     if (!saved && mounted) {
       Navigator.push(
         context,
-        smarturFadeRoute(PreferencesScreen(userName: widget.userName)),
+        smarturFadeRoute(GenrePickerScreen(userName: widget.userName)),
       );
     }
   }
@@ -1764,6 +1769,31 @@ class _PlaceCardState extends State<_PlaceCard>
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+
+                // ── Add to route button (top-right, below like) ──
+                Positioned(
+                  top: isHero ? 46 : 40,
+                  right: isHero ? 10 : 8,
+                  child: GestureDetector(
+                    onTap: () => showAddToRouteSheet(
+                      context,
+                      placeName: place.name,
+                      placeId: place.id,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: SmarturStyle.purple.withValues(alpha: 0.80),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: isHero ? 18 : 15,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

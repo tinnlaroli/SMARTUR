@@ -34,7 +34,7 @@ export async function emailExists(email) {
 }
 
 export function validateRole(role_id) {
-    if (role_id !== 1 && role_id !== 2 && role_id !== 3) {
+    if (![1, 2, 3, 4].includes(role_id)) {
         throw new Error('El rol ingresado no es válido');
     }
 }

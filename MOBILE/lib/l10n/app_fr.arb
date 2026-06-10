@@ -58,10 +58,37 @@
   "start": "Commencer",
   "loginWithBiometrics": "Se connecter avec empreinte",
   "navHome": "Accueil",
+  "navExplore": "Explorer",
+  "navRoutes": "Mes Itinéraires",
   "navDiary": "Journal",
   "navRecommend": "Recommander",
   "navCommunity": "Communauté",
   "navUser": "Profil",
+  "exploreTitle": "Explorer",
+  "routesSectionLabel": "Itinéraires",
+  "routesSectionCertified": "Itinéraires certifiés SMARTUR",
+  "routesSectionMostCopied": "Les plus copiés",
+  "routesSectionFollowing": "De personnes que vous suivez",
+  "routesFollowingEmpty": "Suivez des voyageurs pour voir leurs itinéraires ici",
+  "searchRoutesHint": "Rechercher des itinéraires ou des utilisateurs...",
+  "seeAll": "Voir tout",
+  "misRutasTitle": "Mes Itinéraires",
+  "misRutasEmptyTitle": "Pas encore d'itinéraires",
+  "misRutasEmptySubtitle": "Créez votre premier itinéraire et commencez à planifier votre prochaine aventure",
+  "misRutasCreate": "Nouvel itinéraire",
+  "profileTabProfile": "Profil",
+  "addToRoute": "Ajouter à l'itinéraire",
+  "createNewRoute": "Nouvel itinéraire",
+  "genrePickerTitle": "Qu'aimez-vous explorer?",
+  "genrePickerSubtitle": "Choisissez jusqu'à 3 thèmes qui vous intéressent le plus",
+  "genrePickerContinue": "Continuer",
+  "genrePickerSkip": "Passer pour l'instant",
+  "genreNature": "Nature",
+  "genreAdventure": "Aventure",
+  "genreGastronomy": "Gastronomie",
+  "genreCulture": "Culture",
+  "genreRelax": "Détente",
+  "genreHistory": "Histoire",
   "communityTitle": "Communauté",
   "uploadPhotoAction": "Ajouter une photo",
   "communityCreatePost": "Créer une publication",
@@ -434,4 +461,79 @@
   "recoResultsDone":"Terminé",
   "recoResultsRankHint":"Classés selon la compatibilité avec votre profil",
   "googleSignInReleaseConfig":"Google Sign-In n'est pas configuré pour cette version. Enregistrez l'empreinte SHA du keystore release dans Firebase."
+  ,"communityEmpty":"Aucune publication pour l'instant"
+  ,"communityEmptyHint":"Soyez le premier à partager votre expérience"
+  ,"communityFirstPost":"Créer une publication"
+  ,"communityPostHint":"Que voulez-vous partager?"
+  ,"communityReport":"Signaler"
+  ,"communityReportTitle":"Pourquoi signalez-vous cette publication?"
+  ,"communityReportOther":"Autre motif"
+  ,"plannerTitle":"Planificateur"
+  ,"plannerDelete":"Supprimer l'itinéraire"
+  ,"plannerDeleteConfirm":"Supprimer cet itinéraire définitivement?"
+  ,"plannerAddStop":"Ajouter un arrêt"
+  ,"plannerNoStops":"Aucun arrêt"
+  ,"plannerNoStopsSubtitle":"Appuyez sur + partout pour ajouter des arrêts"
+  ,"plannerOptimize":"Optimiser avec IA"
+  ,"plannerOptimizeComingSoon":"Bientôt disponible sur SMARTUR"
+  ,"plannerRouteName":"Nom de l'itinéraire"
+  ,"plannerRouteNameHint":"Ex.: Mon itinéraire à Xalapa"
+  ,"plannerMakePublic":"Rendre l'itinéraire public"
+  ,"plannerStopDate":"Date de visite"
+  ,"plannerStopNotes":"Notes"
+  ,"plannerStopDelete":"Retirer l'arrêt"
+  ,"itineraryNStops":"{n} arrêts"
+  ,"@itineraryNStops":{"placeholders":{"n":{"type":"int"}}}
+  ,"itineraryCertified":"Certifié SMARTUR"
+  ,"itineraryCopy":"Copier l'itinéraire"
+  ,"itineraryCopied":"Itinéraire copié"
+  ,"itineraryDetail":"Détail de l'itinéraire"
+  ,"itineraryPublic":"Public"
+  ,"itineraryPrivate":"Privé"
+  ,"itineraryStops":"Arrêts"
+  ,"routesLoadError":"Erreur de chargement des itinéraires"
+  ,"socialFollow":"Suivre"
+  ,"socialFollowing":"Suivi"
+  ,"socialUnfollow":"Ne plus suivre"
+  ,"socialFollowers":"Abonnés"
+  ,"socialFollowersCount":"{n} abonnés"
+  ,"@socialFollowersCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialFollowingCount":"{n} abonnements"
+  ,"@socialFollowingCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialSearchUsers":"Rechercher des utilisateurs..."
+  ,"socialNoResults":"Aucun utilisateur trouvé"
+  ,"publicRoutes":"Itinéraires publics"
+  ,"noPublicRoutes":"Pas encore d'itinéraires publics"
+  ,"copyToMyRoutes":"Copier dans mes itinéraires"
+  ,"routeCopied":"Itinéraire copié dans Mes Routes"
+  ,"viewProfile":"Voir le profil"
+  ,"compareTitle":"Comparer les Itinéraires"
+  ,"compareYourRoute":"Votre itinéraire"
+  ,"compareOptimized":"Itinéraire optimisé"
+  ,"compareDistanceLabel":"Distance"
+  ,"compareSavingsLabel":"Économie"
+  ,"compareMoreEfficient":"plus efficace"
+  ,"compareKeep":"Garder mon itinéraire"
+  ,"compareApply":"Utiliser l'itinéraire optimisé"
+  ,"compareLoading":"Optimisation en cours..."
+  ,"compareApplied":"Itinéraire optimisé appliqué"
+  ,"compareMinStops":"Vous avez besoin d'au moins 2 arrêts avec une localisation"
+  ,"bookingTitle":"Réserver le service"
+  ,"bookingDate":"Date de visite"
+  ,"bookingTime":"Heure (facultatif)"
+  ,"bookingGuests":"Personnes"
+  ,"bookingNotes":"Notes (facultatif)"
+  ,"bookingConfirm":"Confirmer la réservation"
+  ,"bookingSuccess":"Réservation envoyée avec succès"
+  ,"bookingStatusPending":"En attente"
+  ,"bookingStatusConfirmed":"Confirmée"
+  ,"bookingStatusCancelled":"Annulée"
+  ,"bookingMyBookings":"Mes réservations"
+  ,"bookingNoBookings":"Pas encore de réservations"
+  ,"bookingCancel":"Annuler la réservation"
+  ,"chatTitle":"Messages"
+  ,"chatSend":"Envoyer"
+  ,"chatNoConversations":"Pas encore de conversations"
+  ,"chatTypeHere":"Écrire un message..."
+  ,"chatContact":"Contacter l'entreprise"
 }

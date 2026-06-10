@@ -107,7 +107,8 @@ export function EmpresaAnalyticsPage() {
             .then(([analyticsRes, evalsRes, profileRes]) => {
                 setData(analyticsRes);
                 setEvals(evalsRes);
-                setCompanyStatus(profileRes.company.status);
+                const s = profileRes.company.status;
+                setCompanyStatus(s === 'active' ? 'active' : s === 'suspended' ? 'suspended' : 'pending');
             })
             .catch(() => setError(t('empresa.analytics.errorLoading')))
             .finally(() => setLoading(false));

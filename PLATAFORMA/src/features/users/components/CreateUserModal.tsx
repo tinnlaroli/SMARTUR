@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { CreateUserDTO } from '../types/types';
-import { Camera, User as UserIcon, AlertCircle } from 'lucide-react';
+import { Camera, User as UserIcon, AlertCircle, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
@@ -10,18 +10,50 @@ interface Props {
     onSubmit: (data: CreateUserDTO) => Promise<boolean | undefined>;
 }
 
+const ROLE_LABELS: Record<number, Record<string, string>> = {
+    1: { es: 'Administrador',    en: 'Administrator',    fr: 'Administrateur'  },
+    2: { es: 'Turista',          en: 'Tourist',          fr: 'Touriste'         },
+    3: { es: 'Empresa turística',en: 'Tourism company',  fr: 'Entreprise touristique' },
+    4: { es: 'Turismólogo',      en: 'Turismologist',    fr: 'Touristologue'   },
+};
+
+function PasswordStrengthRow({ ok, label }: { ok: boolean; label: string }) {
+    return (
+        <div className="flex items-center gap-2 text-xs">
+            {ok
+                ? <CheckCircle className="size-3.5 shrink-0 text-emerald-400" />
+                : <XCircle className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-600" />
+            }
+            <span className={ok ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}>
+                {label}
+            </span>
+        </div>
+    );
+}
+
 export default function CreateUserModal({ onClose, onSubmit }: Props) {
     useEscapeKey(onClose);
     const { lang, t } = useLanguage();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
+    const locale = lang === 'fr' ? 'fr' : lang === 'en' ? 'en' : 'es';
+
     const [formData, setFormData] = useState<CreateUserDTO>({
         name: '',
         email: '',
         password: '',
         role_id: 2,
     });
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [previewUrl, setPreviewUrl]     = useState<string | null>(null);
+    const [errors, setErrors]             = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
+
+    const pwChecks = {
+        minLength:    formData.password.length >= 8,
+        hasUpperCase: /[A-Z]/.test(formData.password),
+        hasNumber:    /[0-9]/.test(formData.password),
+        hasSpecial:   /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+    };
+    const pwScore = Object.values(pwChecks).filter(Boolean).length;
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
@@ -30,7 +62,9 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
         if (!formData.email.trim()) newErrors.email = t('validation.emailRequired');
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('validation.emailValid');
         if (!formData.password) newErrors.password = t('validation.passwordRequired');
-        else if (formData.password.length < 8) newErrors.password = t('validation.passwordMinLength');
+        else if (!pwChecks.minLength || !pwChecks.hasUpperCase || !pwChecks.hasNumber) {
+            newErrors.password = t('validation.passwordMinLength');
+        }
         return newErrors;
     };
 
@@ -39,9 +73,7 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
         if (file) {
             setFormData((prev) => ({ ...prev, image: file }));
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewUrl(reader.result as string);
-            };
+            reader.onloadend = () => setPreviewUrl(reader.result as string);
             reader.readAsDataURL(file);
         }
     };
@@ -63,11 +95,17 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
         if (success) onClose();
     };
 
-    return (
+    const inputBase = (hasError: boolean) =>
+        `w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${
+            hasError
+                ? 'border-red-400 focus:ring-red-400 dark:border-red-500'
+                : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'
+        }`;
 
-        <><div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md transform transition-all">
-                <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-6 py-4">
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+            <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl w-full max-w-md transform transition-all max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-6 py-4 sticky top-0 bg-white dark:bg-zinc-900 z-10">
                     <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                         {mod.users.createTitle}
                     </h2>
@@ -75,62 +113,37 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                         onClick={onClose}
                         className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
                     >
-                        <span className="sr-only">{mod.common.closeSr}</span>
-                        <svg
-                            className="size-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12" />
+                        <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit} className="p-6 gap-y-5 flex flex-col">
+                    {/* Avatar */}
                     <div className="flex flex-col items-center justify-center gap-y-3 pb-2">
                         <div className="relative group">
                             <div className="size-20 overflow-hidden rounded-full border-2 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 transition-colors group-hover:border-violet-500">
-                                {previewUrl ? (
-                                    <img
-                                        src={previewUrl}
-                                        alt="Preview"
-                                        className="h-full w-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-zinc-400">
-                                        <UserIcon className="size-8" />
-                                    </div>
-                                )}
+                                {previewUrl
+                                    ? <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
+                                    : <div className="flex h-full w-full items-center justify-center text-zinc-400"><UserIcon className="size-8" /></div>
+                                }
                             </div>
                             <label
                                 htmlFor="create-photo-upload"
                                 className="absolute bottom-0 right-0 flex size-7 cursor-pointer items-center justify-center rounded-full bg-violet-600 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
                             >
                                 <Camera className="size-3.5" />
-                                <input
-                                    id="create-photo-upload"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
+                                <input id="create-photo-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                             </label>
                         </div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">
-                            {mod.users.profilePhoto}
-                        </p>
+                        <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">{mod.users.profilePhoto}</p>
                     </div>
 
                     <div className="gap-y-4 flex flex-col">
+                        {/* Nombre */}
                         <div className="gap-y-1 flex flex-col">
-                            <label
-                                htmlFor="create-user-name"
-                                className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
-                            >
+                            <label htmlFor="create-user-name" className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 {mod.users.fullName}
                             </label>
                             <input
@@ -138,16 +151,15 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleFieldChange}
-                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.name ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
-                                placeholder={mod.users.namePlaceholder} />
+                                className={inputBase(!!errors.name)}
+                                placeholder={mod.users.namePlaceholder}
+                            />
                             {errors.name && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.name}</p>}
                         </div>
 
+                        {/* Email */}
                         <div className="gap-y-1 flex flex-col">
-                            <label
-                                htmlFor="create-user-email"
-                                className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
-                            >
+                            <label htmlFor="create-user-email" className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 {mod.users.email}
                             </label>
                             <input
@@ -156,33 +168,69 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 type="email"
                                 value={formData.email}
                                 onChange={handleFieldChange}
-                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.email ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
-                                placeholder={mod.users.emailPlaceholder} />
+                                className={inputBase(!!errors.email)}
+                                placeholder={mod.users.emailPlaceholder}
+                            />
                             {errors.email && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.email}</p>}
                         </div>
 
+                        {/* Contraseña */}
                         <div className="gap-y-1 flex flex-col">
-                            <label
-                                htmlFor="create-user-password"
-                                className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
-                            >
+                            <label htmlFor="create-user-password" className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 {mod.users.password}
                             </label>
-                            <input
-                                id="create-user-password"
-                                name="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={handleFieldChange}
-                                className={`w-full rounded-lg border px-4 py-2.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 dark:text-white dark:placeholder-zinc-500 dark:bg-zinc-800 bg-white ${errors.password ? 'border-red-400 focus:ring-red-400 dark:border-red-500' : 'border-zinc-300 focus:border-violet-500 focus:ring-violet-500 dark:border-zinc-700'}`}
-                                placeholder={mod.users.passwordPlaceholder} />
+                            <div className="relative">
+                                <input
+                                    id="create-user-password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={handleFieldChange}
+                                    className={inputBase(!!errors.password) + ' pr-11'}
+                                    placeholder={mod.users.passwordPlaceholder}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(v => !v)}
+                                    className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-violet-500 transition-colors"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                </button>
+                            </div>
                             {errors.password && <p className="flex items-center gap-1 text-xs text-red-500 mt-0.5"><AlertCircle className="size-3" />{errors.password}</p>}
+
+                            {/* Indicador de fortaleza */}
+                            {formData.password && (
+                                <div className="mt-2 space-y-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3">
+                                    <PasswordStrengthRow ok={pwChecks.minLength}    label={t('auth.password.min')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasUpperCase} label={t('auth.password.uppercase')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasNumber}    label={t('auth.password.number')} />
+                                    <PasswordStrengthRow ok={pwChecks.hasSpecial}   label={t('auth.password.special')} />
+                                    <div className="mt-2 flex gap-1">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <div
+                                                key={i}
+                                                className="h-1 flex-1 rounded-full transition-colors duration-300"
+                                                style={{
+                                                    background: i < pwScore
+                                                        ? pwScore <= 1 ? '#f87171'
+                                                          : pwScore <= 2 ? '#fb923c'
+                                                          : pwScore <= 3 ? '#facc15'
+                                                          : '#34d399'
+                                                        : undefined,
+                                                    backgroundColor: i < pwScore ? undefined : 'rgb(212,212,216)',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Rol */}
                         <div className="gap-y-1 flex flex-col">
-                            <label
-                                htmlFor="create-user-role"
-                                className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
-                            >
+                            <label htmlFor="create-user-role" className="block text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 {mod.users.role}
                             </label>
                             <select
@@ -192,8 +240,11 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                                 onChange={handleFieldChange}
                                 className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-zinc-900 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                             >
-                                <option value={1}>{mod.users.roleAdmin}</option>
-                                <option value={2}>{mod.users.roleUser}</option>
+                                {[1, 2, 3, 4].map(id => (
+                                    <option key={id} value={id}>
+                                        {ROLE_LABELS[id][locale]}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -206,7 +257,6 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                         >
                             {mod.common.cancel}
                         </button>
-
                         <button
                             type="submit"
                             className="transform rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-violet-500/30 transition-all hover:scale-[1.02] hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 active:scale-[0.98] dark:bg-violet-500 dark:hover:bg-violet-600"
@@ -216,6 +266,6 @@ export default function CreateUserModal({ onClose, onSubmit }: Props) {
                     </div>
                 </form>
             </div>
-        </div></>
+        </div>
     );
 }

@@ -444,6 +444,18 @@ abstract class AppLocalizations {
   /// **'Inicio'**
   String get navHome;
 
+  /// No description provided for @navExplore.
+  ///
+  /// In es, this message translates to:
+  /// **'Explorar'**
+  String get navExplore;
+
+  /// No description provided for @navRoutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Rutas'**
+  String get navRoutes;
+
   /// No description provided for @navDiary.
   ///
   /// In es, this message translates to:
@@ -467,6 +479,156 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Usuario'**
   String get navUser;
+
+  /// No description provided for @exploreTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Explorar'**
+  String get exploreTitle;
+
+  /// No description provided for @routesSectionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas'**
+  String get routesSectionLabel;
+
+  /// No description provided for @routesSectionCertified.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas certificadas SMARTUR'**
+  String get routesSectionCertified;
+
+  /// No description provided for @routesSectionMostCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Más copiadas'**
+  String get routesSectionMostCopied;
+
+  /// No description provided for @routesSectionFollowing.
+  ///
+  /// In es, this message translates to:
+  /// **'De personas que sigues'**
+  String get routesSectionFollowing;
+
+  /// No description provided for @routesFollowingEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Sigue a viajeros para ver sus rutas aquí'**
+  String get routesFollowingEmpty;
+
+  /// No description provided for @searchRoutesHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar rutas o usuarios...'**
+  String get searchRoutesHint;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todo'**
+  String get seeAll;
+
+  /// No description provided for @misRutasTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Rutas'**
+  String get misRutasTitle;
+
+  /// No description provided for @misRutasEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes rutas'**
+  String get misRutasEmptyTitle;
+
+  /// No description provided for @misRutasEmptySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera ruta y comienza a planificar tu próxima aventura'**
+  String get misRutasEmptySubtitle;
+
+  /// No description provided for @misRutasCreate.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva ruta'**
+  String get misRutasCreate;
+
+  /// No description provided for @profileTabProfile.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil'**
+  String get profileTabProfile;
+
+  /// No description provided for @addToRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar a ruta'**
+  String get addToRoute;
+
+  /// No description provided for @createNewRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva ruta'**
+  String get createNewRoute;
+
+  /// No description provided for @genrePickerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué te gusta explorar?'**
+  String get genrePickerTitle;
+
+  /// No description provided for @genrePickerSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige hasta 3 temas que más te interesan'**
+  String get genrePickerSubtitle;
+
+  /// No description provided for @genrePickerContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get genrePickerContinue;
+
+  /// No description provided for @genrePickerSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Saltar por ahora'**
+  String get genrePickerSkip;
+
+  /// No description provided for @genreNature.
+  ///
+  /// In es, this message translates to:
+  /// **'Naturaleza'**
+  String get genreNature;
+
+  /// No description provided for @genreAdventure.
+  ///
+  /// In es, this message translates to:
+  /// **'Aventura'**
+  String get genreAdventure;
+
+  /// No description provided for @genreGastronomy.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastronomía'**
+  String get genreGastronomy;
+
+  /// No description provided for @genreCulture.
+  ///
+  /// In es, this message translates to:
+  /// **'Cultura'**
+  String get genreCulture;
+
+  /// No description provided for @genreRelax.
+  ///
+  /// In es, this message translates to:
+  /// **'Relax'**
+  String get genreRelax;
+
+  /// No description provided for @genreHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Historia'**
+  String get genreHistory;
 
   /// No description provided for @communityTitle.
   ///
@@ -2464,6 +2626,438 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esta versión de la app no tiene Google Sign-In configurado. El administrador debe registrar el SHA del keystore de release en Firebase.'**
   String get googleSignInReleaseConfig;
+
+  /// No description provided for @communityEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay publicaciones todavía'**
+  String get communityEmpty;
+
+  /// No description provided for @communityEmptyHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Sé el primero en compartir tu experiencia'**
+  String get communityEmptyHint;
+
+  /// No description provided for @communityFirstPost.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear publicación'**
+  String get communityFirstPost;
+
+  /// No description provided for @communityPostHint.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué quieres compartir?'**
+  String get communityPostHint;
+
+  /// No description provided for @communityReport.
+  ///
+  /// In es, this message translates to:
+  /// **'Reportar'**
+  String get communityReport;
+
+  /// No description provided for @communityReportTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Por qué reportas esta publicación?'**
+  String get communityReportTitle;
+
+  /// No description provided for @communityReportOther.
+  ///
+  /// In es, this message translates to:
+  /// **'Otro motivo'**
+  String get communityReportOther;
+
+  /// No description provided for @plannerTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Planificador'**
+  String get plannerTitle;
+
+  /// No description provided for @plannerDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar ruta'**
+  String get plannerDelete;
+
+  /// No description provided for @plannerDeleteConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar esta ruta permanentemente?'**
+  String get plannerDeleteConfirm;
+
+  /// No description provided for @plannerAddStop.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar parada'**
+  String get plannerAddStop;
+
+  /// No description provided for @plannerNoStops.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin paradas'**
+  String get plannerNoStops;
+
+  /// No description provided for @plannerNoStopsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca + en cualquier lugar para agregar paradas'**
+  String get plannerNoStopsSubtitle;
+
+  /// No description provided for @plannerOptimize.
+  ///
+  /// In es, this message translates to:
+  /// **'Optimizar con IA'**
+  String get plannerOptimize;
+
+  /// No description provided for @plannerOptimizeComingSoon.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente en SMARTUR'**
+  String get plannerOptimizeComingSoon;
+
+  /// No description provided for @plannerRouteName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la ruta'**
+  String get plannerRouteName;
+
+  /// No description provided for @plannerRouteNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: Mi ruta en Xalapa'**
+  String get plannerRouteNameHint;
+
+  /// No description provided for @plannerMakePublic.
+  ///
+  /// In es, this message translates to:
+  /// **'Hacer ruta pública'**
+  String get plannerMakePublic;
+
+  /// No description provided for @plannerStopDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de visita'**
+  String get plannerStopDate;
+
+  /// No description provided for @plannerStopNotes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get plannerStopNotes;
+
+  /// No description provided for @plannerStopDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar parada'**
+  String get plannerStopDelete;
+
+  /// No description provided for @itineraryNStops.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} paradas'**
+  String itineraryNStops(int n);
+
+  /// No description provided for @itineraryCertified.
+  ///
+  /// In es, this message translates to:
+  /// **'Certificada SMARTUR'**
+  String get itineraryCertified;
+
+  /// No description provided for @itineraryCopy.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar ruta'**
+  String get itineraryCopy;
+
+  /// No description provided for @itineraryCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta copiada'**
+  String get itineraryCopied;
+
+  /// No description provided for @itineraryDetail.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle de ruta'**
+  String get itineraryDetail;
+
+  /// No description provided for @itineraryPublic.
+  ///
+  /// In es, this message translates to:
+  /// **'Pública'**
+  String get itineraryPublic;
+
+  /// No description provided for @itineraryPrivate.
+  ///
+  /// In es, this message translates to:
+  /// **'Privada'**
+  String get itineraryPrivate;
+
+  /// No description provided for @itineraryStops.
+  ///
+  /// In es, this message translates to:
+  /// **'Paradas'**
+  String get itineraryStops;
+
+  /// No description provided for @routesLoadError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar rutas'**
+  String get routesLoadError;
+
+  /// No description provided for @socialFollow.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir'**
+  String get socialFollow;
+
+  /// No description provided for @socialFollowing.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiendo'**
+  String get socialFollowing;
+
+  /// No description provided for @socialUnfollow.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejar de seguir'**
+  String get socialUnfollow;
+
+  /// No description provided for @socialFollowers.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguidores'**
+  String get socialFollowers;
+
+  /// No description provided for @socialFollowersCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} seguidores'**
+  String socialFollowersCount(int n);
+
+  /// No description provided for @socialFollowingCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} siguiendo'**
+  String socialFollowingCount(int n);
+
+  /// No description provided for @socialSearchUsers.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar usuarios...'**
+  String get socialSearchUsers;
+
+  /// No description provided for @socialNoResults.
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontraron usuarios'**
+  String get socialNoResults;
+
+  /// No description provided for @publicRoutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas públicas'**
+  String get publicRoutes;
+
+  /// No description provided for @noPublicRoutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin rutas públicas aún'**
+  String get noPublicRoutes;
+
+  /// No description provided for @copyToMyRoutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar a mis rutas'**
+  String get copyToMyRoutes;
+
+  /// No description provided for @routeCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta copiada a Mis Rutas'**
+  String get routeCopied;
+
+  /// No description provided for @viewProfile.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver perfil'**
+  String get viewProfile;
+
+  /// No description provided for @compareTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Comparar Rutas'**
+  String get compareTitle;
+
+  /// No description provided for @compareYourRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu ruta'**
+  String get compareYourRoute;
+
+  /// No description provided for @compareOptimized.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta optimizada'**
+  String get compareOptimized;
+
+  /// No description provided for @compareDistanceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Distancia'**
+  String get compareDistanceLabel;
+
+  /// No description provided for @compareSavingsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro'**
+  String get compareSavingsLabel;
+
+  /// No description provided for @compareMoreEfficient.
+  ///
+  /// In es, this message translates to:
+  /// **'más eficiente'**
+  String get compareMoreEfficient;
+
+  /// No description provided for @compareKeep.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantener mi ruta'**
+  String get compareKeep;
+
+  /// No description provided for @compareApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar ruta optimizada'**
+  String get compareApply;
+
+  /// No description provided for @compareLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Optimizando con IA...'**
+  String get compareLoading;
+
+  /// No description provided for @compareApplied.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta optimizada aplicada'**
+  String get compareApplied;
+
+  /// No description provided for @compareMinStops.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas al menos 2 paradas con ubicación'**
+  String get compareMinStops;
+
+  /// No description provided for @bookingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar servicio'**
+  String get bookingTitle;
+
+  /// No description provided for @bookingDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de visita'**
+  String get bookingDate;
+
+  /// No description provided for @bookingTime.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora (opcional)'**
+  String get bookingTime;
+
+  /// No description provided for @bookingGuests.
+  ///
+  /// In es, this message translates to:
+  /// **'Personas'**
+  String get bookingGuests;
+
+  /// No description provided for @bookingNotes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas (opcional)'**
+  String get bookingNotes;
+
+  /// No description provided for @bookingConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar reserva'**
+  String get bookingConfirm;
+
+  /// No description provided for @bookingSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Reserva enviada con éxito'**
+  String get bookingSuccess;
+
+  /// No description provided for @bookingStatusPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente'**
+  String get bookingStatusPending;
+
+  /// No description provided for @bookingStatusConfirmed.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmada'**
+  String get bookingStatusConfirmed;
+
+  /// No description provided for @bookingStatusCancelled.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelada'**
+  String get bookingStatusCancelled;
+
+  /// No description provided for @bookingMyBookings.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis reservas'**
+  String get bookingMyBookings;
+
+  /// No description provided for @bookingNoBookings.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin reservas aún'**
+  String get bookingNoBookings;
+
+  /// No description provided for @bookingCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar reserva'**
+  String get bookingCancel;
+
+  /// No description provided for @chatTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajes'**
+  String get chatTitle;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get chatSend;
+
+  /// No description provided for @chatNoConversations.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conversaciones aún'**
+  String get chatNoConversations;
+
+  /// No description provided for @chatTypeHere.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un mensaje...'**
+  String get chatTypeHere;
+
+  /// No description provided for @chatContact.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactar empresa'**
+  String get chatContact;
 }
 
 class _AppLocalizationsDelegate

@@ -147,6 +147,11 @@ class User {
             values.push(data.name);
         }
 
+        if (data.email !== undefined) {
+            fields.push(`email = $${index++}`);
+            values.push(data.email);
+        }
+
         if (data.password !== undefined) {
             const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
             fields.push(`password = $${index++}`);

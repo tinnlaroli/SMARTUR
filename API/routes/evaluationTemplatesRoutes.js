@@ -11,19 +11,19 @@ router.get('/templates/:id_template', verifyToken, templateController.findTempla
 router.post(
     '/templates/register',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     templateController.createTemplateController
 );
 router.delete(
     '/templates/delete/:id_template',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     templateController.deleteTemplateController
 );
 router.patch(
     '/templates/update/:id_template',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     templateController.updateTemplateController
 );
 export default router;

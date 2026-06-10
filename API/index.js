@@ -33,6 +33,13 @@ import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
 import EmpresaRouter from './routes/empresaRoutes.js';
 import NotificationRouter from './routes/notificationRoutes.js';
+import KycRouter from './routes/kycRoutes.js';
+import AdminVerificationRouter from './routes/adminVerificationRoutes.js';
+import ItineraryRouter from './routes/itineraryRoutes.js';
+import SocialRouter from './routes/socialRoutes.js';
+import BookingRouter from './routes/bookingRoutes.js';
+import ChatRouter from './routes/chatRoutes.js';
+import AdminChangeLogRouter from './routes/adminChangeLogRoutes.js';
 import { runMigrations } from './config/migrations.js';
 import db from './config/db.js';
 import { validateEnv } from './config/env.js';
@@ -248,7 +255,13 @@ app.use('/api/v2', InteractionRouter);
 app.use('/api/v2', MLRouter);
 app.use('/api/v2', EmpresaRouter);
 app.use('/api/v2', NotificationRouter);
-
+app.use('/api/v2', KycRouter);
+app.use('/api/v2', AdminVerificationRouter);
+app.use('/api/v2', ItineraryRouter);
+app.use('/api/v2', SocialRouter);
+app.use('/api/v2', BookingRouter);
+app.use('/api/v2', ChatRouter);
+app.use('/api/v2', AdminChangeLogRouter);
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 // Debe ir DESPUÉS de todas las rutas y ANTES del Sentry error handler

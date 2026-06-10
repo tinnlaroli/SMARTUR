@@ -11,6 +11,9 @@ export interface TouristService {
     id_evaluation?: number;
     total_score?: number;
     image_url?: string | null;
+    price_from?: number | null;
+    price_to?: number | null;
+    currency?: string | null;
     created_at: string;
 }
 
@@ -31,6 +34,9 @@ export interface UpdateTouristServiceDTO {
     id_location?: number;
     service_type?: string;
     active?: boolean;
+    price_from?: number | null;
+    price_to?: number | null;
+    currency?: string;
     image?: File | null;
 }
 

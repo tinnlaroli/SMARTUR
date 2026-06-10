@@ -422,9 +422,9 @@ class UserContentService {
   /// `caption` (puede ir vacío si hay `photo`) y archivo opcional con nombre de campo **`photo`**.
   /// No se debe fijar `Content-Type` manualmente; [http.MultipartRequest] añade el boundary.
   Future<void> createCommunityPost({
-    required String placeKind,
-    required int placeId,
-    required String caption,
+    String? placeKind,
+    int? placeId,
+    String caption = '',
     Uint8List? imageBytes,
     String? imageFilename,
     String? imageMimeType,
@@ -444,9 +444,8 @@ class UserContentService {
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer $token';
     request.headers['Accept'] = 'application/json';
-    // Orden alineado con ejemplos del API (multer + body en texto)
-    request.fields['place_kind'] = placeKind;
-    request.fields['place_id'] = '$placeId';
+    if (placeKind != null) request.fields['place_kind'] = placeKind;
+    if (placeId != null) request.fields['place_id'] = '$placeId';
     request.fields['caption'] = trimmed;
 
     if (imageBytes != null && imageBytes.isNotEmpty) {

@@ -58,10 +58,37 @@
   "start": "Começar",
   "loginWithBiometrics": "Entrar com impressão digital",
   "navHome": "Início",
+  "navExplore": "Explorar",
+  "navRoutes": "Minhas Rotas",
   "navDiary": "Diário",
   "navRecommend": "Recomendar",
   "navCommunity": "Comunidade",
   "navUser": "Usuário",
+  "exploreTitle": "Explorar",
+  "routesSectionLabel": "Rotas",
+  "routesSectionCertified": "Rotas certificadas SMARTUR",
+  "routesSectionMostCopied": "Mais copiadas",
+  "routesSectionFollowing": "De pessoas que você segue",
+  "routesFollowingEmpty": "Siga viajantes para ver suas rotas aqui",
+  "searchRoutesHint": "Buscar rotas ou usuários...",
+  "seeAll": "Ver tudo",
+  "misRutasTitle": "Minhas Rotas",
+  "misRutasEmptyTitle": "Ainda sem rotas",
+  "misRutasEmptySubtitle": "Crie sua primeira rota e comece a planejar sua próxima aventura",
+  "misRutasCreate": "Nova rota",
+  "profileTabProfile": "Perfil",
+  "addToRoute": "Adicionar à rota",
+  "createNewRoute": "Nova rota",
+  "genrePickerTitle": "O que você gosta de explorar?",
+  "genrePickerSubtitle": "Escolha até 3 temas que mais lhe interessam",
+  "genrePickerContinue": "Continuar",
+  "genrePickerSkip": "Pular por agora",
+  "genreNature": "Natureza",
+  "genreAdventure": "Aventura",
+  "genreGastronomy": "Gastronomia",
+  "genreCulture": "Cultura",
+  "genreRelax": "Relaxar",
+  "genreHistory": "História",
   "communityTitle": "Comunidade",
   "uploadPhotoAction": "Adicionar foto",
   "communityCreatePost": "Criar publicação",
@@ -434,4 +461,79 @@
   "recoResultsDone":"Concluir",
   "recoResultsRankHint":"Ordenados por compatibilidade com o seu perfil",
   "googleSignInReleaseConfig":"O Google Sign-In não está configurado nesta versão. Registre o SHA do keystore de release no Firebase."
+  ,"communityEmpty":"Nenhuma publicação ainda"
+  ,"communityEmptyHint":"Seja o primeiro a compartilhar sua experiência"
+  ,"communityFirstPost":"Criar publicação"
+  ,"communityPostHint":"O que você quer compartilhar?"
+  ,"communityReport":"Denunciar"
+  ,"communityReportTitle":"Por que você está denunciando esta publicação?"
+  ,"communityReportOther":"Outro motivo"
+  ,"plannerTitle":"Planejador"
+  ,"plannerDelete":"Excluir rota"
+  ,"plannerDeleteConfirm":"Excluir esta rota permanentemente?"
+  ,"plannerAddStop":"Adicionar parada"
+  ,"plannerNoStops":"Sem paradas"
+  ,"plannerNoStopsSubtitle":"Toque em + em qualquer lugar para adicionar paradas"
+  ,"plannerOptimize":"Otimizar com IA"
+  ,"plannerOptimizeComingSoon":"Em breve no SMARTUR"
+  ,"plannerRouteName":"Nome da rota"
+  ,"plannerRouteNameHint":"Ex.: Minha rota em Xalapa"
+  ,"plannerMakePublic":"Tornar a rota pública"
+  ,"plannerStopDate":"Data da visita"
+  ,"plannerStopNotes":"Notas"
+  ,"plannerStopDelete":"Remover parada"
+  ,"itineraryNStops":"{n} paradas"
+  ,"@itineraryNStops":{"placeholders":{"n":{"type":"int"}}}
+  ,"itineraryCertified":"Certificado SMARTUR"
+  ,"itineraryCopy":"Copiar rota"
+  ,"itineraryCopied":"Rota copiada"
+  ,"itineraryDetail":"Detalhe da rota"
+  ,"itineraryPublic":"Público"
+  ,"itineraryPrivate":"Privado"
+  ,"itineraryStops":"Paradas"
+  ,"routesLoadError":"Erro ao carregar rotas"
+  ,"socialFollow":"Seguir"
+  ,"socialFollowing":"Seguindo"
+  ,"socialUnfollow":"Deixar de seguir"
+  ,"socialFollowers":"Seguidores"
+  ,"socialFollowersCount":"{n} seguidores"
+  ,"@socialFollowersCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialFollowingCount":"{n} seguindo"
+  ,"@socialFollowingCount":{"placeholders":{"n":{"type":"int"}}}
+  ,"socialSearchUsers":"Buscar usuários..."
+  ,"socialNoResults":"Nenhum usuário encontrado"
+  ,"publicRoutes":"Rotas públicas"
+  ,"noPublicRoutes":"Sem rotas públicas ainda"
+  ,"copyToMyRoutes":"Copiar para minhas rotas"
+  ,"routeCopied":"Rota copiada para Minhas Rotas"
+  ,"viewProfile":"Ver perfil"
+  ,"compareTitle":"Comparar Rotas"
+  ,"compareYourRoute":"Sua rota"
+  ,"compareOptimized":"Rota otimizada"
+  ,"compareDistanceLabel":"Distância"
+  ,"compareSavingsLabel":"Economia"
+  ,"compareMoreEfficient":"mais eficiente"
+  ,"compareKeep":"Manter minha rota"
+  ,"compareApply":"Usar rota otimizada"
+  ,"compareLoading":"Otimizando com IA..."
+  ,"compareApplied":"Rota otimizada aplicada"
+  ,"compareMinStops":"Você precisa de pelo menos 2 paradas com localização"
+  ,"bookingTitle":"Reservar serviço"
+  ,"bookingDate":"Data da visita"
+  ,"bookingTime":"Hora (opcional)"
+  ,"bookingGuests":"Pessoas"
+  ,"bookingNotes":"Notas (opcional)"
+  ,"bookingConfirm":"Confirmar reserva"
+  ,"bookingSuccess":"Reserva enviada com sucesso"
+  ,"bookingStatusPending":"Pendente"
+  ,"bookingStatusConfirmed":"Confirmada"
+  ,"bookingStatusCancelled":"Cancelada"
+  ,"bookingMyBookings":"Minhas reservas"
+  ,"bookingNoBookings":"Sem reservas ainda"
+  ,"bookingCancel":"Cancelar reserva"
+  ,"chatTitle":"Mensagens"
+  ,"chatSend":"Enviar"
+  ,"chatNoConversations":"Sem conversas ainda"
+  ,"chatTypeHere":"Escreva uma mensagem..."
+  ,"chatContact":"Contatar empresa"
 }

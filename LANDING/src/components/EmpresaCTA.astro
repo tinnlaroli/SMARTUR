@@ -161,6 +161,12 @@ const ICONS: Record<string, string> = {
             </span>
           </button>
           <p class="ec-cta-note">{t.ctaNote}</p>
+          <a href={`${plataformaUrl}/empresa/dashboard`} class="ec-login-link">
+            {lang === 'en' ? '→ Already have an account? Log in'
+              : lang === 'fr' ? '→ Déjà inscrit ? Se connecter'
+              : lang === 'pt' ? '→ Já tem conta? Entrar'
+              : '→ Ya tengo cuenta, iniciar sesión'}
+          </a>
         </div>
       </div>
 
@@ -340,6 +346,20 @@ const ICONS: Record<string, string> = {
     --fs: var(--font-size-xs);
     color: var(--color-text-alt);
     opacity: 0.55;
+  }
+
+  .ec-login-link {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-purple);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
   }
 
   /* ── Feature grid ────────────────────── */

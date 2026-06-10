@@ -1,6 +1,14 @@
 import Company from '../models/companyModel.js';
 import pool from '../config/db.js';
 import { sendEmpresaApprovedEmail, sendEmpresaSuspendedEmail } from '../utils/mailer.js';
+import AdminChangeLog from '../models/adminChangeLogModel.js';
+import { sendFcmToUser } from '../services/fcmService.js';
+
+const COMPANY_FIELD_LABELS = {
+    name:    'Nombre de empresa',
+    address: 'Dirección',
+    phone:   'Teléfono',
+};
 
 class CompanyController {
     static async getAll(req, res) {
@@ -107,13 +115,21 @@ class CompanyController {
 
     static async update(req, res) {
         try {
+            const isAdmin = req.user?.role_id === 1;
+
+            // Capture old state for diff (admin only)
+            let oldCompany = null;
+            if (isAdmin) {
+                oldCompany = await Company.findById(req.params.id);
+            }
+
             const company = await Company.update(req.params.id, req.body);
 
             if (!company) {
                 return res.status(404).json({ message: 'Compañía no encontrada' });
             }
 
-            // Notificar al owner si el admin cambió el status
+            // Notificar al owner si el admin cambió el status (email)
             const newStatus = req.body.status;
             if ((newStatus === 'active' || newStatus === 'suspended') && company.owner_user_id) {
                 pool.query(
@@ -134,6 +150,40 @@ class CompanyController {
                 }).catch((err) => {
                     console.warn('[company] lookup owner fallido:', err.message);
                 });
+            }
+
+            // Build change log for admin edits to tracked fields
+            if (isAdmin && oldCompany) {
+                const changes = {};
+                const TRACKED = ['name', 'address', 'phone'];
+                for (const field of TRACKED) {
+                    const newVal = req.body[field];
+                    if (newVal === undefined) continue;
+                    const oldVal = oldCompany[field];
+                    if (String(newVal) !== String(oldVal ?? '')) {
+                        changes[field] = { old: oldVal, new: newVal, label: COMPANY_FIELD_LABELS[field] };
+                    }
+                }
+                if (Object.keys(changes).length > 0 && company.owner_user_id) {
+                    (async () => {
+                        try {
+                            const log = await AdminChangeLog.create({
+                                target_type: 'company',
+                                target_id: company.id_company,
+                                admin_id: req.user.id,
+                                id_company: company.id_company,
+                                changes,
+                            });
+                            await sendFcmToUser(pool, company.owner_user_id, {
+                                title: 'Smartur modificó tu empresa',
+                                body: `Se editó información de "${company.name}". Revisa y responde si no estás de acuerdo.`,
+                                data: { type: 'admin_change', change_log_id: String(log.id) },
+                            });
+                        } catch (logErr) {
+                            console.warn('[company update] change log/FCM error:', logErr.message);
+                        }
+                    })();
+                }
             }
 
             res.json({

@@ -36,25 +36,25 @@ router.get(
 router.post(
     '/service-certifications/register',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceCertificationController.createCertificationController
 );
 router.delete(
     '/service-certifications/delete/:id_certification',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceCertificationController.deleteCertificationController
 );
 router.patch(
     '/service-certifications/update/:id_certification',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceCertificationController.updateCertificationController
 );
 router.patch(
     '/service-certifications/status/:id_certification',
     verifyToken,
-    requireRole([1]),
+    requireRole([1, 4]),
     ServiceCertificationController.updateStatusController
 );
 

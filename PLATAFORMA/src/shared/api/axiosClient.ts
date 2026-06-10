@@ -32,8 +32,53 @@ export const api = axios.create({
 let _accessToken: string | null = null;
 export const setAccessToken = (t: string) => { _accessToken = t; };
 export const clearAccessToken = () => { _accessToken = null; };
+
+// ── Refresh token storage helpers ────────────────────────────────────────────
+// "Recordarme" → localStorage con expiración de 7 días
+// Sin "recordarme" → sessionStorage (destruido al cerrar el navegador)
+
+const LS_REFRESH  = 'refreshToken';
+const LS_REMEMBER = 'smartur:remember';
+const LS_EXPIRY   = 'smartur:session_expiry';
+const SEVEN_DAYS  = 7 * 24 * 60 * 60 * 1000;
+
+export function setStoredRefreshToken(token: string, remember: boolean) {
+    if (remember) {
+        localStorage.setItem(LS_REFRESH,  token);
+        localStorage.setItem(LS_REMEMBER, 'true');
+        localStorage.setItem(LS_EXPIRY,   String(Date.now() + SEVEN_DAYS));
+        sessionStorage.removeItem(LS_REFRESH);
+    } else {
+        sessionStorage.setItem(LS_REFRESH, token);
+        localStorage.removeItem(LS_REFRESH);
+        localStorage.removeItem(LS_REMEMBER);
+        localStorage.removeItem(LS_EXPIRY);
+    }
+}
+
+export function getStoredRefreshToken(): string | null {
+    const lsToken = localStorage.getItem(LS_REFRESH);
+    if (lsToken) {
+        const expiry = parseInt(localStorage.getItem(LS_EXPIRY) ?? '0', 10);
+        if (Date.now() > expiry) {
+            clearStoredRefreshToken();
+            return null;
+        }
+        return lsToken;
+    }
+    return sessionStorage.getItem(LS_REFRESH);
+}
+
+export function clearStoredRefreshToken() {
+    sessionStorage.removeItem(LS_REFRESH);
+    localStorage.removeItem(LS_REFRESH);
+    localStorage.removeItem(LS_REMEMBER);
+    localStorage.removeItem(LS_EXPIRY);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const isAuthenticated = () =>
-    _accessToken !== null || sessionStorage.getItem('refreshToken') !== null;
+    _accessToken !== null || getStoredRefreshToken() !== null;
 
 /**
  * Rehidrata la sesión desde el refreshToken al arrancar la app (ej: tras F5).
@@ -42,15 +87,16 @@ export const isAuthenticated = () =>
  */
 export async function initSession(): Promise<boolean> {
     if (_accessToken) return true;
-    const refreshToken = sessionStorage.getItem('refreshToken');
+    const refreshToken = getStoredRefreshToken();
     if (!refreshToken) return false;
     try {
         const { data } = await axios.post(`${resolveApiBaseUrl()}/auth/refresh`, { refreshToken });
         setAccessToken(data.token);
-        sessionStorage.setItem('refreshToken', data.refreshToken);
+        const remember = localStorage.getItem(LS_REMEMBER) === 'true';
+        setStoredRefreshToken(data.refreshToken, remember);
         return true;
     } catch {
-        sessionStorage.removeItem('refreshToken');
+        clearStoredRefreshToken();
         localStorage.removeItem('user');
         return false;
     }
@@ -72,7 +118,7 @@ let refreshQueue: Array<(token: string) => void> = [];
 
 function clearSessionAndRedirect() {
     _accessToken = null;
-    sessionStorage.removeItem('refreshToken');
+    clearStoredRefreshToken();
     localStorage.removeItem('user');
     emitUserStorageSync();
     window.location.href = '/';
@@ -92,7 +138,7 @@ api.interceptors.response.use(
             originalRequest?.url?.includes('/auth/refresh');
 
         if (error.response?.status === 401 && !isAuthRoute && !originalRequest._retried) {
-            const refreshToken = sessionStorage.getItem('refreshToken');
+            const refreshToken = getStoredRefreshToken();
 
             if (!refreshToken) {
                 clearSessionAndRedirect();
@@ -121,7 +167,8 @@ api.interceptors.response.use(
                 const newRefresh: string = data.refreshToken;
 
                 setAccessToken(newToken);
-                sessionStorage.setItem('refreshToken', newRefresh);
+                const remember = localStorage.getItem(LS_REMEMBER) === 'true';
+                setStoredRefreshToken(newRefresh, remember);
 
                 // Descola peticiones en espera
                 refreshQueue.forEach((cb) => cb(newToken));

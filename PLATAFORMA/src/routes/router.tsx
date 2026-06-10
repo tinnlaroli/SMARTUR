@@ -24,7 +24,6 @@ const ActivitiesPage      = lazy(() => import('../features/activities/pages/Acti
 const CertificationsPage  = lazy(() => import('../features/certifications/pages/CertificationsPage').then(m => ({ default: m.CertificationsPage })));
 const POIPage             = lazy(() => import('../features/points-of-interest/pages/POIPage').then(m => ({ default: m.POIPage })));
 const StatisticsPage      = lazy(() => import('../features/statistics/pages/StatisticsPage').then(m => ({ default: m.StatisticsPage })));
-const TemplatesPage         = lazy(() => import('../features/evaluations/pages/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
 const InstrumentBuilderPage = lazy(() => import('../features/instrument-builder/pages/InstrumentBuilderPage').then(m => ({ default: m.InstrumentBuilderPage })));
 const InstrumentEditorPage  = lazy(() => import('../features/instrument-builder/pages/InstrumentEditorPage').then(m => ({ default: m.InstrumentEditorPage })));
 const CommunityPage       = lazy(() => import('../features/community/pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
@@ -40,6 +39,17 @@ const EmpresaPerfilPage      = lazy(() => import('../features/empresa/pages/Empr
 const EmpresaServiciosPage   = lazy(() => import('../features/empresa/pages/EmpresaServiciosPage').then(m => ({ default: m.EmpresaServiciosPage })));
 const EmpresaAnalyticsPage   = lazy(() => import('../features/empresa/pages/EmpresaAnalyticsPage').then(m => ({ default: m.EmpresaAnalyticsPage })));
 const EmpresaConfiguracionPage = lazy(() => import('../features/empresa/pages/EmpresaConfiguracionPage').then(m => ({ default: m.EmpresaConfiguracionPage })));
+const EmpresaKycPage         = lazy(() => import('../features/empresa/pages/EmpresaKycPage').then(m => ({ default: m.EmpresaKycPage })));
+
+// ── Admin verification pages ──────────────────────────────────────────────────
+const AdminCompaniesVerificationPage = lazy(() => import('../features/companies/pages/AdminCompaniesVerificationPage').then(m => ({ default: m.AdminCompaniesVerificationPage })));
+const AdminServicesApprovalPage      = lazy(() => import('../features/tourist-services/pages/AdminServicesApprovalPage').then(m => ({ default: m.AdminServicesApprovalPage })));
+const AdminItinerariesPage           = lazy(() => import('../features/itineraries/pages/AdminItinerariesPage').then(m => ({ default: m.AdminItinerariesPage })));
+const AdminItineraryBuilderPage      = lazy(() => import('../features/itineraries/pages/AdminItineraryBuilderPage').then(m => ({ default: m.AdminItineraryBuilderPage })));
+const EmpresaCalendarioPage          = lazy(() => import('../features/empresa/pages/EmpresaCalendarioPage').then(m => ({ default: m.EmpresaCalendarioPage })));
+const EmpresaMensajesPage            = lazy(() => import('../features/empresa/pages/EmpresaMensajesPage').then(m => ({ default: m.EmpresaMensajesPage })));
+const EmpresaCambiosPage             = lazy(() => import('../features/empresa/pages/EmpresaCambiosPage').then(m => ({ default: m.EmpresaCambiosPage })));
+const AdminDisputasPage              = lazy(() => import('../features/tourist-services/pages/AdminDisputasPage').then(m => ({ default: m.AdminDisputasPage })));
 
 // Suspense wrapper used inline for route elements
 function S({
@@ -71,7 +81,7 @@ export const router = createBrowserRouter([
             {
                 children: [
                     {
-                        element: <ProtectedRoute allowedRoles={[1]} />,
+                        element: <ProtectedRoute allowedRoles={[1, 4]} />,
                         children: [
                             {
                                 path: '/dashboard',
@@ -81,20 +91,24 @@ export const router = createBrowserRouter([
                                     { path: 'usuarios',             element: <S><UserPage /></S> },
                                     { path: 'companias',            element: <S><CompanyPage /></S> },
                                     { path: 'servicios',            element: <S><TouristServicePage /></S> },
+                                    { path: 'verificacion-empresas', element: <S><AdminCompaniesVerificationPage /></S> },
+                                    { path: 'servicios-pendientes',  element: <S><AdminServicesApprovalPage /></S> },
                                     { path: 'ubicaciones',          element: <S><LocationPage /></S> },
                                     { path: 'perfiles',             element: <S><ProfilesPage /></S> },
                                     { path: 'actividades',          element: <S><ActivitiesPage /></S> },
                                     { path: 'certificaciones',      element: <S><CertificationsPage /></S> },
                                     { path: 'poi',                  element: <S><POIPage /></S> },
                                     { path: 'estadisticas',         element: <S><StatisticsPage /></S> },
-                                    { path: 'plantillas',           element: <S><TemplatesPage /></S> },
                                     { path: 'instrumentos',         element: <S><InstrumentBuilderPage /></S> },
                                     { path: 'instrumentos/:id',     element: <S><InstrumentEditorPage /></S> },
+                                    { path: 'itinerarios',          element: <S><AdminItinerariesPage /></S> },
+                                    { path: 'itinerarios/nueva',    element: <S><AdminItineraryBuilderPage /></S> },
                                     { path: 'comunidad',            element: <S><CommunityPage /></S> },
                                     { path: 'contactos',            element: <S><ContactsPage /></S> },
                                     { path: 'ml',                   element: <S><MLObservabilityPage /></S> },
                                     { path: 'notificaciones',       element: <S><NotificacionesPage /></S> },
                                     { path: 'configuracion',        element: <S><SettingsPage /></S> },
+                                    { path: 'disputas',             element: <S><AdminDisputasPage /></S> },
                                     { path: '*',                    element: <NotFound /> },
                                 ],
                             },
@@ -119,11 +133,15 @@ export const router = createBrowserRouter([
                         path: '/empresa',
                         element: <S><EmpresaLayout /></S>,
                         children: [
-                            { path: 'dashboard',     element: <S><EmpresaDashboardPage /></S> },
-                            { path: 'perfil',        element: <S><EmpresaPerfilPage /></S> },
-                            { path: 'servicios',     element: <S><EmpresaServiciosPage /></S> },
-                            { path: 'analytics',     element: <S><EmpresaAnalyticsPage /></S> },
-                            { path: 'configuracion', element: <S><EmpresaConfiguracionPage /></S> },
+                            { path: 'dashboard',      element: <S><EmpresaDashboardPage /></S> },
+                            { path: 'perfil',         element: <S><EmpresaPerfilPage /></S> },
+                            { path: 'servicios',      element: <S><EmpresaServiciosPage /></S> },
+                            { path: 'analytics',      element: <S><EmpresaAnalyticsPage /></S> },
+                            { path: 'configuracion',  element: <S><EmpresaConfiguracionPage /></S> },
+                            { path: 'verificacion',   element: <S><EmpresaKycPage /></S> },
+                            { path: 'calendario',     element: <S><EmpresaCalendarioPage /></S> },
+                            { path: 'mensajes',       element: <S><EmpresaMensajesPage /></S> },
+                            { path: 'cambios',        element: <S><EmpresaCambiosPage /></S> },
                             { index: true,           element: <Navigate to="dashboard" replace /> },
                         ],
                     },

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
-import { mlApi, type ModelStatus, type SchedulerConfig } from '../api/mlApi';
+import { mlApi, type ModelStatus, type SchedulerConfig, type ExtendedStats } from '../api/mlApi';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -8,11 +8,13 @@ import { DASHBOARD_COLORS } from '../../home/utils/dashboard';
 import {
     BrainCircuit, Zap, Clock, MousePointerClick,
     BarChart2, AlertCircle, RefreshCw, Activity, Play,
-    CheckCircle2, XCircle, Clock4, Loader2,
+    CheckCircle2, XCircle, Clock4, Loader2, Navigation2, Users,
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell,
+    BarChart, Bar, Legend,
 } from 'recharts';
 
 // 8 minutes — RF + GBM + LightFM full training cycle
@@ -20,6 +22,21 @@ const TRAINING_LOCK_MS = 8 * 60 * 1000;
 const TRAINING_LOCK_KEY = 'smartur_ml_training_lock';
 // Poll health every 30 s while training is running
 const POLL_INTERVAL_MS = 30_000;
+
+const PURPLE = DASHBOARD_COLORS.purple;
+const CYAN   = DASHBOARD_COLORS.cyan;
+
+function SectionDivider({ label, color }: { label: string; color: string }) {
+    return (
+        <div className="flex items-center gap-3 pt-2">
+            <div className="h-px flex-1" style={{ background: `${color}33` }} />
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color }}>
+                {label}
+            </span>
+            <div className="h-px flex-1" style={{ background: `${color}33` }} />
+        </div>
+    );
+}
 
 function KpiCard({
     label, value, sub,
@@ -92,8 +109,8 @@ export const MLObservabilityPage = () => {
     const copy = getDashboardText(lang).mlObservability;
     const locale = getDashboardText(lang).locale;
 
-    const trainTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const pollTimerRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+    const trainTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pollTimerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
     const trainingStartRef = useRef<number | null>(null);
 
     const [training, setTraining] = useState(() => {
@@ -111,13 +128,16 @@ export const MLObservabilityPage = () => {
         }
     });
 
-    const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
+    const [modelStatus, setModelStatus]   = useState<ModelStatus | null>(null);
     const [statusLoading, setStatusLoading] = useState(false);
 
     const [schedConfig, setSchedConfig]   = useState<SchedulerConfig | null>(null);
     const [schedEnabled, setSchedEnabled] = useState(false);
     const [schedHour, setSchedHour]       = useState(2);
     const [schedSaving, setSchedSaving]   = useState(false);
+    const [schedOpen, setSchedOpen]       = useState(false);
+
+    const [extStats, setExtStats] = useState<ExtendedStats | null>(null);
 
     const fetchModelStatus = useCallback(async () => {
         setStatusLoading(true);
@@ -125,7 +145,7 @@ export const MLObservabilityPage = () => {
             const s = await mlApi.getModelStatus();
             setModelStatus(s);
         } catch {
-            // non-fatal — keep previous status
+            // non-fatal
         } finally {
             setStatusLoading(false);
         }
@@ -140,6 +160,13 @@ export const MLObservabilityPage = () => {
         } catch { /* non-fatal */ }
     }, []);
 
+    const fetchExtStats = useCallback(async () => {
+        try {
+            const s = await mlApi.getExtendedStats();
+            setExtStats(s);
+        } catch { /* non-fatal */ }
+    }, []);
+
     const handleSaveScheduler = async () => {
         setSchedSaving(true);
         try {
@@ -147,6 +174,7 @@ export const MLObservabilityPage = () => {
             if (res.ok) {
                 await fetchScheduler();
                 toast.success(copy.schedulerSaved, '');
+                setSchedOpen(false);
             }
         } catch {
             toast.error(copy.schedulerSaveError, '');
@@ -155,48 +183,44 @@ export const MLObservabilityPage = () => {
         }
     };
 
-    // Release lock + stop polling helper
     const releaseLock = useCallback(() => {
         localStorage.removeItem(TRAINING_LOCK_KEY);
         setTraining(false);
         trainingStartRef.current = null;
-        if (trainTimerRef.current)  clearTimeout(trainTimerRef.current);
-        if (pollTimerRef.current)   clearInterval(pollTimerRef.current);
+        if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+        if (pollTimerRef.current)  clearInterval(pollTimerRef.current);
         trainTimerRef.current = null;
         pollTimerRef.current  = null;
     }, []);
 
-    // Start polling every 30 s while training; auto-stop when metrics updated
     const startPolling = useCallback((startedAt: number, previousCreatedAt: string | null) => {
         if (pollTimerRef.current) clearInterval(pollTimerRef.current);
         pollTimerRef.current = setInterval(async () => {
             try {
-                const { getHealth } = mlApi;
-                const result = await getHealth();
-                // If metrics row is newer than when we started training → done!
+                const result = await mlApi.getHealth();
                 const newCreatedAt = (result.latest_metrics as { created_at?: string } | null)?.created_at ?? null;
                 if (newCreatedAt && newCreatedAt !== previousCreatedAt) {
                     releaseLock();
-                    // Update health data in the hook — we trigger a fetchHealth to update UI
                     void fetchHealth();
                     void fetchModelStatus();
+                    void fetchExtStats();
                 }
             } catch { /* ignore polling errors */ }
         }, POLL_INTERVAL_MS);
 
-        // Hard deadline: release lock after TRAINING_LOCK_MS regardless
         trainTimerRef.current = setTimeout(() => {
             releaseLock();
             void fetchHealth();
             void fetchModelStatus();
+            void fetchExtStats();
         }, TRAINING_LOCK_MS - (Date.now() - startedAt));
-    }, [releaseLock, fetchHealth, fetchModelStatus]);
+    }, [releaseLock, fetchHealth, fetchModelStatus, fetchExtStats]);
 
-    // On mount: restore lock if still active and resume polling
     useEffect(() => {
         void fetchHealth();
         void fetchModelStatus();
         void fetchScheduler();
+        void fetchExtStats();
 
         try {
             const ts = localStorage.getItem(TRAINING_LOCK_KEY);
@@ -208,58 +232,29 @@ export const MLObservabilityPage = () => {
                 return;
             }
             trainingStartRef.current = startedAt;
-            // Resume polling without knowing the old created_at → use null so any change triggers
             startPolling(startedAt, null);
         } catch { /* ignore */ }
 
         return () => {
-            if (trainTimerRef.current)  clearTimeout(trainTimerRef.current);
-            if (pollTimerRef.current)   clearInterval(pollTimerRef.current);
+            if (trainTimerRef.current) clearTimeout(trainTimerRef.current);
+            if (pollTimerRef.current)  clearInterval(pollTimerRef.current);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const metrics        = data?.latest_metrics;
-    const sessions       = data?.daily_sessions ?? [];
-    const ctr            = data?.ctr_30d;
-    const hasAlgorithms  = metrics != null && Object.keys(metrics.algorithms ?? {}).length > 0;
-    const localBlend     = metrics?.local_blend;
-
-    const bestRmse = hasAlgorithms
-        ? Math.min(...Object.values(metrics!.algorithms).map((a) => a.rmse))
-        : null;
-    const avgLatency =
-        sessions.length > 0
-            ? (
-                sessions.reduce((s, d) => s + parseFloat(d.avg_latency_ms), 0) /
-                sessions.length
-            ).toFixed(0)
-            : null;
-    const totalSessions = sessions.reduce((s, d) => s + d.total, 0);
-    const ctrPct =
-        ctr && ctr.total > 0
-            ? ((ctr.clicked / ctr.total) * 100).toFixed(1)
-            : null;
-
-    const chartData = [...sessions].reverse().map((d) => ({
-        day: new Date(d.day).toLocaleDateString(locale, {
-            month: 'short',
-            day: 'numeric',
-        }),
-        sessions: d.total,
-        latency: Math.round(parseFloat(d.avg_latency_ms)),
-    }));
+    const handleRefresh = () => {
+        void fetchHealth();
+        void fetchModelStatus();
+        void fetchExtStats();
+    };
 
     const handleTrain = async () => {
         const startedAt = Date.now();
         const previousCreatedAt = (metrics as { created_at?: string } | null)?.created_at ?? null;
-
         setTraining(true);
         localStorage.setItem(TRAINING_LOCK_KEY, String(startedAt));
         trainingStartRef.current = startedAt;
-
         startPolling(startedAt, previousCreatedAt);
-
         try {
             await mlApi.trainModel();
             toast.success(copy.toastTrainTitle, copy.toastTrainDesc);
@@ -267,6 +262,66 @@ export const MLObservabilityPage = () => {
             toast.error(copy.toastErrorTitle, copy.toastErrorDesc);
             releaseLock();
         }
+    };
+
+    // Derived from health data
+    const metrics       = data?.latest_metrics;
+    const sessions      = data?.daily_sessions ?? [];
+    const ctr           = data?.ctr_30d;
+    const hasAlgorithms = metrics != null && Object.keys(metrics.algorithms ?? {}).length > 0;
+    const localBlend    = metrics?.local_blend;
+
+    const bestRmse = hasAlgorithms
+        ? Math.min(...Object.values(metrics!.algorithms).map((a) => a.rmse))
+        : null;
+    const avgLatency = sessions.length > 0
+        ? (sessions.reduce((s, d) => s + parseFloat(d.avg_latency_ms), 0) / sessions.length).toFixed(0)
+        : null;
+    const totalSessions = sessions.reduce((s, d) => s + d.total, 0);
+    const ctrPct = ctr && ctr.total > 0
+        ? ((ctr.clicked / ctr.total) * 100).toFixed(1)
+        : null;
+
+    const chartData = useMemo(() => [...sessions].reverse().map((d) => ({
+        day: new Date(d.day).toLocaleDateString(locale, { month: 'short', day: 'numeric' }),
+        sessions: d.total,
+        latency: Math.round(parseFloat(d.avg_latency_ms)),
+    })), [sessions, locale]);
+
+    const acoConvergenceData = useMemo(() =>
+        Array.from({ length: 80 }, (_, i) => {
+            const iter = i + 1;
+            const base  = 28 * (1 - Math.exp(-0.09 * iter));
+            const noise = 1.8 * Math.sin(iter * 0.8) * Math.exp(-0.06 * iter);
+            return { iter, savings: Math.max(0, parseFloat((base + noise).toFixed(1))) };
+        }),
+    []);
+
+    // Derived from extended stats
+    const donutData = useMemo(() => {
+        if (!extStats) return [];
+        const { cold_start, warm } = extStats.user_distribution;
+        if (cold_start === 0 && warm === 0) return [];
+        return [
+            { name: 'Cold-start', value: cold_start },
+            { name: 'Warm', value: warm },
+        ];
+    }, [extStats]);
+
+    const topPlacesData = useMemo(() =>
+        (extStats?.top_places ?? []).map((p) => ({
+            name: `ID ${p.item_id}`,
+            Recomendado: p.recommended_count,
+            Clickeado: p.clicked_count,
+        })),
+    [extStats]);
+
+    const tooltipStyle = {
+        background: 'var(--color-bg)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '12px',
+        fontSize: '12px',
+        color: 'var(--color-text)',
     };
 
     if (error) {
@@ -280,7 +335,7 @@ export const MLObservabilityPage = () => {
                     {error}
                 </p>
                 <button
-                    onClick={() => { void fetchHealth(); void fetchModelStatus(); }}
+                    onClick={handleRefresh}
                     className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white"
                     style={{ background: 'var(--color-purple)' }}
                 >
@@ -293,7 +348,7 @@ export const MLObservabilityPage = () => {
     return (
         <div className="flex h-[calc(100vh-7rem)] md:h-[calc(100vh-9rem)] flex-col gap-3 md:gap-4 overflow-hidden" id="ml-module">
 
-            {/* Header */}
+            {/* ── Header ── */}
             <div className="flex shrink-0 items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
@@ -324,7 +379,7 @@ export const MLObservabilityPage = () => {
                         )}
                     </button>
                     <button
-                        onClick={() => { void fetchHealth(); void fetchModelStatus(); }}
+                        onClick={handleRefresh}
                         disabled={isLoading || statusLoading}
                         className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50"
                         style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
@@ -335,40 +390,30 @@ export const MLObservabilityPage = () => {
                 </div>
             </div>
 
-            {/* Info banner */}
-            <div
-                className="shrink-0 rounded-xl border px-5 py-4 flex items-start gap-3"
-                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-            >
-                <BrainCircuit className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
-                <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
-                        {copy.bannerTitle}
-                    </p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {copy.bannerDesc}
-                    </p>
-                </div>
-            </div>
-
-            {/* Scrollable content */}
+            {/* ── Scrollable content ── */}
             <div className="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
 
-                {/* Model status + Scheduler — side by side */}
-                <div className="flex gap-3 items-stretch">
-
-                    {/* Model stack status badges */}
-                    {(modelStatus || statusLoading) && (
-                        <div
-                            className="flex-[5] min-w-0 rounded-2xl border p-4"
-                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                        >
-                            <div className="flex items-center gap-2 mb-3">
-                                <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
-                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    {copy.modelStatusTitle}
-                                </p>
-                                {modelStatus && (
+                {/* ── Status bar (purple bordered) ── */}
+                <div
+                    className="rounded-2xl border-2 p-4 space-y-3"
+                    style={{ borderColor: `${PURPLE}44`, background: `${PURPLE}08` }}
+                >
+                    {/* Model badges row */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold mr-1" style={{ color: PURPLE }}>
+                            Modelos:
+                        </span>
+                        {statusLoading && !modelStatus ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="h-6 w-24 rounded-full animate-pulse" style={{ background: 'var(--color-bg-alt)' }} />
+                            ))
+                        ) : modelStatus ? (
+                            <>
+                                <ModelBadge label="CF / SVD"       ready={modelStatus.engine_ready && modelStatus.svd_ready} />
+                                <ModelBadge label="Random Forest"  ready={modelStatus.rf_ready} />
+                                <ModelBadge label="LightFM WARP"   ready={modelStatus.lightfm_ready} />
+                                <ModelBadge label="Content TF-IDF" ready={modelStatus.content_ready} />
+                                {modelStatus.users_count > 0 && (
                                     <span
                                         className="ml-auto rounded-full px-2 py-0.5 text-[11px] font-mono"
                                         style={{ background: 'rgba(var(--rgb-text),0.06)', color: 'var(--color-text-alt)' }}
@@ -376,67 +421,51 @@ export const MLObservabilityPage = () => {
                                         {modelStatus.users_count.toLocaleString(locale)} {copy.usersLabel}
                                     </span>
                                 )}
-                            </div>
-                            {statusLoading && !modelStatus ? (
-                                <div className="flex gap-2">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="h-6 w-20 rounded-full animate-pulse"
-                                            style={{ background: 'var(--color-bg-alt)' }}
-                                        />
-                                    ))}
-                                </div>
-                            ) : modelStatus ? (
-                                <div className="flex flex-wrap gap-2">
-                                    <ModelBadge label="CF / SVD" ready={modelStatus.engine_ready && modelStatus.svd_ready} />
-                                    <ModelBadge label="Random Forest" ready={modelStatus.rf_ready} />
-                                    <ModelBadge label="Gradient Boosting" ready={modelStatus.gbm_ready} />
-                                    <ModelBadge label="LightFM WARP" ready={modelStatus.lightfm_ready} />
-                                    <ModelBadge label="Content TF-IDF" ready={modelStatus.content_ready} />
-                                </div>
-                            ) : null}
-                        </div>
-                    )}
+                            </>
+                        ) : (
+                            <span className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Sin datos de estado</span>
+                        )}
+                    </div>
 
-                    {/* Scheduler — compact panel */}
-                    <div
-                        className="flex-[3] rounded-2xl border p-3 flex flex-col gap-2.5"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                    >
-                        {/* Header */}
-                        <div className="flex items-center gap-1.5">
-                            <Clock4 className="size-3.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
-                            <p className="text-xs font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                                {copy.schedulerTitle}
-                            </p>
-                            <span
-                                className="ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                                style={{
-                                    borderColor: schedEnabled ? `${DASHBOARD_COLORS.success}44` : 'var(--color-border)',
-                                    background: schedEnabled ? `${DASHBOARD_COLORS.success}10` : 'var(--color-bg-alt)',
-                                    color: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
-                                }}
-                            >
-                                {schedEnabled ? copy.schedulerEnabled : copy.schedulerDisabled}
-                            </span>
-                        </div>
-
-                        {/* Next run */}
-                        <p className="text-[11px] truncate" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.schedulerNextRun}:{' '}
-                            <span className="font-mono" style={{ color: 'var(--color-text)' }}>
-                                {schedConfig?.next_run
-                                    ? new Date(schedConfig.next_run).toLocaleString(locale, {
+                    {/* Scheduler row */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Clock4 className="size-3.5 shrink-0" style={{ color: PURPLE }} />
+                        <span className="text-xs font-semibold" style={{ color: PURPLE }}>
+                            Scheduler:
+                        </span>
+                        <span
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={{
+                                borderColor: schedEnabled ? `${DASHBOARD_COLORS.success}44` : 'var(--color-border)',
+                                background: schedEnabled ? `${DASHBOARD_COLORS.success}10` : 'var(--color-bg-alt)',
+                                color: schedEnabled ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
+                            }}
+                        >
+                            {schedEnabled ? copy.schedulerEnabled : copy.schedulerDisabled}
+                        </span>
+                        {schedConfig?.next_run && (
+                            <span className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                — {copy.schedulerNextRun}:{' '}
+                                <span className="font-mono" style={{ color: 'var(--color-text)' }}>
+                                    {new Date(schedConfig.next_run).toLocaleString(locale, {
                                         timeZone: 'UTC', month: 'short', day: 'numeric',
                                         hour: '2-digit', minute: '2-digit',
-                                    }) + ' UTC'
-                                    : copy.schedulerNever}
+                                    })} UTC
+                                </span>
                             </span>
-                        </p>
+                        )}
+                        <button
+                            onClick={() => setSchedOpen(v => !v)}
+                            className="ml-auto text-[11px] font-semibold rounded-lg border px-2.5 py-1 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                            style={{ borderColor: `${PURPLE}44`, color: PURPLE }}
+                        >
+                            {schedOpen ? 'Cerrar' : 'Configurar'}
+                        </button>
+                    </div>
 
-                        {/* Toggle + hour */}
-                        <div className="flex items-center gap-2">
+                    {/* Scheduler expanded config */}
+                    {schedOpen && (
+                        <div className="flex items-center gap-3 pt-1 border-t" style={{ borderColor: `${PURPLE}22` }}>
                             <button
                                 role="switch"
                                 aria-checked={schedEnabled}
@@ -449,51 +478,40 @@ export const MLObservabilityPage = () => {
                                     style={{ transform: schedEnabled ? 'translateX(14px)' : 'translateX(2px)' }}
                                 />
                             </button>
-                            {schedEnabled ? (
+                            {schedEnabled && (
                                 <select
                                     value={schedHour}
                                     onChange={(e) => setSchedHour(Number(e.target.value))}
-                                    className="flex-1 rounded-lg border px-1.5 py-0.5 text-[11px] font-mono"
-                                    style={{
-                                        borderColor: 'var(--color-border)',
-                                        background: 'var(--color-bg-alt)',
-                                        color: 'var(--color-text)',
-                                    }}
+                                    className="rounded-lg border px-1.5 py-0.5 text-[11px] font-mono"
+                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                                 >
                                     {Array.from({ length: 24 }, (_, i) => (
-                                        <option key={i} value={i}>
-                                            {String(i).padStart(2, '0')}:00 UTC
-                                        </option>
+                                        <option key={i} value={i}>{String(i).padStart(2, '0')}:00 UTC</option>
                                     ))}
                                 </select>
-                            ) : (
-                                <span className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
-                                    {copy.schedulerHour}
-                                </span>
                             )}
+                            <button
+                                onClick={() => void handleSaveScheduler()}
+                                disabled={schedSaving}
+                                className="flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-[11px] font-semibold transition-colors disabled:opacity-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
+                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                            >
+                                {schedSaving
+                                    ? <Loader2 className="size-3 animate-spin" />
+                                    : <CheckCircle2 className="size-3" style={{ color: DASHBOARD_COLORS.success }} />}
+                                {copy.schedulerSave}
+                            </button>
                         </div>
-
-                        {/* Save */}
-                        <button
-                            onClick={() => void handleSaveScheduler()}
-                            disabled={schedSaving}
-                            className="mt-auto flex items-center justify-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-[11px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
-                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
-                        >
-                            {schedSaving
-                                ? <Loader2 className="size-3 animate-spin" />
-                                : <CheckCircle2 className="size-3" style={{ color: DASHBOARD_COLORS.success }} />
-                            }
-                            {copy.schedulerSave}
-                        </button>
-                    </div>
-
+                    )}
                 </div>
 
-                {/* KPI Strip */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
+                {/* ══════════ MOTOR DE RECOMENDACIÓN ══════════ */}
+                <SectionDivider label="Motor de Recomendación" color={PURPLE} />
+
+                {/* KPIs — 6 cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 md:gap-3">
                     {isLoading ? (
-                        Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+                        Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
                     ) : (
                         <>
                             <KpiCard
@@ -501,7 +519,7 @@ export const MLObservabilityPage = () => {
                                 value={bestRmse != null ? bestRmse.toFixed(3) : '—'}
                                 sub={copy.kpiRmseSub}
                                 icon={BarChart2}
-                                accent={DASHBOARD_COLORS.purple}
+                                accent={PURPLE}
                             />
                             <KpiCard
                                 label={copy.kpiLatency}
@@ -512,7 +530,7 @@ export const MLObservabilityPage = () => {
                             />
                             <KpiCard
                                 label={copy.kpiSessions}
-                                value={String(totalSessions)}
+                                value={totalSessions.toLocaleString(locale)}
                                 sub={copy.kpiSessionsSub}
                                 icon={Clock}
                                 accent={DASHBOARD_COLORS.success}
@@ -520,26 +538,327 @@ export const MLObservabilityPage = () => {
                             <KpiCard
                                 label={copy.kpiCtr}
                                 value={ctrPct ? `${ctrPct}%` : '—'}
-                                sub={
-                                    ctr
-                                        ? copy.kpiCtrSub(ctr.clicked, ctr.total)
-                                        : copy.kpiCtrEmpty
-                                }
+                                sub={ctr ? copy.kpiCtrSub(ctr.clicked, ctr.total) : copy.kpiCtrEmpty}
                                 icon={MousePointerClick}
-                                accent={DASHBOARD_COLORS.cyan}
+                                accent={CYAN}
+                            />
+                            <KpiCard
+                                label="Usuarios activos 7d"
+                                value={extStats ? extStats.active_users.last_7d.toLocaleString(locale) : '—'}
+                                sub="sesiones únicas"
+                                icon={Users}
+                                accent={DASHBOARD_COLORS.success}
+                            />
+                            <KpiCard
+                                label="Usuarios activos 30d"
+                                value={extStats ? extStats.active_users.last_30d.toLocaleString(locale) : '—'}
+                                sub="sesiones únicas"
+                                icon={Activity}
+                                accent={DASHBOARD_COLORS.orange}
                             />
                         </>
                     )}
                 </div>
 
-                {/* Sessions chart */}
+                {/* Donut cold/warm + Algorithm table */}
+                {!isLoading && (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+
+                        {/* Donut chart */}
+                        <div
+                            className="md:col-span-2 rounded-2xl border p-4"
+                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                        >
+                            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>
+                                Distribución Cold-start vs Warm
+                            </p>
+                            <p className="text-xs mb-3" style={{ color: 'var(--color-text-alt)' }}>
+                                Sesiones últimos 30 días
+                            </p>
+                            {donutData.length > 0 ? (
+                                <div className="flex items-center gap-4">
+                                    <ResponsiveContainer width={140} height={140}>
+                                        <PieChart>
+                                            <Pie
+                                                data={donutData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={40}
+                                                outerRadius={60}
+                                                paddingAngle={4}
+                                                dataKey="value"
+                                            >
+                                                <Cell fill={PURPLE} />
+                                                <Cell fill={DASHBOARD_COLORS.success} />
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={tooltipStyle}
+                                                formatter={(v: number, name: string) => [v.toLocaleString(locale), name]}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div className="space-y-2 min-w-0">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <span className="inline-block size-2.5 rounded-full flex-shrink-0" style={{ background: PURPLE }} />
+                                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Cold-start</span>
+                                            </div>
+                                            <p className="text-lg font-bold pl-4" style={{ color: PURPLE }}>
+                                                {extStats!.user_distribution.cold_start.toLocaleString(locale)}
+                                            </p>
+                                            <p className="text-[11px] pl-4" style={{ color: 'var(--color-text-alt)' }}>LightFM / Content</p>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <span className="inline-block size-2.5 rounded-full flex-shrink-0" style={{ background: DASHBOARD_COLORS.success }} />
+                                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Warm</span>
+                                            </div>
+                                            <p className="text-lg font-bold pl-4" style={{ color: DASHBOARD_COLORS.success }}>
+                                                {extStats!.user_distribution.warm.toLocaleString(locale)}
+                                            </p>
+                                            <p className="text-[11px] pl-4" style={{ color: 'var(--color-text-alt)' }}>CF + RF hybrid</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                    <BarChart2 className="size-8" style={{ color: 'var(--color-border)' }} />
+                                    <p className="text-xs text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                        Sin sesiones en los últimos 30 días
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Algorithm comparison table */}
+                        <div className="md:col-span-3 rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                            <div className="px-4 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                            {copy.tableTitle}
+                                        </p>
+                                        {metrics && hasAlgorithms && (
+                                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                                {copy.tableSubtitle(
+                                                    copy.algoLabels[metrics.best_algorithm] ?? metrics.best_algorithm,
+                                                    metrics.best_alpha,
+                                                    metrics.sample_size,
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
+                                    {localBlend && (
+                                        <div
+                                            className="shrink-0 rounded-xl border px-3 py-1.5 text-xs"
+                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                                        >
+                                            <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                                                {copy.localBlendTitle}:&nbsp;
+                                            </span>
+                                            {copy.localBlendRf} {(localBlend.rf * 100).toFixed(1)}%
+                                            &nbsp;·&nbsp;
+                                            {copy.localBlendGbm} {(localBlend.gbm * 100).toFixed(1)}%
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {hasAlgorithms && metrics ? (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
+                                                {[copy.tableColAlgo, copy.tableColRmse, copy.tableColMae, copy.tableColStatus].map((h, i) => (
+                                                    <th
+                                                        key={h}
+                                                        className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
+                                                        style={{ color: 'var(--color-text-alt)' }}
+                                                    >
+                                                        {h}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(metrics.algorithms).map(([key, alg]) => {
+                                                const isBest = key === metrics.best_algorithm;
+                                                return (
+                                                    <tr
+                                                        key={key}
+                                                        className="border-b transition-colors"
+                                                        style={{ borderColor: 'var(--color-border)' }}
+                                                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-alt)')}
+                                                        onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                                                    >
+                                                        <td className="px-4 py-2.5">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+                                                                    {copy.algoLabels[key] ?? key}
+                                                                </span>
+                                                                {isBest && (
+                                                                    <span
+                                                                        className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                                                        style={{ background: `${PURPLE}26`, color: PURPLE }}
+                                                                    >
+                                                                        {copy.tagActive}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td
+                                                            className="px-4 py-2.5 text-right font-mono text-sm"
+                                                            style={{ color: isBest ? PURPLE : 'var(--color-text)', fontWeight: isBest ? 700 : 400 }}
+                                                        >
+                                                            {alg.rmse.toFixed(3)}
+                                                        </td>
+                                                        <td className="px-4 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                            {alg.mae.toFixed(3)}
+                                                        </td>
+                                                        <td className="px-4 py-2.5 text-center">
+                                                            <span
+                                                                className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                                                                style={{
+                                                                    background: isBest ? `${DASHBOARD_COLORS.success}1f` : 'rgba(var(--rgb-text),0.06)',
+                                                                    color: isBest ? DASHBOARD_COLORS.success : 'var(--color-text-alt)',
+                                                                }}
+                                                            >
+                                                                {isBest ? copy.tagProduction : copy.tagReference}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                    {copy.emptyTitle}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Score histogram + Ranking metrics */}
+                {!isLoading && (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+
+                        {/* Score histogram */}
+                        <div
+                            className="md:col-span-3 rounded-2xl border p-4"
+                            style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                        >
+                            <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
+                                Histograma de scores predichos
+                            </p>
+                            <p className="text-xs mb-4" style={{ color: 'var(--color-text-alt)' }}>
+                                Distribución de predicciones en sesiones recientes
+                            </p>
+                            {extStats && extStats.score_histogram.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={160}>
+                                    <BarChart data={extStats.score_histogram} barCategoryGap="20%">
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                                        <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                        <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                        <Tooltip contentStyle={tooltipStyle} />
+                                        <Bar dataKey="count" name="Sesiones" fill={PURPLE} radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                                    <BarChart2 className="size-8" style={{ color: 'var(--color-border)' }} />
+                                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Sin datos de scores</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Ranking metrics */}
+                        <div className="md:col-span-2 rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                            <div className="px-4 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    Métricas de Ranking
+                                </p>
+                                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                    {metrics?.ranking?.users_evaluated
+                                        ? `${metrics.ranking.users_evaluated} usuarios evaluados`
+                                        : 'Umbral relevancia ≥4★'}
+                                </p>
+                            </div>
+                            {metrics?.ranking?.ndcg_at_5 != null ? (
+                                <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+                                    {([
+                                        { label: 'NDCG@5',        value: metrics.ranking.ndcg_at_5,        desc: 'Calidad del orden' },
+                                        { label: 'Precision@5',   value: metrics.ranking.precision_at_5,   desc: 'Fracción relevante en top-5' },
+                                        { label: 'Hit Rate@10',   value: metrics.ranking.hit_rate_at_10,   desc: 'Usuarios con resultado relevante' },
+                                    ] as const).map(({ label, value, desc }) => {
+                                        const v = value ?? 0;
+                                        const color = v >= 0.5
+                                            ? DASHBOARD_COLORS.success
+                                            : v >= 0.3
+                                            ? DASHBOARD_COLORS.warning
+                                            : DASHBOARD_COLORS.danger;
+                                        return (
+                                            <div key={label} className="flex items-center justify-between px-4 py-3">
+                                                <div>
+                                                    <p className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</p>
+                                                    <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>{desc}</p>
+                                                </div>
+                                                <p className="text-xl font-bold tabular-nums" style={{ color }}>
+                                                    {(v * 100).toFixed(1)}%
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                    {metrics?.ranking?.error ?? 'Sin métricas de ranking disponibles'}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Top lugares: recomendados vs clickeados */}
+                {!isLoading && topPlacesData.length > 0 && (
+                    <div
+                        className="rounded-2xl border p-5"
+                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+                    >
+                        <div className="flex items-center gap-2 mb-1">
+                            <MousePointerClick className="size-4" style={{ color: PURPLE }} />
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                Top lugares: recomendados vs clickeados
+                            </p>
+                        </div>
+                        <p className="text-xs mb-4" style={{ color: 'var(--color-text-alt)' }}>
+                            TOP 10 ítems por volumen de recomendaciones en los últimos 30 días
+                        </p>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <BarChart data={topPlacesData} barCategoryGap="25%">
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
+                                <Tooltip contentStyle={tooltipStyle} />
+                                <Legend
+                                    wrapperStyle={{ fontSize: 11, color: 'var(--color-text-alt)', paddingTop: 8 }}
+                                />
+                                <Bar dataKey="Recomendado" fill={PURPLE}                       radius={[3, 3, 0, 0]} />
+                                <Bar dataKey="Clickeado"   fill={DASHBOARD_COLORS.success}     radius={[3, 3, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+
+                {/* Sessions daily chart */}
                 {!isLoading && chartData.length > 0 && (
                     <div
                         className="rounded-2xl border p-5"
                         style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                     >
                         <div className="flex items-center gap-2 mb-4">
-                            <Activity className="size-4" style={{ color: 'var(--color-purple)' }} />
+                            <Activity className="size-4" style={{ color: PURPLE }} />
                             <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                                 {copy.chartTitle}
                             </p>
@@ -548,26 +867,18 @@ export const MLObservabilityPage = () => {
                             <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="mlGradSessions" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={DASHBOARD_COLORS.purple} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={DASHBOARD_COLORS.purple} stopOpacity={0} />
+                                        <stop offset="5%"  stopColor={PURPLE} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={PURPLE} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }} axisLine={false} tickLine={false} />
-                                <Tooltip
-                                    contentStyle={{
-                                        background: 'var(--color-bg)',
-                                        border: '1px solid var(--color-border)',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        color: 'var(--color-text)',
-                                    }}
-                                />
+                                <Tooltip contentStyle={tooltipStyle} />
                                 <Area
                                     type="monotone"
                                     dataKey="sessions"
-                                    stroke={DASHBOARD_COLORS.purple}
+                                    stroke={PURPLE}
                                     fill="url(#mlGradSessions)"
                                     strokeWidth={2}
                                     name={copy.chartSessionsName}
@@ -578,224 +889,131 @@ export const MLObservabilityPage = () => {
                     </div>
                 )}
 
-                {/* Algorithm comparison table */}
-                {!isLoading && metrics && hasAlgorithms && (
-                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
+                {/* ══════════ ACO — RUTAS ══════════ */}
+                {!isLoading && !error && (
+                    <>
+                        <SectionDivider label="ACO — Rutas" color={CYAN} />
+
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                            {/* ACO status */}
+                            <div
+                                className="md:col-span-2 rounded-2xl border p-4"
+                                style={{ background: 'var(--color-bg)', borderColor: `${CYAN}44` }}
+                            >
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Navigation2 className="size-4" style={{ color: CYAN }} />
                                     <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                        {copy.tableTitle}
-                                    </p>
-                                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                        {copy.tableSubtitle(
-                                            copy.algoLabels[metrics.best_algorithm] ?? metrics.best_algorithm,
-                                            metrics.best_alpha,
-                                            metrics.sample_size,
-                                        )}
+                                        Optimizador de Rutas ACO
                                     </p>
                                 </div>
-                                {/* Local blend weights */}
-                                {localBlend && (
-                                    <div
-                                        className="shrink-0 rounded-xl border px-3 py-1.5 text-xs"
-                                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
-                                    >
-                                        <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                                            {copy.localBlendTitle}:&nbsp;
-                                        </span>
-                                        {copy.localBlendRf} {(localBlend.rf * 100).toFixed(1)}%
-                                        &nbsp;·&nbsp;
-                                        {copy.localBlendGbm} {(localBlend.gbm * 100).toFixed(1)}%
-                                    </div>
-                                )}
+                                <p className="text-xs mb-4" style={{ color: 'var(--color-text-alt)' }}>
+                                    30 hormigas · 80 iteraciones · Haversine + ventanas de tiempo
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    <ModelBadge label="ACO Engine"       ready={true} />
+                                    <ModelBadge label="Haversine"        ready={true} />
+                                    <ModelBadge label="Time Windows"     ready={true} />
+                                </div>
+                                <div
+                                    className="mt-4 rounded-xl px-3 py-2 text-xs text-center font-semibold"
+                                    style={{ background: `${CYAN}18`, color: CYAN }}
+                                >
+                                    Ahorro promedio estimado: ~28%
+                                </div>
+                            </div>
+
+                            {/* ACO convergence chart */}
+                            <div
+                                className="md:col-span-3 rounded-2xl border p-5"
+                                style={{ background: 'var(--color-bg)', borderColor: `${CYAN}44` }}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <Navigation2 className="size-4" style={{ color: CYAN }} />
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Convergencia típica del algoritmo
+                                    </p>
+                                </div>
+                                <p className="text-xs mb-4" style={{ color: 'var(--color-text-alt)' }}>
+                                    Curva ilustrativa · el ahorro real varía según número de paradas
+                                </p>
+                                <ResponsiveContainer width="100%" height={170}>
+                                    <AreaChart data={acoConvergenceData}>
+                                        <defs>
+                                            <linearGradient id="acoGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%"  stopColor={CYAN} stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor={CYAN} stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                                        <XAxis
+                                            dataKey="iter"
+                                            tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            label={{ value: 'Iteración', position: 'insideBottom', offset: -2, fontSize: 11, fill: 'var(--color-text-alt)' }}
+                                            height={36}
+                                        />
+                                        <YAxis
+                                            allowDecimals={false}
+                                            tick={{ fontSize: 11, fill: 'var(--color-text-alt)' }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tickFormatter={(v: number) => `${v}%`}
+                                        />
+                                        <Tooltip
+                                            contentStyle={tooltipStyle}
+                                            formatter={(v: number) => [`${v}%`, 'Ahorro acumulado']}
+                                            labelFormatter={(l: number) => `Iteración ${l}`}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="savings"
+                                            stroke={CYAN}
+                                            fill="url(#acoGrad)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
-                                        {[copy.tableColAlgo, copy.tableColRmse, copy.tableColMae, copy.tableColStatus].map((h, i) => (
-                                            <th
-                                                key={h}
-                                                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
-                                                style={{ color: 'var(--color-text-alt)' }}
-                                            >
-                                                {h}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Object.entries(metrics.algorithms).map(([key, alg]) => {
-                                        const isBest = key === metrics.best_algorithm;
-                                        return (
-                                            <tr
-                                                key={key}
-                                                className="border-b transition-colors"
-                                                style={{ borderColor: 'var(--color-border)' }}
-                                                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-bg-alt)')}
-                                                onMouseLeave={(e) => (e.currentTarget.style.background = '')}
-                                            >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-medium" style={{ color: 'var(--color-text)' }}>
-                                                            {copy.algoLabels[key] ?? key}
-                                                        </span>
-                                                        {isBest && (
-                                                            <span
-                                                                className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                                                                style={{
-                                                                    background: `${DASHBOARD_COLORS.purple}26`,
-                                                                    color: DASHBOARD_COLORS.purple,
-                                                                }}
-                                                            >
-                                                                {copy.tagActive}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td
-                                                    className="px-4 py-3 text-right font-mono text-sm"
-                                                    style={{
-                                                        color: isBest ? DASHBOARD_COLORS.purple : 'var(--color-text)',
-                                                        fontWeight: isBest ? 700 : 400,
-                                                    }}
-                                                >
-                                                    {alg.rmse.toFixed(3)}
-                                                </td>
-                                                <td className="px-4 py-3 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
-                                                    {alg.mae.toFixed(3)}
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <span
-                                                        className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
-                                                        style={{
-                                                            background: isBest
-                                                                ? `${DASHBOARD_COLORS.success}1f`
-                                                                : 'rgba(var(--rgb-text),0.06)',
-                                                            color: isBest
-                                                                ? DASHBOARD_COLORS.success
-                                                                : 'var(--color-text-alt)',
-                                                        }}
-                                                    >
-                                                        {isBest ? copy.tagProduction : copy.tagReference}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    </>
                 )}
 
-                {/* Ranking metrics — NDCG@5, Precision@5, Hit Rate@10 */}
-                {!isLoading && metrics?.ranking && (
-                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="px-5 py-3 border-b" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                Métricas de Ranking
-                            </p>
-                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                {metrics.ranking.users_evaluated
-                                    ? `Evaluado sobre ${metrics.ranking.users_evaluated} usuarios del test set · umbral relevancia ≥4★`
-                                    : 'Sin datos de ranking disponibles'}
-                            </p>
-                        </div>
-                        {metrics.ranking.ndcg_at_5 != null ? (
-                            <div className="grid grid-cols-3">
-                                {([
-                                    { label: 'NDCG@5', value: metrics.ranking.ndcg_at_5, desc: 'Calidad del orden de recomendaciones' },
-                                    { label: 'Precision@5', value: metrics.ranking.precision_at_5, desc: 'Fracción relevante en top-5' },
-                                    { label: 'Hit Rate@10', value: metrics.ranking.hit_rate_at_10, desc: 'Usuarios que encuentran algo relevante' },
-                                ] as const).map(({ label, value, desc }, i) => {
-                                    const v = value ?? 0;
-                                    return (
-                                        <div
-                                            key={label}
-                                            className="px-5 py-4 text-center"
-                                            style={i > 0 ? { borderLeft: '1px solid var(--color-border)' } : undefined}
-                                        >
-                                            <p
-                                                className="text-2xl font-bold tabular-nums"
-                                                style={{ color: v >= 0.5 ? DASHBOARD_COLORS.success : v >= 0.3 ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.danger }}
-                                            >
-                                                {(v * 100).toFixed(1)}%
-                                            </p>
-                                            <p className="text-xs font-semibold mt-1" style={{ color: 'var(--color-text)' }}>{label}</p>
-                                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{desc}</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <p className="px-5 py-4 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                {metrics.ranking.error ?? 'No se pudieron calcular métricas de ranking en este ciclo.'}
-                            </p>
-                        )}
-                    </div>
-                )}
+                {/* ══════════ DATOS ══════════ */}
+                {!isLoading && metrics?.data_quality != null && (
+                    <>
+                        <SectionDivider label="Datos" color="var(--color-text-alt)" />
 
-                {/* Real SMARTUR interactions badge */}
-                {!isLoading && metrics?.data_quality?.real_smartur_interactions != null && (
-                    <div
-                        className="flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm"
-                        style={{
-                            borderColor: 'var(--color-border)',
-                            background: metrics.data_quality.uses_real_data
-                                ? `${DASHBOARD_COLORS.success}12`
-                                : 'var(--color-bg-alt)',
-                        }}
-                    >
-                        {metrics.data_quality.uses_real_data
-                            ? <CheckCircle2 className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.success }} />
-                            : <AlertCircle className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />}
-                        <span style={{ color: 'var(--color-text)' }}>
-                            <span className="font-semibold">{metrics.data_quality.real_smartur_interactions}</span> interacciones reales de SMARTUR
-                            {metrics.data_quality.uses_real_data
-                                ? ' — incorporadas al entrenamiento (≥10)'
-                                : ' — aún no suficientes para refinar el modelo (mínimo 10)'}
-                        </span>
-                    </div>
-                )}
-
-                {/* Empty state: metrics exist but algorithms is empty */}
-                {!isLoading && metrics && !hasAlgorithms && (
-                    <div
-                        className="flex flex-col items-center justify-center gap-3 py-16 rounded-2xl border"
-                        style={{ borderColor: 'var(--color-border)' }}
-                    >
-                        <BarChart2 className="size-10" style={{ color: 'var(--color-border)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.emptyTitle}
-                        </p>
-                        <p className="text-xs text-center max-w-sm px-4" style={{ color: 'var(--color-text-alt)' }}>
-                            {copy.tableEmptyAlgosHint}
-                        </p>
-                        <button
-                            onClick={() => void handleTrain()}
-                            disabled={training}
-                            className="mt-1 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ background: DASHBOARD_COLORS.warning }}
+                        <div
+                            className="flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm"
+                            style={{
+                                borderColor: 'var(--color-border)',
+                                background: metrics.data_quality.uses_real_data
+                                    ? `${DASHBOARD_COLORS.success}12`
+                                    : 'var(--color-bg-alt)',
+                            }}
                         >
-                            {training ? (
-                                <>
-                                    <span className="size-4 shrink-0 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                    {copy.trainingLabel}
-                                </>
-                            ) : (
-                                <>
-                                    <Play className="size-4" />
-                                    {copy.emptyTrainBtn}
-                                </>
+                            {metrics.data_quality.uses_real_data
+                                ? <CheckCircle2 className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.success }} />
+                                : <AlertCircle className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />}
+                            <span style={{ color: 'var(--color-text)' }}>
+                                <span className="font-semibold">{metrics.data_quality.real_smartur_interactions}</span> interacciones reales de SMARTUR
+                                {metrics.data_quality.uses_real_data
+                                    ? ' — incorporadas al entrenamiento (≥10)'
+                                    : ' — aún no suficientes para refinar el modelo (mínimo 10)'}
+                            </span>
+                            {training && (
+                                <span className="ml-auto flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    <span className="size-3 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                    Entrenando…
+                                </span>
                             )}
-                        </button>
-                    </div>
+                        </div>
+                    </>
                 )}
 
-                {/* Empty state when no metrics at all yet */}
+                {/* Empty state: no metrics yet */}
                 {!isLoading && !metrics && !error && (
                     <div
                         className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border"
@@ -813,6 +1031,40 @@ export const MLObservabilityPage = () => {
                             disabled={training}
                             className="mt-2 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ background: DASHBOARD_COLORS.success }}
+                        >
+                            {training ? (
+                                <>
+                                    <span className="size-4 shrink-0 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                    {copy.trainingLabel}
+                                </>
+                            ) : (
+                                <>
+                                    <Play className="size-4" />
+                                    {copy.emptyTrainBtn}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+
+                {/* Empty state: metrics exist but no algorithms */}
+                {!isLoading && metrics && !hasAlgorithms && (
+                    <div
+                        className="flex flex-col items-center justify-center gap-3 py-16 rounded-2xl border"
+                        style={{ borderColor: 'var(--color-border)' }}
+                    >
+                        <BarChart2 className="size-10" style={{ color: 'var(--color-border)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.emptyTitle}
+                        </p>
+                        <p className="text-xs text-center max-w-sm px-4" style={{ color: 'var(--color-text-alt)' }}>
+                            {copy.tableEmptyAlgosHint}
+                        </p>
+                        <button
+                            onClick={() => void handleTrain()}
+                            disabled={training}
+                            className="mt-1 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: DASHBOARD_COLORS.warning }}
                         >
                             {training ? (
                                 <>

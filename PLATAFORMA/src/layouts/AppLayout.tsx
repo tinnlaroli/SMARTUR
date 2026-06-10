@@ -341,6 +341,33 @@ export default function AppLayout() {
     const [notifOpen, setNotifOpen] = useState(false);
     const notifWrapperRef = useRef<HTMLDivElement>(null);
 
+    // Preload all lazy route chunks in background so navigation is instant after first visit
+    useEffect(() => {
+        const schedule = typeof requestIdleCallback === 'function'
+            ? requestIdleCallback
+            : (cb: () => void) => setTimeout(cb, 300);
+        schedule(() => {
+            import('../features/users/pages/UserPage');
+            import('../features/companies/pages/CompanyPage');
+            import('../features/tourist-services/pages/TouristServicePage');
+            import('../features/locations/pages/LocationPage');
+            import('../features/profiles/pages/ProfilesPage');
+            import('../features/certifications/pages/CertificationsPage');
+            import('../features/points-of-interest/pages/POIPage');
+            import('../features/statistics/pages/StatisticsPage');
+            import('../features/instrument-builder/pages/InstrumentBuilderPage');
+            import('../features/community/pages/CommunityPage');
+            import('../features/contacts/pages/ContactsPage');
+            import('../features/ml-observability/pages/MLObservabilityPage');
+            import('../features/companies/pages/AdminCompaniesVerificationPage');
+            import('../features/tourist-services/pages/AdminServicesApprovalPage');
+            import('../features/itineraries/pages/AdminItinerariesPage');
+            import('../features/dashboard/pages/NotificacionesPage');
+            import('../features/settings/pages/SettingsPage');
+            import('../features/tourist-services/pages/AdminDisputasPage');
+        });
+    }, []);
+
     useEffect(() => {
         if (!notifOpen) return;
         const handleOutside = (e: MouseEvent) => {
@@ -371,6 +398,9 @@ export default function AppLayout() {
     useEffect(() => {
         if (notifOpen) markAllAsRead();
     }, [notifOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const mainRef = useRef<HTMLElement>(null);
+    useEffect(() => { mainRef.current?.scrollTo(0, 0); }, [pathname]);
 
     const handleLogout = useCallback(() => {
         clearAccessToken();
@@ -411,12 +441,24 @@ export default function AppLayout() {
 
                 {/* ── Main content ── */}
                 <main
+                    ref={mainRef}
                     className="flex min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"
                     style={{ background: 'var(--color-bg-alt)' }}
                 >
                     <div className="mx-auto h-full w-full max-w-400">
                         <ErrorBoundary title="Error en el módulo">
-                            <Outlet />
+                            <AnimatePresence mode="sync" initial={false}>
+                                <motion.div
+                                    key={pathname}
+                                    className="h-full"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.10 }}
+                                >
+                                    <Outlet />
+                                </motion.div>
+                            </AnimatePresence>
                         </ErrorBoundary>
                     </div>
                 </main>

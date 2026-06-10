@@ -40,13 +40,15 @@
     }
 
     document.body.classList.remove("native-scroll");
-    const smoother = ScrollSmoother.create({
+    const existing = ScrollSmoother.get();
+    const smoother = existing ?? ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
       content: "#smooth-content",
       smooth: 2,
       effects: true,
       smoothTouch: 0.1,
     });
+    (window as any).__smoother__ = smoother;
     setupAnchorLinks(true, smoother);
   };
 

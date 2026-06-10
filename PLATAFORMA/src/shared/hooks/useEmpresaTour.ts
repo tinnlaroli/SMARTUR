@@ -24,7 +24,7 @@ const STEPS: StepText[] = [
         description: `Gestiona los ${kw('servicios turísticos')} de tu empresa: hoteles, restaurantes, tours. Aquí puedes agregar nuevos servicios, editar información y activar o desactivar cada uno. ${dim('Los servicios activos aparecen en la app móvil de SMARTUR.')}`,
     },
     {
-        title: 'Analytics',
+        title: 'Analíticas',
         description: `Ve el ${kw('rendimiento detallado')} de tu empresa: interacciones diarias, favoritos y visitas por servicio, y tu score de calidad basado en evaluaciones. ${dim('Los datos son en tiempo real y se calculan desde la app móvil.')}`,
     },
     {

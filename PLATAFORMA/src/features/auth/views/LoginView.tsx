@@ -1,7 +1,7 @@
 import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setAccessToken } from '../../../shared/api/axiosClient';
+import { setAccessToken, setStoredRefreshToken } from '../../../shared/api/axiosClient';
 import type { LoginPayload } from '../types';
 import { authApi } from '../authApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -30,6 +30,7 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoginReady, setIsLoginReady] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const pendingActionRef = useRef<(() => void) | null>(null);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -56,10 +57,9 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
 
             if (response.token && response.user) {
                 setAccessToken(response.token);
-                if (response.refreshToken) sessionStorage.setItem('refreshToken', response.refreshToken);
+                if (response.refreshToken) setStoredRefreshToken(response.refreshToken, rememberMe);
                 setUser(response.user);
                 localStorage.removeItem('token');
-                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('v1:token');
                 localStorage.removeItem('v1:user');
 
@@ -167,7 +167,18 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                     </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between">
+                    <label className="flex cursor-pointer select-none items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            className="size-4 rounded accent-violet-600"
+                        />
+                        <span className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                            Recordarme 7 días
+                        </span>
+                    </label>
                     <button
                         type="button"
                         onClick={() => onSwitchStep('forgotPassword')}

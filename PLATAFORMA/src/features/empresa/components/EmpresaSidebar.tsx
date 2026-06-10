@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
+    Calendar, MessageSquare, GitCompare, ShieldCheck,
 } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,7 +22,8 @@ interface MenuItem {
 
 const MENU_GROUPS: { groupKey: string; items: string[] }[] = [
     { groupKey: 'sidebar.group.principal', items: ['home'] },
-    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'profile', 'settings'] },
+    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'calendar', 'messages', 'profile', 'settings'] },
+    { groupKey: 'sidebar.group.verificacion', items: ['verificacion', 'changes'] },
 ];
 
 const getInitials = (name: string) =>
@@ -36,12 +38,16 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
     const { user, clearUser } = useUserPreferences();
 
     const allItems = useMemo<MenuItem[]>(() => [
-        { id: 'home', label: 'Inicio', icon: Home, path: '/empresa/dashboard', end: true },
-        { id: 'services', label: 'Mis servicios', icon: Wrench, path: '/empresa/servicios' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/empresa/analytics' },
-        { id: 'profile', label: 'Perfil', icon: UserCircle, path: '/empresa/perfil' },
-        { id: 'settings', label: 'Configuración', icon: Settings, path: '/empresa/configuracion' },
-    ], []);
+        { id: 'home',         label: t('empresa.sidebar.home'),         icon: Home,         path: '/empresa/dashboard', end: true },
+        { id: 'services',     label: t('empresa.sidebar.services'),     icon: Wrench,       path: '/empresa/servicios' },
+        { id: 'analytics',    label: t('empresa.sidebar.analytics'),    icon: BarChart3,    path: '/empresa/analytics' },
+        { id: 'calendar',     label: t('empresa.sidebar.calendar'),     icon: Calendar,     path: '/empresa/calendario' },
+        { id: 'messages',     label: t('empresa.sidebar.messages'),     icon: MessageSquare,path: '/empresa/mensajes' },
+        { id: 'profile',      label: t('empresa.sidebar.profile'),      icon: UserCircle,   path: '/empresa/perfil' },
+        { id: 'settings',     label: t('empresa.sidebar.settings'),     icon: Settings,     path: '/empresa/configuracion' },
+        { id: 'verificacion', label: 'Verificación',                     icon: ShieldCheck,  path: '/empresa/verificacion' },
+        { id: 'changes',      label: t('empresa.sidebar.changes'),      icon: GitCompare,   path: '/empresa/cambios' },
+    ], [t]);
 
     const filteredGroups = useMemo(() =>
         MENU_GROUPS.map((g) => ({

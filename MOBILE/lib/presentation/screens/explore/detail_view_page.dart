@@ -37,6 +37,14 @@ class DetailViewPage extends StatefulWidget {
   /// Used when the caller provides its own fixed overlay (e.g. swipe view).
   final bool showTopButtons;
 
+  // ── Campos de servicio (opcionales — solo para svc_* placeIds) ──
+  final double? priceFrom;
+  final double? priceTo;
+  final String? currency;
+  final int? durationMinutes;
+  final String? contactPhone;
+  final Map<String, String>? operatingHours;
+
   const DetailViewPage({
     super.key,
     required this.title,
@@ -51,6 +59,12 @@ class DetailViewPage extends StatefulWidget {
     this.lon,
     this.cityPlaces,
     this.showTopButtons = true,
+    this.priceFrom,
+    this.priceTo,
+    this.currency,
+    this.durationMinutes,
+    this.contactPhone,
+    this.operatingHours,
   });
 
   @override
@@ -369,6 +383,12 @@ class _DetailViewPageState extends State<DetailViewPage>
                       lat: widget.lat,
                       lon: widget.lon,
                       cityPlaces: widget.cityPlaces,
+                      priceFrom: widget.priceFrom,
+                      priceTo: widget.priceTo,
+                      currency: widget.currency,
+                      durationMinutes: widget.durationMinutes,
+                      contactPhone: widget.contactPhone,
+                      operatingHours: widget.operatingHours,
                     ),
                   ),
                 ],
@@ -449,6 +469,12 @@ class _BottomContent extends StatelessWidget {
   final double? lat;
   final double? lon;
   final List<Place>? cityPlaces;
+  final double? priceFrom;
+  final double? priceTo;
+  final String? currency;
+  final int? durationMinutes;
+  final String? contactPhone;
+  final Map<String, String>? operatingHours;
 
   const _BottomContent({
     required this.title,
@@ -461,7 +487,19 @@ class _BottomContent extends StatelessWidget {
     this.lat,
     this.lon,
     this.cityPlaces,
+    this.priceFrom,
+    this.priceTo,
+    this.currency,
+    this.durationMinutes,
+    this.contactPhone,
+    this.operatingHours,
   });
+
+  bool get _hasServiceInfo =>
+      priceFrom != null ||
+      durationMinutes != null ||
+      contactPhone != null ||
+      (operatingHours?.isNotEmpty ?? false);
 
   @override
   Widget build(BuildContext context) {
@@ -540,6 +578,17 @@ class _BottomContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (_hasServiceInfo) ...[
+                        _SectionLabel(label: 'Información del servicio'),
+                        _ServiceInfoBand(
+                          priceFrom: priceFrom,
+                          priceTo: priceTo,
+                          currency: currency ?? 'MXN',
+                          durationMinutes: durationMinutes,
+                          contactPhone: contactPhone,
+                          operatingHours: operatingHours,
+                        ),
+                      ],
                       _SectionLabel(label: l10n.tabHistory),
                       _TabText(
                         text: subtitle.isNotEmpty
@@ -623,6 +672,119 @@ class _BottomContent extends StatelessWidget {
 }
 
 // ── Reusable small widgets ──
+
+class _ServiceInfoBand extends StatelessWidget {
+  final double? priceFrom;
+  final double? priceTo;
+  final String currency;
+  final int? durationMinutes;
+  final String? contactPhone;
+  final Map<String, String>? operatingHours;
+
+  const _ServiceInfoBand({
+    this.priceFrom,
+    this.priceTo,
+    required this.currency,
+    this.durationMinutes,
+    this.contactPhone,
+    this.operatingHours,
+  });
+
+  String _formatPrice() {
+    if (priceFrom == null && priceTo == null) return '';
+    final sym = currency == 'MXN' ? '\$' : currency;
+    if (priceFrom != null && priceTo != null && priceTo != priceFrom) {
+      return '$sym${priceFrom!.toStringAsFixed(0)}–${priceTo!.toStringAsFixed(0)}';
+    }
+    final val = priceFrom ?? priceTo!;
+    return '$sym${val.toStringAsFixed(0)}';
+  }
+
+  String _formatDuration() {
+    if (durationMinutes == null) return '';
+    final h = durationMinutes! ~/ 60;
+    final m = durationMinutes! % 60;
+    if (h > 0 && m > 0) return '${h}h ${m}min';
+    if (h > 0) return '${h}h';
+    return '${m}min';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final chips = <_InfoChip>[];
+
+    final price = _formatPrice();
+    if (price.isNotEmpty) {
+      chips.add(_InfoChip(icon: Icons.attach_money_rounded, label: price, color: SmarturStyle.green));
+    }
+
+    final dur = _formatDuration();
+    if (dur.isNotEmpty) {
+      chips.add(_InfoChip(icon: Icons.schedule_rounded, label: dur, color: SmarturStyle.blue));
+    }
+
+    if (contactPhone != null) {
+      chips.add(_InfoChip(icon: Icons.phone_rounded, label: contactPhone!, color: SmarturStyle.purple));
+    }
+
+    if (operatingHours != null && operatingHours!.isNotEmpty) {
+      final dayOrder = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+      final today = dayOrder[DateTime.now().weekday - 1 < 7 ? DateTime.now().weekday - 1 : 6];
+      final todayHours = operatingHours![today];
+      if (todayHours != null) {
+        chips.add(_InfoChip(icon: Icons.door_front_door_rounded, label: 'Hoy: $todayHours', color: SmarturStyle.orange));
+      }
+    }
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        children: chips,
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _InfoChip({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _SectionLabel extends StatelessWidget {
   final String label;

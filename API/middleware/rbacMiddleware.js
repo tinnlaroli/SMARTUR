@@ -5,7 +5,9 @@
  *
  * Uso: router.get('/endpoint', verifyToken, requireRole([1]), handler)
  *   role_id 1 = admin
- *   role_id 2 = user
+ *   role_id 2 = user (turista)
+ *   role_id 3 = empresa
+ *   role_id 4 = turismologo
  *
  * OWASP A01 — Control de acceso roto (Broken Access Control)
  * Implementa RBAC (Role-Based Access Control)

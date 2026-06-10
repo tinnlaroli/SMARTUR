@@ -45,6 +45,30 @@ function getFirebaseMessaging() {
 }
 
 /**
+ * Envía una notificación push a un usuario específico (por user_id).
+ * Obtiene sus device tokens del pool y llama a sendToTokens.
+ * Fire-and-forget — no lanza excepción si falla.
+ *
+ * @param {import('pg').Pool} pool
+ * @param {number} userId
+ * @param {{ title: string; body: string; data?: Record<string, string> }} notification
+ */
+export async function sendFcmToUser(pool, userId, { title, body, data = {} }) {
+    try {
+        const { rows } = await pool.query(
+            `SELECT token FROM device_token WHERE user_id = $1`,
+            [userId],
+        );
+        const tokens = rows.map(r => r.token).filter(Boolean);
+        if (tokens.length > 0) {
+            await sendToTokens(tokens, { title, body, data });
+        }
+    } catch (err) {
+        console.error(`[FCM] sendFcmToUser(${userId}) falló:`, err.message);
+    }
+}
+
+/**
  * Envía una notificación push a un conjunto de tokens FCM.
  *
  * @param {string[]} tokens  - Tokens FCM de destino

@@ -123,7 +123,7 @@ class ImageExportService {
         final imagePath = await File('${directory.path}/smartur_recomienda.png').create();
         await imagePath.writeAsBytes(image);
 
-        await Share.shareXFiles([XFile(imagePath.path)], text: l10n.imageShareMessage(city));
+        await SharePlus.instance.share(ShareParams(files: [XFile(imagePath.path)], text: l10n.imageShareMessage(city)));
       }
     } catch (e) {
       debugPrint('Error capturando imagen: $e');

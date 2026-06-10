@@ -29,6 +29,15 @@ class Place {
   final double? lat;
   final double? lon;
 
+  // ── Campos exclusivos de servicios turísticos (null para POIs) ──
+  final double? priceFrom;
+  final double? priceTo;
+  final String? currency;
+  final int? durationMinutes;
+  final String? contactPhone;
+  /// Horarios de operación: {"lun":"09:00-18:00", "mar":"09:00-18:00", ...}
+  final Map<String, String>? operatingHours;
+
   const Place({
     required this.id,
     required this.name,
@@ -42,6 +51,12 @@ class Place {
     this.galleryUrls = const [],
     this.lat,
     this.lon,
+    this.priceFrom,
+    this.priceTo,
+    this.currency,
+    this.durationMinutes,
+    this.contactPhone,
+    this.operatingHours,
   });
 
   Map<String, dynamic> toJson() => {
@@ -57,9 +72,21 @@ class Place {
         'galleryUrls': galleryUrls,
         if (lat != null) 'lat': lat,
         if (lon != null) 'lon': lon,
+        if (priceFrom != null) 'priceFrom': priceFrom,
+        if (priceTo != null) 'priceTo': priceTo,
+        if (currency != null) 'currency': currency,
+        if (durationMinutes != null) 'durationMinutes': durationMinutes,
+        if (contactPhone != null) 'contactPhone': contactPhone,
+        if (operatingHours != null) 'operatingHours': operatingHours,
       };
 
-  factory Place.fromJson(Map<String, dynamic> json) => Place(
+  factory Place.fromJson(Map<String, dynamic> json) {
+    Map<String, String>? hours;
+    final raw = json['operatingHours'] ?? json['operating_hours'];
+    if (raw is Map) {
+      hours = raw.map((k, v) => MapEntry(k.toString(), v.toString()));
+    }
+    return Place(
         id: json['id'] as String,
         name: json['name'] as String,
         city: json['city'] as String,
@@ -78,7 +105,14 @@ class Place {
             const [],
         lat: (json['lat'] as num?)?.toDouble(),
         lon: (json['lon'] as num?)?.toDouble(),
+        priceFrom: (json['priceFrom'] ?? json['price_from'] as num?)?.toDouble(),
+        priceTo: (json['priceTo'] ?? json['price_to'] as num?)?.toDouble(),
+        currency: json['currency'] as String?,
+        durationMinutes: (json['durationMinutes'] ?? json['duration_minutes']) as int?,
+        contactPhone: json['contactPhone'] ?? json['contact_phone'] as String?,
+        operatingHours: hours,
       );
+  }
 }
 
 class CityData {

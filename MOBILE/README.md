@@ -47,9 +47,18 @@ Este documento describe la estructura del repositorio, el flujo de la aplicació
 5. Generar un release (APK o App Bundle):
 
    ```powershell
-   .\build_release.ps1              # APK por defecto
-   .\build_release.ps1 -Target aab  # App Bundle
+   .\build_release.ps1              # APK por defecto (sin firma release)
+   .\build_release.ps1 -Target aab  # App Bundle (sin firma release)
    ```
+
+   Para generar un release **firmado con el keystore de producción**:
+
+   ```powershell
+   .\builrelease.ps1 -KeyAlias upload -KeyPassword Smartur -StorePassword Smartur
+   ```
+
+   El APK firmado queda en `build\app\outputs\flutter-apk\app-release.apk`  
+   El AAB firmado queda en `build\app\outputs\bundle\release\app-release.aab`
 
 6. Análisis estático recomendado antes de commits:
 
@@ -64,9 +73,12 @@ Este documento describe la estructura del repositorio, el flujo de la aplicació
 | Script | Descripción |
 |--------|-------------|
 | `run_dev.ps1` | Lee `.env`, traduce cada `KEY=VALUE` a `--dart-define` y ejecuta `flutter run`. Acepta `-Device` para elegir dispositivo. |
-| `build_release.ps1` | Igual que `run_dev.ps1` pero ejecuta `flutter build <target> --release`. Acepta `-Target` (`apk`, `appbundle` o `aab`). |
+| `build_release.ps1` | Igual que `run_dev.ps1` pero ejecuta `flutter build <target> --release`. Acepta `-Target` (`apk`, `appbundle` o `aab`). Sin firma release. |
+| `builrelease.ps1` | Build de producción firmado. Exporta las variables del keystore, corre `flutter clean → pub get → build apk → build appbundle`. Acepta `-KeyAlias`, `-KeyPassword`, `-StorePassword`, `-KeystorePath`. Si no se pasan, los solicita interactivamente. |
 
-Ambos scripts **requieren** un archivo `.env` en la raíz del proyecto con pares `KEY=VALUE` válidos.
+`run_dev.ps1` y `build_release.ps1` **requieren** un archivo `.env` en la raíz del proyecto con pares `KEY=VALUE` válidos.
+
+`builrelease.ps1` usa el keystore en `android/app/smartur-release.jks` con alias `upload`.
 
 ---
 
@@ -191,7 +203,8 @@ lib/
 | `android/`, `ios/` | Proyectos nativos; permisos de cámara/galería y configuración de firma. |
 | `assets/` | Recursos estáticos referenciados en `pubspec.yaml`. |
 | `run_dev.ps1` | Script PowerShell para ejecutar en desarrollo con variables de `.env`. |
-| `build_release.ps1` | Script PowerShell para generar APK o App Bundle de release. |
+| `build_release.ps1` | Script PowerShell para generar APK o App Bundle de release (sin firma). |
+| `builrelease.ps1` | Script PowerShell para build firmado de producción (APK + AAB). |
 | `l10n.yaml` | Configuración de generación de localizaciones. |
 | `analysis_options.yaml` | Reglas de linting de Flutter. |
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import { requireRole } from '../middleware/rbacMiddleware.js';
 import upload from '../middleware/multer.js';
 import UserContentController from '../controllers/userContentController.js';
 
@@ -29,10 +30,10 @@ router.post(
     UserContentController.postCommunityPost,
 );
 router.delete('/community/posts/:postId', verifyToken, UserContentController.deleteCommunityPost);
-router.delete('/community/posts/:postId/admin', verifyToken, UserContentController.adminDeleteCommunityPost);
+router.delete('/community/posts/:postId/admin', verifyToken, requireRole([1]), UserContentController.adminDeleteCommunityPost);
 
 router.post('/community/posts/:postId/report', verifyToken, UserContentController.reportCommunityPost);
-router.get('/community/reports', verifyToken, UserContentController.getPostReports);
-router.patch('/community/reports/:reportId/resolve', verifyToken, UserContentController.resolvePostReport);
+router.get('/community/reports', verifyToken, requireRole([1]), UserContentController.getPostReports);
+router.patch('/community/reports/:reportId/resolve', verifyToken, requireRole([1]), UserContentController.resolvePostReport);
 
 export default router;

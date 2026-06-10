@@ -426,6 +426,173 @@ UPDATE point_of_interest SET image_url = 'https://commons.wikimedia.org/wiki/Spe
         sql: `ALTER TABLE service_evaluation
               ADD COLUMN IF NOT EXISTS pdf_url VARCHAR(1024) NULL;`,
     },
+    // ── Sprint 1-6 new tables & columns ────────────────────────────────────────
+    {
+        name: 'v21_tourist_service_sprint_cols',
+        sql: `
+ALTER TABLE tourist_service
+    ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active',
+    ADD COLUMN IF NOT EXISTS price_from NUMERIC(10,2),
+    ADD COLUMN IF NOT EXISTS price_to NUMERIC(10,2),
+    ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'MXN',
+    ADD COLUMN IF NOT EXISTS operating_hours JSONB,
+    ADD COLUMN IF NOT EXISTS capacity INT,
+    ADD COLUMN IF NOT EXISTS duration_minutes INT,
+    ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(30);
+-- existing services default to active so they remain visible
+`,
+    },
+    {
+        name: 'v22_company_status_extended',
+        sql: `
+-- Drop the old check constraint (if it exists under either name) and re-add extended values
+ALTER TABLE company DROP CONSTRAINT IF EXISTS company_status_check;
+ALTER TABLE company DROP CONSTRAINT IF EXISTS company_status_check1;
+-- Now extend the column and add updated constraint
+ALTER TABLE company ALTER COLUMN status TYPE VARCHAR(25);
+ALTER TABLE company ALTER COLUMN status SET DEFAULT 'pending_docs';
+ALTER TABLE company ADD CONSTRAINT company_status_check
+    CHECK (status IN ('pending_docs','documents_submitted','active','rejected','suspended','pending'));
+`,
+    },
+    {
+        name: 'v23_user_social_cols',
+        sql: `ALTER TABLE "user"
+              ADD COLUMN IF NOT EXISTS bio VARCHAR(300),
+              ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT true;`,
+    },
+    {
+        name: 'v24_company_verification',
+        sql: `CREATE TABLE IF NOT EXISTS company_verification (
+              id_verification SERIAL PRIMARY KEY,
+              id_company INT REFERENCES company(id_company) ON DELETE CASCADE,
+              owner_full_name VARCHAR(200),
+              owner_birth_date DATE,
+              owner_curp VARCHAR(18),
+              owner_rfc VARCHAR(13),
+              owner_street VARCHAR(200),
+              owner_colonia VARCHAR(100),
+              owner_municipio VARCHAR(100),
+              owner_state VARCHAR(100),
+              owner_zip VARCHAR(10),
+              ine_front_url VARCHAR(500),
+              ine_back_url VARCHAR(500),
+              address_proof_url VARCHAR(500),
+              submitted_at TIMESTAMP,
+              reviewed_at TIMESTAMP,
+              reviewer_id INT REFERENCES "user"(user_id),
+              rejection_reason TEXT,
+              resubmission_count INT DEFAULT 0,
+              UNIQUE(id_company)
+            );`,
+    },
+    {
+        name: 'v25_itinerary_tables',
+        sql: `
+CREATE TABLE IF NOT EXISTS itinerary (
+    id_itinerary SERIAL PRIMARY KEY,
+    user_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    cover_image_url VARCHAR(500),
+    is_public BOOLEAN DEFAULT false,
+    is_certified BOOLEAN DEFAULT false,
+    original_itinerary_id INT REFERENCES itinerary(id_itinerary),
+    copy_count INT DEFAULT 0,
+    view_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS itinerary_stop (
+    id_stop SERIAL PRIMARY KEY,
+    id_itinerary INT REFERENCES itinerary(id_itinerary) ON DELETE CASCADE,
+    place_kind VARCHAR(5) NOT NULL,
+    place_id INT NOT NULL,
+    stop_order INT NOT NULL,
+    visit_date DATE,
+    visit_time_start TIME,
+    notes TEXT
+);
+CREATE TABLE IF NOT EXISTS itinerary_like (
+    user_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+    id_itinerary INT REFERENCES itinerary(id_itinerary) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, id_itinerary)
+);
+`,
+    },
+    {
+        name: 'v26_user_follow',
+        sql: `CREATE TABLE IF NOT EXISTS user_follow (
+              follower_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+              following_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+              created_at TIMESTAMP DEFAULT NOW(),
+              UNIQUE(follower_id, following_id)
+            );`,
+    },
+    {
+        name: 'v27_booking',
+        sql: `CREATE TABLE IF NOT EXISTS booking (
+              id_booking SERIAL PRIMARY KEY,
+              id_service INT REFERENCES tourist_service(id_service),
+              user_id INT REFERENCES "user"(user_id),
+              id_itinerary INT REFERENCES itinerary(id_itinerary),
+              visit_date DATE NOT NULL,
+              visit_time TIME,
+              guests INT DEFAULT 1,
+              notes TEXT,
+              status VARCHAR(20) DEFAULT 'pending',
+              is_walkin BOOLEAN DEFAULT false,
+              created_at TIMESTAMP DEFAULT NOW(),
+              CONSTRAINT booking_status_check CHECK (status IN ('pending','confirmed','cancelled'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_booking_service ON booking(id_service);
+            CREATE INDEX IF NOT EXISTS idx_booking_user ON booking(user_id);`,
+    },
+    {
+        name: 'v28_chat',
+        sql: `
+CREATE TABLE IF NOT EXISTS conversation (
+    id_conversation SERIAL PRIMARY KEY,
+    tourist_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+    id_company INT REFERENCES company(id_company) ON DELETE CASCADE,
+    id_service INT REFERENCES tourist_service(id_service) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(tourist_id, id_company)
+);
+CREATE TABLE IF NOT EXISTS message (
+    id_message SERIAL PRIMARY KEY,
+    id_conversation INT REFERENCES conversation(id_conversation) ON DELETE CASCADE,
+    sender_id INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(id_conversation, created_at);
+`,
+    },
+    {
+        name: 'v29_admin_change_log',
+        sql: `
+CREATE TABLE IF NOT EXISTS admin_change_log (
+    id                   SERIAL PRIMARY KEY,
+    target_type          VARCHAR(20)  NOT NULL CHECK (target_type IN ('service', 'company', 'user')),
+    target_id            INTEGER      NOT NULL,
+    admin_id             INTEGER      REFERENCES "user"(user_id) ON DELETE SET NULL,
+    id_company           INTEGER      REFERENCES company(id_company) ON DELETE SET NULL,
+    changes              JSONB        NOT NULL,
+    status               VARCHAR(30)  NOT NULL DEFAULT 'pending_review'
+                             CHECK (status IN ('pending_review', 'accepted', 'disputed', 'resolved_admin', 'resolved_empresa')),
+    empresa_note         TEXT,
+    empresa_counter      JSONB,
+    admin_resolution_note TEXT,
+    created_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_acl_company   ON admin_change_log(id_company, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_acl_status    ON admin_change_log(status);
+`,
+    },
 ];
 
 export async function runMigrations() {

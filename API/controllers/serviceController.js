@@ -134,8 +134,9 @@ class ServicesController {
                 return res.status(403).json({ message: 'Debes verificar tu correo electrónico antes de iniciar sesión.' });
             }
 
-            const payload = { id: user.user_id, email: user.email, role_id: user.role_id };
-            if (user.role_id === 3 && user.id_company != null) payload.id_company = user.id_company;
+            const roleId = Number(user.role_id);
+            const payload = { id: user.user_id, email: user.email, role_id: roleId };
+            if (roleId === 3 && user.id_company != null) payload.id_company = Number(user.id_company);
 
             const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
             const newRefresh = generateRefreshToken();

@@ -36,10 +36,14 @@ export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
             return <Navigate to="/" replace />;
         }
 
-        const userRole = user.role_id || (Number(user.id) === 1 ? 1 : 2);
+        const userRole = user.role_id;
+        if (!userRole) {
+            clearSession();
+            return <Navigate to="/" replace />;
+        }
 
         if (!allowedRoles.includes(userRole)) {
-            if (userRole === 1) return <Navigate to="/dashboard" replace />;
+            if (userRole === 1 || userRole === 4) return <Navigate to="/dashboard" replace />;
             if (userRole === 3) return <Navigate to="/empresa/dashboard" replace />;
             return <Navigate to="/form" replace />;
         }

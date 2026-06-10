@@ -146,14 +146,22 @@ export class UserContentController {
         try {
             const userId = req.user.id;
             const body = safeBody(req);
-            const kind = parseKind(body.place_kind);
-            const pid = parseInt(body.place_id, 10);
-            if (!kind || Number.isNaN(pid)) {
-                return res.status(400).json({ message: 'place_kind debe ser svc o poi y place_id numérico' });
+            const kind = body.place_kind ? parseKind(body.place_kind) : null;
+            const pid = body.place_id !== undefined && body.place_id !== ''
+                ? parseInt(body.place_id, 10)
+                : null;
+            if (body.place_kind && !kind) {
+                return res.status(400).json({ message: 'place_kind debe ser svc o poi' });
             }
-            const placeRow = await UserContent.placeExists(kind, pid);
-            if (!placeRow) {
-                return res.status(404).json({ message: 'Lugar no encontrado' });
+            if (kind && (pid === null || Number.isNaN(pid))) {
+                return res.status(400).json({ message: 'place_id debe ser numérico' });
+            }
+            let placeRow = null;
+            if (kind && pid !== null) {
+                placeRow = await UserContent.placeExists(kind, pid);
+                if (!placeRow) {
+                    return res.status(404).json({ message: 'Lugar no encontrado' });
+                }
             }
 
             let caption = body.caption;
@@ -210,7 +218,7 @@ export class UserContentController {
                     image_url: row.image_url,
                     place_kind: row.place_kind,
                     place_id: row.place_id,
-                    place_name: placeRow.name,
+                    place_name: placeRow?.name ?? null,
                     created_at: row.created_at,
                     author: {
                         name: u?.name,

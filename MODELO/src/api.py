@@ -20,6 +20,7 @@ Conecta los flujos entre el Engine de Pearson y el Modelo Contextual de RF.
 from engine import SmarturEngine
 from rf_model import SmarturContextModel, _MODELS
 from fusion import recommend_hybrid
+from route_optimizer import optimize_route as _aco_optimize
 import json
 from pathlib import Path
 from poi_repository import fetch_pois, get_poi_connection, fetch_traveler_profile
@@ -30,7 +31,6 @@ logger = logging.getLogger("smartur-api")
 
 engine          = None
 context_model   = None
-gbm_model       = None
 lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
@@ -97,7 +97,7 @@ def _load_or_train_models(do_train: bool = False) -> None:
     Carga los modelos desde disco. Si do_train=True y alguno falta, lo entrena.
     Diseñado para ejecutarse en un ThreadPoolExecutor (CPU-bound).
     """
-    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
+    global engine, context_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
 
     try:
         logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
@@ -116,16 +116,6 @@ def _load_or_train_models(do_train: bool = False) -> None:
                 context_model.train(engine.train_data, df_biz_extra=restmex_biz)
             else:
                 context_model = None
-
-        logger.info("[boot] Cargando Gradient Boosting (GBM)...")
-        from gbm_model import SmarturGbmModel
-        gbm_model = SmarturGbmModel()
-        if not gbm_model.load():
-            if do_train:
-                logger.info("[boot] Modelo GBM no encontrado — entrenando en segundo plano...")
-                gbm_model.train(engine.train_data, df_biz_extra=restmex_biz)
-            else:
-                gbm_model = None
 
         logger.info("[boot] Cargando LightFM (cold-start WARP)...")
         try:
@@ -161,7 +151,7 @@ def _load_or_train_models(do_train: bool = False) -> None:
 
         lfm_st = "LightFM✓" if lightfm_model else "LightFM✗"
         cm_st  = "ContentModel✓" if content_model_cb else "ContentModel✗"
-        logger.info(f"[boot] SMARTUR v4 listo (RF + GBM + SVD/CF + {lfm_st} + {cm_st}).")
+        logger.info(f"[boot] SMARTUR v4 listo (RF + SVD/CF + {lfm_st} + {cm_st}).")
     except Exception as e:
         logger.error(f"[boot] Error cargando modelos: {e}")
     finally:
@@ -187,11 +177,10 @@ async def lifespan(app: FastAPI):
     # Si algún modelo no está listo, entrenar en background (no bloquea el API)
     models_ready = (
         engine is not None and
-        context_model is not None and
-        gbm_model is not None
+        context_model is not None
     )
     if not models_ready:
-        missing = [n for n, v in [("engine", engine), ("rf", context_model), ("gbm", gbm_model)] if v is None]
+        missing = [n for n, v in [("engine", engine), ("rf", context_model)] if v is None]
         logger.warning(
             f"[boot] ⚠️  API arrancando con modelos faltantes: {missing}. "
             "Los endpoints /recommend devolverán 503 hasta que el entrenamiento termine."
@@ -281,7 +270,6 @@ def health():
         "status": "ok",
         "engine_ready":        engine is not None and engine.user_item_matrix is not None,
         "rf_ready":            context_model is not None and getattr(context_model, 'is_fitted', False),
-        "gbm_ready":           gbm_model is not None and getattr(gbm_model, 'is_fitted', False),
         "svd_ready":           engine is not None and hasattr(engine, 'user_latent'),
         "lightfm_ready":       lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
         "content_ready":       content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
@@ -779,7 +767,7 @@ def _run_full_training():
     Pearson/SVD matrix, computes full algorithm comparison metrics, appends
     ranking metrics, and persists to DB.
     """
-    global engine, context_model, gbm_model, lightfm_model, content_model_cb, quality_scores
+    global engine, context_model, lightfm_model, content_model_cb, quality_scores
     try:
         import pandas as pd
         from model_metrics import save_metrics, compare_algorithms
@@ -833,13 +821,6 @@ def _run_full_training():
         logger.info("[train] Reentrenando Random Forest...")
         context_model.train(engine.train_data, df_biz_extra=restmex_biz)
 
-        # ── 4. Retrain GBM ───────────────────────────────────────────────────
-        if gbm_model is not None:
-            logger.info("[train] Reentrenando Gradient Boosting...")
-            gbm_model.train(engine.train_data, df_biz_extra=restmex_biz)
-        else:
-            logger.warning("[train] GBM no cargado — solo RF+CF en comparativa.")
-
         # ── 4b. Retrain LightFM ──────────────────────────────────────────────
         if lightfm_model is not None:
             logger.info("[train] Reentrenando LightFM...")
@@ -855,17 +836,12 @@ def _run_full_training():
             except Exception as cm_err:
                 logger.warning(f"[train] ContentModel refit falló: {cm_err}")
 
-        # ── 5. Full algorithm comparison ─────────────────────────────────────
-        logger.info("[train] Calculando comparativa de algoritmos...")
-        if gbm_model is not None:
-            metrics = compare_algorithms(engine, context_model, gbm_model, sample_size=800)
-        else:
-            metrics = _compute_simple_metrics(engine, context_model)
+        # ── 5. Algorithm metrics (RF + CF) ───────────────────────────────────
+        logger.info("[train] Calculando métricas de algoritmos...")
+        metrics = _compute_simple_metrics(engine, context_model)
 
         # ── 5b. Enrich with error_dist, data_quality, prediction_distribution ──
-        # If compare_algorithms was used, re-derive from its internal arrays
-        # Otherwise the enrichments are already in metrics (from _compute_simple_metrics)
-        if gbm_model is not None and 'error_distribution' not in metrics:
+        if 'error_distribution' not in metrics:
             try:
                 enrich = _compute_enrich_from_engine(engine, context_model)
                 metrics.update(enrich)
@@ -991,6 +967,56 @@ def train_rf():
     except Exception as e:
         logger.error(f"Error entrenando modelo: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Route Optimizer (ACO) ────────────────────────────────────────────────────
+
+class OptimizeStop(BaseModel):
+    lat: float
+    lng: float
+    name: str = ''
+    duration_minutes: Optional[int] = None   # dwell time at this stop
+    open_minutes: Optional[int] = None        # opening time in minutes from midnight
+    close_minutes: Optional[int] = None       # closing time in minutes from midnight
+
+
+class OptimizeRouteRequest(BaseModel):
+    stops: List[OptimizeStop]
+    start_minutes: int = 540  # departure time in minutes from midnight (default 09:00)
+
+
+@app.post("/optimize-route")
+def optimize_route_endpoint(req: OptimizeRouteRequest):
+    """
+    Ant Colony Optimization for itinerary stop ordering with time-window support.
+    Keeps the first stop fixed as departure and finds the shortest open path
+    through the remaining stops.
+
+    Optional per-stop fields: duration_minutes, open_minutes, close_minutes.
+    Optional request field: start_minutes (default 540 = 09:00).
+
+    Returns:
+        optimized_order (indices into input stops),
+        original_distance_km, optimized_distance_km, savings_pct.
+    """
+    if len(req.stops) < 2:
+        raise HTTPException(
+            status_code=422,
+            detail="Se necesitan al menos 2 paradas para optimizar",
+        )
+    stops = [
+        {
+            "lat": s.lat,
+            "lng": s.lng,
+            "name": s.name,
+            "duration_minutes": s.duration_minutes,
+            "open_minutes": s.open_minutes,
+            "close_minutes": s.close_minutes,
+        }
+        for s in req.stops
+    ]
+    result = _aco_optimize(stops, start_minutes=req.start_minutes)
+    return result
 
 
 if __name__ == "__main__":
