@@ -15,7 +15,7 @@ class SmarturBackgroundTop extends StatefulWidget {
     super.key,
     required this.child,
     this.blurSigma = 14.0,
-    this.opacity = 0.25,
+    this.opacity = 0.08,
     this.bandFraction = 0.35,
   });
 
