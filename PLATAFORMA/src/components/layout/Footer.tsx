@@ -14,7 +14,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
     const { t } = useLanguage();
-    const [latestVersion, setLatestVersion] = useState('v1.0.0');
+    const [latestVersion, setLatestVersion] = useState('…');
 
     useEffect(() => {
         const controller = new AbortController();
