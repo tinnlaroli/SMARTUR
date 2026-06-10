@@ -114,14 +114,31 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
-          draft: false
-          prerelease: false
-          generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG="${GITHUB_REF_NAME}"
+          NOTES="$(gh release view "$TAG" --json body --jq '.body' 2>/dev/null || true)"
+
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG exists — uploading artifacts..."
+            gh release upload "$TAG" \
+              build/app/outputs/flutter-apk/app-release.apk \
+              build/app/outputs/bundle/release/app-release.aab \
+              --clobber
+          else
+            echo "Creating release $TAG..."
+            if [ -z "$NOTES" ]; then
+              gh release create "$TAG" \
+                build/app/outputs/flutter-apk/app-release.apk \
+                build/app/outputs/bundle/release/app-release.aab \
+                --generate-notes
+            else
+              gh release create "$TAG" \
+                build/app/outputs/flutter-apk/app-release.apk \
+                build/app/outputs/bundle/release/app-release.aab \
+                --notes "$NOTES"
+            fi
+          fi
