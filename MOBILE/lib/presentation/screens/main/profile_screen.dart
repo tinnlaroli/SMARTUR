@@ -196,6 +196,8 @@ class _ProfileScreenState extends State<ProfileScreen>
               backgroundColor: scheme.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
+              expandedHeight: kToolbarHeight + 224,
+              forceElevated: innerBoxIsScrolled,
               title: Text(
                 l10n.myProfile,
                 style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
@@ -210,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ],
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(kToolbarHeight + 120),
+                preferredSize: const Size.fromHeight(224),
                 child: Column(
                   children: [
                     // Avatar + name block

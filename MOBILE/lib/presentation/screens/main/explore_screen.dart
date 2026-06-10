@@ -55,6 +55,7 @@ class _ExploreScreenState extends State<ExploreScreen>
         surfaceTintColor: Colors.transparent,
         bottom: smarturTabBar(
           context,
+          controller: _tabCtrl,
           tabs: [
             Tab(text: l10n.routesSectionLabel),
             Tab(text: l10n.communityTitle),
@@ -205,55 +206,75 @@ class _RoutesTabState extends State<_RoutesTab>
       onRefresh: _load,
       color: SmarturStyle.purple,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
         children: [
           // Search bar
-          Container(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-            ),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Icon(Icons.search_rounded,
-                      color: scheme.onSurfaceVariant),
+          Material(
+            color: scheme.surface,
+            elevation: 2,
+            shadowColor: scheme.shadow.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isSearchActive
+                      ? SmarturStyle.purple.withValues(alpha: 0.5)
+                      : scheme.outlineVariant.withValues(alpha: 0.4),
                 ),
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    decoration: InputDecoration(
-                      hintText: l10n.searchRoutesHint,
-                      hintStyle: TextStyle(
-                        fontFamily: 'Outfit',
-                        color: scheme.onSurfaceVariant,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Icon(Icons.search_rounded,
+                      size: 20, color: isSearchActive
+                          ? SmarturStyle.purple
+                          : scheme.onSurfaceVariant),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      decoration: InputDecoration(
+                        hintText: l10n.searchRoutesHint,
+                        hintStyle: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 13),
                       ),
-                      border: InputBorder.none,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 14),
+                      style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 14,
+                          color: scheme.onSurface),
+                      onChanged: (v) {
+                        setState(() {});
+                        _search(v);
+                      },
                     ),
-                    style: const TextStyle(fontFamily: 'Outfit'),
-                    onChanged: (v) {
-                      setState(() {});
-                      _search(v);
-                    },
                   ),
-                ),
-                if (isSearchActive)
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 18),
-                    onPressed: () {
-                      _searchCtrl.clear();
-                      setState(() {
-                        _searchResults = [];
-                        _searching = false;
-                      });
-                    },
-                  ),
-              ],
+                  if (isSearchActive)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: IconButton(
+                        icon: Icon(Icons.cancel_rounded,
+                            size: 18, color: scheme.onSurfaceVariant),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() {
+                            _searchResults = [];
+                            _searching = false;
+                          });
+                        },
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 14),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -350,11 +371,26 @@ class _EmptySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
-      height: 100,
+      height: 110,
       child: Center(
-        child: Icon(Icons.route_rounded,
-            size: 36, color: scheme.onSurfaceVariant.withValues(alpha: 0.3)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.route_rounded,
+                size: 34, color: scheme.onSurfaceVariant.withValues(alpha: 0.25)),
+            const SizedBox(height: 8),
+            Text(
+              l10n.routesSectionNoItems,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 13,
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -663,85 +699,79 @@ class _CommunityTabState extends State<_CommunityTab>
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final body = _error != null && !_loading
-        ? ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              SmarturEmptyState(
-                icon: Icons.cloud_off_outlined,
-                title: l10n.connectionError,
-                subtitle: _error,
-                action: FilledButton.icon(
-                  onPressed: _load,
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: Text(l10n.mapRetry),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showCreateSheet,
+        backgroundColor: SmarturStyle.purple,
+        child: const Icon(Icons.add_rounded, color: Colors.white),
+      ),
+      body: _error != null && !_loading
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SmarturEmptyState(
+                  icon: Icons.cloud_off_outlined,
+                  title: l10n.connectionError,
+                  subtitle: _error,
+                  action: FilledButton.icon(
+                    onPressed: _load,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(l10n.mapRetry),
+                  ),
                 ),
-              ),
-            ],
-          )
-        : RefreshIndicator(
-            color: SmarturStyle.purple,
-            onRefresh: _load,
-            child: SmarturLoadTransition(
-              loading: _loading,
-              loadingChild: SmarturShimmer(
-                enabled: true,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 80),
-                  children: const [
-                    SkeletonCommunityPostCard(),
-                    SkeletonCommunityPostCard(),
-                    SkeletonCommunityPostCard(),
-                  ],
+              ],
+            )
+          : RefreshIndicator(
+              color: SmarturStyle.purple,
+              onRefresh: _load,
+              child: SmarturLoadTransition(
+                loading: _loading,
+                loadingChild: SmarturShimmer(
+                  enabled: true,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 80),
+                    children: const [
+                      SkeletonCommunityPostCard(),
+                      SkeletonCommunityPostCard(),
+                      SkeletonCommunityPostCard(),
+                    ],
+                  ),
                 ),
-              ),
-              child: _posts.isEmpty
-                  ? ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SmarturEmptyState(
-                          icon: Icons.people_outline,
-                          title: l10n.communityEmpty,
-                          subtitle: l10n.communityEmptyHint,
-                          action: FilledButton.icon(
-                            onPressed: _showCreateSheet,
-                            icon: const Icon(Icons.add_rounded, size: 18),
-                            label: Text(l10n.communityFirstPost),
+                child: _posts.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SmarturEmptyState(
+                            icon: Icons.people_outline,
+                            title: l10n.communityEmpty,
+                            subtitle: l10n.communityEmptyHint,
+                            action: FilledButton.icon(
+                              onPressed: _showCreateSheet,
+                              icon: const Icon(Icons.add_rounded, size: 18),
+                              label: Text(l10n.communityFirstPost),
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(top: 8, bottom: 80),
-                      itemCount: _posts.length,
-                      itemBuilder: (ctx, i) {
-                        final post = _posts[i];
-                        return _CommunityPostCard(
-                          post: post,
-                          currentUserId: _currentUserId,
-                          onDelete: () => _deletePost(post['id_post'] as int),
-                          onReport: (reason) =>
-                              _reportPost(post['id_post'] as int, reason),
-                        );
-                      },
-                    ),
+                        ],
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(top: 8, bottom: 80),
+                        itemCount: _posts.length,
+                        itemBuilder: (ctx, i) {
+                          final post = _posts[i];
+                          return _CommunityPostCard(
+                            post: post,
+                            currentUserId: _currentUserId,
+                            onDelete: () => _deletePost(post['id_post'] as int),
+                            onReport: (reason) =>
+                                _reportPost(post['id_post'] as int, reason),
+                          );
+                        },
+                      ),
+              ),
             ),
-          );
-    return Stack(
-      children: [
-        body,
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            onPressed: _showCreateSheet,
-            backgroundColor: SmarturStyle.purple,
-            child: const Icon(Icons.add_rounded, color: Colors.white),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -510,6 +510,12 @@ abstract class AppLocalizations {
   /// **'De personas que sigues'**
   String get routesSectionFollowing;
 
+  /// No description provided for @routesSectionNoItems.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente disponibles por aquí'**
+  String get routesSectionNoItems;
+
   /// No description provided for @routesFollowingEmpty.
   ///
   /// In es, this message translates to:
@@ -1007,6 +1013,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Recomendaciones para ti, {name}'**
   String recommendationsForYou(Object name);
+
+  /// No description provided for @forYouLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Para ti'**
+  String get forYouLabel;
 
   /// No description provided for @weatherNow.
   ///

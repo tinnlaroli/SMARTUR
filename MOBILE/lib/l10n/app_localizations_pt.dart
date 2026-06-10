@@ -221,6 +221,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get routesSectionFollowing => 'De pessoas que você segue';
 
   @override
+  String get routesSectionNoItems => 'Em breve disponível por aqui';
+
+  @override
   String get routesFollowingEmpty => 'Siga viajantes para ver suas rotas aqui';
 
   @override
@@ -495,6 +498,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String recommendationsForYou(Object name) {
     return 'Recomendações para você, $name';
   }
+
+  @override
+  String get forYouLabel => 'Para você';
 
   @override
   String get weatherNow => 'Clima agora';
