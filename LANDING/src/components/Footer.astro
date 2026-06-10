@@ -41,14 +41,7 @@ const {
 
 const t = useTranslations(lang);
 
-let latestVersion = "v1.0.0";
-try {
-  const response = await fetch("https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest");
-  if (response.ok) {
-    const data = await response.json();
-    latestVersion = data.tag_name;
-  }
-} catch (e) {}
+// Version is fetched client-side to always show the latest release without rebuilding
 ---
 
 <sy-footer>
@@ -143,7 +136,7 @@ try {
           <div class="footer-column">
             <h3 class="column-title">{mobileAppTitle || t("footer.mobileApp")}</h3>
             <div class="app-download">
-              <span class="version-tag">{mobileAppVersion || t("footer.mobileApp.version")}: {latestVersion}</span>
+              <span class="version-tag">{mobileAppVersion || t("footer.mobileApp.version")}: <span id="footer-app-version">…</span></span>
               <a
                 href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
                 class="download-button"
@@ -498,4 +491,23 @@ try {
   }
 
   customElements.define("sy-footer", Footer);
+</script>
+
+<script>
+  // Fetch latest APK version from GitHub at runtime so no rebuild is needed on each release
+  (async () => {
+    const el = document.getElementById("footer-app-version");
+    if (!el) return;
+    try {
+      const res = await fetch("https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest", {
+        headers: { Accept: "application/vnd.github+json" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        el.textContent = data.tag_name ?? "…";
+      }
+    } catch {
+      el.textContent = "—";
+    }
+  })();
 </script>
