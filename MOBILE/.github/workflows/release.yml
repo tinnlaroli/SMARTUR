@@ -122,14 +122,13 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           REPO="${GITHUB_REPOSITORY}"
 
-          # Check if release exists; gh release view exits non-zero on 404
-          if gh release view "$TAG" --json id --jq '.id' &>/dev/null; then
-            RELEASE_ID=$(gh release view "$TAG" --json id --jq '.id')
-            echo "Release $TAG exists (id=$RELEASE_ID) — uploading artifacts..."
+          # Check if release exists; gh release view exits non-zero when absent
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — uploading artifacts..."
           else
             echo "Creating release $TAG..."
-            RELEASE_ID=$(gh release create "$TAG" --generate-notes --json id --jq '.id')
-            echo "Created release id=$RELEASE_ID"
+            gh release create "$TAG" --generate-notes
+            echo "Created release $TAG"
           fi
 
           # Upload APK
