@@ -7,7 +7,7 @@ import { requireRole } from '../middleware/rbacMiddleware.js';
 const router = Router();
 
 // Todas las rutas de este archivo requieren admin (role_id = 1)
-router.use(verifyToken, requireRole([1]));
+router.use('/admin', verifyToken, requireRole([1]));
 
 /**
  * GET /api/v2/admin/companies
