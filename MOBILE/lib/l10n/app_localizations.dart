@@ -1098,12 +1098,6 @@ abstract class AppLocalizations {
   /// **'Gratis'**
   String get free;
 
-  /// No description provided for @createOneDayRoute.
-  ///
-  /// In es, this message translates to:
-  /// **'Crear Ruta de 1 Día'**
-  String get createOneDayRoute;
-
   /// No description provided for @openInMaps.
   ///
   /// In es, this message translates to:
@@ -2720,7 +2714,7 @@ abstract class AppLocalizations {
   /// No description provided for @plannerOptimize.
   ///
   /// In es, this message translates to:
-  /// **'Optimizar con IA'**
+  /// **'Mejorar mi ruta'**
   String get plannerOptimize;
 
   /// No description provided for @plannerOptimizeComingSoon.

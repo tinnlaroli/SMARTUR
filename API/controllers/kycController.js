@@ -180,14 +180,20 @@ class KycController {
 
         try {
             const [companyResult, verResult] = await Promise.all([
-                pool.query('SELECT status, name FROM company WHERE id_company = $1', [id_company]),
+                pool.query('SELECT status, name, is_certified, certified_at FROM company WHERE id_company = $1', [id_company]),
                 pool.query('SELECT * FROM company_verification WHERE id_company = $1', [id_company])
             ]);
 
             const company = companyResult.rows[0];
             const verification = verResult.rows[0] || null;
 
-            return res.json({ status: company.status, company_name: company.name, verification });
+            return res.json({
+                status: company.status,
+                company_name: company.name,
+                is_certified: company.is_certified,
+                certified_at: company.certified_at,
+                verification,
+            });
         } catch (error) {
             console.error('Error en getVerification:', error);
             return res.status(500).json({ message: 'Error del servidor.' });

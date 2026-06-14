@@ -117,4 +117,16 @@ router.delete(
     EmpresaController.deleteService,
 );
 
+/**
+ * PATCH /api/v2/empresa/services/:id/operating-hours
+ * Updates only the operating_hours JSONB for a service the empresa owns.
+ */
+router.patch(
+    '/empresa/services/:id/operating-hours',
+    verifyToken,
+    requireRole([3]),
+    requireOwnsCompany,
+    EmpresaController.updateOperatingHours,
+);
+
 export default router;

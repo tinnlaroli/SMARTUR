@@ -24,6 +24,27 @@ export interface WalkinPayload {
     notes?: string;
 }
 
+export interface TouristProfile {
+    name: string;
+    email: string;
+    photo_url: string | null;
+    registration_date: string;
+    interests: string[];
+    dietary_restrictions: string | null;
+    has_accessibility: boolean;
+}
+
+export interface TouristProfileResponse {
+    tourist: TouristProfile;
+    booking: {
+        visit_date: string;
+        visit_time: string | null;
+        guests: number;
+        notes: string | null;
+        is_walkin: boolean;
+    };
+}
+
 export const bookingEmpresaApi = {
     list: async (status?: BookingStatus): Promise<EmpresaBooking[]> => {
         const params: Record<string, string> = {};
@@ -43,5 +64,10 @@ export const bookingEmpresaApi = {
     walkin: async (payload: WalkinPayload): Promise<EmpresaBooking> => {
         const res = await api.post('/empresa/bookings/walkin', payload);
         return res.data.booking;
+    },
+
+    getTouristProfile: async (bookingId: number): Promise<TouristProfileResponse> => {
+        const res = await api.get(`/empresa/bookings/${bookingId}/tourist-profile`);
+        return res.data;
     },
 };

@@ -416,6 +416,18 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
         if profile_ctx:
             logger.info(f"Perfil de viajero cargado para usuario {user_id}")
 
+        # If request sent raw 'interests' but no 'tiposTurismo' exists yet (cold-start with no
+        # DB profile), convert them so filtrar_candidatos_por_contexto can use them.
+        if 'tiposTurismo' not in merged_context and merged_context.get('interests'):
+            from poi_repository import _INTEREST_MAP
+            tipos = []
+            for interest in merged_context['interests']:
+                mapped = _INTEREST_MAP.get(str(interest).lower().strip())
+                if mapped and mapped not in tipos:
+                    tipos.append(mapped)
+            if tipos:
+                merged_context['tiposTurismo'] = tipos
+
         # Cold-start fallback: use region defaults when no profile or form context is available
         if not merged_context:
             merged_context = dict(_REGION_DEFAULT_CONTEXT)

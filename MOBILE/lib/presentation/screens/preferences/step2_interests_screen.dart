@@ -101,6 +101,8 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
       activityValue = 1;
     } else if (_activityLevel == 'Moderado') {
       activityValue = 3;
+    } else if (_activityLevel == 'Alto') {
+      activityValue = 4;
     } else {
       activityValue = 5;
     }

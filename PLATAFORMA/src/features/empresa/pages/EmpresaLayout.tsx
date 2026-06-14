@@ -14,6 +14,7 @@ import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast, type NotificationType, type ToastNotification } from '../../../shared/context/ToastContext';
 import { useEmpresaTour } from '../../../shared/hooks/useEmpresaTour';
+import { EmpresaBadgesProvider } from '../context/EmpresaBadgesContext';
 
 const NOTIFICATION_ICON_MAP: Record<NotificationType, typeof CheckCircle> = {
     success: CheckCircle,
@@ -201,6 +202,7 @@ export function EmpresaLayout() {
             : t('empresa.layout.inicio');
 
     return (
+        <EmpresaBadgesProvider>
         <>
         <SEOHelmet noindex title="Portal Empresa" />
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
@@ -362,5 +364,6 @@ export function EmpresaLayout() {
             </div>
         </div>
         </>
+        </EmpresaBadgesProvider>
     );
 }

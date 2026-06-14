@@ -50,6 +50,8 @@ const EmpresaCalendarioPage          = lazy(() => import('../features/empresa/pa
 const EmpresaMensajesPage            = lazy(() => import('../features/empresa/pages/EmpresaMensajesPage').then(m => ({ default: m.EmpresaMensajesPage })));
 const EmpresaCambiosPage             = lazy(() => import('../features/empresa/pages/EmpresaCambiosPage').then(m => ({ default: m.EmpresaCambiosPage })));
 const AdminDisputasPage              = lazy(() => import('../features/tourist-services/pages/AdminDisputasPage').then(m => ({ default: m.AdminDisputasPage })));
+const AdminPOIsApprovalPage          = lazy(() => import('../features/points-of-interest/pages/AdminPOIsApprovalPage'));
+const EmpresaFAQsPage                = lazy(() => import('../features/empresa/pages/EmpresaFAQsPage').then(m => ({ default: m.EmpresaFAQsPage })));
 
 // Suspense wrapper used inline for route elements
 function S({
@@ -109,6 +111,7 @@ export const router = createBrowserRouter([
                                     { path: 'notificaciones',       element: <S><NotificacionesPage /></S> },
                                     { path: 'configuracion',        element: <S><SettingsPage /></S> },
                                     { path: 'disputas',             element: <S><AdminDisputasPage /></S> },
+                                    { path: 'pois-pendientes',      element: <S><AdminPOIsApprovalPage /></S> },
                                     { path: '*',                    element: <NotFound /> },
                                 ],
                             },
@@ -142,6 +145,7 @@ export const router = createBrowserRouter([
                             { path: 'calendario',     element: <S><EmpresaCalendarioPage /></S> },
                             { path: 'mensajes',       element: <S><EmpresaMensajesPage /></S> },
                             { path: 'cambios',        element: <S><EmpresaCambiosPage /></S> },
+                            { path: 'faqs',           element: <S><EmpresaFAQsPage /></S> },
                             { index: true,           element: <Navigate to="dashboard" replace /> },
                         ],
                     },

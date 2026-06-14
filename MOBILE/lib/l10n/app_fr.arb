@@ -175,7 +175,6 @@
   "tabAiSummary": "Résumé IA",
   "fromPrice": "Depuis",
   "free": "Gratuit",
-  "createOneDayRoute": "Créer un itinéraire d'1 jour",
   "openInMaps": "Ouvrir dans Google Maps",
   "locationNoCoords": "Lieu : {city}",
   "@locationNoCoords": { "placeholders": { "city": { "type": "String" } } },
@@ -476,7 +475,7 @@
   ,"plannerAddStop":"Ajouter un arrêt"
   ,"plannerNoStops":"Aucun arrêt"
   ,"plannerNoStopsSubtitle":"Appuyez sur + partout pour ajouter des arrêts"
-  ,"plannerOptimize":"Optimiser avec IA"
+  ,"plannerOptimize":"Améliorer mon itinéraire"
   ,"plannerOptimizeComingSoon":"Bientôt disponible sur SMARTUR"
   ,"plannerRouteName":"Nom de l'itinéraire"
   ,"plannerRouteNameHint":"Ex.: Mon itinéraire à Xalapa"

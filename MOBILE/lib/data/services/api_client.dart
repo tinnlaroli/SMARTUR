@@ -5,11 +5,13 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import 'auth_service.dart';
+
 /// Centralized HTTP client for all SMARTUR API calls.
 ///
 /// Responsibilities:
 /// - Injects Authorization header on every request.
-/// - Broadcasts [onSessionExpired] when any endpoint returns 401.
+/// - Attempts silent token refresh on 401 before broadcasting [onSessionExpired].
 /// - Classifies network errors into [ApiException] subtypes.
 /// - Enforces a consistent default timeout.
 class ApiClient {
@@ -21,9 +23,12 @@ class ApiClient {
 
   static final _sessionExpiredCtrl = StreamController<void>.broadcast();
 
-  /// Emits whenever any request returns HTTP 401.
+  /// Emits whenever a 401 cannot be recovered via token refresh.
   /// Listen once at the app root and navigate to WelcomeScreen.
   static Stream<void> get onSessionExpired => _sessionExpiredCtrl.stream;
+
+  // Refresh reentrancy guard — prevents multiple parallel refresh attempts.
+  static bool _isRefreshing = false;
 
   // ── Public HTTP helpers ────────────────────────────────────────────────────
 
@@ -33,7 +38,7 @@ class ApiClient {
     Duration? timeout,
   }) {
     return _send(
-      () async => http.get(uri, headers: await _buildHeaders(extraHeaders)),
+      (h) => http.get(uri, headers: {...h, ...?extraHeaders}),
       timeout: timeout,
     );
   }
@@ -45,11 +50,7 @@ class ApiClient {
     Duration? timeout,
   }) {
     return _send(
-      () async => http.post(
-        uri,
-        headers: await _buildHeaders(extraHeaders),
-        body: body,
-      ),
+      (h) => http.post(uri, headers: {...h, ...?extraHeaders}, body: body),
       timeout: timeout,
     );
   }
@@ -61,11 +62,7 @@ class ApiClient {
     Duration? timeout,
   }) {
     return _send(
-      () async => http.patch(
-        uri,
-        headers: await _buildHeaders(extraHeaders),
-        body: body,
-      ),
+      (h) => http.patch(uri, headers: {...h, ...?extraHeaders}, body: body),
       timeout: timeout,
     );
   }
@@ -76,7 +73,7 @@ class ApiClient {
     Duration? timeout,
   }) {
     return _send(
-      () async => http.delete(uri, headers: await _buildHeaders(extraHeaders)),
+      (h) => http.delete(uri, headers: {...h, ...?extraHeaders}),
       timeout: timeout,
     );
   }
@@ -94,14 +91,37 @@ class ApiClient {
     };
   }
 
+  /// Sends a request built by [factory] (which receives fresh headers).
+  /// On 401, attempts a silent token refresh and retries once.
+  /// Only broadcasts [onSessionExpired] when refresh also fails.
   static Future<http.Response> _send(
-    Future<http.Response> Function() fn, {
+    Future<http.Response> Function(Map<String, String> headers) factory, {
     Duration? timeout,
+    bool isRetry = false,
   }) async {
+    final headers = await _buildHeaders();
     try {
-      final response = await fn().timeout(timeout ?? _defaultTimeout);
-      if (response.statusCode == 401) {
-        _sessionExpiredCtrl.add(null);
+      final response = await factory(headers).timeout(timeout ?? _defaultTimeout);
+      if (response.statusCode == 401 && !isRetry) {
+        // Another request is already refreshing — don't pile on, just expire.
+        if (_isRefreshing) {
+          _sessionExpiredCtrl.add(null);
+          return response;
+        }
+        _isRefreshing = true;
+        try {
+          final auth = AuthService();
+          final newToken = await auth.tryRefreshToken();
+          if (newToken != null) {
+            // Retry with fresh token now stored in secure storage.
+            return _send(factory, timeout: timeout, isRetry: true);
+          } else {
+            _sessionExpiredCtrl.add(null);
+            return response;
+          }
+        } finally {
+          _isRefreshing = false;
+        }
       }
       return response;
     } on TimeoutException {

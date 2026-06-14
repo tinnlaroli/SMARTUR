@@ -83,4 +83,21 @@ class ChatService {
         '${ApiConstants.baseUrl}${ApiConstants.conversations}/$conversationId/read');
     await ApiClient.patch(uri, body: '{}');
   }
+
+  /// Sends the question to the FAQ bot.
+  /// Returns [ChatMessage] if a FAQ matched, null if no match (provider should reply),
+  /// throws [ChatException] on network/server error.
+  Future<ChatMessage?> sendBotMessage(int conversationId, String content) async {
+    final uri = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.conversations}/$conversationId/bot-message');
+    final res = await ApiClient.post(uri, body: jsonEncode({'content': content}));
+    if (res.statusCode == 401) throw AuthException('Sesión expirada');
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw ChatException(_msg(res));
+    }
+    final data = ApiClient.tryDecodeJson(res);
+    final msg = data?['bot_message'];
+    if (msg == null) return null; // no match — provider will reply
+    return ChatMessage.fromJson(msg as Map<String, dynamic>);
+  }
 }

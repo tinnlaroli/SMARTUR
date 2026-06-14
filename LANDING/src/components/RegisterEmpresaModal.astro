@@ -155,6 +155,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       </div>
       <h4 class="rem-otp-title">{t["register.otpTitle"]}</h4>
       <p class="rem-otp-text">{t["register.otpMessage"]}</p>
+      <div class="rem-otp-email-row">
+        <span class="rem-otp-email-label">Enviamos el código a:</span>
+        <span id="rem-otp-email-display" class="rem-otp-email-value"></span>
+      </div>
       <div class="rem-otp-inputs">
         <input id="rem-otp-0" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="rem-otp-digit" autocomplete="one-time-code" />
         <input id="rem-otp-1" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" class="rem-otp-digit" />
@@ -170,6 +174,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         </svg>
       </button>
       <p id="rem-otp-error" class="rem-otp-error-txt" hidden></p>
+      <button type="button" id="rem-otp-back" class="rem-otp-back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        ¿El correo es incorrecto? Volver y corregir datos
+      </button>
       <p class="rem-otp-hint">
         ¿Ya tienes cuenta?
         <a id="rem-login-link" href="#" class="rem-otp-login-link">Inicia sesión en el portal</a>
@@ -435,6 +443,19 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     .rem-inner { padding: 1.5rem 1rem; }
   }
   .rem-otp-error-txt { font-size: 0.8rem; color: #dc2626; margin: 0; }
+
+  .rem-otp-email-row { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+  .rem-otp-email-label { font-size: 0.75rem; color: var(--color-text-alt); }
+  .rem-otp-email-value { font-size: 0.85rem; font-weight: 700; color: var(--color-purple); word-break: break-all; }
+
+  .rem-otp-back-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: none; border: none; padding: 0;
+    font-size: 0.775rem; color: var(--color-text-alt); cursor: pointer;
+    font-family: inherit; opacity: 0.7; transition: opacity 0.15s, color 0.15s;
+    &:hover { opacity: 1; color: var(--color-text); }
+  }
+
   .rem-otp-hint { font-size: 0.775rem; color: var(--color-text-alt); margin: 0; opacity: 0.7; }
   .rem-otp-login-link { color: var(--color-purple); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: none; font: inherit; padding: 0; &:hover { opacity: 0.75; } }
 
@@ -479,10 +500,12 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   const errBox    = document.getElementById('rem-error');
   const errTxt    = document.getElementById('rem-error-text');
   const otpStep   = document.getElementById('rem-otp-step');
-  const otpBtn    = document.getElementById('rem-otp-submit');
-  const otpLbl    = document.getElementById('rem-otp-label');
-  const otpSpin   = document.getElementById('rem-otp-spinner');
-  const otpErr    = document.getElementById('rem-otp-error');
+  const otpBtn       = document.getElementById('rem-otp-submit');
+  const otpLbl       = document.getElementById('rem-otp-label');
+  const otpSpin      = document.getElementById('rem-otp-spinner');
+  const otpErr       = document.getElementById('rem-otp-error');
+  const otpEmailDisp = document.getElementById('rem-otp-email-display');
+  const otpBackBtn   = document.getElementById('rem-otp-back');
   const success   = document.getElementById('rem-success');
   const submit    = document.getElementById('rem-submit');
   const btnLbl    = document.getElementById('rem-btn-label');
@@ -722,6 +745,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   });
   termsDialog?.addEventListener('click', (e) => { if (e.target === termsDialog) termsDialog.close(); });
 
+  /* ─────────── OTP back button ─────────── */
+  otpBackBtn?.addEventListener('click', () => {
+    otpStep.hidden = true;
+    form.hidden = false;
+    otpErr.hidden = true;
+    document.querySelectorAll('.rem-otp-digit').forEach(inp => { inp.value = ''; });
+  });
+
   /* ─────────── Reset modal ─────────── */
   // Texto inicial de cada regla (leído del DOM antes de cualquier interacción)
   const ruleInitial = {
@@ -808,6 +839,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
         return;
       }
       registeredEmail = email.toLowerCase();
+      if (otpEmailDisp) otpEmailDisp.textContent = registeredEmail;
       form.hidden = true; otpStep.hidden = false;
       document.getElementById('rem-otp-0').focus();
     } catch (_) {

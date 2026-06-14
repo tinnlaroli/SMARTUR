@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/api_constants.dart';
+import 'api_client.dart';
 import 'auth_service.dart';
 
 class ProfileService {
@@ -42,27 +44,33 @@ class ProfileService {
 
   /// Envía las preferencias al backend y marca el guardado local.
   /// Retorna true en éxito, false en caso contrario.
-  static Future<bool> savePreferences(
-    String token,
-    Map<String, dynamic> preferences,
-  ) async {
+  static Future<bool> savePreferences(Map<String, dynamic> preferences) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.preferences}');
     try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(preferences),
-      );
+      // El GET /profiles/me devuelve birthDate (root) + travelerProfile (anidado).
+      // Replicamos esa misma estructura en el POST.
+      final traveler = Map<String, dynamic>.from(preferences);
+      traveler.remove('birth_date');
+
+      final body = <String, dynamic>{};
+      if (preferences.containsKey('birth_date')) {
+        body['birthDate'] = preferences['birth_date'];
+      }
+      body['travelerProfile'] = traveler;
+
+      final response = await ApiClient
+          .post(url, body: jsonEncode(body))
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         await _markPreferencesSaved();
         return true;
       }
+
+      debugPrint('[ProfileService] savePreferences failed: ${response.statusCode} ${response.body}');
       return false;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[ProfileService] savePreferences error: $e');
       return false;
     }
   }

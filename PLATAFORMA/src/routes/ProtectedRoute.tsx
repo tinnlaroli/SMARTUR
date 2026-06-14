@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { emitUserStorageSync } from '../shared/userStorageSync';
-import { isAuthenticated, clearAccessToken } from '../shared/api/axiosClient';
+import { isAuthenticated, clearAccessToken, clearStoredRefreshToken } from '../shared/api/axiosClient';
 
 interface ProtectedRouteProps {
     allowedRoles?: number[];
@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 
 function clearSession() {
     clearAccessToken();
-    sessionStorage.removeItem('refreshToken');
+    clearStoredRefreshToken();
     localStorage.removeItem('user');
     emitUserStorageSync();
 }

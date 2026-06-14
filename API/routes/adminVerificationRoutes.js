@@ -42,6 +42,12 @@ router.patch('/admin/companies/:id/verify', AdminVerificationController.verifyCo
 router.patch('/admin/companies/:id/location', AdminVerificationController.updateCompanyLocation);
 
 /**
+ * GET /api/v2/admin/services
+ * Lista todos los servicios turísticos con filtro opcional por status.
+ */
+router.get('/admin/services', AdminVerificationController.listAllServices);
+
+/**
  * GET /api/v2/admin/services/pending
  * Lista servicios turísticos pendientes de aprobación.
  */
@@ -59,6 +65,11 @@ router.patch('/admin/services/:id/approve', AdminVerificationController.approveS
  * Body: { reason?: string }
  */
 router.patch('/admin/services/:id/reject', AdminVerificationController.rejectService);
+
+// ── POIs empresa (validación) ─────────────────────────────────────────────────
+router.get('/admin/pois/pending',          AdminVerificationController.listPendingPOIs);
+router.patch('/admin/pois/:id/approve',    AdminVerificationController.approvePOI);
+router.patch('/admin/pois/:id/reject',     AdminVerificationController.rejectPOI);
 
 // ── Itinerarios admin ─────────────────────────────────────────────────────────
 router.get('/admin/itineraries',              ItineraryController.adminList);

@@ -714,11 +714,12 @@ export const ui = {
         'empresa.sidebar.home': 'Inicio',
         'empresa.sidebar.services': 'Mis servicios',
         'empresa.sidebar.analytics': 'Analíticas',
-        'empresa.sidebar.calendar': 'Reservas',
+        'empresa.sidebar.calendar': 'Agenda',
         'empresa.sidebar.messages': 'Mensajes',
         'empresa.sidebar.profile': 'Perfil',
         'empresa.sidebar.settings': 'Configuración',
         'empresa.sidebar.changes': 'Cambios del admin',
+        'empresa.sidebar.faqs': 'Preguntas frecuentes',
         'empresa.sidebar.verificacion': 'Verificación KYC',
 
         // Evaluation
@@ -1472,11 +1473,12 @@ export const ui = {
         'empresa.sidebar.home': 'Home',
         'empresa.sidebar.services': 'My services',
         'empresa.sidebar.analytics': 'Analytics',
-        'empresa.sidebar.calendar': 'Bookings',
+        'empresa.sidebar.calendar': 'Agenda',
         'empresa.sidebar.messages': 'Messages',
         'empresa.sidebar.profile': 'Profile',
         'empresa.sidebar.settings': 'Settings',
         'empresa.sidebar.changes': 'Admin changes',
+        'empresa.sidebar.faqs': 'Frequently asked questions',
         'empresa.sidebar.verificacion': 'KYC Verification',
 
         // Evaluation
@@ -2230,11 +2232,12 @@ export const ui = {
         'empresa.sidebar.home': 'Accueil',
         'empresa.sidebar.services': 'Mes services',
         'empresa.sidebar.analytics': 'Analytique',
-        'empresa.sidebar.calendar': 'Réservations',
+        'empresa.sidebar.calendar': 'Agenda',
         'empresa.sidebar.messages': 'Messages',
         'empresa.sidebar.profile': 'Profil',
         'empresa.sidebar.settings': 'Configuration',
         'empresa.sidebar.changes': 'Modifications admin',
+        'empresa.sidebar.faqs': 'Questions fréquentes',
         'empresa.sidebar.verificacion': 'Vérification KYC',
 
         // Evaluation

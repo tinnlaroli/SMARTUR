@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, Star, Loader2, Leaf } from 'lucide-react';
+import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
@@ -33,6 +34,8 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     const [idLocation, setIdLocation] = useState(0);
     const [sustainability, setSustainability] = useState(false);
     const [error, setError] = useState('');
+    const [lat, setLat] = useState(0);
+    const [lng, setLng] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
@@ -49,7 +52,14 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
         if (!name.trim()) { setError(t('validation.nameRequired')); return; }
         if (!idLocation) { setError(t('validation.locationRequired')); return; }
         setSubmitting(true);
-        const ok = await onSubmit({ name: name.trim(), description: description.trim() || undefined, id_type: idType, id_location: idLocation, sustainability });
+        const ok = await onSubmit({
+            name: name.trim(),
+            description: description.trim() || undefined,
+            id_type: idType,
+            id_location: idLocation,
+            sustainability,
+            ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
+        });
         setSubmitting(false);
         if (ok) onClose();
     };
@@ -121,6 +131,18 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                                 </select>
                             )}
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                            Ubicación en mapa
+                        </label>
+                        <MapPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
+                        {(lat !== 0 || lng !== 0) && (
+                            <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                {lat.toFixed(6)}, {lng.toFixed(6)}
+                            </p>
+                        )}
                     </div>
 
                     <label className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60" style={{ borderColor: 'var(--color-border)' }}>

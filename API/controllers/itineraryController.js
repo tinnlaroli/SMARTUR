@@ -11,7 +11,7 @@ export class ItineraryController {
     static async createItinerary(req, res) {
         try {
             const userId = req.user.id;
-            const { title, description, is_public } = safeBody(req);
+            const { title, description, is_public, start_date, end_date } = safeBody(req);
             if (!title?.trim()) {
                 return res.status(400).json({ message: 'El título es requerido' });
             }
@@ -19,6 +19,8 @@ export class ItineraryController {
                 title: title.trim(),
                 description,
                 isPublic: Boolean(is_public),
+                startDate: start_date || null,
+                endDate: end_date || null,
             });
             res.status(201).json({ message: 'Itinerario creado', itinerary: it });
         } catch (e) {
@@ -99,9 +101,10 @@ export class ItineraryController {
         try {
             const userId = req.user.id;
             const id = parseInt(req.params.id, 10);
-            const { title, description, is_public, cover_image_url } = safeBody(req);
+            const { title, description, is_public, cover_image_url, start_date, end_date } = safeBody(req);
             const updated = await Itinerary.updateItinerary(id, userId, {
                 title, description, isPublic: is_public, coverImageUrl: cover_image_url,
+                startDate: start_date, endDate: end_date,
             });
             if (!updated) {
                 return res.status(404).json({ message: 'Itinerario no encontrado o sin permiso' });
@@ -185,6 +188,27 @@ export class ItineraryController {
         } catch (e) {
             console.error(e);
             res.status(500).json({ message: 'Error al reordenar paradas', error: e.message });
+        }
+    }
+
+    static async updateStop(req, res) {
+        try {
+            const userId = req.user.id;
+            const itineraryId = parseInt(req.params.id, 10);
+            const stopId = parseInt(req.params.stopId, 10);
+            const { visit_date, visit_time_start, notes } = safeBody(req);
+            const stop = await Itinerary.updateStop(itineraryId, stopId, userId, {
+                visit_date,
+                visit_time_start,
+                notes,
+            });
+            if (!stop) {
+                return res.status(404).json({ message: 'Parada no encontrada o sin permiso' });
+            }
+            res.json({ message: 'Parada actualizada', stop });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al actualizar parada', error: e.message });
         }
     }
 

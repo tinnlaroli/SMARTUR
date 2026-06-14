@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../../shared/api/axiosClient';
+import { useBadges } from '../context/EmpresaBadgesContext';
 import { AlertCircle, CheckCircle, Clock, MessageSquareDiff, X, Loader2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
@@ -285,6 +286,7 @@ export function EmpresaCambiosPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [disputeTarget, setDisputeTarget] = useState<ChangeLog | null>(null);
+    const { refresh: refreshBadges } = useBadges();
 
     const load = useCallback(async (p = 1) => {
         setLoading(true);
@@ -295,12 +297,13 @@ export function EmpresaCambiosPage() {
             setTotal(data.total ?? 0);
             setTotalPages(data.totalPages ?? 1);
             setPage(p);
+            void refreshBadges();
         } catch {
             setError('No se pudieron cargar los cambios. Intenta de nuevo.');
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [refreshBadges]);
 
     useEffect(() => { load(1); }, [load]);
 

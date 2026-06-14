@@ -5,6 +5,9 @@ import { useToast } from '../../../shared/context/ToastContext';
 import { empresaApi, type EmpresaService } from '../api/empresaApi';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
+import { AgendaCalendarWidget } from '../components/AgendaCalendarWidget';
+import { TouristProfileCard } from '../components/TouristProfileCard';
+import { BusinessHoursPanel } from '../components/BusinessHoursPanel';
 
 const ACCENT = '#a855f7';
 
@@ -201,6 +204,8 @@ export function EmpresaCalendarioPage() {
     const [actionId, setActionId] = useState<number | null>(null);
     const [showWalkin, setShowWalkin] = useState(false);
     const [companyStatus, setCompanyStatus] = useState<string | null>(null);
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [selectedBooking, setSelectedBooking] = useState<EmpresaBooking | null>(null);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -277,8 +282,13 @@ export function EmpresaCalendarioPage() {
         );
     }
 
+    const visibleBookings = bookings.filter(b => {
+        if (selectedDate && b.visit_date.substring(0, 10) !== selectedDate) return false;
+        return true;
+    });
+
     return (
-        <div className="space-y-6 p-4 sm:p-6">
+        <div className="p-4 sm:p-6">
             {showWalkin && (
                 <WalkinModal
                     services={services}
@@ -288,14 +298,16 @@ export function EmpresaCalendarioPage() {
             )}
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl" style={{ backgroundColor: `${ACCENT}20` }}>
+                    <div className="rounded-xl p-2" style={{ backgroundColor: `${ACCENT}20` }}>
                         <Calendar size={22} style={{ color: ACCENT }} />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Reservas</h1>
-                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{bookings.length} registros</p>
+                        <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Agenda</h1>
+                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                            {selectedDate ? `${visibleBookings.length} reserva(s) el ${selectedDate}` : `${bookings.length} reservas totales`}
+                        </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -304,106 +316,147 @@ export function EmpresaCalendarioPage() {
                         className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all"
                         style={{ background: ACCENT }}
                     >
-                        <Plus size={15} />
-                        Visita directa
+                        <Plus size={15} /> Visita directa
                     </button>
                     <button
                         onClick={load}
                         className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm transition-colors"
                         style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                     >
-                        <RefreshCw size={15} />
-                        Actualizar
+                        <RefreshCw size={15} /> Actualizar
                     </button>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex gap-2 flex-wrap">
-                {filterBtn('all', 'Todas')}
-                {filterBtn('pending', 'Pendientes')}
-                {filterBtn('confirmed', 'Confirmadas')}
-                {filterBtn('cancelled', 'Canceladas')}
-            </div>
+            {/* 2-Column Grid */}
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
+                {/* LEFT: Calendar + Guest Table */}
+                <div className="flex flex-col gap-4">
+                    <AgendaCalendarWidget
+                        bookings={bookings}
+                        selectedDate={selectedDate}
+                        onDaySelect={setSelectedDate}
+                    />
 
-            {/* Table */}
-            <div className={DATA_TABLE_SHELL_CLASS}>
-                {loading ? (
-                    <TableSkeleton rows={6} colWidths={['flex-1', 'flex-1', 'w-32', 'w-20', 'w-28', 'w-32']} />
-                ) : bookings.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3" style={{ color: 'var(--color-text-alt)' }}>
-                        <Calendar size={40} className="opacity-30" />
-                        <p className="text-sm">No hay reservas en esta vista</p>
+                    {/* Status filter tabs */}
+                    <div className="flex flex-wrap gap-2">
+                        {filterBtn('all', 'Todas')}
+                        {filterBtn('pending', 'Pendientes')}
+                        {filterBtn('confirmed', 'Confirmadas')}
+                        {filterBtn('cancelled', 'Canceladas')}
+                        {selectedDate && (
+                            <button
+                                onClick={() => setSelectedDate(null)}
+                                className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors"
+                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                            >
+                                ✕ Limpiar fecha
+                            </button>
+                        )}
                     </div>
-                ) : (
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b" style={{ borderColor: 'var(--color-border)' }}>
-                                {(['Turista', 'Servicio', 'Fecha', 'Pax', 'Estado', 'Acciones'] as const).map((h, i) => (
-                                    <th key={h} className={`py-3 px-4 text-xs font-semibold uppercase tracking-wide ${i < 2 ? 'text-left' : 'text-center'}`} style={{ color: 'var(--color-text-alt)' }}>
-                                        {h === 'Fecha'
-                                            ? <span className="flex items-center justify-center gap-1"><Calendar size={12} /> Fecha</span>
-                                            : h === 'Pax'
-                                            ? <span className="flex items-center justify-center gap-1"><Users size={12} /> Pax</span>
-                                            : h}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {bookings.map((b) => (
-                                <tr
-                                    key={b.id_booking}
-                                    className="border-b transition-colors hover:brightness-[0.97]"
-                                    style={{ borderColor: 'var(--color-border)' }}
-                                >
-                                    <td className="py-3 px-4 font-medium" style={{ color: 'var(--color-text)' }}>
-                                        {b.is_walkin ? (
-                                            <span className="text-xs italic" style={{ color: 'var(--color-text-alt)' }}>Visita directa</span>
-                                        ) : b.tourist_name}
-                                    </td>
-                                    <td className="py-3 px-4 max-w-[180px] truncate" style={{ color: 'var(--color-text-alt)' }}>
-                                        {b.service_name}
-                                    </td>
-                                    <td className="py-3 px-4 text-center" style={{ color: 'var(--color-text-alt)' }}>
-                                        <span className="block">{formatDate(b.visit_date)}</span>
-                                        {b.visit_time && (
-                                            <span className="flex items-center justify-center gap-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                                <Clock size={10} />{b.visit_time.slice(0, 5)}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="py-3 px-4 text-center" style={{ color: 'var(--color-text-alt)' }}>{b.guests}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <StatusBadge status={b.status} />
-                                    </td>
-                                    <td className="py-3 px-4 text-center">
-                                        {b.status === 'pending' && (
-                                            <div className="flex items-center justify-center gap-1">
-                                                <button
-                                                    onClick={() => handleConfirm(b.id_booking)}
-                                                    disabled={actionId === b.id_booking}
-                                                    className="rounded-lg p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 disabled:opacity-40"
-                                                    title="Confirmar"
-                                                >
-                                                    <Check size={14} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleCancel(b.id_booking)}
-                                                    disabled={actionId === b.id_booking}
-                                                    className="rounded-lg p-1.5 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 disabled:opacity-40"
-                                                    title="Cancelar"
-                                                >
-                                                    <XIcon size={14} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+
+                    {/* Bookings table */}
+                    <div className={DATA_TABLE_SHELL_CLASS}>
+                        {loading ? (
+                            <TableSkeleton rows={5} colWidths={['flex-1', 'flex-1', 'w-28', 'w-16', 'w-24', 'w-28']} />
+                        ) : visibleBookings.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-3 py-12" style={{ color: 'var(--color-text-alt)' }}>
+                                <Calendar size={36} className="opacity-20" />
+                                <p className="text-sm">No hay reservas{selectedDate ? ' para esta fecha' : ''}</p>
+                            </div>
+                        ) : (
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b" style={{ borderColor: 'var(--color-border)' }}>
+                                        {(['Turista', 'Servicio', 'Fecha', 'Pax', 'Estado', 'Acciones'] as const).map((h, i) => (
+                                            <th
+                                                key={h}
+                                                className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide ${i < 2 ? 'text-left' : 'text-center'}`}
+                                                style={{ color: 'var(--color-text-alt)' }}
+                                            >
+                                                {h === 'Fecha' ? <span className="flex items-center justify-center gap-1"><Calendar size={12} /> Fecha</span>
+                                                    : h === 'Pax' ? <span className="flex items-center justify-center gap-1"><Users size={12} /> Pax</span>
+                                                    : h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {visibleBookings.map(b => (
+                                        <tr
+                                            key={b.id_booking}
+                                            onClick={() => setSelectedBooking(prev => prev?.id_booking === b.id_booking ? null : b)}
+                                            className="cursor-pointer border-b transition-colors hover:brightness-[0.97]"
+                                            style={{
+                                                borderColor: 'var(--color-border)',
+                                                background: selectedBooking?.id_booking === b.id_booking ? `${ACCENT}08` : undefined,
+                                            }}
+                                        >
+                                            <td className="px-4 py-3 font-medium" style={{ color: 'var(--color-text)' }}>
+                                                <div className="flex items-center gap-1.5">
+                                                    {b.is_walkin && (
+                                                        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                                            Walk-in
+                                                        </span>
+                                                    )}
+                                                    {b.tourist_name}
+                                                </div>
+                                            </td>
+                                            <td className="max-w-[160px] truncate px-4 py-3" style={{ color: 'var(--color-text-alt)' }}>
+                                                {b.service_name}
+                                            </td>
+                                            <td className="px-4 py-3 text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                                <span className="block">{formatDate(b.visit_date)}</span>
+                                                {b.visit_time && (
+                                                    <span className="flex items-center justify-center gap-0.5 text-xs">
+                                                        <Clock size={10} />{b.visit_time.slice(0, 5)}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-center" style={{ color: 'var(--color-text-alt)' }}>{b.guests}</td>
+                                            <td className="px-4 py-3 text-center"><StatusBadge status={b.status} /></td>
+                                            <td className="px-4 py-3 text-center">
+                                                {b.status === 'pending' && (
+                                                    <div className="flex items-center justify-center gap-1" onClick={e => e.stopPropagation()}>
+                                                        <button
+                                                            onClick={() => handleConfirm(b.id_booking)}
+                                                            disabled={actionId === b.id_booking}
+                                                            className="rounded-lg p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 disabled:opacity-40"
+                                                            title="Confirmar"
+                                                        >
+                                                            <Check size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleCancel(b.id_booking)}
+                                                            disabled={actionId === b.id_booking}
+                                                            className="rounded-lg p-1.5 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 disabled:opacity-40"
+                                                            title="Cancelar"
+                                                        >
+                                                            <XIcon size={14} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+
+                {/* RIGHT: Tourist Profile + Business Hours */}
+                <div className="flex flex-col gap-4">
+                    <TouristProfileCard booking={selectedBooking} />
+                    <BusinessHoursPanel
+                        services={services}
+                        onUpdate={(id, hours) => {
+                            setServices(prev => prev.map(s =>
+                                s.id_service === id ? { ...s, operating_hours: hours } : s
+                            ));
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

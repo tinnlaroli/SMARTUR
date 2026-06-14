@@ -56,6 +56,7 @@ class AdminVerificationController {
             const result = await pool.query(
                 `SELECT
                     c.id_company, c.name, c.address, c.phone, c.status, c.registration_date,
+                    c.is_certified, c.certified_at,
                     cv.*,
                     ts.name AS sector_name,
                     l.name AS location_name, l.state, l.municipality
@@ -87,14 +88,12 @@ class AdminVerificationController {
         const { action, reason } = req.body;
         const reviewer_id = req.user.user_id;
 
-        if (!['approve', 'reject', 'suspend'].includes(action)) {
-            return res.status(400).json({ message: 'action debe ser "approve", "reject" o "suspend".' });
+        if (!['approve', 'reject', 'suspend', 'certify'].includes(action)) {
+            return res.status(400).json({ message: 'action debe ser "approve", "reject", "suspend" o "certify".' });
         }
         if ((action === 'reject' || action === 'suspend') && !reason?.trim()) {
             return res.status(400).json({ message: 'Se requiere un motivo para el rechazo o suspensión.' });
         }
-
-        const newStatus = action === 'approve' ? 'active' : action === 'suspend' ? 'suspended' : 'rejected';
 
         const client = await pool.connect();
         try {
@@ -108,6 +107,17 @@ class AdminVerificationController {
                 await client.query('ROLLBACK');
                 return res.status(404).json({ message: 'Empresa no encontrada.' });
             }
+
+            if (action === 'certify') {
+                await client.query(
+                    'UPDATE company SET is_certified = TRUE, certified_at = NOW() WHERE id_company = $1',
+                    [id]
+                );
+                await client.query('COMMIT');
+                return res.json({ message: 'Empresa certificada por SMARTUR.', is_certified: true });
+            }
+
+            const newStatus = action === 'approve' ? 'active' : action === 'suspend' ? 'suspended' : 'rejected';
 
             await client.query(
                 'UPDATE company SET status = $1 WHERE id_company = $2',
@@ -123,10 +133,8 @@ class AdminVerificationController {
             );
 
             await client.query('COMMIT');
-            return res.json({
-                message: action === 'approve' ? 'Empresa aprobada.' : 'Empresa rechazada.',
-                status: newStatus
-            });
+            const labels = { approve: 'Empresa aprobada.', reject: 'Empresa rechazada.', suspend: 'Empresa suspendida.' };
+            return res.json({ message: labels[action], status: newStatus });
         } catch (error) {
             await client.query('ROLLBACK');
             console.error('Error en verifyCompany:', error);
@@ -262,6 +270,142 @@ class AdminVerificationController {
         }
     }
 
+    // ─── POIS ────────────────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/v2/admin/pois/pending
+     * Lista POIs enviados por empresas pendientes de validación.
+     */
+    static async listPendingPOIs(req, res) {
+        try {
+            const r = await pool.query(
+                `SELECT p.*, c.name AS company_name
+                 FROM point_of_interest p
+                 LEFT JOIN company c ON c.id_company = p.submitted_by_company_id
+                 WHERE p.validation_status = 'pending_validation'
+                 ORDER BY p.validation_submitted_at ASC`
+            );
+            return res.json({ pois: r.rows, total: r.rows.length });
+        } catch (error) {
+            console.error('Error en listPendingPOIs:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
+    /**
+     * PATCH /api/v2/admin/pois/:id/approve
+     * Admin aprueba un POI enviado por empresa.
+     */
+    static async approvePOI(req, res) {
+        const { id } = req.params;
+        try {
+            const result = await pool.query(
+                `UPDATE point_of_interest
+                 SET validation_status = 'active', is_active = TRUE,
+                     reviewed_by_admin_id = $1
+                 WHERE id = $2 AND validation_status = 'pending_validation'
+                 RETURNING id, name, validation_status`,
+                [req.user.id, id]
+            );
+            if (!result.rows[0]) {
+                return res.status(404).json({ message: 'POI no encontrado o ya procesado.' });
+            }
+            const poi = result.rows[0];
+            res.json({ message: 'POI aprobado.', poi });
+
+            // FCM a la empresa dueña — fire-and-forget
+            const { rows: ownerRows } = await pool.query(
+                `SELECT u.user_id FROM point_of_interest p
+                 JOIN "user" u ON u.id_company = p.submitted_by_company_id AND u.role_id = 3
+                 WHERE p.id = $1 LIMIT 1`,
+                [poi.id],
+            );
+            if (ownerRows[0]?.user_id) {
+                sendFcmToUser(pool, ownerRows[0].user_id, {
+                    title: '¡POI aprobado! ✅',
+                    body: `Tu punto de interés "${poi.name}" ya está visible para turistas.`,
+                    data: { screen: 'pois' },
+                });
+            }
+        } catch (error) {
+            console.error('Error en approvePOI:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
+    /**
+     * PATCH /api/v2/admin/pois/:id/reject
+     * Admin rechaza un POI enviado por empresa.
+     * Body: { reason?: string }
+     */
+    static async rejectPOI(req, res) {
+        const { id } = req.params;
+        const { reason } = req.body;
+        try {
+            const result = await pool.query(
+                `UPDATE point_of_interest
+                 SET validation_status = 'rejected',
+                     validation_rejection_reason = $1,
+                     reviewed_by_admin_id = $2
+                 WHERE id = $3 AND validation_status = 'pending_validation'
+                 RETURNING id, name, validation_status`,
+                [reason || null, req.user.id, id]
+            );
+            if (!result.rows[0]) {
+                return res.status(404).json({ message: 'POI no encontrado o ya procesado.' });
+            }
+            return res.json({ message: 'POI rechazado.', poi: result.rows[0] });
+        } catch (error) {
+            console.error('Error en rejectPOI:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
+    /**
+     * GET /api/v2/admin/services
+     * Lista todos los servicios turísticos con filtro opcional por status.
+     * Query params: page, limit, status
+     */
+    static async listAllServices(req, res) {
+        const page   = Math.max(1, parseInt(req.query.page) || 1);
+        const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const offset = (page - 1) * limit;
+        const status = req.query.status || null;
+
+        try {
+            const params = status ? [status] : [];
+            const where  = status ? 'WHERE ts.status = $1' : '';
+            const idx    = params.length;
+
+            const countResult = await pool.query(
+                `SELECT COUNT(*) FROM tourist_service ts ${where}`,
+                params
+            );
+            const total = parseInt(countResult.rows[0].count, 10);
+
+            const dataParams = [...params, limit, offset];
+            const result = await pool.query(
+                `SELECT ts.id_service, ts.name, ts.description, ts.service_type, ts.status,
+                        ts.image_url, ts.price_from, ts.price_to, ts.currency,
+                        ts.duration_minutes, ts.contact_phone, ts.created_at,
+                        c.name AS company_name, c.id_company,
+                        l.name AS location_name
+                 FROM tourist_service ts
+                 JOIN company c ON c.id_company = ts.id_company
+                 LEFT JOIN location l ON l.id_location = ts.id_location
+                 ${where}
+                 ORDER BY ts.created_at DESC
+                 LIMIT $${idx + 1} OFFSET $${idx + 2}`,
+                dataParams
+            );
+
+            return res.json({ services: result.rows, total, page, limit });
+        } catch (error) {
+            console.error('Error en listAllServices:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
     /**
      * GET /api/v2/admin/companies
      * Lista todas las empresas con filtro por status.
@@ -291,9 +435,11 @@ class AdminVerificationController {
             const result = await pool.query(
                 `SELECT
                     c.id_company, c.name, c.address, c.phone, c.status, c.registration_date,
+                    c.is_certified, c.certified_at,
                     c.id_location, ts.name AS sector_name, l.name AS location_name,
                     cv.owner_full_name, cv.owner_curp, cv.owner_rfc,
                     cv.ine_front_url, cv.ine_back_url, cv.address_proof_url,
+                    cv.smartur_validation_certificate_url, cv.certificate_issued_at,
                     cv.resubmission_count, cv.rejection_reason,
                     cv.submitted_at, cv.reviewed_at
                  FROM company c

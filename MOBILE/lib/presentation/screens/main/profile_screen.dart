@@ -40,12 +40,12 @@ class _ProfileScreenState extends State<ProfileScreen>
   // Diary data (favorites + history)
   bool _diaryLoading = true;
   List<Map<String, dynamic>> _favorites = [];
-  List<Map<String, dynamic>> _visits = [];
+
 
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 3, vsync: this);
+    _tabCtrl = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadProfile();
@@ -65,11 +65,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     try {
       final svc = UserContentService();
       final fav = await svc.fetchFavorites();
-      final vis = await svc.fetchVisits(limit: 40);
       if (mounted) {
         setState(() {
           _favorites = fav;
-          _visits = vis;
           _diaryLoading = false;
         });
       }
@@ -265,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       tabs: [
                         Tab(text: l10n.profileTabProfile),
                         Tab(text: l10n.favoritesTab),
-                        Tab(text: l10n.historyTab),
+
                       ],
                       controller: _tabCtrl,
                     ),
@@ -310,12 +308,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 onRefresh: _loadDiary,
               ),
 
-              // ── Tab 2: Historial ──
-              _DiaryHistoryTab(
-                loading: _diaryLoading,
-                items: _visits,
-                onRefresh: _loadDiary,
-              ),
+
             ],
           ),
         ),
@@ -798,124 +791,4 @@ class _DiaryFavoritesTab extends StatelessWidget {
 // Historial tab (moved from DiaryScreen)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DiaryHistoryTab extends StatelessWidget {
-  final bool loading;
-  final List<Map<String, dynamic>> items;
-  final Future<void> Function() onRefresh;
 
-  const _DiaryHistoryTab({
-    required this.loading,
-    required this.items,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-    if (loading) {
-      return SmarturShimmer(
-        enabled: true,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          children: List.generate(8, (_) => const SkeletonListRow()),
-        ),
-      );
-    }
-    if (items.isEmpty) {
-      return RefreshIndicator(
-        color: SmarturStyle.purple,
-        onRefresh: onRefresh,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            SmarturEmptyState(
-              icon: Icons.history_rounded,
-              title: l10n.historyTab,
-              subtitle: l10n.noCategoryPlaces,
-            ),
-          ],
-        ),
-      );
-    }
-    return RefreshIndicator(
-      color: SmarturStyle.purple,
-      onRefresh: onRefresh,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final it = items[index];
-          final name = it['name']?.toString() ?? '';
-          final visited = it['visited_at'];
-          String dateStr = '';
-          if (visited is String) {
-            final dt = DateTime.tryParse(visited);
-            if (dt != null) dateStr = '${dt.day}/${dt.month}/${dt.year}';
-          }
-          final isLast = index == items.length - 1;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    width: 18, height: 18,
-                    decoration: BoxDecoration(
-                      color: SmarturStyle.purple,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(Icons.check, size: 12, color: Colors.white),
-                  ),
-                  if (!isLast)
-                    Container(width: 2, height: 70, color: scheme.outlineVariant),
-                ],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Material(
-                    color: scheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(16),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () =>
-                          openDiaryItemDetailWithSwipe(context, items, index),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: scheme.outlineVariant),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(name,
-                                style: SmarturStyle.calSansTitle
-                                    .copyWith(fontSize: 16)),
-                            if (dateStr.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(dateStr,
-                                  style: TextStyle(
-                                      fontFamily: 'Outfit',
-                                      fontSize: 12,
-                                      color: scheme.onSurfaceVariant)),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}

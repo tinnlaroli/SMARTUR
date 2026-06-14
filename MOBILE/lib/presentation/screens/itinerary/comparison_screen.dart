@@ -68,6 +68,48 @@ class ComparisonScreen extends StatelessWidget {
                     _SavingsBadge(pct: result.savingsPct, l10n: l10n),
                   ],
                 ),
+              )
+            else
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: SmarturStyle.green.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: SmarturStyle.green.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.verified_outlined,
+                        color: SmarturStyle.green, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '0% Improvement',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: SmarturStyle.green,
+                            ),
+                          ),
+                          Text(
+                            'Your route is already perfectly planned!',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              color: SmarturStyle.green.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
             // ── Side-by-side stops ────────────────────────────────────────────

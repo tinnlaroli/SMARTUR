@@ -1,12 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
-    Calendar, MessageSquare, GitCompare, ShieldCheck,
+    Calendar, MessageSquare, GitCompare, ShieldCheck, HelpCircle,
 } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { useAuthModal } from '../../auth/context/AuthModalContext';
+import { useBadges } from '../context/EmpresaBadgesContext';
 import { TermsModal } from '../../auth/components/TermsModal';
 import { clearAccessToken } from '../../../shared/api/axiosClient';
 
@@ -22,7 +23,7 @@ interface MenuItem {
 
 const MENU_GROUPS: { groupKey: string; items: string[] }[] = [
     { groupKey: 'sidebar.group.principal', items: ['home'] },
-    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'calendar', 'messages', 'profile', 'settings'] },
+    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'calendar', 'messages', 'faqs', 'profile', 'settings'] },
     { groupKey: 'sidebar.group.verificacion', items: ['verificacion', 'changes'] },
 ];
 
@@ -36,6 +37,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
     const { openModal } = useAuthModal();
     const { t } = useLanguage();
     const { user, clearUser } = useUserPreferences();
+    const badges = useBadges();
 
     const allItems = useMemo<MenuItem[]>(() => [
         { id: 'home',         label: t('empresa.sidebar.home'),         icon: Home,         path: '/empresa/dashboard', end: true },
@@ -43,6 +45,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
         { id: 'analytics',    label: t('empresa.sidebar.analytics'),    icon: BarChart3,    path: '/empresa/analytics' },
         { id: 'calendar',     label: t('empresa.sidebar.calendar'),     icon: Calendar,     path: '/empresa/calendario' },
         { id: 'messages',     label: t('empresa.sidebar.messages'),     icon: MessageSquare,path: '/empresa/mensajes' },
+        { id: 'faqs',         label: 'Preguntas frecuentes',            icon: HelpCircle,   path: '/empresa/faqs' },
         { id: 'profile',      label: t('empresa.sidebar.profile'),      icon: UserCircle,   path: '/empresa/perfil' },
         { id: 'settings',     label: t('empresa.sidebar.settings'),     icon: Settings,     path: '/empresa/configuracion' },
         { id: 'verificacion', label: 'Verificación',                     icon: ShieldCheck,  path: '/empresa/verificacion' },
@@ -171,35 +174,50 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                                 } ${isActive ? 'nav-item-active' : 'nav-item-idle'}`
                                             }
                                         >
-                                            {({ isActive }) => (
-                                                <>
-                                                    <item.icon
-                                                        className={`size-[18px] shrink-0 transition-all duration-200 ${
-                                                            isActive ? 'scale-110' : 'group-hover:scale-110'
-                                                        }`}
-                                                    />
-                                                    <span
-                                                        className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                                                            isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                                                        }`}
-                                                    >
-                                                        {t('empresa.sidebar.' + item.id)}
-                                                    </span>
-                                                    {isActive && !isCollapsed && (
-                                                        <motion.span
-                                                            layoutId="active-dot-empresa"
-                                                            className="ml-auto h-1.5 w-1.5 rounded-full"
-                                                            style={{ background: 'var(--color-purple)' }}
-                                                        />
-                                                    )}
-                                                    {isActive && isCollapsed && (
+                                            {({ isActive }) => {
+                                                const badgeCount = (badges as Record<string, number>)[item.id] ?? 0;
+                                                return (
+                                                    <>
+                                                        <div className="relative shrink-0">
+                                                            <item.icon
+                                                                className={`size-[18px] transition-all duration-200 ${
+                                                                    isActive ? 'scale-110' : 'group-hover:scale-110'
+                                                                }`}
+                                                            />
+                                                            {isCollapsed && badgeCount > 0 && (
+                                                                <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-bold text-white leading-none">
+                                                                    {Math.min(badgeCount, 99)}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <span
-                                                            className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full"
-                                                            style={{ background: 'var(--color-purple)' }}
-                                                        />
-                                                    )}
-                                                </>
-                                            )}
+                                                            className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                                                                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                                                            }`}
+                                                        >
+                                                            {t('empresa.sidebar.' + item.id)}
+                                                        </span>
+                                                        {!isCollapsed && badgeCount > 0 && (
+                                                            <span className="ml-auto flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white leading-none">
+                                                                {Math.min(badgeCount, 99)}
+                                                            </span>
+                                                        )}
+                                                        {isActive && !isCollapsed && badgeCount === 0 && (
+                                                            <motion.span
+                                                                layoutId="active-dot-empresa"
+                                                                className="ml-auto h-1.5 w-1.5 rounded-full"
+                                                                style={{ background: 'var(--color-purple)' }}
+                                                            />
+                                                        )}
+                                                        {isActive && isCollapsed && (
+                                                            <span
+                                                                className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full"
+                                                                style={{ background: 'var(--color-purple)' }}
+                                                            />
+                                                        )}
+                                                    </>
+                                                );
+                                            }}
                                         </NavLink>
                                     </motion.div>
                                 ))}

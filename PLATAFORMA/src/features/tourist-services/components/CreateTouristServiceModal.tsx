@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { CreateTouristServiceDTO } from '../types/types';
 import { X, Wrench, Plus, Loader2, ImagePlus, AlertCircle } from 'lucide-react';
+import MapPicker from '../../../components/ui/MapPicker';
 import { companyServices } from '../../companies/api/companyApi';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Company } from '../../companies/types/types';
@@ -32,6 +33,8 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
         active: true,
         image: null,
     });
+    const [lat, setLat] = useState(0);
+    const [lng, setLng] = useState(0);
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -97,7 +100,11 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
         e.preventDefault();
         const newErrors = validate();
         if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
-        const success = await onSubmit(formData);
+        const payload = {
+            ...formData,
+            ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
+        };
+        const success = await onSubmit(payload);
         if (success) onClose();
     };
 
@@ -250,6 +257,17 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
                                     </option>
                                 ))}
                             </select>
+                        )}
+                    </div>
+
+                    {/* Location map picker */}
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1.5">
+                            Ubicación en mapa
+                        </label>
+                        <MapPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
+                        {(lat !== 0 || lng !== 0) && (
+                            <p className="mt-1 text-xs text-zinc-400">{lat.toFixed(6)}, {lng.toFixed(6)}</p>
                         )}
                     </div>
 

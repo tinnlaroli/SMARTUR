@@ -70,11 +70,15 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
 
   Future<void> _submit() async {
     widget.data['has_accessibility'] = _hasAccessibility;
-    widget.data['accessibility_detail'] = _hasAccessibility ? _accessibilityDetailController.text.trim() : null;
+    if (_hasAccessibility) {
+      widget.data['accessibility_detail'] = _accessibilityDetailController.text.trim();
+    } else {
+      widget.data.remove('accessibility_detail');
+    }
     widget.data['has_visited_before'] = _hasVisitedBefore;
     final restrictionsText = _restrictionsController.text.trim();
-    widget.data['restrictions'] = restrictionsText.isEmpty ? 'Ninguna' : restrictionsText;
-    widget.data['sustainable_preferences'] = _sustainablePreference != 'Sin preferencia';
+    widget.data['restrictions'] = restrictionsText;
+    widget.data['sustainable_preferences'] = _sustainablePreference ?? '';
     await widget.onSubmit();
   }
 

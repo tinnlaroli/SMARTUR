@@ -538,9 +538,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get free => 'Gratis';
 
   @override
-  String get createOneDayRoute => 'Crear Ruta de 1 Día';
-
-  @override
   String get openInMaps => 'Abrir en Google Maps';
 
   @override
@@ -1411,7 +1408,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Toca + en cualquier lugar para agregar paradas';
 
   @override
-  String get plannerOptimize => 'Optimizar con IA';
+  String get plannerOptimize => 'Mejorar mi ruta';
 
   @override
   String get plannerOptimizeComingSoon => 'Próximamente en SMARTUR';

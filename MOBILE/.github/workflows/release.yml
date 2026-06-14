@@ -128,7 +128,6 @@ jobs:
           else
             echo "Creating release $TAG..."
             gh release create "$TAG" --generate-notes
-            echo "Created release $TAG"
           fi
 
           # Upload APK

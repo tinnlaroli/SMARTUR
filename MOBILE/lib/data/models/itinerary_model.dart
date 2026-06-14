@@ -107,6 +107,8 @@ class ItineraryStop {
   ItineraryStop copyWith({
     DateTime? visitDate,
     bool clearDate = false,
+    String? visitTimeStart,
+    bool clearTime = false,
     String? notes,
     int? stopOrder,
   }) =>
@@ -117,7 +119,7 @@ class ItineraryStop {
         placeId: placeId,
         stopOrder: stopOrder ?? this.stopOrder,
         visitDate: clearDate ? null : (visitDate ?? this.visitDate),
-        visitTimeStart: visitTimeStart,
+        visitTimeStart: clearTime ? null : (visitTimeStart ?? this.visitTimeStart),
         notes: notes ?? this.notes,
         placeName: placeName,
         placeImageUrl: placeImageUrl,
@@ -152,6 +154,8 @@ class Itinerary {
   final List<ItineraryStop> stops;
   final String? ownerName;
   final String? ownerAvatarUrl;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   const Itinerary({
     required this.id,
@@ -169,6 +173,8 @@ class Itinerary {
     this.stops = const [],
     this.ownerName,
     this.ownerAvatarUrl,
+    this.startDate,
+    this.endDate,
   });
 
   factory Itinerary.fromJson(Map<String, dynamic> j) {
@@ -196,6 +202,12 @@ class Itinerary {
       stops: stops,
       ownerName: j['owner_name'] as String?,
       ownerAvatarUrl: j['owner_avatar_url'] as String?,
+      startDate: j['start_date'] != null
+          ? DateTime.tryParse(j['start_date'].toString())
+          : null,
+      endDate: j['end_date'] != null
+          ? DateTime.tryParse(j['end_date'].toString())
+          : null,
     );
   }
 
@@ -214,6 +226,8 @@ class Itinerary {
         'owner_avatar_url': ownerAvatarUrl,
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
+        if (startDate != null) 'start_date': startDate!.toIso8601String().split('T')[0],
+        if (endDate != null) 'end_date': endDate!.toIso8601String().split('T')[0],
       };
 
   factory Itinerary.fromMap(Map<String, dynamic> m) => Itinerary(
@@ -240,6 +254,10 @@ class Itinerary {
     String? coverImageUrl,
     List<ItineraryStop>? stops,
     DateTime? updatedAt,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool clearStartDate = false,
+    bool clearEndDate = false,
   }) =>
       Itinerary(
         id: id,
@@ -257,5 +275,7 @@ class Itinerary {
         stops: stops ?? this.stops,
         ownerName: ownerName,
         ownerAvatarUrl: ownerAvatarUrl,
+        startDate: clearStartDate ? null : (startDate ?? this.startDate),
+        endDate: clearEndDate ? null : (endDate ?? this.endDate),
       );
 }

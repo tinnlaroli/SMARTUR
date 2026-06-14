@@ -128,10 +128,17 @@ class PointOfInterestController {
             const page = parseNumber(req.query.page, 1) || 1;
             const limit = Math.min(parseNumber(req.query.limit, 50) || 50, 100);
             const search = String(req.query.search || '').trim();
+            // Admin (role 1) can see all; everyone else only sees validated+active POIs
+            const isAdmin = req.user?.role_id === 1;
 
             const offset = (page - 1) * limit;
             const values = [];
             const conditions = [];
+
+            if (!isAdmin) {
+                conditions.push(`validation_status = 'active'`);
+                conditions.push(`is_active = TRUE`);
+            }
 
             if (search) {
                 values.push(`%${search}%`);
@@ -355,3 +362,54 @@ class PointOfInterestController {
 }
 
 export default PointOfInterestController;
+
+// ── Empresa POI submission (role 3) ──────────────────────────────────────────
+
+export async function createEmpresaController(req, res) {
+    try {
+        const { id_company } = req.user;
+        if (!id_company) {
+            return res.status(403).json({ error: 'Tu cuenta no tiene empresa asociada.' });
+        }
+
+        const name = String(req.body?.name || '').trim();
+        const categoriesRaw = String(req.body?.categories_raw || '').trim();
+        if (!name || !categoriesRaw) {
+            return res.status(400).json({ error: 'name y categories_raw son requeridos.' });
+        }
+
+        const categoriesMapped = mapCategories(categoriesRaw);
+        const priceLevel = parsePriceLevel(req.body?.price_level);
+        const isAccessible = parseBoolean(req.body?.is_accessible, false);
+        const outdoor = parseBoolean(req.body?.outdoor, false);
+        const latitude = parseNumber(req.body?.latitude, null);
+        const longitude = parseNumber(req.body?.longitude, null);
+        const idLocation = parseNumber(req.body?.id_location, null);
+        const description = req.body?.description || null;
+
+        let image_url = null;
+        if (req.file) {
+            const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
+            image_url = await uploadToCloudinary(req.file.buffer, 'pois');
+        }
+
+        const result = await pool.query(
+            `INSERT INTO point_of_interest
+             (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor,
+              latitude, longitude, id_location, description, image_url,
+              validation_status, submitted_by_company_id, validation_submitted_at, is_active)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'pending_validation',$12,NOW(),FALSE)
+             RETURNING *`,
+            [name, categoriesRaw, JSON.stringify(categoriesMapped), priceLevel,
+             isAccessible, outdoor, latitude, longitude, idLocation, description,
+             image_url, id_company]
+        );
+
+        return res.status(201).json({
+            message: 'POI enviado para revisión. Se publicará una vez aprobado por el equipo SMARTUR.',
+            point: result.rows[0],
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}

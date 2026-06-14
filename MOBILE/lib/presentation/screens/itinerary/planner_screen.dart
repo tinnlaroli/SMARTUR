@@ -28,6 +28,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   bool _loading = false;
   bool _optimizing = false;
   bool _isPublic = false;
+  DateTimeRange? _dateRange;
 
   @override
   void initState() {
@@ -36,6 +37,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
     _stops = List.from(widget.itinerary.stops);
     _isPublic = widget.itinerary.isPublic;
     routeStopCount.value = _stops.length;
+    if (_it.startDate != null && _it.endDate != null) {
+      _dateRange = DateTimeRange(start: _it.startDate!, end: _it.endDate!);
+    }
     if (_stops.isNotEmpty && _stops.first.placeName.isEmpty) {
       _refreshFromApi();
     }
@@ -50,9 +54,57 @@ class _PlannerScreenState extends State<PlannerScreen> {
           _stops = List.from(updated.stops);
           _isPublic = updated.isPublic;
           routeStopCount.value = _stops.length;
+          if (updated.startDate != null && updated.endDate != null) {
+            _dateRange = DateTimeRange(start: updated.startDate!, end: updated.endDate!);
+          } else {
+            _dateRange = null;
+          }
         });
         await ItineraryDB.saveItinerary(updated);
       }
+    } catch (_) {}
+  }
+
+  Future<void> _editDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 730)),
+      initialDateRange: _dateRange,
+      locale: const Locale('es', 'MX'),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: Theme.of(context).colorScheme.copyWith(
+            primary: SmarturStyle.purple,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _dateRange = picked);
+    try {
+      final updated = await ItineraryService().updateItinerary(
+        _it.id,
+        startDate: picked.start,
+        endDate: picked.end,
+      );
+      if (updated != null && mounted) {
+        setState(() => _it = updated.copyWith(stops: _stops));
+      }
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.toString());
+    }
+  }
+
+  Future<void> _clearDateRange() async {
+    setState(() => _dateRange = null);
+    try {
+      await ItineraryService().updateItinerary(
+        _it.id,
+        clearStartDate: true,
+        clearEndDate: true,
+      );
     } catch (_) {}
   }
 
@@ -272,6 +324,52 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
             const Divider(height: 1),
 
+            // Date range row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
+              child: Row(
+                children: [
+                  Icon(Icons.date_range_rounded, size: 15, color: SmarturStyle.purple),
+                  const SizedBox(width: 6),
+                  _dateRange != null
+                      ? GestureDetector(
+                          onTap: _editDateRange,
+                          child: Text(
+                            '${_fmt(_dateRange!.start)} – ${_fmt(_dateRange!.end)}',
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: SmarturStyle.purple,
+                            ),
+                          ),
+                        )
+                      : TextButton.icon(
+                          onPressed: _editDateRange,
+                          icon: const Icon(Icons.add, size: 14),
+                          label: const Text('Agregar fechas',
+                              style: TextStyle(fontFamily: 'Outfit', fontSize: 12)),
+                          style: TextButton.styleFrom(
+                            foregroundColor: SmarturStyle.purple,
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                  if (_dateRange != null) ...[
+                    const SizedBox(width: 4),
+                    IconButton(
+                      onPressed: _clearDateRange,
+                      icon: const Icon(Icons.close_rounded, size: 14),
+                      color: scheme.onSurfaceVariant,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
             // Stops list or empty state
             Expanded(
               child: _stops.isEmpty
@@ -285,6 +383,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
         ),
       ),
     );
+  }
+
+  String _fmt(DateTime d) {
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return '${d.day} ${months[d.month - 1]}';
   }
 
   Widget _buildEmptyState(AppLocalizations l10n, ColorScheme scheme) {
@@ -327,14 +430,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
       ),
       itemBuilder: (context, i) {
         final stop = _stops[i];
+        final hasConflict = i > 0 &&
+            stop.visitTimeStart != null &&
+            _stops[i - 1].visitTimeStart != null &&
+            stop.visitDate == _stops[i - 1].visitDate &&
+            _timeToMins(stop.visitTimeStart!) < _timeToMins(_stops[i - 1].visitTimeStart!);
         return _StopCard(
           key: ValueKey(stop.id),
           stop: stop,
           index: i,
           scheme: scheme,
           l10n: l10n,
+          dateRange: _dateRange,
           onDelete: () => _deleteStop(stop),
-          onDateSet: (date) => _setStopDate(stop, date),
+          onDateSet: (date) => _setStopDate(stop, date: date),
+          onTimeSet: (time) => _setStopDate(stop, time: time),
+          hasTimeConflict: hasConflict,
         );
       },
     );
@@ -372,7 +483,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   color: SmarturStyle.purple,
                 ),
               )
-            : const Icon(Icons.auto_awesome_rounded, size: 20),
+            : const Icon(Icons.auto_fix_high_rounded, size: 20),
         label: Text(
           _optimizing ? l10n.compareLoading : l10n.plannerOptimize,
           style: const TextStyle(
@@ -420,15 +531,34 @@ class _PlannerScreenState extends State<PlannerScreen> {
     }
   }
 
-  Future<void> _setStopDate(ItineraryStop stop, DateTime? date) async {
+  int _timeToMins(String t) {
+    final p = t.split(':');
+    if (p.length < 2) return 0;
+    return (int.tryParse(p[0]) ?? 0) * 60 + (int.tryParse(p[1]) ?? 0);
+  }
+
+  Future<void> _setStopDate(ItineraryStop stop, {DateTime? date, String? time}) async {
     final idx = _stops.indexWhere((s) => s.id == stop.id);
     if (idx < 0) return;
     setState(() {
       _stops[idx] = _stops[idx].copyWith(
         visitDate: date,
-        clearDate: date == null,
+        clearDate: date == null && time == null,
+        visitTimeStart: time,
+        clearTime: time == null && date == null,
       );
     });
+    // Persist change to API in background (non-blocking, silent fail)
+    try {
+      if (stop.id > 0) {
+        await ItineraryService().updateStop(
+          _it.id,
+          stop.id,
+          visitDate: date,
+          visitTimeStart: time,
+        );
+      }
+    } catch (_) {}
   }
 }
 
@@ -439,8 +569,11 @@ class _StopCard extends StatelessWidget {
   final int index;
   final ColorScheme scheme;
   final AppLocalizations l10n;
+  final DateTimeRange? dateRange;
   final VoidCallback onDelete;
   final ValueChanged<DateTime?> onDateSet;
+  final ValueChanged<String?> onTimeSet;
+  final bool hasTimeConflict;
 
   const _StopCard({
     super.key,
@@ -448,8 +581,11 @@ class _StopCard extends StatelessWidget {
     required this.index,
     required this.scheme,
     required this.l10n,
+    this.dateRange,
     required this.onDelete,
     required this.onDateSet,
+    required this.onTimeSet,
+    this.hasTimeConflict = false,
   });
 
   @override
@@ -511,20 +647,57 @@ class _StopCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (stop.visitDate != null) ...[
+                  if (stop.visitDate != null || stop.visitTimeStart != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.calendar_today_rounded,
-                            size: 12,
-                            color: SmarturStyle.purple.withValues(alpha: 0.8)),
+                        if (stop.visitDate != null) ...[
+                          Icon(Icons.calendar_today_rounded,
+                              size: 12,
+                              color: SmarturStyle.purple.withValues(alpha: 0.8)),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDate(stop.visitDate!),
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        if (stop.visitTimeStart != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.access_time_rounded,
+                              size: 12,
+                              color: SmarturStyle.purple.withValues(alpha: 0.8)),
+                          const SizedBox(width: 4),
+                          Text(
+                            stop.visitTimeStart!,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                  if (hasTimeConflict) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded,
+                            size: 12, color: Colors.orange),
                         const SizedBox(width: 4),
-                        Text(
-                          _formatDate(stop.visitDate!),
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
+                        Expanded(
+                          child: Text(
+                            'Time overlap with previous stop',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 10,
+                              color: Colors.orange,
+                            ),
                           ),
                         ),
                       ],
@@ -548,6 +721,19 @@ class _StopCard extends StatelessWidget {
             tooltip: l10n.plannerStopDate,
           ),
 
+          // Time button
+          IconButton(
+            icon: Icon(
+              stop.visitTimeStart != null
+                  ? Icons.edit_outlined
+                  : Icons.access_time_outlined,
+              size: 18,
+              color: scheme.onSurfaceVariant,
+            ),
+            onPressed: () => _pickTime(context),
+            tooltip: 'Horario',
+          ),
+
           // Delete button
           IconButton(
             icon: const Icon(Icons.close_rounded, size: 18, color: Colors.red),
@@ -560,11 +746,13 @@ class _StopCard extends StatelessWidget {
   }
 
   Future<void> _pickDate(BuildContext context) async {
+    final first = dateRange?.start ?? DateTime.now().subtract(const Duration(days: 1));
+    final last = dateRange?.end ?? DateTime.now().add(const Duration(days: 365 * 2));
     final picked = await showDatePicker(
       context: context,
       initialDate: stop.visitDate ?? DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      firstDate: first,
+      lastDate: last,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: Theme.of(ctx).colorScheme.copyWith(
@@ -575,6 +763,40 @@ class _StopCard extends StatelessWidget {
       ),
     );
     onDateSet(picked);
+  }
+
+  Future<void> _pickTime(BuildContext context) async {
+    final initial = stop.visitTimeStart != null
+        ? _parseTime(stop.visitTimeStart!)
+        : TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                primary: SmarturStyle.purple,
+              ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      final formatted =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      onTimeSet(formatted);
+    }
+  }
+
+  TimeOfDay _parseTime(String t) {
+    final parts = t.split(':');
+    if (parts.length == 2) {
+      return TimeOfDay(
+        hour: int.tryParse(parts[0]) ?? 0,
+        minute: int.tryParse(parts[1]) ?? 0,
+      );
+    }
+    return TimeOfDay.now();
   }
 
   String _formatDate(DateTime d) =>

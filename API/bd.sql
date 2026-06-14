@@ -179,6 +179,8 @@ CREATE TABLE company (
   owner_user_id INT NULL,
   status VARCHAR(25) NOT NULL DEFAULT 'pending_docs',
   registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_certified BOOLEAN NOT NULL DEFAULT FALSE,
+  certified_at TIMESTAMPTZ,
   FOREIGN KEY (id_sector) REFERENCES tourism_sector(id_sector),
   FOREIGN KEY (id_location) REFERENCES location(id_location),
   CONSTRAINT company_status_check CHECK (status IN (
@@ -754,12 +756,8 @@ INSERT INTO tourism_sector (name, description) VALUES
 
 -- Usuarios demo (role_id: 1=admin, 2=user, 3=empresa)
 INSERT INTO "user" (name, email, password, role_id, avatar_icon_key) VALUES
-  ('Admin SMARTUR',   'martinlaraolivares@gmail.com',
-   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 1, 'admin'),
-  ('Turista Demo',    'turista@smartur.demo',
-   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 2, 'hiking'),
-  ('Empresa Demo',    'cafecencalli@gmail.com',
-   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 3, 'store');
+  ('Admin SMARTUR', 'martinlaraolivares@gmail.com',
+   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 1, 'admin');
 
 -- Empresas (las de seed inician como 'active' para que los servicios sean visibles)
 INSERT INTO company (name, address, phone, id_sector, id_location, status, owner_user_id) VALUES
@@ -776,9 +774,6 @@ INSERT INTO company (name, address, phone, id_sector, id_location, status, owner
   ('Hotel Posada Xico',        'Morelos 15',             '2281234501', 1, 6, 'active',  NULL), -- 11
   ('Fonda Tradicional Xico',   'Juárez 8',               '2281234502', 2, 6, 'active',  NULL), -- 12
   ('Xico Aventura en la Niebla','Carretera a Texolo km 1','2281234503', 3, 6, 'active', NULL); -- 13
-
--- Vincular usuario empresa con su company
-UPDATE "user" SET id_company = 1 WHERE email = 'cafecencalli@gmail.com';
 
 -- Servicios turísticos (seeds inician como 'active')
 INSERT INTO tourist_service (name, description, id_company, id_location, service_type, active, status, image_url) VALUES
@@ -976,7 +971,7 @@ INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_le
 INSERT INTO community_post (user_id, caption, image_url, place_kind, place_id) VALUES
   (1, 'Increíble amanecer en el Macuiltépetl — las montañas de Veracruz en todo su esplendor.',
    'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&w=800', 'poi', 1),
-  (2, 'El museo de Xalapa es impresionante, ideal en familia.', NULL, 'poi', 2),
+  (1, 'El museo de Xalapa es impresionante, ideal en familia.', NULL, 'poi', 2),
   (1, 'El café de Coatepec no tiene comparación.',
    'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&w=800', 'svc', 2);
 

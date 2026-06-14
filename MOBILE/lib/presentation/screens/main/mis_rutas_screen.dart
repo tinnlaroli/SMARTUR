@@ -177,33 +177,40 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
 
   Widget _buildBody(AppLocalizations l10n, ColorScheme scheme) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        children: List.generate(5, (_) => const _SkeletonCard()),
+      );
     }
 
     if (_error != null && _itineraries.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.cloud_off_rounded,
-                size: 48,
-                color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
-            const SizedBox(height: 12),
-            Text(
-              l10n.routesLoadError,
-              style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontSize: 14,
-                  color: scheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Reintentar',
-                  style: TextStyle(fontFamily: 'Outfit')),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.cloud_off_rounded,
+                  size: 56,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.3)),
+              const SizedBox(height: 16),
+              Text(
+                l10n.routesLoadError,
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 15,
+                    color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: _load,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Reintentar',
+                    style: TextStyle(fontFamily: 'Outfit')),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -224,25 +231,79 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
       );
     }
 
+    final withDates = _itineraries.where((it) => it.startDate != null).toList();
+    final withoutDates = _itineraries.where((it) => it.startDate == null).toList();
+
     return RefreshIndicator(
       onRefresh: _load,
       color: SmarturStyle.purple,
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-        itemCount: _itineraries.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) {
-          final it = _itineraries[i];
-          return _ItineraryCard(
-            itinerary: it,
-            onTap: () => _openItinerary(it),
-            onDetail: () => Navigator.push(
-              context,
-              smarturFadeRoute(
-                  ItineraryDetailScreen(itinerary: it, isOwner: true)),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              '${_itineraries.length} ${l10n.misRutasTitle}',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 13,
+                color: scheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          );
-        },
+          ),
+          if (withDates.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              child: Text(
+                'Con fecha',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 12,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ...withDates.map((it) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ItineraryCard(
+                itinerary: it,
+                onTap: () => Navigator.push(
+                  context,
+                  smarturFadeRoute(
+                      ItineraryDetailScreen(itinerary: it, isOwner: true)),
+                ),
+              ),
+            )),
+          ],
+          if (withoutDates.isNotEmpty) ...[
+            Padding(
+              padding: EdgeInsets.only(left: 4, bottom: 6, top: withDates.isNotEmpty ? 4 : 0),
+              child: Text(
+                'Sin fecha',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 12,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ...withoutDates.map((it) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ItineraryCard(
+                itinerary: it,
+                onTap: () => Navigator.push(
+                  context,
+                  smarturFadeRoute(
+                      ItineraryDetailScreen(itinerary: it, isOwner: true)),
+                ),
+              ),
+            )),
+          ],
+        ],
       ),
     );
   }
@@ -253,45 +314,80 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
 class _ItineraryCard extends StatelessWidget {
   final Itinerary itinerary;
   final VoidCallback onTap;
-  final VoidCallback onDetail;
 
   const _ItineraryCard({
     required this.itinerary,
     required this.onTap,
-    required this.onDetail,
   });
+
+  static const _avatarColors = [
+    Color(0xFF7C4DFF),
+    Color(0xFF448AFF),
+    Color(0xFF00BCD4),
+    Color(0xFF4CAF50),
+    Color(0xFFFF6D00),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF00E676),
+    Color(0xFFFFAB00),
+    Color(0xFFFF1744),
+  ];
+
+  Color _avatarColor(String title) {
+    final hash = title.codeUnits.fold<int>(0, (h, c) => h * 31 + c);
+    return _avatarColors[hash % _avatarColors.length];
+  }
+
+  String _daysAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt).inDays;
+    if (diff == 0) return 'Hoy';
+    if (diff == 1) return 'Ayer';
+    return 'Hace $diff días';
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final color = _avatarColor(itinerary.title);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(20),
           border:
-              Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+              Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: SmarturStyle.purple.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
               ),
               alignment: Alignment.center,
-              child: Icon(
-                itinerary.isPublic
-                    ? Icons.public_rounded
-                    : Icons.route_rounded,
-                color: SmarturStyle.purple,
-                size: 28,
+              child: Text(
+                itinerary.title.isNotEmpty
+                    ? itinerary.title[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -299,39 +395,144 @@ class _ItineraryCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    itinerary.title,
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          itinerary.title,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (itinerary.isCertified) ...[
+                        const SizedBox(width: 6),
+                        Icon(Icons.verified_rounded,
+                            size: 16, color: SmarturStyle.purple),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    l10n.itineraryNStops(itinerary.stops.length),
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
-                      fontSize: 13,
-                      color: scheme.onSurfaceVariant,
-                    ),
+                  Row(
+                    children: [
+                      Icon(Icons.flag_rounded,
+                          size: 14, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text(
+                        l10n.itineraryNStops(itinerary.stops.length),
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Icon(Icons.access_time_rounded,
+                          size: 14, color: scheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text(
+                        _daysAgo(itinerary.createdAt),
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            IconButton(
-              icon: Icon(Icons.open_in_new_rounded,
-                  size: 18, color: scheme.onSurfaceVariant),
-              onPressed: onDetail,
-              tooltip: l10n.itineraryDetail,
-            ),
+            if (itinerary.isPublic)
+              Container(
+                margin: const EdgeInsets.only(right: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: SmarturStyle.green.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.public_rounded,
+                        size: 12, color: SmarturStyle.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Pública',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: SmarturStyle.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Icon(Icons.chevron_right_rounded,
-                color: scheme.onSurfaceVariant),
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.5)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      height: 84,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: scheme.onSurface.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 140,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: scheme.onSurface.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: 90,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: scheme.onSurface.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

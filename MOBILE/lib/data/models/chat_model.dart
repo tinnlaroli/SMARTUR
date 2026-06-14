@@ -44,28 +44,30 @@ class Conversation {
 class ChatMessage {
   final int id;
   final int conversationId;
-  final int senderId;
+  final int? senderId;
   final String senderName;
   final String? senderPhoto;
   final String content;
   final DateTime? readAt;
   final DateTime createdAt;
+  final bool isBot;
 
   const ChatMessage({
     required this.id,
     required this.conversationId,
-    required this.senderId,
+    this.senderId,
     required this.senderName,
     this.senderPhoto,
     required this.content,
     this.readAt,
     required this.createdAt,
+    this.isBot = false,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
         id: j['id_message'] as int,
         conversationId: j['id_conversation'] as int,
-        senderId: j['sender_id'] as int,
+        senderId: j['sender_id'] as int?,
         senderName: (j['sender_name'] as String?) ?? '',
         senderPhoto: j['sender_photo'] as String?,
         content: j['content'] as String,
@@ -73,5 +75,6 @@ class ChatMessage {
             ? DateTime.tryParse(j['read_at'].toString())
             : null,
         createdAt: DateTime.parse(j['created_at'].toString()),
+        isBot: (j['is_bot'] as bool?) ?? false,
       );
 }

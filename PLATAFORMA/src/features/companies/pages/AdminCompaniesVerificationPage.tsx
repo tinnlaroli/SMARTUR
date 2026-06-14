@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
-    RefreshCw, X, ShieldX, MapPin,
+    RefreshCw, X, ShieldX, MapPin, Download,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/axiosClient';
@@ -47,6 +47,10 @@ interface PendingCompany {
     sector_name: string | null;
     location_name: string | null;
     id_location: number | null;
+    smartur_validation_certificate_url: string | null;
+    certificate_issued_at: string | null;
+    is_certified: boolean;
+    certified_at: string | null;
 }
 
 const MUNICIPIOS = [
@@ -81,15 +85,22 @@ const FILTER_OPTIONS: { key: StatusFilter; label: string }[] = [
 ];
 
 function DocButton({ label, url, onPreview }: { label: string; url: string | null; onPreview: (url: string) => void }) {
-    if (!url) return <span className="text-xs" style={{ color: 'var(--color-text-alt)', opacity: 0.4 }}>No subido</span>;
+    if (!url) return (
+        <div className="rounded-xl border px-3 py-2.5 text-center"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
+            <span className="text-xs" style={{ color: 'var(--color-text-alt)', opacity: 0.4 }}>No subido</span>
+        </div>
+    );
     return (
         <button
             type="button"
             onClick={() => onPreview(url)}
-            className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
-            style={{ color: COLOR }}
+            className="w-full rounded-xl border px-3 py-2.5 text-center transition-all hover:opacity-80"
+            style={{ borderColor: COLOR, background: `${COLOR}12` }}
         >
-            <Eye className="size-3" />{label}
+            <Eye className="size-4 mx-auto mb-1" style={{ color: COLOR }} />
+            <p className="text-xs font-semibold" style={{ color: COLOR }}>{label}</p>
         </button>
     );
 }
@@ -103,43 +114,22 @@ interface ReviewModalProps {
 }
 
 function ReviewModal({ company, onClose, onReviewed }: ReviewModalProps) {
-    const [action, setAction]         = useState<'approve' | 'reject' | 'suspend' | null>(null);
+    const [action, setAction]         = useState<'approve' | 'reject' | 'suspend' | 'certify' | null>(null);
     const [reason, setReason]         = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError]           = useState<string | null>(null);
     const [detail, setDetail]         = useState<PendingCompany | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [hoveredAction, setHoveredAction] = useState<string | null>(null);
-    const [locationId, setLocationId] = useState<string>('');
-    const [savingLocation, setSavingLocation] = useState(false);
     const toast = useToast();
 
     useEscapeKey(onClose);
 
     useEffect(() => {
         api.get(`/admin/companies/${company.id_company}/verification`)
-            .then(r => {
-                const d = r.data as PendingCompany;
-                setDetail(d);
-                setLocationId(d.id_location ? String(d.id_location) : '');
-            })
+            .then(r => setDetail(r.data as PendingCompany))
             .catch(() => {});
     }, [company.id_company]);
-
-    const handleSaveLocation = async () => {
-        if (!locationId) return;
-        setSavingLocation(true);
-        try {
-            const res = await api.patch(`/admin/companies/${c.id_company}/location`, { id_location: Number(locationId) });
-            const updated = res.data as { id_location: number; location_name: string };
-            setDetail(prev => prev ? { ...prev, id_location: updated.id_location, location_name: updated.location_name } : prev);
-            toast.success('Municipio actualizado', updated.location_name ?? '');
-        } catch {
-            toast.error('Error al guardar municipio', '');
-        } finally {
-            setSavingLocation(false);
-        }
-    };
 
     const c   = detail ?? company;
     const cfg = STATUS_CONFIG[c.status] ?? { label: c.status, color: TABLE_BADGE_COLORS.neutral };
@@ -153,7 +143,7 @@ function ReviewModal({ company, onClose, onReviewed }: ReviewModalProps) {
         setError(null);
         try {
             await api.patch(`/admin/companies/${c.id_company}/verify`, { action, reason });
-            const labels = { approve: 'Empresa aprobada', reject: 'Empresa rechazada', suspend: 'Empresa suspendida' };
+            const labels = { approve: 'Empresa aprobada', reject: 'Empresa rechazada', suspend: 'Empresa suspendida', certify: 'Empresa certificada' };
             toast.success(labels[action], c.name);
             onReviewed();
             onClose();
@@ -225,40 +215,80 @@ function ReviewModal({ company, onClose, onReviewed }: ReviewModalProps) {
                     className="rounded-xl px-4 py-3 mb-4 flex items-center gap-3"
                     style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}
                 >
-                    <MapPin className="size-4 shrink-0" style={{ color: c.id_location ? COLOR : '#f59e0b' }} />
-                    <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-alt)' }}>Municipio</p>
-                        <div className="flex items-center gap-2">
-                            <select
-                                value={locationId}
-                                onChange={e => setLocationId(e.target.value)}
-                                className="flex-1 rounded-lg border px-2 py-1 text-sm focus:outline-none"
-                                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
-                            >
-                                <option value="">Sin municipio…</option>
-                                {MUNICIPIOS.map(m => (
-                                    <option key={m.id_location} value={String(m.id_location)}>{m.name}</option>
-                                ))}
-                            </select>
-                            <button
-                                type="button"
-                                onClick={handleSaveLocation}
-                                disabled={savingLocation || !locationId || locationId === String(c.id_location)}
-                                className="rounded-lg px-3 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40 flex items-center gap-1.5"
-                                style={{ backgroundColor: COLOR }}
-                            >
-                                {savingLocation && <Loader2 className="size-3 animate-spin" />}
-                                Guardar
-                            </button>
-                        </div>
+                    <MapPin className="size-4 shrink-0" style={{ color: c.location_name ? COLOR : '#f59e0b' }} />
+                    <div className="min-w-0">
+                        <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Municipio</p>
+                        <p className="text-sm font-semibold" style={{ color: c.location_name ? 'var(--color-text)' : '#f59e0b' }}>
+                            {c.location_name ?? 'Sin municipio registrado'}
+                        </p>
                     </div>
                 </div>
 
                 {/* Documentos */}
-                <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-3 gap-3 mb-4">
                     <DocButton label="INE frente"  url={c.ine_front_url ?? null}     onPreview={setPreviewUrl} />
                     <DocButton label="INE reverso" url={c.ine_back_url ?? null}      onPreview={setPreviewUrl} />
                     <DocButton label="Comprobante" url={c.address_proof_url ?? null} onPreview={setPreviewUrl} />
+                </div>
+
+                {/* Certificado Smartur */}
+                <div
+                    className="rounded-xl px-4 py-3 mb-4 text-sm"
+                    style={c.is_certified
+                        ? { background: 'rgba(152,78,253,0.07)', border: '1px solid rgba(152,78,253,0.30)' }
+                        : { background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }
+                    }
+                >
+                    <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
+                            Certificado SMARTUR
+                        </p>
+                        {c.is_certified && (
+                            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold"
+                                style={{ background: 'rgba(152,78,253,0.15)', color: '#984EFD' }}>
+                                <ShieldCheck className="size-3" /> Certificada
+                            </span>
+                        )}
+                    </div>
+                    {c.is_certified ? (
+                        <div className="space-y-1.5">
+                            {c.certified_at && (
+                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    Certificada el {new Date(c.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                            )}
+                            {c.smartur_validation_certificate_url && (
+                                <a
+                                    href={c.smartur_validation_certificate_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+                                    style={{ color: COLOR }}
+                                >
+                                    <Download className="size-3" /> Descargar certificado
+                                </a>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs" style={{ color: 'var(--color-text-alt)', opacity: 0.5 }}>
+                                Sin certificación emitida
+                            </span>
+                            {c.status === 'active' && (
+                                <button
+                                    type="button"
+                                    onClick={() => setAction('certify')}
+                                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                                    style={action === 'certify'
+                                        ? { background: 'rgba(152,78,253,0.15)', color: '#984EFD', border: '1px solid rgba(152,78,253,0.40)' }
+                                        : { background: 'var(--color-bg)', color: 'var(--color-text-alt)', border: '1px solid var(--color-border)' }
+                                    }
+                                >
+                                    <ShieldCheck className="size-3" /> Certificar empresa
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Motivo rechazo previo */}

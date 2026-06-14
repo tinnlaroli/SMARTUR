@@ -1,8 +1,16 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
@@ -83,6 +91,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         serviceId: stop.placeId,
         serviceName: stop.placeName,
         initialDate: stop.visitDate,
+        dateRange: _it.startDate != null && _it.endDate != null
+            ? DateTimeRange(start: _it.startDate!, end: _it.endDate!)
+            : null,
       ),
     );
   }
@@ -121,7 +132,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: widget.isOwner ? null : _buildCopyBar(l10n, scheme),
+      bottomNavigationBar: widget.isOwner
+          ? _buildOwnerBar(l10n, scheme)
+          : _buildCopyBar(l10n, scheme),
     );
   }
 
@@ -264,21 +277,29 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _buildMapSection(ColorScheme scheme) {
-    final points = _it.stops
+    final validStops = _it.stops
         .where((s) => s.placeLat != null && s.placeLon != null)
+        .toList();
+
+    if (validStops.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+    final points = validStops
         .map((s) => LatLng(s.placeLat!, s.placeLon!))
         .toList();
 
-    if (points.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-
     final center = _centroid(points);
+    final isDark = scheme.brightness == Brightness.dark;
 
     return SliverToBoxAdapter(
       child: Container(
-        height: 200,
+        height: 220,
         margin: const EdgeInsets.symmetric(horizontal: 16),
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.4)),
+        ),
         child: FlutterMap(
           options: MapOptions(
             initialCenter: center,
@@ -289,39 +310,66 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: isDark
+                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                  : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              subdomains: isDark ? const ['a', 'b', 'c'] : const [],
               userAgentPackageName: 'com.smartur.app',
             ),
+            if (points.length > 1)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: points,
+                    color: SmarturStyle.purple.withValues(alpha: 0.7),
+                    strokeWidth: 3.5,
+                  ),
+                ],
+              ),
             MarkerLayer(
               markers: [
-                for (var i = 0; i < _it.stops.length; i++)
-                  if (_it.stops[i].placeLat != null &&
-                      _it.stops[i].placeLon != null)
-                    Marker(
-                      point: LatLng(
-                          _it.stops[i].placeLat!, _it.stops[i].placeLon!),
-                      width: 32,
-                      height: 32,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: SmarturStyle.purple,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: Colors.white, width: 2),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${i + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'Outfit',
+                for (var i = 0; i < validStops.length; i++)
+                  Marker(
+                    point: LatLng(
+                        validStops[i].placeLat!, validStops[i].placeLon!),
+                    width: i == 0 || i == validStops.length - 1 ? 38 : 32,
+                    height: i == 0 || i == validStops.length - 1 ? 38 : 32,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: i == 0
+                            ? SmarturStyle.green
+                            : i == validStops.length - 1
+                                ? SmarturStyle.orange
+                                : SmarturStyle.purple,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
+                        border: Border.all(
+                            color: Colors.white, width: i == 0 || i == validStops.length - 1 ? 3 : 2.5),
                       ),
+                      alignment: Alignment.center,
+                      child: i == 0
+                          ? const Icon(Icons.flag_rounded,
+                              color: Colors.white, size: 16)
+                          : i == validStops.length - 1
+                              ? const Icon(Icons.flag_rounded,
+                                  color: Colors.white, size: 16)
+                              : Text(
+                                  '${i + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Outfit',
+                                  ),
+                                ),
                     ),
+                  ),
               ],
             ),
           ],
@@ -343,18 +391,81 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _buildStopsList(ColorScheme scheme) {
-    return SliverList.builder(
-      itemCount: _it.stops.length,
-      itemBuilder: (context, i) {
-        final stop = _it.stops[i];
-        final isLast = i == _it.stops.length - 1;
-        return Padding(
+    final children = <Widget>[];
+    DateTime? lastDay;
+
+    for (int i = 0; i < _it.stops.length; i++) {
+      final stop = _it.stops[i];
+      final isLast = i == _it.stops.length - 1;
+
+      // Day group header for multi-day itineraries
+      if (stop.visitDate != null) {
+        final d = DateTime(
+            stop.visitDate!.year, stop.visitDate!.month, stop.visitDate!.day);
+        if (lastDay == null || d != lastDay) {
+          lastDay = d;
+          children.add(_buildDayHeader(d));
+        }
+      }
+
+      // Transit chip before this stop (uses distance from previous stop)
+      if (i > 0) {
+        final transit = _transitLabel(_it.stops[i - 1], stop);
+        if (transit.isNotEmpty) {
+          children.add(
+            Padding(
+              padding: const EdgeInsets.only(left: 52, bottom: 2),
+              child: Row(
+                children: [
+                  Icon(Icons.directions_car_outlined,
+                      size: 12,
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                  const SizedBox(width: 4),
+                  Text(
+                    transit,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 10,
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+
+      // Stop row with time label + numbered circle + card
+      children.add(
+        Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
           child: IntrinsicHeight(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Timeline
+                // Time label column
+                SizedBox(
+                  width: 36,
+                  child: stop.visitTimeStart != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            stop.visitTimeStart!,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: SmarturStyle.purple,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                const SizedBox(width: 6),
+
+                // Timeline column
                 Column(
                   children: [
                     Container(
@@ -384,7 +495,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
 
                 // Stop card
                 Expanded(
@@ -392,12 +503,11 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     margin: EdgeInsets.only(bottom: isLast ? 0 : 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHighest
-                          .withValues(alpha: 0.5),
+                      color:
+                          scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: scheme.outlineVariant
-                              .withValues(alpha: 0.4)),
+                          color: scheme.outlineVariant.withValues(alpha: 0.4)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,12 +524,12 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                           ),
                         ),
                         if (stop.visitDate != null) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
                             _formatDate(stop.visitDate!),
                             style: TextStyle(
                               fontFamily: 'Outfit',
-                              fontSize: 12,
+                              fontSize: 11,
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
@@ -436,36 +546,64 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                             ),
                           ),
                         ],
-                        if (stop.placeKind == 'svc') ...[
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              onPressed: () => _showBookingSheet(
-                                context,
-                                stop,
-                              ),
-                              icon: const Icon(Icons.calendar_today_rounded,
-                                  size: 14),
-                              label: Text(
-                                AppLocalizations.of(context)!.bookingTitle,
-                                style: const TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: SmarturStyle.purple,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                minimumSize: Size.zero,
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
+                        // Action row: Book + Maps
+                        if (stop.placeKind == 'svc' || stop.placeLat != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (stop.placeLat != null)
+                                  GestureDetector(
+                                    onTap: () => _openInMaps(stop),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.map_outlined,
+                                            size: 13,
+                                            color: scheme.onSurfaceVariant),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'Maps',
+                                          style: TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontSize: 11,
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (stop.placeKind == 'svc' &&
+                                    stop.placeLat != null)
+                                  const SizedBox(width: 12),
+                                if (stop.placeKind == 'svc')
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        _showBookingSheet(context, stop),
+                                    icon: const Icon(
+                                        Icons.calendar_today_rounded,
+                                        size: 14),
+                                    label: Text(
+                                      AppLocalizations.of(context)!
+                                          .bookingTitle,
+                                      style: const TextStyle(
+                                        fontFamily: 'Outfit',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: SmarturStyle.purple,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ),
@@ -473,8 +611,185 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               ],
             ),
           ),
-        );
-      },
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (_, i) => children[i],
+        childCount: children.length,
+      ),
+    );
+  }
+
+  Widget _buildDayHeader(DateTime date) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: SmarturStyle.purple.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: SmarturStyle.purple.withValues(alpha: 0.2)),
+            ),
+            child: Text(
+              DateFormat('EEEE, d MMM').format(date),
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: SmarturStyle.purple,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Divider(
+              color: SmarturStyle.purple.withValues(alpha: 0.15),
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Haversine ────────────────────────────────────────────────────────────────
+
+  double _haversineKm(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371.0;
+    final dLat = (lat2 - lat1) * pi / 180;
+    final dLon = (lon2 - lon1) * pi / 180;
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * pi / 180) *
+            cos(lat2 * pi / 180) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
+    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
+  }
+
+  String _transitLabel(ItineraryStop from, ItineraryStop to) {
+    if (from.placeLat == null || to.placeLat == null) return '';
+    final km = _haversineKm(
+        from.placeLat!, from.placeLon!, to.placeLat!, to.placeLon!);
+    final mins = (km / 40 * 60).round();
+    if (mins <= 1) return '';
+    return mins < 60 ? '~${mins} min' : '~${(mins / 60).toStringAsFixed(1)} h';
+  }
+
+  // ── Actions ──────────────────────────────────────────────────────────────────
+
+  Future<void> _openInMaps(ItineraryStop stop) async {
+    final Uri uri;
+    if (stop.placeLat != null) {
+      uri = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=${stop.placeLat},${stop.placeLon}');
+    } else {
+      uri = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(stop.placeName)}');
+    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _shareAsText() {
+    final lines = _it.stops
+        .map((s) =>
+            '• ${s.visitTimeStart != null ? "${s.visitTimeStart} " : ""}${s.placeName.isNotEmpty ? s.placeName : "Stop #${s.placeId}"}')
+        .join('\n');
+    SharePlus.instance.share(ShareParams(
+      text: '${_it.title}\n\n$lines',
+      subject: _it.title,
+    ));
+  }
+
+  Future<void> _exportPdf() async {
+    final doc = pw.Document();
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      build: (ctx) => [
+        pw.Header(level: 0, text: _it.title),
+        if (_it.startDate != null)
+          pw.Text(
+            '${DateFormat('d MMM yyyy').format(_it.startDate!)}'
+            '${_it.endDate != null ? " → ${DateFormat('d MMM yyyy').format(_it.endDate!)}" : ""}',
+          ),
+        pw.SizedBox(height: 8),
+        ..._it.stops.asMap().entries.map((e) {
+          final s = e.value;
+          final name =
+              s.placeName.isNotEmpty ? s.placeName : 'Stop #${s.placeId}';
+          final time = s.visitTimeStart != null ? '${s.visitTimeStart} — ' : '';
+          final note = s.notes?.isNotEmpty == true ? '\n  ${s.notes}' : '';
+          return pw.Bullet(text: '$time$name$note');
+        }),
+      ],
+    ));
+    await Printing.sharePdf(
+        bytes: await doc.save(), filename: '${_it.title}.pdf');
+  }
+
+  // ── Owner action bar ─────────────────────────────────────────────────────────
+
+  Widget _buildOwnerBar(AppLocalizations l10n, ColorScheme scheme) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  smarturFadeRoute(PlannerScreen(itinerary: _it)),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: SmarturStyle.purple,
+                  minimumSize: const Size(0, 50),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                icon: const Icon(Icons.edit_rounded, size: 18),
+                label: const Text(
+                  'Edit Route',
+                  style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _ActionIconBtn(
+              icon: Icons.share_rounded,
+              onPressed: _shareAsText,
+              scheme: scheme,
+            ),
+            const SizedBox(width: 6),
+            _ActionIconBtn(
+              icon: Icons.picture_as_pdf_rounded,
+              onPressed: _exportPdf,
+              scheme: scheme,
+            ),
+            if (_it.stops.any((s) => s.placeLat != null)) ...[
+              const SizedBox(width: 6),
+              _ActionIconBtn(
+                icon: Icons.map_outlined,
+                onPressed: () {
+                  final first =
+                      _it.stops.firstWhere((s) => s.placeLat != null);
+                  _openInMaps(first);
+                },
+                scheme: scheme,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -519,6 +834,35 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
   String _formatDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ActionIconBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+  final ColorScheme scheme;
+
+  const _ActionIconBtn(
+      {required this.icon, required this.onPressed, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 42,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+        child: Icon(icon, size: 18, color: scheme.onSurfaceVariant),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -572,11 +916,13 @@ class _BookingSheet extends StatefulWidget {
   final int serviceId;
   final String serviceName;
   final DateTime? initialDate;
+  final DateTimeRange? dateRange;
 
   const _BookingSheet({
     required this.serviceId,
     required this.serviceName,
     this.initialDate,
+    this.dateRange,
   });
 
   @override
@@ -634,11 +980,14 @@ class _BookingSheetState extends State<_BookingSheet> {
   }
 
   Future<void> _pickDate() async {
+    final range = widget.dateRange;
+    final first = range != null ? range.start.isAfter(DateTime.now()) ? range.start : DateTime.now() : DateTime.now();
+    final last = range?.end ?? DateTime.now().add(const Duration(days: 365));
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: first,
+      lastDate: last,
     );
     if (picked != null && mounted) setState(() => _date = picked);
   }

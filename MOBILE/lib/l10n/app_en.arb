@@ -175,7 +175,6 @@
   "tabAiSummary": "AI Summary",
   "fromPrice": "From",
   "free": "Free",
-  "createOneDayRoute": "Create 1-Day Route",
   "openInMaps": "Open in Google Maps",
   "locationNoCoords": "Location: {city}",
   "@locationNoCoords": { "placeholders": { "city": { "type": "String" } } },
@@ -476,7 +475,7 @@
   ,"plannerAddStop":"Add stop"
   ,"plannerNoStops":"No stops"
   ,"plannerNoStopsSubtitle":"Tap + anywhere to add stops"
-  ,"plannerOptimize":"Optimize with AI"
+  ,"plannerOptimize":"Improve My Route"
   ,"plannerOptimizeComingSoon":"Coming soon in SMARTUR"
   ,"plannerRouteName":"Route name"
   ,"plannerRouteNameHint":"E.g.: My Xalapa route"

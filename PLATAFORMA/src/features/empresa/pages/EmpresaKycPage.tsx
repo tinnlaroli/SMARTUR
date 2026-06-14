@@ -12,6 +12,10 @@ const SUCCESS = '#10B981';
 const WARNING = '#F59E0B';
 const DANGER  = '#EF4444';
 
+const CURP_RE = /^[A-Z]{4}\d{6}[HM][A-ZÁÉÍÓÚÜÑ]{5}[A-Z\d]{2}$/;
+const RFC_RE  = /^[A-Z]{3,4}\d{6}[A-Z\d]{3}$/;
+const ZIP_RE  = /^\d{5}$/;
+
 
 // ── File upload field ─────────────────────────────────────────────────────────
 
@@ -84,13 +88,16 @@ function FileUploadField({
                             Seleccionar o arrastrar archivo
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
+                        <p className="text-xs mt-0.5 font-medium" style={{ color: 'var(--color-text-alt)', opacity: 0.7 }}>
+                            JPG, PNG o PDF · Máx. 10 MB
+                        </p>
                     </div>
                 </button>
             )}
             <input
                 ref={inputRef}
                 type="file"
-                accept="image/*,.pdf"
+                accept="image/jpeg,image/png,application/pdf"
                 className="hidden"
                 onChange={e => onChange(e.target.files?.[0] ?? null)}
             />
@@ -104,18 +111,38 @@ function StatusBanner({ kyc }: { kyc: KycStatusResponse }) {
     const status = kyc.status;
 
     if (status === 'active') {
+        const CERT = '#984EFD';
         return (
-            <div className="flex items-center gap-4 rounded-2xl border px-5 py-4 mb-6"
-                style={{ background: `${SUCCESS}10`, borderColor: `${SUCCESS}30` }}>
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${SUCCESS}20` }}>
-                    <ShieldCheck className="size-5" style={{ color: SUCCESS }} />
+            <div className="flex flex-col gap-3 mb-6">
+                <div className="flex items-center gap-4 rounded-2xl border px-5 py-4"
+                    style={{ background: `${SUCCESS}10`, borderColor: `${SUCCESS}30` }}>
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${SUCCESS}20` }}>
+                        <ShieldCheck className="size-5" style={{ color: SUCCESS }} />
+                    </div>
+                    <div>
+                        <p className="font-semibold text-sm" style={{ color: SUCCESS }}>Empresa verificada</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                            Tu identidad ha sido validada. Tienes acceso completo a la plataforma.
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <p className="font-semibold text-sm" style={{ color: SUCCESS }}>Empresa verificada</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                        Tu identidad ha sido validada. Tienes acceso completo a la plataforma.
-                    </p>
-                </div>
+                {kyc.is_certified && (
+                    <div className="flex items-center gap-4 rounded-2xl border px-5 py-4"
+                        style={{ background: `${CERT}0D`, borderColor: `${CERT}40` }}>
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${CERT}20` }}>
+                            <ShieldCheck className="size-5" style={{ color: CERT }} />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-sm" style={{ color: CERT }}>Certificada por SMARTUR</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                {kyc.certified_at
+                                    ? `Certificación otorgada el ${new Date(kyc.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+                                    : 'Tu empresa cuenta con la certificación oficial SMARTUR.'
+                                }
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -209,14 +236,19 @@ function ProgressSteps({ current }: { current: number }) {
 // ── Text input ────────────────────────────────────────────────────────────────
 
 function Field({
-    label, name, value, onChange, type = 'text', placeholder = '', required = false, full = false,
-    hint,
+    label, name, value, onChange, onBlur, type = 'text', placeholder = '', required = false,
+    full = false, hint, status, min, max,
 }: {
     label: string; name: string; value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    type?: string; placeholder?: string; required?: boolean; full?: boolean; hint?: string;
+    onBlur?: () => void;
+    type?: string; placeholder?: string; required?: boolean; full?: boolean;
+    hint?: string; status?: 'valid' | 'invalid' | null;
+    min?: string; max?: string;
 }) {
-    const today = new Date().toISOString().split('T')[0];
+    const borderColor = status === 'valid' ? SUCCESS : status === 'invalid' ? DANGER : 'var(--color-border)';
+    const ringColor   = status === 'valid' ? SUCCESS : status === 'invalid' ? DANGER : PURPLE;
+
     return (
         <div className={full ? 'col-span-2' : ''}>
             <label className="block text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-alt)' }}>
@@ -227,15 +259,17 @@ function Field({
                 name={name}
                 value={value}
                 onChange={onChange}
+                onBlur={onBlur}
                 placeholder={placeholder}
                 required={required}
-                max={type === 'date' ? today : undefined}
+                min={min}
+                max={max}
                 className="w-full rounded-2xl px-4 py-2.5 text-sm placeholder:opacity-30 focus:outline-none focus:ring-2 transition"
                 style={{
                     background: 'var(--color-bg-alt)',
-                    border: '1px solid var(--color-border)',
+                    border: `1px solid ${borderColor}`,
                     color: 'var(--color-text)',
-                    ['--tw-ring-color' as string]: PURPLE,
+                    ['--tw-ring-color' as string]: ringColor,
                 }}
             />
             {hint && <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>}
@@ -246,11 +280,13 @@ function Field({
 // ── Select for municipalities ─────────────────────────────────────────────────
 
 function MunicipioSelect({
-    value, onChange, required = false, locations,
+    value, onChange, required = false, locations, status, onBlur,
 }: {
     value: string; onChange: (v: string) => void;
     required?: boolean; locations: { id_location: number; name: string }[];
+    status?: 'valid' | 'invalid' | null; onBlur?: () => void;
 }) {
+    const borderColor = status === 'valid' ? SUCCESS : status === 'invalid' ? DANGER : 'var(--color-border)';
     return (
         <div>
             <label className="block text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-alt)' }}>
@@ -259,11 +295,12 @@ function MunicipioSelect({
             <select
                 value={value}
                 onChange={e => onChange(e.target.value)}
+                onBlur={onBlur}
                 required={required}
                 className="w-full rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition appearance-none"
                 style={{
                     background: 'var(--color-bg-alt)',
-                    border: '1px solid var(--color-border)',
+                    border: `1px solid ${borderColor}`,
                     color: value ? 'var(--color-text)' : 'var(--color-text-alt)',
                     ['--tw-ring-color' as string]: PURPLE,
                 }}
@@ -343,6 +380,39 @@ const MUNICIPIOS: { id_location: number; name: string }[] = [
     { id_location: 10, name: 'Yanga' },
 ];
 
+// CP prefix → municipio (4-digit checked before 3-digit for overlap resolution)
+const CP_MAP: { prefix: string; name: string }[] = [
+    { prefix: '9124', name: 'Xico' },
+    { prefix: '9447', name: 'Fortín de las Flores' },
+    { prefix: '9445', name: 'Ixtaczoquitlán' },
+    { prefix: '9446', name: 'Ixtaczoquitlán' },
+    { prefix: '9494', name: 'Amatlán de los Reyes' },
+    { prefix: '9495', name: 'Atoyac' },
+    { prefix: '9496', name: 'Yanga' },
+    { prefix: '9498', name: 'Cuitláhuac' },
+    { prefix: '943',  name: 'Orizaba' },
+    { prefix: '945',  name: 'Córdoba' },
+    { prefix: '915',  name: 'Coatepec' },
+    { prefix: '910',  name: 'Xalapa' },
+    { prefix: '911',  name: 'Xalapa' },
+    { prefix: '912',  name: 'Xalapa' },
+    { prefix: '913',  name: 'Xalapa' },
+    { prefix: '914',  name: 'Xalapa' },
+];
+
+function getMunicipioFromZip(zip: string): string | null {
+    if (zip.length !== 5) return null;
+    return (
+        CP_MAP.find(e => e.prefix === zip.slice(0, 4))?.name ??
+        CP_MAP.find(e => e.prefix === zip.slice(0, 3))?.name ??
+        null
+    );
+}
+
+const today = new Date();
+const MAX_DATE = new Date(today.getFullYear() - 18,  today.getMonth(), today.getDate()).toISOString().split('T')[0];
+const MIN_DATE = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
 export function EmpresaKycPage() {
     const navigate = useNavigate();
     const [kycData, setKycData]             = useState<KycStatusResponse | null>(null);
@@ -351,6 +421,7 @@ export function EmpresaKycPage() {
     const [submitting, setSubmitting]       = useState(false);
     const [success, setSuccess]             = useState(false);
     const [error, setError]                 = useState<string | null>(null);
+    const [touched, setTouched]             = useState<Record<string, boolean>>({});
 
     const [form, setForm] = useState({
         owner_full_name: '',
@@ -366,6 +437,26 @@ export function EmpresaKycPage() {
     const [ineFront, setIneFront]         = useState<File | null>(null);
     const [ineBack, setIneBack]           = useState<File | null>(null);
     const [addressProof, setAddressProof] = useState<File | null>(null);
+
+    const markTouched = (name: string) => setTouched(prev => ({ ...prev, [name]: true }));
+
+    const fieldStatus = (name: string, value: string): 'valid' | 'invalid' | null => {
+        if (!touched[name]) return null;
+        switch (name) {
+            case 'owner_full_name': return value.trim().length > 0 ? 'valid' : 'invalid';
+            case 'owner_curp':      return CURP_RE.test(value) ? 'valid' : 'invalid';
+            case 'owner_rfc':       return RFC_RE.test(value) ? 'valid' : 'invalid';
+            case 'owner_birth_date': {
+                if (!value) return 'invalid';
+                return value >= MIN_DATE && value <= MAX_DATE ? 'valid' : 'invalid';
+            }
+            case 'owner_street':   return value.trim().length > 0 ? 'valid' : 'invalid';
+            case 'owner_colonia':  return value.trim().length > 0 ? 'valid' : 'invalid';
+            case 'owner_municipio': return value.trim().length > 0 ? 'valid' : 'invalid';
+            case 'owner_zip':      return ZIP_RE.test(value) ? 'valid' : 'invalid';
+            default:               return null;
+        }
+    };
 
     const loadStatus = useCallback(async () => {
         try {
@@ -395,8 +486,27 @@ export function EmpresaKycPage() {
         void loadStatus();
     }, [loadStatus]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const name = e.target.name;
+        let val = e.target.value;
+        if (name === 'owner_full_name') {
+            val = val.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s''.-]/g, '');
+        } else if (name === 'owner_curp') {
+            val = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 18);
+        } else if (name === 'owner_rfc') {
+            val = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 13);
+        } else if (name === 'owner_zip') {
+            val = val.replace(/\D/g, '').slice(0, 5);
+            const muni = getMunicipioFromZip(val);
+            if (muni) {
+                setForm(prev => ({ ...prev, owner_zip: val, owner_municipio: muni }));
+                markTouched('owner_zip');
+                markTouched('owner_municipio');
+                return;
+            }
+        }
+        setForm(prev => ({ ...prev, [name]: val }));
+    };
 
     const validateStep = (): string | null => {
         if (step === 0 && !form.owner_full_name.trim())
@@ -427,7 +537,6 @@ export function EmpresaKycPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Pressing Enter on steps 0/1 should advance, not submit
         if (step < 2) { handleNext(); return; }
         const err = validateStep();
         if (err) { setError(err); return; }
@@ -463,7 +572,6 @@ export function EmpresaKycPage() {
         return <SuccessScreen onBack={() => navigate('/empresa/dashboard')} />;
     }
 
-    // Only fully lock when verified (active). submitted/rejected/pending all allow editing.
     const isReadOnly = kycData?.status === 'active';
 
     return (
@@ -578,15 +686,25 @@ export function EmpresaKycPage() {
                         <SectionCard icon={User} title="Datos del propietario" subtitle="Ingresa los datos tal como aparecen en tu INE">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Field label="Nombre completo" name="owner_full_name" value={form.owner_full_name}
-                                    onChange={handleChange} placeholder="Como aparece en tu INE" required full />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_full_name')}
+                                    status={fieldStatus('owner_full_name', form.owner_full_name)}
+                                    placeholder="Como aparece en tu INE" required full />
                                 <Field label="Fecha de nacimiento" name="owner_birth_date" value={form.owner_birth_date}
-                                    onChange={handleChange} type="date" />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_birth_date')}
+                                    status={fieldStatus('owner_birth_date', form.owner_birth_date)}
+                                    type="date" min={MIN_DATE} max={MAX_DATE} />
                                 <Field label="CURP" name="owner_curp" value={form.owner_curp}
-                                    onChange={handleChange} placeholder="XXXX000000XXXXXX00"
-                                    hint="Se formatéa automáticamente al guardar" />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_curp')}
+                                    status={fieldStatus('owner_curp', form.owner_curp)}
+                                    placeholder="AAAA000000HXXXXX00" />
                                 <Field label="RFC" name="owner_rfc" value={form.owner_rfc}
-                                    onChange={handleChange} placeholder="XXXX000000XXX"
-                                    hint="Se formatéa automáticamente al guardar" />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_rfc')}
+                                    status={fieldStatus('owner_rfc', form.owner_rfc)}
+                                    placeholder="XXXX000000XXX" />
                             </div>
                         </SectionCard>
                     )}
@@ -596,11 +714,24 @@ export function EmpresaKycPage() {
                         <SectionCard icon={MapPin} title="Domicilio del propietario" subtitle="Debe coincidir con el comprobante de domicilio">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Field label="Calle y número" name="owner_street" value={form.owner_street}
-                                    onChange={handleChange} placeholder="Av. Juárez 123 int. 4" required full />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_street')}
+                                    status={fieldStatus('owner_street', form.owner_street)}
+                                    placeholder="Av. Juárez 123 int. 4" required full />
                                 <Field label="Colonia" name="owner_colonia" value={form.owner_colonia}
-                                    onChange={handleChange} placeholder="Centro Histórico" />
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_colonia')}
+                                    status={fieldStatus('owner_colonia', form.owner_colonia)}
+                                    placeholder="Centro Histórico" />
+                                <Field label="Código postal" name="owner_zip" value={form.owner_zip}
+                                    onChange={handleChange}
+                                    onBlur={() => markTouched('owner_zip')}
+                                    status={fieldStatus('owner_zip', form.owner_zip)}
+                                    placeholder="91000" />
                                 <MunicipioSelect value={form.owner_municipio}
-                                    onChange={v => setForm(f => ({ ...f, owner_municipio: v }))}
+                                    onChange={v => { setForm(f => ({ ...f, owner_municipio: v })); markTouched('owner_municipio'); }}
+                                    onBlur={() => markTouched('owner_municipio')}
+                                    status={fieldStatus('owner_municipio', form.owner_municipio)}
                                     required locations={MUNICIPIOS} />
                                 {/* Estado is always Veracruz — shown read-only */}
                                 <div>
@@ -616,8 +747,6 @@ export function EmpresaKycPage() {
                                         Veracruz
                                     </div>
                                 </div>
-                                <Field label="Código postal" name="owner_zip" value={form.owner_zip}
-                                    onChange={handleChange} placeholder="91000" />
                             </div>
                         </SectionCard>
                     )}
@@ -625,9 +754,8 @@ export function EmpresaKycPage() {
                     {/* Step 2 — Documentos */}
                     {step === 2 && (
                         <SectionCard icon={CreditCard} title="Documentos de identidad"
-                            subtitle="JPG, PNG o PDF · Máx. 10 MB · Imágenes claras sin reflejos">
+                            subtitle="Imágenes claras sin reflejos">
 
-                            {/* If docs already uploaded, show them with option to replace */}
                             {kycData?.verification && (kycData.verification.ine_front_url || kycData.verification.ine_back_url || kycData.verification.address_proof_url) && (
                                 <div className="mb-4 rounded-2xl border px-4 py-3"
                                     style={{ background: `${WARNING}08`, borderColor: `${WARNING}25` }}>

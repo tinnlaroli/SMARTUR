@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-    CheckCircle, XCircle, ClipboardCheck, X, Loader2,
+    CheckCircle, XCircle, ClipboardCheck, X, Loader2, RefreshCw,
     Building2, MapPin, Clock, Phone, ImageOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -248,21 +248,35 @@ function ServicePreviewModal({ service, onClose, onReviewed }: ServicePreviewMod
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export function AdminServicesApprovalPage() {
-    const [services, setServices]       = useState<PendingService[]>([]);
-    const [total, setTotal]             = useState(0);
-    const [loading, setLoading]         = useState(true);
-    const [search, setSearch]           = useState('');
-    const [processing, setProcessing]   = useState<number | null>(null);
-    const [bulkWorking, setBulkWorking] = useState(false);
-    const [selected, setSelected]       = useState<number[]>([]);
-    const [actionError, setActionError] = useState<string | null>(null);
-    const [previewing, setPreviewing]   = useState<PendingService | null>(null);
+const SERVICE_FILTERS: { key: string | null; label: string }[] = [
+    { key: null,             label: 'Todos'       },
+    { key: 'pending_review', label: 'En revisión' },
+    { key: 'active',         label: 'Activos'     },
+    { key: 'rejected',       label: 'Rechazados'  },
+];
 
-    const fetchServices = async () => {
+const SERVICE_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+    pending_review: { label: 'En revisión', color: TABLE_BADGE_COLORS.amber   },
+    active:         { label: 'Activo',      color: TABLE_BADGE_COLORS.emerald },
+    rejected:       { label: 'Rechazado',   color: TABLE_BADGE_COLORS.rose    },
+};
+
+export function AdminServicesApprovalPage() {
+    const [services, setServices]         = useState<PendingService[]>([]);
+    const [total, setTotal]               = useState(0);
+    const [loading, setLoading]           = useState(true);
+    const [search, setSearch]             = useState('');
+    const [activeFilter, setActiveFilter] = useState<string | null>('pending_review');
+    const [bulkWorking, setBulkWorking]   = useState(false);
+    const [selected, setSelected]         = useState<number[]>([]);
+    const [previewing, setPreviewing]     = useState<PendingService | null>(null);
+
+    const fetchServices = async (filter: string | null) => {
         setLoading(true);
         try {
-            const { data } = await api.get('/admin/services/pending', { params: { limit: 100 } });
+            const params: Record<string, string> = { limit: '100' };
+            if (filter) params.status = filter;
+            const { data } = await api.get('/admin/services', { params });
             setServices(data.services);
             setTotal(data.total);
         } catch {
@@ -272,23 +286,7 @@ export function AdminServicesApprovalPage() {
         }
     };
 
-    useEffect(() => { void fetchServices(); }, []);
-
-    const handleAction = async (id: number, action: 'approve' | 'reject') => {
-        setProcessing(id);
-        setActionError(null);
-        try {
-            await api.patch(`/admin/services/${id}/${action}`);
-            setServices(prev => prev.filter(s => s.id_service !== id));
-            setTotal(prev => prev - 1);
-            setSelected(prev => prev.filter(x => x !== id));
-        } catch (err: unknown) {
-            const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            setActionError(msg ?? 'Error al procesar el servicio.');
-        } finally {
-            setProcessing(null);
-        }
-    };
+    useEffect(() => { void fetchServices(activeFilter); }, [activeFilter]);
 
     const handleReviewed = (id: number) => {
         setServices(prev => prev.filter(s => s.id_service !== id));
@@ -299,7 +297,6 @@ export function AdminServicesApprovalPage() {
     const handleBulkAction = async (action: 'approve' | 'reject') => {
         if (!selected.length) return;
         setBulkWorking(true);
-        setActionError(null);
         try {
             await Promise.all(selected.map(id => api.patch(`/admin/services/${id}/${action}`)));
             setServices(prev => prev.filter(s => !selected.includes(s.id_service)));
@@ -330,10 +327,10 @@ export function AdminServicesApprovalPage() {
             {/* Header */}
             <div className="shrink-0">
                 <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                    Servicios pendientes de aprobación
+                    Servicios turísticos
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                    {total} servicio{total !== 1 ? 's' : ''} esperando revisión
+                    {total} servicio{total !== 1 ? 's' : ''} {activeFilter === 'pending_review' ? 'esperando revisión' : activeFilter ? `con estado "${SERVICE_FILTERS.find(f => f.key === activeFilter)?.label ?? activeFilter}"` : 'en total'}
                 </p>
             </div>
 
@@ -353,75 +350,83 @@ export function AdminServicesApprovalPage() {
                 </div>
             </div>
 
-            {/* Search + bulk action row */}
-            <div className="shrink-0 flex items-center gap-3">
-                <AnimatePresence>
-                    {selected.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            transition={{ duration: 0.18 }}
-                            className="flex items-center gap-2"
+            {/* Filters + bulk + search — misma fila, mismo patrón que verificar empresas */}
+            <div className="shrink-0 flex items-center gap-3 flex-wrap">
+                <div className="flex gap-2 flex-wrap">
+                    {SERVICE_FILTERS.map(f => (
+                        <button
+                            key={String(f.key)}
+                            onClick={() => { setActiveFilter(f.key); setSelected([]); }}
+                            className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                            style={activeFilter === f.key
+                                ? { backgroundColor: COLOR, color: '#fff' }
+                                : { background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)', border: '1px solid var(--color-border)' }
+                            }
                         >
-                            <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                {selected.length} seleccionado{selected.length !== 1 ? 's' : ''}
-                            </span>
-                            <button
-                                disabled={bulkWorking}
-                                onClick={() => handleBulkAction('approve')}
-                                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
-                                style={{ backgroundColor: COLOR }}
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="ml-auto flex items-center gap-2">
+                    <AnimatePresence>
+                        {selected.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 10 }}
+                                transition={{ duration: 0.18 }}
+                                className="flex items-center gap-2"
                             >
-                                {bulkWorking ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle size={12} />}
-                                Aprobar
-                            </button>
-                            <button
-                                disabled={bulkWorking}
-                                onClick={() => handleBulkAction('reject')}
-                                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-50"
-                                style={{ borderColor: '#f43f5e', color: '#f43f5e', background: 'transparent' }}
-                            >
-                                {bulkWorking ? <Loader2 className="size-3.5 animate-spin" /> : <XCircle size={12} />}
-                                Rechazar
-                            </button>
-                            <button
-                                onClick={() => setSelected([])}
-                                className="rounded-lg p-1.5 transition-colors hover:opacity-70"
-                                style={{ color: 'var(--color-text-alt)' }}
-                                title="Limpiar selección"
-                            >
-                                <X size={14} />
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-                <div className="ml-auto">
+                                <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    {selected.length} seleccionado{selected.length !== 1 ? 's' : ''}
+                                </span>
+                                <button
+                                    disabled={bulkWorking}
+                                    onClick={() => handleBulkAction('approve')}
+                                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                                    style={{ backgroundColor: COLOR }}
+                                >
+                                    {bulkWorking ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle size={12} />}
+                                    Aprobar
+                                </button>
+                                <button
+                                    disabled={bulkWorking}
+                                    onClick={() => handleBulkAction('reject')}
+                                    className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-50"
+                                    style={{ borderColor: '#f43f5e', color: '#f43f5e', background: 'transparent' }}
+                                >
+                                    {bulkWorking ? <Loader2 className="size-3.5 animate-spin" /> : <XCircle size={12} />}
+                                    Rechazar
+                                </button>
+                                <button
+                                    onClick={() => setSelected([])}
+                                    className="rounded-lg p-1.5 transition-colors hover:opacity-70"
+                                    style={{ color: 'var(--color-text-alt)' }}
+                                    title="Limpiar selección"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     <input
                         type="text"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar servicio o empresa..."
-                        className="w-64 rounded-lg border px-4 py-2 text-sm focus:outline-none focus:ring-2"
-                        style={{
-                            borderColor: 'var(--color-border)',
-                            background: 'var(--color-bg)',
-                            color: 'var(--color-text)',
-                            outlineColor: COLOR,
-                        }}
+                        className="w-64 rounded-lg border border-zinc-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
+                    <button
+                        onClick={() => void fetchServices(activeFilter)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:opacity-80"
+                        style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)', border: '1px solid var(--color-border)' }}
+                        title="Actualizar"
+                    >
+                        <RefreshCw size={14} />
+                    </button>
                 </div>
             </div>
-
-            {/* Error banner */}
-            {actionError && (
-                <div
-                    className="shrink-0 rounded-xl border border-rose-200 px-4 py-3"
-                    style={{ background: 'rgba(244,63,94,0.05)', borderColor: '#f43f5e40' }}
-                >
-                    <p className="text-sm text-rose-500">{actionError}</p>
-                </div>
-            )}
 
             {/* Table */}
             <div className="flex min-h-0 flex-1 flex-col">
@@ -448,9 +453,9 @@ export function AdminServicesApprovalPage() {
                                         </DataTableHeadCell>
                                         <DataTableHeadCell>Servicio</DataTableHeadCell>
                                         <DataTableHeadCell>Empresa</DataTableHeadCell>
+                                        <DataTableHeadCell>Estado</DataTableHeadCell>
                                         <DataTableHeadCell>Precio</DataTableHeadCell>
                                         <DataTableHeadCell>Enviado</DataTableHeadCell>
-                                        <DataTableHeadCell className="text-center">Acciones</DataTableHeadCell>
                                     </tr>
                                 </DataTableHead>
                                 <DataTableBody>
@@ -504,6 +509,12 @@ export function AdminServicesApprovalPage() {
                                                     </p>
                                                 )}
                                             </DataTableCell>
+                                            <DataTableCell>
+                                                <TableBadge
+                                                    text={SERVICE_STATUS_CONFIG[service.status]?.label ?? service.status}
+                                                    color={SERVICE_STATUS_CONFIG[service.status]?.color ?? TABLE_BADGE_COLORS.neutral}
+                                                />
+                                            </DataTableCell>
                                             <DataTableCell className="text-xs">
                                                 <PriceRange
                                                     from={service.price_from}
@@ -513,39 +524,6 @@ export function AdminServicesApprovalPage() {
                                             </DataTableCell>
                                             <DataTableCell className="text-xs">
                                                 {new Date(service.created_at).toLocaleDateString('es-MX')}
-                                            </DataTableCell>
-                                            <DataTableCell
-                                                className="text-center"
-                                                onClick={e => e.stopPropagation()}
-                                            >
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleAction(service.id_service, 'reject')}
-                                                        disabled={processing === service.id_service}
-                                                        className="flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-50"
-                                                        style={{ borderColor: '#f43f5e40', color: '#f43f5e', background: 'transparent' }}
-                                                    >
-                                                        {processing === service.id_service
-                                                            ? <Loader2 className="size-3 animate-spin" />
-                                                            : <XCircle className="size-3" />
-                                                        }
-                                                        Rechazar
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleAction(service.id_service, 'approve')}
-                                                        disabled={processing === service.id_service}
-                                                        className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50 transition-colors hover:opacity-90"
-                                                        style={{ backgroundColor: COLOR }}
-                                                    >
-                                                        {processing === service.id_service
-                                                            ? <Loader2 className="size-3 animate-spin" />
-                                                            : <CheckCircle className="size-3" />
-                                                        }
-                                                        Aprobar
-                                                    </button>
-                                                </div>
                                             </DataTableCell>
                                         </DataTableRow>
                                     ))}

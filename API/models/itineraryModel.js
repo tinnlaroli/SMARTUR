@@ -2,11 +2,11 @@ import pool from '../config/db.js';
 
 // ─── Itinerary CRUD ──────────────────────────────────────────────────────────
 
-export async function createItinerary(userId, { title, description, isPublic }) {
+export async function createItinerary(userId, { title, description, isPublic, startDate, endDate }) {
     const r = await pool.query(
-        `INSERT INTO itinerary (user_id, title, description, is_public)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [userId, title, description || null, Boolean(isPublic)],
+        `INSERT INTO itinerary (user_id, title, description, is_public, start_date, end_date)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [userId, title, description || null, Boolean(isPublic), startDate || null, endDate || null],
     );
     return r.rows[0];
 }
@@ -118,6 +118,8 @@ export async function updateItinerary(id, userId, updates) {
     if (updates.description !== undefined) { fields.push(`description = $${idx++}`); values.push(updates.description || null); }
     if (updates.isPublic !== undefined) { fields.push(`is_public = $${idx++}`); values.push(Boolean(updates.isPublic)); }
     if (updates.coverImageUrl !== undefined) { fields.push(`cover_image_url = $${idx++}`); values.push(updates.coverImageUrl || null); }
+    if (updates.startDate !== undefined) { fields.push(`start_date = $${idx++}`); values.push(updates.startDate || null); }
+    if (updates.endDate !== undefined) { fields.push(`end_date = $${idx++}`); values.push(updates.endDate || null); }
     if (fields.length === 0) return null;
     fields.push(`updated_at = NOW()`);
     values.push(id, userId);
@@ -188,6 +190,34 @@ export async function deleteStop(itineraryId, stopId, userId) {
         await pool.query(`UPDATE itinerary SET updated_at = NOW() WHERE id_itinerary = $1`, [itineraryId]);
     }
     return r.rowCount > 0;
+}
+
+export async function updateStop(itineraryId, stopId, userId, { visit_date, visit_time_start, notes }) {
+    const own = await pool.query(
+        `SELECT id_itinerary FROM itinerary WHERE id_itinerary = $1 AND user_id = $2`,
+        [itineraryId, userId],
+    );
+    if (!own.rows[0]) return null;
+
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    if (visit_date !== undefined) { fields.push(`visit_date = $${idx++}`); values.push(visit_date || null); }
+    if (visit_time_start !== undefined) { fields.push(`visit_time_start = $${idx++}`); values.push(visit_time_start || null); }
+    if (notes !== undefined) { fields.push(`notes = $${idx++}`); values.push(notes || null); }
+    if (fields.length === 0) return null;
+
+    values.push(stopId, itineraryId);
+    const r = await pool.query(
+        `UPDATE itinerary_stop SET ${fields.join(', ')}
+         WHERE id_stop = $${idx++} AND id_itinerary = $${idx++}
+         RETURNING *`,
+        values,
+    );
+    if (r.rows[0]) {
+        await pool.query(`UPDATE itinerary SET updated_at = NOW() WHERE id_itinerary = $1`, [itineraryId]);
+    }
+    return r.rows[0] || null;
 }
 
 export async function reorderStops(itineraryId, userId, orderedIds) {

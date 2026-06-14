@@ -23,7 +23,7 @@ interface MenuItem {
 const MENU_GROUP_KEYS = [
     { labelKey: 'sidebar.group.principal',       items: ['home'] },
     { labelKey: 'sidebar.group.gestion',         items: ['users', 'companies', 'services', 'poi', 'locations'] },
-    { labelKey: 'sidebar.group.verificacion',    items: ['company-verification', 'services-approval', 'disputes'] },
+    { labelKey: 'sidebar.group.verificacion',    items: ['company-verification', 'services-approval', 'pois-approval', 'disputes'] },
     { labelKey: 'sidebar.group.mobile',          items: ['community', 'itineraries', 'contacts', 'profiles'] },
     { labelKey: 'sidebar.group.certifications',  items: ['certifications', 'templates', 'instruments'] },
     { labelKey: 'sidebar.group.reports',         items: ['stats'] },
@@ -57,6 +57,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'locations',             label: t('sidebar.locations'),             icon: MapPin,         path: '/dashboard/ubicaciones',               roles: [1] },
         { id: 'company-verification',  label: t('sidebar.companyVerification'),   icon: ShieldCheck,    path: '/dashboard/verificacion-empresas',     roles: [1] },
         { id: 'services-approval',     label: t('sidebar.servicesApproval'),      icon: ClipboardCheck, path: '/dashboard/servicios-pendientes',      roles: [1] },
+        { id: 'pois-approval',         label: 'POIs pendientes',                  icon: MapPin,         path: '/dashboard/pois-pendientes',            roles: [1] },
         { id: 'disputes',              label: t('sidebar.disputes'),              icon: GitCompare,     path: '/dashboard/disputas',                  roles: [1] },
         { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle,    path: '/dashboard/perfiles',                            roles: [1] },
         { id: 'certifications', label: t('sidebar.certifications'), icon: Award,         path: '/dashboard/certificaciones',                     roles: [1, 4] },

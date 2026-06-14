@@ -108,6 +108,32 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _sendBotMessage() async {
+    final text = _inputCtrl.text.trim();
+    if (text.isEmpty || _sending) return;
+    _inputCtrl.clear();
+    setState(() => _sending = true);
+    try {
+      final botReply = await _service.sendBotMessage(widget.conversation.id, text);
+      if (!mounted) return;
+      if (botReply != null) {
+        // FAQ matched — show bot bubble
+        setState(() => _messages.add(botReply));
+        _scrollToBottom();
+      } else {
+        // No match — provider will answer; notify user quietly
+        SmarturNotifications.showInfo(
+          context,
+          'Sin coincidencia en las FAQs. El prestador te responderá.',
+        );
+      }
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, 'Asistente no disponible');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -240,7 +266,17 @@ class _ChatScreenState extends State<ChatScreen> {
                         minLines: 1,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
+                    // Bot assistant button
+                    if (!_sending)
+                      IconButton(
+                        onPressed: _sendBotMessage,
+                        icon: const Icon(Icons.smart_toy_outlined),
+                        color: SmarturStyle.purple,
+                        tooltip: 'Preguntar al asistente',
+                        iconSize: 22,
+                      ),
+                    const SizedBox(width: 2),
                     _sending
                         ? const SizedBox(
                             width: 40,
@@ -283,6 +319,69 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+
+    if (message.isBot) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: SmarturStyle.purple.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.smart_toy_outlined,
+                  size: 16, color: SmarturStyle.purple),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.72,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: SmarturStyle.purple.withValues(alpha: 0.10),
+                    border: Border.all(
+                        color: SmarturStyle.purple.withValues(alpha: 0.25)),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Asistente virtual',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: SmarturStyle.purple,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(message.content,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: scheme.onSurface)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),

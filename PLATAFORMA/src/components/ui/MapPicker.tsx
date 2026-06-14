@@ -8,7 +8,7 @@ interface Props {
     onChange: (lat: number, lng: number) => void;
 }
 
-const OSM_STYLE: maplibregl.StyleSpecification = {
+const OSM_LIGHT_STYLE: maplibregl.StyleSpecification = {
     version: 8,
     sources: {
         osm: {
@@ -20,6 +20,11 @@ const OSM_STYLE: maplibregl.StyleSpecification = {
     },
     layers: [{ id: 'osm', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19 }],
 };
+
+const DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
+
+const getStyle = (): maplibregl.StyleSpecification | string =>
+    document.documentElement.getAttribute('data-theme') === 'dark' ? DARK_STYLE_URL : OSM_LIGHT_STYLE;
 
 // Default center: Chiapas, México
 const DEFAULT_CENTER: [number, number] = [-93.1155, 16.7516];
@@ -39,7 +44,7 @@ export default function MapPicker({ lat, lng, onChange }: Props) {
 
         const map = new maplibregl.Map({
             container: containerRef.current,
-            style: OSM_STYLE,
+            style: getStyle(),
             center,
             zoom: hasCoords ? SELECTED_ZOOM : DEFAULT_ZOOM,
             attributionControl: false,
@@ -65,10 +70,20 @@ export default function MapPicker({ lat, lng, onChange }: Props) {
             onChange(e.lngLat.lat, e.lngLat.lng);
         });
 
+        // Switch tile style when the user toggles the app theme
+        const observer = new MutationObserver(() => {
+            map.setStyle(getStyle());
+        });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme'],
+        });
+
         mapRef.current = map;
         markerRef.current = marker;
 
         return () => {
+            observer.disconnect();
             map.remove();
             mapRef.current = null;
             markerRef.current = null;

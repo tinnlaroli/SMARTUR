@@ -1,4 +1,4 @@
-import PointOfInterestController from '../controllers/pointOfInterestController.js';
+import PointOfInterestController, { createEmpresaController } from '../controllers/pointOfInterestController.js';
 import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/rbacMiddleware.js';
@@ -16,6 +16,7 @@ router.get(
     verifyToken,
     PointOfInterestController.findByIdController
 );
+// Admin-only: create POI directly as active
 router.post(
     '/points-of-interest/register',
     verifyToken,
@@ -23,6 +24,14 @@ router.post(
     upload.single('image'),
     validateCreatePOI,
     PointOfInterestController.createController
+);
+// Empresa: submit POI for admin validation
+router.post(
+    '/points-of-interest/empresa/submit',
+    verifyToken,
+    requireRole([3]),
+    upload.single('image'),
+    createEmpresaController
 );
 router.delete(
     '/points-of-interest/delete/:id_point',

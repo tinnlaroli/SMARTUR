@@ -135,6 +135,32 @@ export class ChatController {
             res.status(500).json({ message: 'Error', error: e.message });
         }
     }
+
+    static async getBadgeCounts(req, res) {
+        const id_company = req.user.id_company;
+        try {
+            const { rows } = await pool.query(
+                `SELECT
+                    COALESCE((
+                        SELECT SUM(
+                            (SELECT COUNT(*)::int FROM message m
+                             WHERE m.id_conversation = c.id_conversation
+                               AND m.sender_id = c.tourist_id
+                               AND m.read_at IS NULL)
+                        ) FROM conversation c WHERE c.id_company = $1
+                    ), 0)::int AS messages,
+                    COALESCE((
+                        SELECT COUNT(*)::int FROM admin_change_log
+                        WHERE id_company = $1 AND status = 'pending_review'
+                    ), 0)::int AS changes`,
+                [id_company]
+            );
+            return res.json(rows[0]);
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al obtener badges' });
+        }
+    }
 }
 
 export default ChatController;

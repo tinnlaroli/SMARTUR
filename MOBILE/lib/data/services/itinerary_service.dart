@@ -42,12 +42,20 @@ class ItineraryService {
     String? title,
     String? description,
     bool? isPublic,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool clearStartDate = false,
+    bool clearEndDate = false,
   }) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.itineraries}/$id');
     final body = <String, dynamic>{};
     if (title != null) body['title'] = title;
     if (description != null) body['description'] = description;
     if (isPublic != null) body['is_public'] = isPublic;
+    if (startDate != null) body['start_date'] = startDate.toIso8601String().split('T')[0];
+    if (clearStartDate) body['start_date'] = null;
+    if (endDate != null) body['end_date'] = endDate.toIso8601String().split('T')[0];
+    if (clearEndDate) body['end_date'] = null;
     final res = await ApiClient.patch(uri, body: jsonEncode(body));
     if (res.statusCode == 401) throw AuthException('Sesión expirada');
     if (res.statusCode == 404) return null;
@@ -169,6 +177,34 @@ class ItineraryService {
     final res = await ApiClient.patch(uri, body: jsonEncode({'ordered_ids': orderedIds}));
     if (res.statusCode == 401) throw AuthException('Sesión expirada');
     if (res.statusCode != 200) throw ItineraryException(_msg(res));
+  }
+
+  Future<void> updateStop(
+    int itineraryId,
+    int stopId, {
+    DateTime? visitDate,
+    String? visitTimeStart,
+    String? notes,
+  }) async {
+    final uri = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.itineraries}/$itineraryId/stops/$stopId');
+    final body = <String, dynamic>{};
+    if (visitDate != null) body['visit_date'] = visitDate.toIso8601String().substring(0, 10);
+    if (visitTimeStart != null) body['visit_time_start'] = visitTimeStart;
+    if (notes != null) body['notes'] = notes;
+    if (body.isEmpty) return;
+    final res = await ApiClient.patch(uri, body: jsonEncode(body));
+    if (res.statusCode == 401) throw AuthException('Sesión expirada');
+    if (res.statusCode != 200) throw ItineraryException(_msg(res));
+  }
+
+  Future<Map<String, dynamic>> fetchNearbyForRoute(int itineraryId) async {
+    final uri = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.itineraries}/$itineraryId/suggest-nearby');
+    final res = await ApiClient.get(uri, timeout: const Duration(seconds: 10));
+    if (res.statusCode == 401) throw AuthException('Sesión expirada');
+    if (res.statusCode != 200) throw ItineraryException(_msg(res));
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   // ─── Social ────────────────────────────────────────────────────────────────

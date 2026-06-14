@@ -38,4 +38,10 @@ router.post(
     BookingController.createWalkin,
 );
 
+router.get(
+    '/empresa/bookings/:id/tourist-profile',
+    verifyToken, requireRole([1, 3]), requireOwnsCompany,
+    BookingController.getTouristProfile,
+);
+
 export default router;

@@ -102,6 +102,49 @@ export class BookingController {
             res.status(500).json({ message: 'Error al registrar walk-in', error: e.message });
         }
     }
+    static async getTouristProfile(req, res) {
+        try {
+            const { id } = req.params;
+            const { id_company } = req.user;
+            // Verify booking belongs to a service owned by this company
+            const r = await pool.query(
+                `SELECT u.name, u.email, u.photo_url, u.registration_date,
+                        tp.interests, tp.dietary_restrictions, tp.has_accessibility,
+                        b.visit_date, b.visit_time, b.guests, b.notes, b.is_walkin
+                 FROM booking b
+                 JOIN "user" u ON u.user_id = b.user_id
+                 LEFT JOIN traveler_profile tp ON tp.user_id = b.user_id
+                 JOIN tourist_service ts ON ts.id_service = b.id_service
+                 WHERE b.id_booking = $1 AND ts.id_company = $2`,
+                [id, id_company],
+            );
+            if (!r.rows[0]) {
+                return res.status(404).json({ message: 'Reserva no encontrada' });
+            }
+            const row = r.rows[0];
+            res.json({
+                tourist: {
+                    name: row.name,
+                    email: row.email,
+                    photo_url: row.photo_url,
+                    registration_date: row.registration_date,
+                    interests: row.interests ?? [],
+                    dietary_restrictions: row.dietary_restrictions ?? null,
+                    has_accessibility: row.has_accessibility ?? false,
+                },
+                booking: {
+                    visit_date: row.visit_date,
+                    visit_time: row.visit_time,
+                    guests: row.guests,
+                    notes: row.notes,
+                    is_walkin: row.is_walkin,
+                },
+            });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al obtener perfil del turista', error: e.message });
+        }
+    }
 }
 
 export default BookingController;

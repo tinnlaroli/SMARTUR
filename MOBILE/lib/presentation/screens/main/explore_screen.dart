@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/itinerary_model.dart';
@@ -15,7 +14,6 @@ import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
 import '../../widgets/smartur_user_avatar.dart';
 import '../../widgets/smartur_ui_kit.dart';
-import '../../widgets/smartur_loader.dart';
 import '../itinerary/itinerary_detail_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -209,59 +207,22 @@ class _RoutesTabState extends State<_RoutesTab>
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
         children: [
           // Search bar
-          Material(
-            color: scheme.surface,
-            elevation: 2,
-            shadowColor: scheme.shadow.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isSearchActive
-                      ? SmarturStyle.purple.withValues(alpha: 0.5)
-                      : scheme.outlineVariant.withValues(alpha: 0.4),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 14),
-                  Icon(Icons.search_rounded,
-                      size: 20, color: isSearchActive
-                          ? SmarturStyle.purple
-                          : scheme.onSurfaceVariant),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchCtrl,
-                      decoration: InputDecoration(
-                        hintText: l10n.searchRoutesHint,
-                        hintStyle: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 14,
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
-                        ),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 13),
-                      ),
-                      style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 14,
-                          color: scheme.onSurface),
-                      onChanged: (v) {
-                        setState(() {});
-                        _search(v);
-                      },
-                    ),
-                  ),
-                  if (isSearchActive)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: IconButton(
-                        icon: Icon(Icons.cancel_rounded,
-                            size: 18, color: scheme.onSurfaceVariant),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: TextField(
+              controller: _searchCtrl,
+              onChanged: (v) {
+                setState(() {});
+                _search(v);
+              },
+              style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.onSurface),
+              decoration: InputDecoration(
+                hintText: l10n.searchRoutesHint,
+                hintStyle: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.onSurfaceVariant),
+                prefixIcon: Icon(Icons.search_rounded, size: 18, color: scheme.onSurfaceVariant),
+                suffixIcon: isSearchActive
+                    ? IconButton(
+                        icon: Icon(Icons.close_rounded, size: 17, color: scheme.onSurfaceVariant),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() {
@@ -269,11 +230,23 @@ class _RoutesTabState extends State<_RoutesTab>
                             _searching = false;
                           });
                         },
-                      ),
-                    )
-                  else
-                    const SizedBox(width: 14),
-                ],
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                filled: true,
+                fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: SmarturStyle.green.withValues(alpha: 0.7), width: 1.5),
+                ),
               ),
             ),
           ),
@@ -352,14 +325,22 @@ class _RouteSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: color),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(title,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
+        Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(title,
+                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
+            ),
+          ],
         ),
+        const SizedBox(height: 8),
+        Container(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.3)),
       ],
     );
   }
@@ -438,10 +419,24 @@ class _ItineraryHorizontalList extends StatelessWidget {
 
   const _ItineraryHorizontalList({required this.items, required this.onTap});
 
+  static const _avatarColors = [
+    Color(0xFF7C4DFF), Color(0xFF448AFF), Color(0xFF00BCD4),
+    Color(0xFF4CAF50), Color(0xFFFF6D00), Color(0xFFE91E63),
+    Color(0xFF9C27B0), Color(0xFF00E676), Color(0xFFFFAB00),
+    Color(0xFFFF1744),
+  ];
+
+  Color _avatarColor(String title) {
+    final hash = title.codeUnits.fold<int>(0, (h, c) => h * 31 + c);
+    return _avatarColors[hash % _avatarColors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
-      height: 140,
+      height: 200,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 4),
@@ -449,74 +444,179 @@ class _ItineraryHorizontalList extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (_, i) {
           final it = items[i];
-          final scheme = Theme.of(context).colorScheme;
+          final color = _avatarColor(it.title);
+          final hasCover = it.coverImageUrl != null && it.coverImageUrl!.isNotEmpty;
           return GestureDetector(
             onTap: () => onTap(it),
             child: Container(
-              width: 200,
-              padding: const EdgeInsets.all(14),
+              width: 210,
               decoration: BoxDecoration(
-                color:
-                    scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: scheme.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                    color: scheme.outlineVariant.withValues(alpha: 0.4)),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        it.isCertified
-                            ? Icons.verified_rounded
-                            : Icons.route_rounded,
-                        size: 18,
-                        color: it.isCertified
-                            ? SmarturStyle.purple
-                            : SmarturStyle.blue,
-                      ),
-                      const SizedBox(width: 6),
-                      if (it.copyCount > 0)
-                        Text(
-                          '${it.copyCount}',
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                          ),
+                  // Cover image or color header
+                  SizedBox(
+                    height: 88,
+                    width: double.infinity,
+                    child: hasCover
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                it.coverImageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _buildCoverFallback(it, color, scheme),
+                              ),
+                              // Gradient overlay for readability
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.center,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        scheme.surface.withValues(alpha: 0.85),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : _buildCoverFallback(it, color, scheme),
+                  ),
+                  // Info section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                it.title,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: scheme.onSurface,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (it.isCertified)
+                              Icon(Icons.verified_rounded,
+                                  size: 14, color: SmarturStyle.purple),
+                          ],
                         ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    it.title,
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurface,
+                        if (it.description != null && it.description!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            it.description!,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.flag_rounded,
+                                size: 11, color: scheme.onSurfaceVariant),
+                            const SizedBox(width: 3),
+                            Text(
+                              l10n.itineraryNStops(it.stops.length),
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 11,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            if (it.viewCount > 0) ...[
+                              const SizedBox(width: 10),
+                              Icon(Icons.visibility_outlined,
+                                  size: 11, color: scheme.onSurfaceVariant),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${it.viewCount}',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 11,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                            if (it.copyCount > 0 && !it.isCertified) ...[
+                              const SizedBox(width: 10),
+                              Icon(Icons.copy_rounded,
+                                  size: 11, color: scheme.onSurfaceVariant),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${it.copyCount}',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 11,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  if (it.stops.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      AppLocalizations.of(context)!
-                          .itineraryNStops(it.stops.length),
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 11,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCoverFallback(Itinerary it, Color color, ColorScheme scheme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.2),
+            color.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          it.title.isNotEmpty ? it.title[0].toUpperCase() : '?',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: color.withValues(alpha: 0.4),
+          ),
+        ),
       ),
     );
   }
@@ -528,52 +628,166 @@ class _RouteListCard extends StatelessWidget {
 
   const _RouteListCard({required this.it, required this.onTap});
 
+  String _daysAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt).inDays;
+    if (diff == 0) return 'Hoy';
+    if (diff == 1) return 'Ayer';
+    return 'Hace $diff días';
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final hasCover = it.coverImageUrl != null && it.coverImageUrl!.isNotEmpty;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(16),
           border:
-              Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+              Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Row(
           children: [
-            Icon(Icons.route_rounded,
-                color: SmarturStyle.purple, size: 22),
+            // Thumbnail or initial avatar
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest,
+              ),
+              child: hasCover
+                  ? Image.network(it.coverImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          _buildInitial(it, scheme))
+                  : _buildInitial(it, scheme),
+            ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(it.title,
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurface,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  if (it.stops.isNotEmpty)
-                    Text(l10n.itineraryNStops(it.stops.length),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(it.title,
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: scheme.onSurface,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                        if (it.ownerName != null && it.ownerName!.isNotEmpty) ...[
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(it.ownerName!,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 11,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (it.description != null && it.description!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        it.description!,
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 12,
                           color: scheme.onSurfaceVariant,
-                        )),
-                ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.flag_rounded,
+                            size: 12, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n.itineraryNStops(it.stops.length),
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        if (it.viewCount > 0) ...[
+                          const SizedBox(width: 10),
+                          Icon(Icons.visibility_outlined,
+                              size: 12, color: scheme.onSurfaceVariant),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${it.viewCount}',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        const Spacer(),
+                        Icon(Icons.access_time_rounded,
+                            size: 12, color: scheme.onSurfaceVariant),
+                        const SizedBox(width: 3),
+                        Text(
+                          _daysAgo(it.createdAt),
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: scheme.onSurfaceVariant),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(Icons.chevron_right_rounded,
+                  color: scheme.onSurfaceVariant.withValues(alpha: 0.4)),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInitial(Itinerary it, ColorScheme scheme) {
+    return Center(
+      child: Text(
+        it.title.isNotEmpty ? it.title[0].toUpperCase() : '?',
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );
@@ -698,7 +912,6 @@ class _CommunityTabState extends State<_CommunityTab>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(

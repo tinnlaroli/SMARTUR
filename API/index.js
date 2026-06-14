@@ -39,6 +39,7 @@ import ItineraryRouter from './routes/itineraryRoutes.js';
 import SocialRouter from './routes/socialRoutes.js';
 import BookingRouter from './routes/bookingRoutes.js';
 import ChatRouter from './routes/chatRoutes.js';
+import ServiceActivityRouter from './routes/serviceActivityRoutes.js';
 import AdminChangeLogRouter from './routes/adminChangeLogRoutes.js';
 import { runMigrations } from './config/migrations.js';
 import db from './config/db.js';
@@ -261,6 +262,7 @@ app.use('/api/v2', ItineraryRouter);
 app.use('/api/v2', SocialRouter);
 app.use('/api/v2', BookingRouter);
 app.use('/api/v2', ChatRouter);
+app.use('/api/v2', ServiceActivityRouter);
 app.use('/api/v2', AdminChangeLogRouter);
 
 // ── 404 handler ─────────────────────────────────────────────────────────────

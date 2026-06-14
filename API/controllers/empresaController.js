@@ -687,6 +687,44 @@ class EmpresaController {
             return res.status(500).json({ message: 'Error al desactivar el servicio.' });
         }
     }
+    static async updateOperatingHours(req, res) {
+        const { id_company } = req.user;
+        const { id } = req.params;
+        const { operating_hours } = req.body;
+
+        if (!operating_hours || typeof operating_hours !== 'object' || Array.isArray(operating_hours)) {
+            return res.status(400).json({ message: 'operating_hours debe ser un objeto JSON con días como claves.' });
+        }
+        const VALID_DAYS = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+        const TIME_RE = /^\d{2}:\d{2}-\d{2}:\d{2}$|^closed$/i;
+        for (const [day, val] of Object.entries(operating_hours)) {
+            if (!VALID_DAYS.includes(day)) {
+                return res.status(400).json({ message: `Día inválido: "${day}". Use lun, mar, mie, jue, vie, sab, dom.` });
+            }
+            if (typeof val !== 'string' || !TIME_RE.test(val)) {
+                return res.status(400).json({ message: `Valor inválido para "${day}". Use formato "HH:MM-HH:MM" o "closed".` });
+            }
+        }
+
+        try {
+            const check = await pool.query(
+                'SELECT id_service FROM tourist_service WHERE id_service=$1 AND id_company=$2',
+                [id, id_company],
+            );
+            if (check.rowCount === 0) {
+                return res.status(404).json({ message: 'Servicio no encontrado o no pertenece a tu empresa.' });
+            }
+            const result = await pool.query(
+                `UPDATE tourist_service SET operating_hours=$1 WHERE id_service=$2
+                 RETURNING id_service, name, operating_hours`,
+                [JSON.stringify(operating_hours), id],
+            );
+            return res.json({ message: 'Horario actualizado.', service: result.rows[0] });
+        } catch (err) {
+            console.error('[empresa] updateOperatingHours error:', err.message);
+            return res.status(500).json({ message: 'Error al actualizar el horario.' });
+        }
+    }
 }
 
 export default EmpresaController;

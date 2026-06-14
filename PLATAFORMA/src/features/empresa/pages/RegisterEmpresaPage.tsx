@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Phone, MapPin, Loader2, CheckCircle2, Eye, EyeOff, X, Check } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { Building2, User, Mail, Lock, Phone, MapPin, Loader2, CheckCircle2, Eye, EyeOff, X, Check, ArrowLeft } from 'lucide-react';
 import { empresaApi } from '../api/empresaApi';
-import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const PASSWORD_RULES = [
     { key: 'min', test: (pw: string) => pw.length >= 8 },
@@ -12,9 +12,7 @@ const PASSWORD_RULES = [
 ] as const;
 
 export function RegisterEmpresaPage() {
-    const navigate = useNavigate();
     const { t } = useLanguage();
-    const { setUser } = useUserPreferences();
 
     const [form, setForm] = useState({
         name: '',
@@ -28,12 +26,10 @@ export function RegisterEmpresaPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
+    const [submittedEmail, setSubmittedEmail] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [passwordTouched, setPasswordTouched] = useState(false);
-    const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useEffect(() => () => { if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current); }, []);
 
     const passwordRules = useCallback(() => {
         return PASSWORD_RULES.map((rule) => ({
@@ -74,7 +70,7 @@ export function RegisterEmpresaPage() {
 
         setLoading(true);
         try {
-            const res = await empresaApi.register({
+            await empresaApi.register({
                 name: form.name,
                 email: form.email,
                 password: form.password,
@@ -83,11 +79,8 @@ export function RegisterEmpresaPage() {
                 id_sector: Number(form.id_sector),
                 id_location: form.id_location ? Number(form.id_location) : undefined,
             });
-            localStorage.setItem('token', res.token);
-            if (res.refreshToken) localStorage.setItem('refreshToken', res.refreshToken);
-            setUser(res.user);
+            setSubmittedEmail(form.email.trim());
             setDone(true);
-            redirectTimerRef.current = setTimeout(() => navigate('/empresa/dashboard', { replace: true }), 1800);
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })
                 ?.response?.data?.message ?? '';
@@ -126,12 +119,28 @@ export function RegisterEmpresaPage() {
                     className="bg-white/[0.04] border border-white/10 rounded-2xl p-8 space-y-5 backdrop-blur-sm"
                 >
                     {done ? (
-                        <div className="flex flex-col items-center py-8 gap-4">
+                        <div className="flex flex-col items-center py-8 gap-5">
                             <CheckCircle2 className="text-green-400" size={48} />
-                            <p className="text-white font-semibold text-lg">{t('empresa.register.success')}</p>
-                            <p className="text-zinc-400 text-sm text-center">
-                                {t('empresa.register.pendingVerification')}
-                            </p>
+                            <div className="text-center space-y-2">
+                                <p className="text-white font-semibold text-lg">{t('empresa.register.success')}</p>
+                                <p className="text-zinc-400 text-sm">
+                                    Enviamos el código de verificación a:
+                                </p>
+                                <p className="text-orange-400 font-semibold text-sm break-all">
+                                    {submittedEmail}
+                                </p>
+                                <p className="text-zinc-500 text-xs pt-1">
+                                    {t('empresa.register.pendingVerification')}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setDone(false)}
+                                className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors mt-2"
+                            >
+                                <ArrowLeft size={15} />
+                                ¿El correo es incorrecto? Volver y corregir datos
+                            </button>
                         </div>
                     ) : (
                         <>

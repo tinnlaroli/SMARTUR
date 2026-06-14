@@ -593,6 +593,84 @@ CREATE INDEX IF NOT EXISTS idx_acl_company   ON admin_change_log(id_company, cre
 CREATE INDEX IF NOT EXISTS idx_acl_status    ON admin_change_log(status);
 `,
     },
+    {
+        name: 'v30_poi_validation_workflow',
+        sql: `
+ALTER TABLE point_of_interest
+    ADD COLUMN IF NOT EXISTS validation_status VARCHAR(20) NOT NULL DEFAULT 'active'
+        CHECK (validation_status IN ('pending_validation', 'active', 'rejected')),
+    ADD COLUMN IF NOT EXISTS submitted_by_company_id INT REFERENCES company(id_company) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS reviewed_by_admin_id INT REFERENCES "user"(user_id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS validation_rejection_reason TEXT,
+    ADD COLUMN IF NOT EXISTS validation_submitted_at TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_poi_validation_status ON point_of_interest(validation_status);
+`,
+    },
+    {
+        name: 'v31_company_verification_certificate',
+        sql: `
+ALTER TABLE company_verification
+    ADD COLUMN IF NOT EXISTS smartur_validation_certificate_url TEXT,
+    ADD COLUMN IF NOT EXISTS certificate_issued_at TIMESTAMPTZ;
+`,
+    },
+    {
+        name: 'v32_service_activity',
+        sql: `
+CREATE TABLE IF NOT EXISTS service_activity (
+    id_activity     SERIAL PRIMARY KEY,
+    id_service      INT NOT NULL REFERENCES tourist_service(id_service) ON DELETE CASCADE,
+    name            VARCHAR(200) NOT NULL,
+    description     TEXT,
+    duration_minutes INT,
+    price           NUMERIC(10,2),
+    max_capacity    INT,
+    features        JSONB NOT NULL DEFAULT '[]',
+    is_active       BOOL NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_service_activity_service ON service_activity(id_service);
+
+ALTER TABLE itinerary_stop
+    ADD COLUMN IF NOT EXISTS id_activity INT REFERENCES service_activity(id_activity) ON DELETE SET NULL;
+`,
+    },
+    {
+        name: 'v33_company_faq_bot',
+        sql: `
+CREATE TABLE IF NOT EXISTS company_faq (
+    id_faq         SERIAL PRIMARY KEY,
+    id_company     INT NOT NULL REFERENCES company(id_company) ON DELETE CASCADE,
+    question       TEXT NOT NULL,
+    answer         TEXT NOT NULL,
+    search_vector  TSVECTOR GENERATED ALWAYS AS (
+        to_tsvector('spanish', coalesce(question, '') || ' ' || coalesce(answer, ''))
+    ) STORED,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_company_faq_search  ON company_faq USING GIN(search_vector);
+CREATE INDEX IF NOT EXISTS idx_company_faq_company ON company_faq(id_company);
+
+ALTER TABLE message
+    ADD COLUMN IF NOT EXISTS is_bot BOOL NOT NULL DEFAULT FALSE;
+`,
+    },
+    {
+        name: 'v34_itinerary_global_dates',
+        sql: `
+ALTER TABLE itinerary
+    ADD COLUMN IF NOT EXISTS start_date DATE,
+    ADD COLUMN IF NOT EXISTS end_date   DATE;
+`,
+    },
+    {
+        name: 'v35_company_certification',
+        sql: `ALTER TABLE company
+              ADD COLUMN IF NOT EXISTS is_certified BOOLEAN NOT NULL DEFAULT FALSE,
+              ADD COLUMN IF NOT EXISTS certified_at TIMESTAMPTZ;`,
+    },
 ];
 
 export async function runMigrations() {

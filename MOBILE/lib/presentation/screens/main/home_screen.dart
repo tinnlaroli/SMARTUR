@@ -215,6 +215,14 @@ class HomeScreenState extends State<HomeScreen> {
     await _refreshHeaderAvatarFromStorage();
   }
 
+  Future<void> _onRefresh() async {
+    await _loadCitiesFromApi();
+    if (!mounted) return;
+    _loadWeatherForSelectedCity();
+    _loadHeaderAvatar();
+    _loadRecommendations();
+  }
+
   /// Segundo toque en la pestaña Inicio: vuelve al inicio del scroll.
   void scrollToTop() {
     if (!_homeScrollController.hasClients) return;
@@ -518,6 +526,25 @@ class HomeScreenState extends State<HomeScreen> {
       final token = await _authService.getToken();
       if (userId == null || token == null) return;
 
+      final profile = await ProfileService.fetchMyProfileForPreferences();
+      final context = <String, dynamic>{};
+      final interests = profile['interests'];
+      if (interests is List && interests.isNotEmpty) {
+        context['interests'] = interests;
+      }
+      if (profile['activity_level'] != null) {
+        context['activity_level'] = profile['activity_level'];
+      }
+      if (profile['travel_type'] != null) {
+        context['travel_type'] = profile['travel_type'];
+      }
+      if (profile['preferred_place'] != null) {
+        context['preferred_place'] = profile['preferred_place'];
+      }
+      if (profile['age'] != null) {
+        context['age'] = profile['age'];
+      }
+
       final url = Uri.parse(
           '${ApiConstants.baseUrl}${ApiConstants.mlRecommend}/$userId');
       final res = await http.post(
@@ -526,7 +553,10 @@ class HomeScreenState extends State<HomeScreen> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'top_n': 8}),
+        body: jsonEncode({
+          'top_n': 8,
+          if (context.isNotEmpty) 'context': context,
+        }),
       ).timeout(const Duration(seconds: 12));
 
       if (!mounted) return;
@@ -802,19 +832,23 @@ class HomeScreenState extends State<HomeScreen> {
             child: SmarturBackgroundTop(
               child: SmarturShimmer(
                 enabled: _isLoadingContent,
-                child: CustomScrollView(
-                  controller: _homeScrollController,
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: SmarturStyle.purple,
+                  child: CustomScrollView(
+                    controller: _homeScrollController,
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    slivers: [
+                      _buildHeaderAppBar(),
+                      SliverToBoxAdapter(child: _buildExploreIntro()),
+                      SliverToBoxAdapter(child: _buildSearchBar()),
+                      SliverToBoxAdapter(child: _buildCityFilter()),
+                      ..._buildPlaceShowcaseSlivers(),
+                      const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                    ],
                   ),
-                  slivers: [
-                    _buildHeaderAppBar(),
-                    SliverToBoxAdapter(child: _buildExploreIntro()),
-                    SliverToBoxAdapter(child: _buildSearchBar()),
-                    SliverToBoxAdapter(child: _buildCityFilter()),
-                    ..._buildPlaceShowcaseSlivers(),
-                    const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                  ],
                 ),
               ),
             ),
@@ -2187,7 +2221,6 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
                   placeId: place.id,
                   lat: place.lat,
                   lon: place.lon,
-                  cityPlaces: widget.places,
                 ),
               );
             },

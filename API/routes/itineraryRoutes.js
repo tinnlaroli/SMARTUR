@@ -23,6 +23,7 @@ router.delete('/itineraries/:id', verifyToken, ItineraryController.deleteItinera
 router.post('/itineraries/:id/stops', verifyToken, ItineraryController.addStop);
 router.delete('/itineraries/:id/stops/:stopId', verifyToken, ItineraryController.deleteStop);
 router.patch('/itineraries/:id/stops/reorder', verifyToken, ItineraryController.reorderStops);
+router.patch('/itineraries/:id/stops/:stopId', verifyToken, ItineraryController.updateStop);
 
 // ── Social ────────────────────────────────────────────────────────────────────
 router.post('/itineraries/:id/copy', verifyToken, ItineraryController.copyItinerary);

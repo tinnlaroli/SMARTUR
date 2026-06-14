@@ -46,6 +46,8 @@ export interface KycStatusResponse {
     status: EmpresaStatus;
     company_name: string;
     verification: KycVerification | null;
+    is_certified: boolean;
+    certified_at: string | null;
 }
 
 export interface EmpresaService {
@@ -63,6 +65,7 @@ export interface EmpresaService {
     currency?: string;
     duration_minutes?: number | null;
     contact_phone?: string | null;
+    operating_hours?: Record<string, string> | null;
 }
 
 export interface ServiceCreatePayload {
@@ -198,6 +201,11 @@ export const empresaApi = {
 
     deleteService: async (id: number): Promise<void> => {
         await api.delete(`/empresa/services/${id}`);
+    },
+
+    updateOperatingHours: async (id: number, operating_hours: Record<string, string>): Promise<{ service: EmpresaService }> => {
+        const { data } = await api.patch(`/empresa/services/${id}/operating-hours`, { operating_hours });
+        return data;
     },
 
     getAnalytics: async (): Promise<AnalyticsResponse> => {

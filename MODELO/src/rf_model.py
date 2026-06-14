@@ -123,7 +123,14 @@ class SmarturContextModel:
             return pd.DataFrame(columns=self.df_biz.columns)
 
         df = poi_df.copy()
-        df['business_id'] = df['id'].astype(str)
+        # POIs use numeric id → prefix with "poi_" to match mobile's Place.id format ("poi_N").
+        # Services already have "svc_N" string ids from fetch_tourist_services.
+        # This also aligns with fetch_real_interactions which builds item_id as "poi_N"/"svc_N",
+        # so CF/SVD interaction lookup works correctly for warm users.
+        df['business_id'] = df.apply(
+            lambda r: str(r['id']) if str(r['id']).startswith('svc_') else f"poi_{r['id']}",
+            axis=1,
+        )
         df['name'] = df['name'].fillna('Local POI')
 
         def _join_categories(row):

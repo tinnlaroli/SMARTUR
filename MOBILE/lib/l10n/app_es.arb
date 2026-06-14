@@ -175,7 +175,6 @@
   "tabAiSummary": "Resumen IA",
   "fromPrice": "Desde",
   "free": "Gratis",
-  "createOneDayRoute": "Crear Ruta de 1 Día",
   "openInMaps": "Abrir en Google Maps",
   "locationNoCoords": "Ubicación: {city}",
   "@locationNoCoords": { "placeholders": { "city": { "type": "String" } } },
@@ -476,7 +475,7 @@
   ,"plannerAddStop":"Agregar parada"
   ,"plannerNoStops":"Sin paradas"
   ,"plannerNoStopsSubtitle":"Toca + en cualquier lugar para agregar paradas"
-  ,"plannerOptimize":"Optimizar con IA"
+  ,"plannerOptimize":"Mejorar mi ruta"
   ,"plannerOptimizeComingSoon":"Próximamente en SMARTUR"
   ,"plannerRouteName":"Nombre de la ruta"
   ,"plannerRouteNameHint":"Ej: Mi ruta en Xalapa"

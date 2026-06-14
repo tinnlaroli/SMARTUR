@@ -87,7 +87,9 @@ class _PreferencesScreenState extends State<PreferencesScreen>
         return;
       }
 
-      final success = await ProfileService.savePreferences(token, _data);
+      // Limpiar campos derivados que el endpoint no espera
+      _data.remove('age_range');
+      final success = await ProfileService.savePreferences(_data);
       if (!mounted) return;
 
       if (success) {

@@ -3,6 +3,7 @@ import { MessageSquare, Send, RefreshCw, Lock } from 'lucide-react';
 import { chatEmpresaApi, type EmpresaConversation, type ChatMessage } from '../api/chatApi';
 import { empresaApi } from '../api/empresaApi';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useBadges } from '../context/EmpresaBadgesContext';
 
 const ACCENT = '#a855f7';
 const POLL_INTERVAL_MS = 10_000;
@@ -132,6 +133,7 @@ function MessageBubble({ msg, isMine }: MessageBubbleProps) {
 
 export function EmpresaMensajesPage() {
     const { error } = useToast();
+    const { refresh: refreshBadges } = useBadges();
 
     const [conversations, setConversations] = useState<EmpresaConversation[]>([]);
     const [activeId, setActiveId] = useState<number | null>(null);
@@ -154,6 +156,7 @@ export function EmpresaMensajesPage() {
     const loadConversations = useCallback(async () => {
         try {
             const data = await chatEmpresaApi.conversations();
+            void refreshBadges();
             setConversations(data);
         } catch {
             /* silent */
