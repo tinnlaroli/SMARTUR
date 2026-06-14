@@ -808,7 +808,7 @@ class _RouteListCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CommunityTab extends StatefulWidget {
-  const _CommunityTab();
+  const _CommunityTab({super.key});
 
   @override
   State<_CommunityTab> createState() => _CommunityTabState();
