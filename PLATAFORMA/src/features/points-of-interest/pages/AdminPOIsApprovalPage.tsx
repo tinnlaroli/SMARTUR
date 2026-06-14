@@ -251,7 +251,7 @@ export default function AdminPOIsApprovalPage() {
             </div>
 
             {loading ? (
-                <TableSkeleton rows={6} />
+                <TableSkeleton rows={6} colWidths={['60px', '30%', '25%', '25%', '10%']} />
             ) : filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
                     <MapPin size={40} style={{ opacity: 0.2, marginBottom: 12 }} />
