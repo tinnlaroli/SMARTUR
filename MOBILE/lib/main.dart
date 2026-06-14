@@ -330,9 +330,7 @@ class _SplashGateState extends State<_SplashGate> {
   void initState() {
     super.initState();
     if (!widget.seenOnboarding) {
-      _showLoader = false;
       _sessionReady = true;
-      _animationFinished = true;
     } else {
       // Safety timeout — never leave the loader stuck.
       Future.delayed(const Duration(seconds: 10), () {
@@ -415,8 +413,7 @@ class _SplashGateState extends State<_SplashGate> {
   @override
   Widget build(BuildContext context) {
     final destination = _destination();
-    // Nunca mostramos loader en el onboarding inicial.
-    final shouldShowLoader = _showLoader && widget.seenOnboarding;
+    final shouldShowLoader = _showLoader;
     final fadeOut = _sessionReady && _animationFinished;
 
     return Stack(

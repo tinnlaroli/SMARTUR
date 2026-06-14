@@ -26,11 +26,13 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabCtrl;
+  final _communityKey = GlobalKey<_CommunityTabState>();
 
   @override
   void initState() {
     super.initState();
     _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl.addListener(() { if (mounted) setState(() {}); });
   }
 
   @override
@@ -60,11 +62,18 @@ class _ExploreScreenState extends State<ExploreScreen>
           ],
         ),
       ),
+      floatingActionButton: _tabCtrl.index == 1
+          ? FloatingActionButton(
+              onPressed: () => _communityKey.currentState?._showCreateSheet(),
+              backgroundColor: SmarturStyle.purple,
+              child: const Icon(Icons.add_rounded, color: Colors.white),
+            )
+          : null,
       body: TabBarView(
         controller: _tabCtrl,
-        children: const [
-          _RoutesTab(),
-          _CommunityTab(),
+        children: [
+          const _RoutesTab(),
+          _CommunityTab(key: _communityKey),
         ],
       ),
     );
@@ -914,11 +923,6 @@ class _CommunityTabState extends State<_CommunityTab>
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateSheet,
-        backgroundColor: SmarturStyle.purple,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ),
       body: _error != null && !_loading
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -1040,7 +1044,10 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => PublicProfileSheet(author: author),
     );
   }

@@ -3,9 +3,10 @@ import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/itinerary_model.dart';
+import '../../../data/services/itinerary_service.dart';
 import '../../widgets/smartur_background.dart';
 
-class ComparisonScreen extends StatelessWidget {
+class ComparisonScreen extends StatefulWidget {
   final List<ItineraryStop> originalStops;
   final OptimizeResult result;
 
@@ -15,12 +16,48 @@ class ComparisonScreen extends StatelessWidget {
     required this.result,
   });
 
+  @override
+  State<ComparisonScreen> createState() => _ComparisonScreenState();
+}
+
+class _ComparisonScreenState extends State<ComparisonScreen> {
+  List<Map<String, dynamic>> _nearby = [];
+  bool _loadingNearby = false;
+
   List<ItineraryStop> get _optimizedStops {
-    final idMap = {for (final s in originalStops) s.id: s};
-    return result.optimizedStopIds
+    final idMap = {for (final s in widget.originalStops) s.id: s};
+    return widget.result.optimizedStopIds
         .map((id) => idMap[id])
         .whereType<ItineraryStop>()
         .toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.originalStops.isNotEmpty) {
+      _fetchNearby(widget.originalStops.first.itineraryId);
+    }
+  }
+
+  Future<void> _fetchNearby(int itineraryId) async {
+    setState(() => _loadingNearby = true);
+    try {
+      final data = await ItineraryService().fetchNearbyForRoute(itineraryId);
+      final pois = (data['pois'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
+      final svcs = (data['services'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [];
+      if (mounted) setState(() { _nearby = [...pois, ...svcs]; });
+    } catch (_) {
+      // silent — suggestions are optional
+    } finally {
+      if (mounted) setState(() => _loadingNearby = false);
+    }
   }
 
   @override
@@ -28,7 +65,7 @@ class ComparisonScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final optimized = _optimizedStops;
-    final improved = result.savingsPct > 0;
+    final improved = widget.result.savingsPct > 0;
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -42,7 +79,7 @@ class ComparisonScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SmarturBackgroundTop(
-        child: Column(
+        child: ListView(
           children: [
             // ── Metrics banner ────────────────────────────────────────────────
             if (improved)
@@ -60,12 +97,12 @@ class ComparisonScreen extends StatelessWidget {
                   children: [
                     _MetricChip(
                       label: l10n.compareDistanceLabel,
-                      original: '${result.originalDistanceKm.toStringAsFixed(1)} km',
-                      optimized: '${result.optimizedDistanceKm.toStringAsFixed(1)} km',
+                      original: '${widget.result.originalDistanceKm.toStringAsFixed(1)} km',
+                      optimized: '${widget.result.optimizedDistanceKm.toStringAsFixed(1)} km',
                       scheme: scheme,
                     ),
                     Container(width: 1, height: 36, color: scheme.outlineVariant),
-                    _SavingsBadge(pct: result.savingsPct, l10n: l10n),
+                    _SavingsBadge(pct: widget.result.savingsPct, l10n: l10n),
                   ],
                 ),
               )
@@ -113,9 +150,10 @@ class ComparisonScreen extends StatelessWidget {
               ),
 
             // ── Side-by-side stops ────────────────────────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: SizedBox(
+                height: 260,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,7 +161,7 @@ class ComparisonScreen extends StatelessWidget {
                     Expanded(
                       child: _StopsColumn(
                         title: l10n.compareYourRoute,
-                        stops: originalStops,
+                        stops: widget.originalStops,
                         accentColor: scheme.onSurfaceVariant,
                         scheme: scheme,
                       ),
@@ -192,6 +230,17 @@ class ComparisonScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // ── Nearby suggestions ────────────────────────────────────────────
+            if (_loadingNearby)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_nearby.isNotEmpty)
+              _NearbySection(places: _nearby, scheme: scheme),
+
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -440,6 +489,119 @@ class _StopRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NearbySection extends StatelessWidget {
+  final List<Map<String, dynamic>> places;
+  final ColorScheme scheme;
+
+  const _NearbySection({required this.places, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          child: Row(
+            children: [
+              Icon(Icons.place_outlined, size: 16, color: SmarturStyle.purple),
+              const SizedBox(width: 6),
+              Text(
+                'Lugares cercanos',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: places.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) {
+              final place = places[i];
+              final name = (place['name'] as String?) ?? '';
+              final imageUrl = place['image_url'] as String?;
+              return Container(
+                width: 130,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (imageUrl != null)
+                      Expanded(
+                        child: Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: SmarturStyle.purple.withValues(alpha: 0.08),
+                            child: Center(
+                              child: Icon(Icons.place_outlined,
+                                  color: SmarturStyle.purple.withValues(alpha: 0.4),
+                                  size: 28),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: Container(
+                          color: SmarturStyle.purple.withValues(alpha: 0.08),
+                          child: Center(
+                            child: Icon(Icons.place_outlined,
+                                color: SmarturStyle.purple.withValues(alpha: 0.4),
+                                size: 28),
+                          ),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -29,7 +29,6 @@ import '../../widgets/offline_banner.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
-import '../auth/genre_picker_screen.dart';
 import '../../widgets/add_to_route_sheet.dart';
 import '../explore/detail_view_page.dart';
 
@@ -249,14 +248,12 @@ class HomeScreenState extends State<HomeScreen> {
     if (_preferencesCheckedOnce) return;
     _preferencesCheckedOnce = true;
 
-    // Nuevo onboarding: solo se muestra al primer login sin géneros guardados.
-    // GenrePickerScreen reemplaza el formulario de 3 pasos anterior.
     if (!widget.isNewLogin) return;
     final saved = await ProfileService.hasPreferencesSaved();
     if (!saved && mounted) {
       Navigator.push(
         context,
-        smarturFadeRoute(GenrePickerScreen(userName: widget.userName)),
+        smarturFadeRoute(PreferencesScreen(userName: widget.userName)),
       );
     }
   }
