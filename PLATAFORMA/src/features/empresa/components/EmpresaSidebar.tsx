@@ -175,7 +175,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                             }
                                         >
                                             {({ isActive }) => {
-                                                const badgeCount = (badges as Record<string, number>)[item.id] ?? 0;
+                                                const badgeCount = (badges as unknown as Record<string, number>)[item.id] ?? 0;
                                                 return (
                                                     <>
                                                         <div className="relative shrink-0">

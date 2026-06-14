@@ -270,6 +270,7 @@ export function AdminServicesApprovalPage() {
     const [bulkWorking, setBulkWorking]   = useState(false);
     const [selected, setSelected]         = useState<number[]>([]);
     const [previewing, setPreviewing]     = useState<PendingService | null>(null);
+    const [actionError, setActionError]   = useState<string | null>(null);
 
     const fetchServices = async (filter: string | null) => {
         setLoading(true);
@@ -349,6 +350,12 @@ export function AdminServicesApprovalPage() {
                     </p>
                 </div>
             </div>
+
+            {actionError && (
+                <p className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
+                    {actionError}
+                </p>
+            )}
 
             {/* Filters + bulk + search — misma fila, mismo patrón que verificar empresas */}
             <div className="shrink-0 flex items-center gap-3 flex-wrap">

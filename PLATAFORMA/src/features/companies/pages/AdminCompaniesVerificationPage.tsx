@@ -53,19 +53,6 @@ interface PendingCompany {
     certified_at: string | null;
 }
 
-const MUNICIPIOS = [
-    { id_location:  9, name: 'Amatlán de los Reyes' },
-    { id_location: 11, name: 'Atoyac' },
-    { id_location:  2, name: 'Coatepec' },
-    { id_location:  3, name: 'Córdoba' },
-    { id_location:  8, name: 'Cuitláhuac' },
-    { id_location:  5, name: 'Fortín de las Flores' },
-    { id_location:  7, name: 'Ixtaczoquitlán' },
-    { id_location:  4, name: 'Orizaba' },
-    { id_location:  1, name: 'Xalapa' },
-    { id_location:  6, name: 'Xico' },
-    { id_location: 10, name: 'Yanga' },
-];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     pending_docs:        { label: 'Sin documentos', color: TABLE_BADGE_COLORS.neutral },

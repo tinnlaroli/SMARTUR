@@ -251,7 +251,7 @@ export default function AdminPOIsApprovalPage() {
             </div>
 
             {loading ? (
-                <TableSkeleton rows={6} cols={5} />
+                <TableSkeleton rows={6} />
             ) : filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
                     <MapPin size={40} style={{ opacity: 0.2, marginBottom: 12 }} />
@@ -274,7 +274,7 @@ export default function AdminPOIsApprovalPage() {
                                 <DataTableRow
                                     key={poi.id}
                                     onClick={() => setSelected(poi)}
-                                    style={{ cursor: 'pointer' }}
+                                    className="cursor-pointer"
                                 >
                                     <DataTableCell>
                                         {poi.image_url ? (
