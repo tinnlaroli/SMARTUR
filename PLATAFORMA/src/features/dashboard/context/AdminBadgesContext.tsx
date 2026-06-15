@@ -31,7 +31,7 @@ export function AdminBadgesProvider({ children }: { children: React.ReactNode })
             const [companiesRes, servicesRes, poisRes, disputesRes] = await Promise.allSettled([
                 api.get('/admin/companies', { params: { status: 'documents_submitted', limit: 1 } }),
                 api.get('/admin/services', { params: { status: 'pending_review', limit: 1 } }),
-                api.get('/admin/pois', { params: { status: 'pending_review', limit: 1 } }),
+                api.get('/admin/pois/pending'),
                 api.get('/admin-change-log', { params: { status: 'disputed', limit: 1 } }),
             ]);
 
