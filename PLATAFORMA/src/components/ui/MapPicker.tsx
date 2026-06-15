@@ -90,5 +90,5 @@ export default function MapPicker({ lat, lng, onChange }: Props) {
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+    return <div ref={containerRef} style={{ width: '100%', height: '280px', borderRadius: '12px', overflow: 'hidden' }} />;
 }
