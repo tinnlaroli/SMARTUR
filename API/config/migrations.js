@@ -671,6 +671,16 @@ ALTER TABLE itinerary
               ADD COLUMN IF NOT EXISTS is_certified BOOLEAN NOT NULL DEFAULT FALSE,
               ADD COLUMN IF NOT EXISTS certified_at TIMESTAMPTZ;`,
     },
+    {
+        name: 'v36_tourist_service_lat_lon_pending_default',
+        sql: `
+ALTER TABLE tourist_service
+    ADD COLUMN IF NOT EXISTS latitude  DECIMAL(10,6),
+    ADD COLUMN IF NOT EXISTS longitude DECIMAL(10,6);
+-- Ensure newly created services default to pending_review (not active)
+ALTER TABLE tourist_service ALTER COLUMN status SET DEFAULT 'pending_review';
+`,
+    },
 ];
 
 export async function runMigrations() {

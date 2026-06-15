@@ -192,7 +192,7 @@ class AdminVerificationController {
         const { id } = req.params;
         try {
             const result = await pool.query(
-                `UPDATE tourist_service SET status = 'active'
+                `UPDATE tourist_service SET status = 'active', active = true
                  WHERE id_service = $1 AND status = 'pending_review'
                  RETURNING id_service, name, status`,
                 [id]
@@ -232,7 +232,7 @@ class AdminVerificationController {
         const { id } = req.params;
         try {
             const result = await pool.query(
-                `UPDATE tourist_service SET status = 'rejected'
+                `UPDATE tourist_service SET status = 'rejected', active = false
                  WHERE id_service = $1 AND status = 'pending_review'
                  RETURNING id_service, name, status`,
                 [id]

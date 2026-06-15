@@ -493,8 +493,9 @@ class EmpresaController {
     static async createService(req, res) {
         const { id_company } = req.user;
         const {
-            name, description, service_type, id_location, active,
+            name, description, service_type, id_location,
             price_from, price_to, currency, duration_minutes, contact_phone,
+            latitude, longitude,
         } = req.body;
 
         if (!name || !service_type) {
@@ -526,20 +527,22 @@ class EmpresaController {
             const result = await pool.query(
                 `INSERT INTO tourist_service
                    (name, description, service_type, id_location, id_company, active,
-                    image_url, price_from, price_to, currency, duration_minutes, contact_phone)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                    image_url, price_from, price_to, currency, duration_minutes, contact_phone,
+                    status, latitude, longitude)
+                 VALUES ($1,$2,$3,$4,$5,false,$6,$7,$8,$9,$10,$11,'pending_review',$12,$13)
                  RETURNING id_service, name, description, service_type, id_location, active,
                            image_url, price_from, price_to, currency, duration_minutes, contact_phone,
-                           id_company, status`,
+                           id_company, status, latitude, longitude`,
                 [
                     name.trim(), description?.trim() ?? null, service_type, locationId, id_company,
-                    active === 'false' ? false : (active ?? true),
                     image_url,
                     price_from ? parseFloat(price_from) : null,
                     price_to   ? parseFloat(price_to)   : null,
                     currency   ?? 'MXN',
                     duration_minutes ? parseInt(duration_minutes) : null,
                     contact_phone?.trim() ?? null,
+                    latitude  ? parseFloat(latitude)  : null,
+                    longitude ? parseFloat(longitude) : null,
                 ],
             );
             return res.status(201).json({ service: result.rows[0] });

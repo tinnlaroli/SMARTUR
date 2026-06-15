@@ -110,7 +110,13 @@ export class BookingController {
             const r = await pool.query(
                 `SELECT u.name, u.email, u.photo_url, u.registration_date,
                         tp.interests, tp.dietary_restrictions, tp.has_accessibility,
-                        b.visit_date, b.visit_time, b.guests, b.notes, b.is_walkin
+                        tp.has_visited, tp.accessibility_description,
+                        b.visit_date, b.visit_time, b.guests, b.notes, b.is_walkin,
+                        b.status AS booking_status,
+                        ts.name AS service_name,
+                        (SELECT COUNT(*) FROM booking b2
+                         JOIN tourist_service ts2 ON ts2.id_service = b2.id_service
+                         WHERE b2.user_id = b.user_id AND ts2.id_company = $2) AS booking_count
                  FROM booking b
                  JOIN "user" u ON u.user_id = b.user_id
                  LEFT JOIN traveler_profile tp ON tp.user_id = b.user_id
@@ -131,6 +137,9 @@ export class BookingController {
                     interests: row.interests ?? [],
                     dietary_restrictions: row.dietary_restrictions ?? null,
                     has_accessibility: row.has_accessibility ?? false,
+                    has_visited: row.has_visited ?? false,
+                    accessibility_description: row.accessibility_description ?? null,
+                    booking_count: Number(row.booking_count ?? 0),
                 },
                 booking: {
                     visit_date: row.visit_date,
@@ -138,6 +147,8 @@ export class BookingController {
                     guests: row.guests,
                     notes: row.notes,
                     is_walkin: row.is_walkin,
+                    status: row.booking_status,
+                    service_name: row.service_name,
                 },
             });
         } catch (e) {

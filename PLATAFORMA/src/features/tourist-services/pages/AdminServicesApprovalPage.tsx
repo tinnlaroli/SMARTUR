@@ -58,10 +58,11 @@ interface ServicePreviewModalProps {
 }
 
 function ServicePreviewModal({ service, onClose, onReviewed }: ServicePreviewModalProps) {
-    const [action, setAction]         = useState<'approve' | 'reject' | null>(null);
-    const [reason, setReason]         = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError]           = useState<string | null>(null);
+    const [action, setAction]           = useState<'approve' | 'reject' | null>(null);
+    const [hoveredAction, setHoveredAction] = useState<string | null>(null);
+    const [reason, setReason]           = useState('');
+    const [submitting, setSubmitting]   = useState(false);
+    const [error, setError]             = useState<string | null>(null);
 
     useEscapeKey(onClose);
 
@@ -179,16 +180,18 @@ function ServicePreviewModal({ service, onClose, onReviewed }: ServicePreviewMod
                     {/* Action selector */}
                     <div className="flex gap-3 mb-4">
                         {(['approve', 'reject'] as const).map(a => {
-                            const lit = action === a;
+                            const lit = action === a || hoveredAction === a;
                             return (
                                 <button
                                     key={a}
                                     type="button"
                                     onClick={() => setAction(a)}
+                                    onMouseEnter={() => setHoveredAction(a)}
+                                    onMouseLeave={() => setHoveredAction(null)}
                                     className="flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all"
                                     style={lit
                                         ? a === 'approve'
-                                            ? { borderColor: COLOR, background: `${COLOR}1a`, color: COLOR }
+                                            ? { borderColor: '#10b981', background: 'rgba(16,185,129,0.1)', color: '#10b981' }
                                             : { borderColor: '#f43f5e', background: 'rgba(244,63,94,0.1)', color: '#f43f5e' }
                                         : { borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }
                                     }

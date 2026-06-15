@@ -32,6 +32,9 @@ export interface TouristProfile {
     interests: string[];
     dietary_restrictions: string | null;
     has_accessibility: boolean;
+    has_visited?: boolean;
+    accessibility_description?: string | null;
+    booking_count?: number;
 }
 
 export interface TouristProfileResponse {
@@ -42,6 +45,8 @@ export interface TouristProfileResponse {
         guests: number;
         notes: string | null;
         is_walkin: boolean;
+        status: BookingStatus;
+        service_name: string;
     };
 }
 

@@ -311,11 +311,12 @@ export const EmpresaTopServicesCard = ({
         ) : (
             <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
                 {services.slice(0, density === 'compact' ? 3 : 4).map((service, index) => {
-                    const progress = service.rating != null ? `${(service.rating / 5) * 100}%` : '0%';
+                    const ratingNum = service.rating != null ? Number(service.rating) : null;
+                    const progress = ratingNum != null ? `${(ratingNum / 5) * 100}%` : '0%';
                     const accent =
-                        service.rating != null && service.rating >= 4
+                        ratingNum != null && ratingNum >= 4
                             ? DASHBOARD_COLORS.success
-                            : service.rating != null && service.rating >= 3
+                            : ratingNum != null && ratingNum >= 3
                               ? DASHBOARD_COLORS.warning
                               : DASHBOARD_COLORS.purple;
 
@@ -347,7 +348,7 @@ export const EmpresaTopServicesCard = ({
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-bold" style={{ color: accent }}>
-                                                {service.rating?.toFixed(1) ?? '—'}
+                                                {ratingNum != null ? ratingNum.toFixed(1) : '—'}
                                             </p>
                                             <p className="text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
                                                 {t('empresa.dashboard.topServiceRecs', { recs: service.recomendaciones })}

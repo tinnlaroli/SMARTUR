@@ -342,7 +342,7 @@ export function EmpresaAnalyticsPage() {
                                                     <DataTableCell className="w-24">
                                                         {svc.rating != null ? (
                                                             <TableBadge
-                                                                text={svc.rating.toFixed(1)}
+                                                                text={Number(svc.rating).toFixed(1)}
                                                                 color={TABLE_BADGE_COLORS.amber}
                                                             />
                                                         ) : (

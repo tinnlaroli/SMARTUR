@@ -66,6 +66,8 @@ export interface EmpresaService {
     duration_minutes?: number | null;
     contact_phone?: string | null;
     operating_hours?: Record<string, string> | null;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface ServiceCreatePayload {
@@ -80,6 +82,8 @@ export interface ServiceCreatePayload {
     duration_minutes?: number | null;
     contact_phone?: string;
     image?: File | null;
+    latitude?: number;
+    longitude?: number;
 }
 
 export interface ServiceUpdatePayload {

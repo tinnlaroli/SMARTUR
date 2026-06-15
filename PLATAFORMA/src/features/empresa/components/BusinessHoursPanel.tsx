@@ -74,9 +74,9 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
     return (
         <div className="rounded-xl border p-3" style={{ borderColor: 'var(--color-border)' }}>
             {/* Service header */}
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Clock className="size-3.5" style={{ color: 'var(--color-purple)' }} />
+                    <Clock className="size-3.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
                     <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                         {service.name}
                     </span>
@@ -84,7 +84,7 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
                 {!editing ? (
                     <button
                         onClick={() => setEditing(true)}
-                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
                         style={{ color: 'var(--color-purple)' }}
                     >
                         <Edit2 className="size-3" /> Editar
@@ -94,14 +94,14 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
                         <button
                             onClick={save}
                             disabled={saving}
-                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-white transition-colors"
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-white transition-colors"
                             style={{ background: 'var(--color-green)' }}
                         >
                             <Check className="size-3" /> {saving ? '...' : 'Guardar'}
                         </button>
                         <button
                             onClick={cancel}
-                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/20"
                             style={{ color: 'var(--color-pink)' }}
                         >
                             <X className="size-3" />
@@ -116,14 +116,20 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
                     const p = parsed(key);
                     if (!editing) {
                         return (
-                            <div key={key} className="text-center">
-                                <p className="text-[9px] font-bold uppercase" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
+                            <div key={key} className="flex min-h-[52px] flex-col items-center py-1 text-center">
+                                <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--color-text-alt)' }}>
+                                    {label}
+                                </p>
                                 {p.closed || !getVal(key) ? (
-                                    <p className="text-[9px]" style={{ color: 'var(--color-text-alt)' }}>—</p>
+                                    <p className="mt-1 text-[10px]" style={{ color: 'var(--color-text-alt)' }}>Cerrado</p>
                                 ) : (
-                                    <div>
-                                        <p className="text-[9px] font-medium" style={{ color: 'var(--color-text)' }}>{p.open}</p>
-                                        <p className="text-[9px]" style={{ color: 'var(--color-text-alt)' }}>{p.close}</p>
+                                    <div className="mt-1">
+                                        <p className="text-[11px] font-medium leading-tight" style={{ color: 'var(--color-text)' }}>
+                                            {p.open}
+                                        </p>
+                                        <p className="text-[11px] leading-tight" style={{ color: 'var(--color-text-alt)' }}>
+                                            {p.close}
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -131,10 +137,12 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
                     }
                     return (
                         <div key={key} className="text-center">
-                            <p className="text-[9px] font-bold uppercase" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
+                            <p className="text-[11px] font-semibold uppercase" style={{ color: 'var(--color-text-alt)' }}>
+                                {label}
+                            </p>
                             <button
                                 onClick={() => toggleClosed(key)}
-                                className={`mb-1 w-full rounded text-[9px] font-semibold py-0.5 transition-colors ${
+                                className={`mb-1 w-full rounded py-1 text-[11px] font-semibold transition-colors ${
                                     p.closed || !getVal(key) ? 'opacity-50' : ''
                                 }`}
                                 style={{
@@ -150,14 +158,14 @@ function ServiceHoursRow({ service, onUpdate }: ServiceRowProps) {
                                         type="time"
                                         value={p.open}
                                         onChange={e => setTime(key, 'open', e.target.value)}
-                                        className="w-full rounded border p-0.5 text-[9px]"
+                                        className="w-full rounded border p-1 text-[11px]"
                                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                                     />
                                     <input
                                         type="time"
                                         value={p.close}
                                         onChange={e => setTime(key, 'close', e.target.value)}
-                                        className="mt-0.5 w-full rounded border p-0.5 text-[9px]"
+                                        className="mt-0.5 w-full rounded border p-1 text-[11px]"
                                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                                     />
                                 </>
@@ -186,9 +194,12 @@ export function BusinessHoursPanel({ services, onUpdate }: Props) {
     }
 
     return (
-        <div className="rounded-2xl border p-4" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
-            <p className="mb-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
+        <div className="rounded-2xl border p-5" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
                 Horarios de atención
+            </p>
+            <p className="mb-4 mt-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                Configura cuándo está disponible cada servicio
             </p>
             <div className="space-y-3">
                 {services.map(svc => (

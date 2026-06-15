@@ -249,6 +249,8 @@ async function getStopsEnriched(itineraryId) {
         place_image_url: null,
         place_lat: null,
         place_lon: null,
+        contact_phone: null,
+        id_company: null,
     }));
 
     for (const stop of stops) {
@@ -267,7 +269,7 @@ async function getStopsEnriched(itineraryId) {
             } catch (_) { /* column may not be present in older schema */ }
         } else if (stop.place_kind === 'svc') {
             const s = await pool.query(
-                `SELECT ts.name, ts.image_url, l.latitude, l.longitude
+                `SELECT ts.name, ts.image_url, ts.contact_phone, ts.id_company, l.latitude, l.longitude
                  FROM tourist_service ts
                  LEFT JOIN location l ON l.id_location = ts.id_location
                  WHERE ts.id_service = $1`,
@@ -278,6 +280,8 @@ async function getStopsEnriched(itineraryId) {
                 stop.place_image_url = s.rows[0].image_url;
                 stop.place_lat = s.rows[0].latitude ? Number(s.rows[0].latitude) : null;
                 stop.place_lon = s.rows[0].longitude ? Number(s.rows[0].longitude) : null;
+                stop.contact_phone = s.rows[0].contact_phone ?? null;
+                stop.id_company = s.rows[0].id_company ?? null;
             }
         }
     }

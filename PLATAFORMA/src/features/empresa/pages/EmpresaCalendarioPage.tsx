@@ -108,6 +108,21 @@ function WalkinModal({ services, onClose, onSaved }: WalkinModalProps) {
                         <XIcon className="size-4" style={{ color: 'var(--color-text-alt)' }} />
                     </button>
                 </div>
+                {services.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-6 text-center">
+                        <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                            No tienes servicios disponibles para registrar visitas directas.
+                            Activa al menos un servicio primero.
+                        </p>
+                        <button
+                            onClick={onClose}
+                            className="rounded-xl border px-4 py-2 text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                ) : (
                 <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
                         <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>
@@ -190,6 +205,7 @@ function WalkinModal({ services, onClose, onSaved }: WalkinModalProps) {
                         {saving ? 'Registrando...' : 'Registrar visita'}
                     </button>
                 </form>
+                )}
             </div>
         </div>
     );
@@ -291,7 +307,7 @@ export function EmpresaCalendarioPage() {
         <div className="p-4 sm:p-6">
             {showWalkin && (
                 <WalkinModal
-                    services={services}
+                    services={services.filter(s => s.status !== 'rejected')}
                     onClose={() => setShowWalkin(false)}
                     onSaved={load}
                 />
@@ -445,9 +461,8 @@ export function EmpresaCalendarioPage() {
                     </div>
                 </div>
 
-                {/* RIGHT: Tourist Profile + Business Hours */}
+                {/* RIGHT: Business Hours (siempre visible) + Tourist Profile (condicional) */}
                 <div className="flex flex-col gap-4">
-                    <TouristProfileCard booking={selectedBooking} />
                     <BusinessHoursPanel
                         services={services}
                         onUpdate={(id, hours) => {
@@ -456,6 +471,7 @@ export function EmpresaCalendarioPage() {
                             ));
                         }}
                     />
+                    <TouristProfileCard booking={selectedBooking} />
                 </div>
             </div>
         </div>

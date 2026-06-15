@@ -125,7 +125,7 @@ export const deriveEmpresaDashboardViewModel = (
         },
         {
             label: 'Rating promedio',
-            value: summary.avg_rating != null ? summary.avg_rating.toFixed(1) : '—',
+            value: summary.avg_rating != null ? Number(summary.avg_rating).toFixed(1) : '—',
         },
     ];
 

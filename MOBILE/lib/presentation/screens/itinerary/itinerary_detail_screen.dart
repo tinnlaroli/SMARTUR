@@ -19,8 +19,10 @@ import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/booking_service.dart';
+import '../../../data/services/chat_service.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/profile_service.dart';
+import '../chat/chat_screen.dart';
 import '../social/public_profile_screen.dart';
 import 'planner_screen.dart';
 
@@ -94,6 +96,20 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         dateRange: _it.startDate != null && _it.endDate != null
             ? DateTimeRange(start: _it.startDate!, end: _it.endDate!)
             : null,
+      ),
+    );
+  }
+
+  void _showContactSheet(BuildContext context, ItineraryStop stop) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ContactSheet(
+        serviceId: stop.placeId,
+        serviceName: stop.placeName,
+        contactPhone: stop.contactPhone,
+        idCompany: stop.idCompany,
       ),
     );
   }
@@ -601,6 +617,31 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
                                   ),
+                                if (stop.placeKind == 'svc') ...[
+                                  const SizedBox(width: 6),
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        _showContactSheet(context, stop),
+                                    icon: const Icon(Icons.phone_rounded,
+                                        size: 14),
+                                    label: const Text(
+                                      'Contactar',
+                                      style: TextStyle(
+                                        fontFamily: 'Outfit',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.teal,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -1320,6 +1361,176 @@ class _PrefChip extends StatelessWidget {
           color: color,
           fontWeight: FontWeight.w500,
         ),
+      ),
+    );
+  }
+}
+
+// ─── Contact Sheet ────────────────────────────────────────────────────────────
+
+class _ContactSheet extends StatefulWidget {
+  final int serviceId;
+  final String serviceName;
+  final String? contactPhone;
+  final int? idCompany;
+
+  const _ContactSheet({
+    required this.serviceId,
+    required this.serviceName,
+    this.contactPhone,
+    this.idCompany,
+  });
+
+  @override
+  State<_ContactSheet> createState() => _ContactSheetState();
+}
+
+class _ContactSheetState extends State<_ContactSheet> {
+  final _chatService = ChatService();
+  bool _loadingChat = false;
+
+  Future<void> _openChat() async {
+    if (widget.idCompany == null) return;
+    setState(() => _loadingChat = true);
+    try {
+      final conv = await _chatService.createConversation(
+        companyId: widget.idCompany!,
+        serviceId: widget.serviceId,
+      );
+      if (!mounted) return;
+      Navigator.pop(context);
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ChatScreen(conversation: conv)),
+      );
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _loadingChat = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final hasInfo = widget.contactPhone != null || widget.idCompany != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+          20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: scheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Contactar servicio',
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            widget.serviceName,
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 13,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (widget.contactPhone != null) ...[
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: SmarturStyle.purple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.phone_rounded,
+                    color: SmarturStyle.purple, size: 20),
+              ),
+              title: const Text(
+                'Llamar',
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14),
+              ),
+              subtitle: Text(
+                widget.contactPhone!,
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant),
+              ),
+              onTap: () async {
+                final uri =
+                    Uri(scheme: 'tel', path: widget.contactPhone);
+                if (await canLaunchUrl(uri)) await launchUrl(uri);
+              },
+            ),
+            if (widget.idCompany != null) const Divider(height: 8),
+          ],
+          if (widget.idCompany != null)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child:
+                    Icon(Icons.chat_rounded, color: Colors.blue.shade600, size: 20),
+              ),
+              title: const Text(
+                'Preguntas al chat',
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14),
+              ),
+              subtitle: Text(
+                'Envía dudas directamente a la empresa',
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant),
+              ),
+              trailing: _loadingChat
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : null,
+              onTap: _loadingChat ? null : _openChat,
+            ),
+          if (!hasInfo)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                'Este servicio no tiene información de contacto disponible.',
+                style: TextStyle(
+                    fontFamily: 'Outfit',
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 13),
+              ),
+            ),
+        ],
       ),
     );
   }

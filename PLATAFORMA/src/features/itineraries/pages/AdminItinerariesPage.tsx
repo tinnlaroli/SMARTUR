@@ -283,6 +283,7 @@ export function AdminItinerariesPage() {
                                             <DataTableCell className="text-center">{it.copy_count}</DataTableCell>
                                             <DataTableCell className="text-xs">{formatDate(it.created_at)}</DataTableCell>
                                             <DataTableCell className="text-center">
+                                                <div className="flex justify-center">
                                                 <button
                                                     onClick={() => handleCertify(it)}
                                                     disabled={actionId === it.id_itinerary}
@@ -300,6 +301,7 @@ export function AdminItinerariesPage() {
                                                             : <><XCircle size={11} /> Certificar</>
                                                     }
                                                 </button>
+                                                </div>
                                             </DataTableCell>
                                         </DataTableRow>
                                     ))}

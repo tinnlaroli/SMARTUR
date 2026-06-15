@@ -37,6 +37,8 @@ class ItineraryStop {
   final String? placeImageUrl;
   final double? placeLat;
   final double? placeLon;
+  final String? contactPhone;
+  final int? idCompany;
 
   const ItineraryStop({
     required this.id,
@@ -51,6 +53,8 @@ class ItineraryStop {
     this.placeImageUrl,
     this.placeLat,
     this.placeLon,
+    this.contactPhone,
+    this.idCompany,
   });
 
   factory ItineraryStop.fromJson(Map<String, dynamic> j) {
@@ -69,6 +73,8 @@ class ItineraryStop {
       placeImageUrl: j['place_image_url'] as String?,
       placeLat: _toDoubleN(j['place_lat']),
       placeLon: _toDoubleN(j['place_lon']),
+      contactPhone: j['contact_phone'] as String?,
+      idCompany: j['id_company'] as int?,
     );
   }
 
@@ -85,6 +91,8 @@ class ItineraryStop {
         'place_image_url': placeImageUrl,
         'place_lat': placeLat,
         'place_lon': placeLon,
+        'contact_phone': contactPhone,
+        'id_company': idCompany,
       };
 
   factory ItineraryStop.fromMap(Map<String, dynamic> m) => ItineraryStop(
@@ -102,6 +110,8 @@ class ItineraryStop {
         placeImageUrl: m['place_image_url'] as String?,
         placeLat: m['place_lat'] as double?,
         placeLon: m['place_lon'] as double?,
+        contactPhone: m['contact_phone'] as String?,
+        idCompany: m['id_company'] as int?,
       );
 
   ItineraryStop copyWith({
@@ -125,6 +135,8 @@ class ItineraryStop {
         placeImageUrl: placeImageUrl,
         placeLat: placeLat,
         placeLon: placeLon,
+        contactPhone: contactPhone,
+        idCompany: idCompany,
       );
 
   static double? _toDoubleN(dynamic v) {

@@ -149,13 +149,6 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: _load,
-            tooltip: 'Actualizar',
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createItinerary,

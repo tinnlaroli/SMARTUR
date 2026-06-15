@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import axios from 'axios';
 import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle } from 'lucide-react';
+import MapPicker from '../../../components/ui/MapPicker';
 import {
     empresaApi,
     type EmpresaService,
@@ -19,6 +20,7 @@ import { MODULE_COLORS } from '../../../shared/config/moduleColors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useToast } from '../../../shared/context/ToastContext';
 import { EMPRESA_SERVICE_TYPE_OPTIONS } from '../utils/serviceTypes';
+import { ServiceActivitiesPanel } from '../../tourist-services/components/ServiceActivitiesPanel';
 
 interface ServiceModalProps {
     initial?: EmpresaService | null;
@@ -42,7 +44,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     const [form, setForm] = useState({
         name:             initial?.name            ?? '',
         description:      initial?.description     ?? '',
-        service_type:     initial?.service_type    ?? 'tour',
+        service_type:     initial?.service_type    ?? '',
         active:           initial?.active          ?? true,
         price_from:       initial?.price_from      != null ? String(initial.price_from) : '',
         price_to:         initial?.price_to        != null ? String(initial.price_to)   : '',
@@ -50,8 +52,11 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
         duration_minutes: initial?.duration_minutes != null ? String(initial.duration_minutes) : '',
         contact_phone:    initial?.contact_phone   ?? '',
     });
+    const [lat, setLat] = useState(0);
+    const [lng, setLng] = useState(0);
     const [imageFile, setImageFile]       = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(initial?.image_url ?? null);
+    const [errors, setErrors]             = useState<Record<string, string>>({});
     const [saving, setSaving]             = useState(false);
     const [error, setError]               = useState<string | null>(null);
 
@@ -66,7 +71,27 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: name === 'active' ? value === 'true' : value }));
+        if (errors[name]) setErrors(prev => { const next = {...prev}; delete next[name]; return next; });
     };
+
+    const validate = () => {
+        const e: Record<string, string> = {};
+        if (!form.name.trim()) e.name = 'El nombre es requerido';
+        if (!form.service_type) e.service_type = 'Selecciona un tipo';
+        if (form.contact_phone && !/^\d{1,10}$/.test(form.contact_phone.replace(/[\s\-]/g, '')))
+            e.contact_phone = 'Solo dígitos, máximo 10';
+        if (form.price_from !== '' && isNaN(parseFloat(form.price_from)))
+            e.price_from = 'Solo números';
+        if (form.price_to !== '' && isNaN(parseFloat(form.price_to)))
+            e.price_to = 'Solo números';
+        if (!isEdit && lat === 0 && lng === 0)
+            e.location = 'Marca la ubicación en el mapa';
+        return e;
+    };
+
+    const borderStyle = (name: string) => ({
+        borderColor: errors[name] ? '#f43f5e' : form[name as keyof typeof form] ? '#10b981' : 'var(--color-border)',
+    });
 
     const handleImage = (file: File) => {
         setImageFile(file);
@@ -75,10 +100,8 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.name.trim() || !form.service_type) {
-            setError(t('validation.serviceNameTypeRequired'));
-            return;
-        }
+        const errs = validate();
+        if (Object.keys(errs).length) { setErrors(errs); return; }
         if (!isEdit && !defaultLocationId) {
             setError(t('empresa.servicios.modal.errorNoLocation'));
             return;
@@ -109,7 +132,9 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                 const { service } = await empresaApi.createService({
                     ...base,
                     id_location: defaultLocationId ?? undefined,
-                    active: form.active,
+                    active: false,
+                    latitude: lat || undefined,
+                    longitude: lng || undefined,
                 } as ServiceCreatePayload);
                 toast.success(t('empresa.servicios.toast.created'));
                 onSaved(service);
@@ -128,7 +153,6 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     const inputCls = "w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 transition";
     const inputStyle = {
         background: 'var(--color-bg-alt)',
-        borderColor: 'var(--color-border)',
         color: 'var(--color-text)',
         ['--tw-ring-color' as string]: 'var(--color-purple)',
     };
@@ -180,7 +204,124 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                 <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
                     <div className="px-6 py-5 space-y-5">
 
-                        {/* Image upload */}
+                        {/* Basic info */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="sm:col-span-2">
+                                <label className={labelCls} style={labelStyle}>
+                                    Nombre del servicio <span className="text-rose-400">*</span>
+                                </label>
+                                <input name="name" value={form.name} onChange={handleChange}
+                                    maxLength={120} placeholder="Ej. Tour por la zona cafetalera"
+                                    className={inputCls} style={{ ...inputStyle, ...borderStyle('name') }} />
+                                {errors.name && <p className="text-xs text-rose-400 mt-1 flex items-center gap-1"><AlertCircle className="size-3" />{errors.name}</p>}
+                            </div>
+
+                            <div>
+                                <label className={labelCls} style={labelStyle}>
+                                    Tipo <span className="text-rose-400">*</span>
+                                </label>
+                                <select name="service_type" value={form.service_type} onChange={handleChange}
+                                    className={`${inputCls} appearance-none`} style={{ ...inputStyle, ...borderStyle('service_type') }}>
+                                    <option value="">Seleccionar…</option>
+                                    {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </select>
+                                {errors.service_type && <p className="text-xs text-rose-400 mt-1 flex items-center gap-1"><AlertCircle className="size-3" />{errors.service_type}</p>}
+                            </div>
+
+                            {isEdit && (
+                                <div>
+                                    <label className={labelCls} style={labelStyle}>Visibilidad</label>
+                                    <select name="active" value={form.active ? 'true' : 'false'} onChange={handleChange}
+                                        className={`${inputCls} appearance-none`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }}>
+                                        <option value="true">Activo — visible en la app</option>
+                                        <option value="false">Inactivo — oculto</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className={isEdit ? '' : 'sm:col-span-2'}>
+                                <label className={labelCls} style={labelStyle}>
+                                    <span className="flex items-center gap-1.5"><Phone className="size-3" /> Teléfono de contacto</span>
+                                </label>
+                                <input name="contact_phone" value={form.contact_phone} onChange={handleChange}
+                                    placeholder="2281234567" inputMode="numeric" maxLength={10}
+                                    className={inputCls} style={{ ...inputStyle, ...borderStyle('contact_phone') }} />
+                                {errors.contact_phone && <p className="text-xs text-rose-400 mt-1 flex items-center gap-1"><AlertCircle className="size-3" />{errors.contact_phone}</p>}
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label className={labelCls} style={labelStyle}>Descripción</label>
+                            <textarea name="description" value={form.description ?? ''} onChange={handleChange}
+                                rows={3} maxLength={500} placeholder="Describe brevemente tu servicio…"
+                                className={`${inputCls} resize-none`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }} />
+                        </div>
+
+                        {/* Pricing */}
+                        <div>
+                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
+                                <DollarSign className="size-3" /> Precio
+                            </label>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Desde (MXN)</p>
+                                    <input name="price_from" inputMode="numeric"
+                                        value={form.price_from} onChange={handleChange}
+                                        placeholder="0.00"
+                                        className={inputCls} style={{ ...inputStyle, ...borderStyle('price_from') }} />
+                                    {errors.price_from && <p className="text-xs text-rose-400 mt-1">{errors.price_from}</p>}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Hasta (MXN)</p>
+                                    <input name="price_to" inputMode="numeric"
+                                        value={form.price_to} onChange={handleChange}
+                                        placeholder="0.00"
+                                        className={inputCls} style={{ ...inputStyle, ...borderStyle('price_to') }} />
+                                    {errors.price_to && <p className="text-xs text-rose-400 mt-1">{errors.price_to}</p>}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Moneda</p>
+                                    <select name="currency" value={form.currency} onChange={handleChange}
+                                        className={`${inputCls} appearance-none`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }}>
+                                        <option value="MXN">MXN</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Duration */}
+                        <div>
+                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
+                                <Clock className="size-3" /> Duración (minutos)
+                            </label>
+                            <input name="duration_minutes" inputMode="numeric" min="0" step="5"
+                                value={form.duration_minutes} onChange={handleChange}
+                                placeholder="Ej. 120 = 2 horas"
+                                className={`${inputCls} max-w-xs`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }} />
+                        </div>
+
+                        {/* Map — only for new services, mandatory */}
+                        {!isEdit && (
+                            <div>
+                                <label className={labelCls} style={labelStyle}>
+                                    Ubicación en mapa <span className="text-rose-400">*</span>
+                                </label>
+                                <MapPicker lat={lat} lng={lng} onChange={(la, lo) => {
+                                    setLat(la); setLng(lo);
+                                    if (errors.location) setErrors(prev => { const next = {...prev}; delete next.location; return next; });
+                                }} />
+                                {(lat !== 0 || lng !== 0) && (
+                                    <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                        {lat.toFixed(6)}, {lng.toFixed(6)}
+                                    </p>
+                                )}
+                                {errors.location && <p className="text-xs text-rose-400 mt-1 flex items-center gap-1"><AlertCircle className="size-3" />{errors.location}</p>}
+                            </div>
+                        )}
+
+                        {/* Image upload — at the end */}
                         <div>
                             <label className={labelCls} style={labelStyle}>
                                 <span className="flex items-center gap-1.5"><ImageIcon className="size-3" /> Foto del servicio</span>
@@ -229,95 +370,6 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
                         </div>
 
-                        {/* Basic info */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="sm:col-span-2">
-                                <label className={labelCls} style={labelStyle}>
-                                    Nombre del servicio <span className="text-rose-400">*</span>
-                                </label>
-                                <input name="name" value={form.name} onChange={handleChange}
-                                    maxLength={120} placeholder="Ej. Tour por la zona cafetalera"
-                                    className={inputCls} style={inputStyle} />
-                            </div>
-
-                            <div>
-                                <label className={labelCls} style={labelStyle}>
-                                    Tipo <span className="text-rose-400">*</span>
-                                </label>
-                                <select name="service_type" value={form.service_type} onChange={handleChange}
-                                    className={`${inputCls} appearance-none`} style={inputStyle}>
-                                    <option value="">Seleccionar…</option>
-                                    {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </select>
-                            </div>
-
-                            {isEdit && (
-                                <div>
-                                    <label className={labelCls} style={labelStyle}>Visibilidad</label>
-                                    <select name="active" value={form.active ? 'true' : 'false'} onChange={handleChange}
-                                        className={`${inputCls} appearance-none`} style={inputStyle}>
-                                        <option value="true">Activo — visible en la app</option>
-                                        <option value="false">Inactivo — oculto</option>
-                                    </select>
-                                </div>
-                            )}
-
-                            <div className={isEdit ? '' : 'sm:col-span-2'}>
-                                <label className={labelCls} style={labelStyle}>
-                                    <span className="flex items-center gap-1.5"><Phone className="size-3" /> Teléfono de contacto</span>
-                                </label>
-                                <input name="contact_phone" value={form.contact_phone} onChange={handleChange}
-                                    placeholder="228 123 4567" className={inputCls} style={inputStyle} />
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div>
-                            <label className={labelCls} style={labelStyle}>Descripción</label>
-                            <textarea name="description" value={form.description ?? ''} onChange={handleChange}
-                                rows={3} maxLength={500} placeholder="Describe brevemente tu servicio…"
-                                className={`${inputCls} resize-none`} style={inputStyle} />
-                        </div>
-
-                        {/* Pricing */}
-                        <div>
-                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
-                                <DollarSign className="size-3" /> Precio
-                            </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                <div>
-                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Desde (MXN)</p>
-                                    <input name="price_from" type="number" min="0" step="0.01"
-                                        value={form.price_from} onChange={handleChange}
-                                        placeholder="0.00" className={inputCls} style={inputStyle} />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Hasta (MXN)</p>
-                                    <input name="price_to" type="number" min="0" step="0.01"
-                                        value={form.price_to} onChange={handleChange}
-                                        placeholder="0.00" className={inputCls} style={inputStyle} />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] mb-1" style={{ color: 'var(--color-text-alt)' }}>Moneda</p>
-                                    <select name="currency" value={form.currency} onChange={handleChange}
-                                        className={`${inputCls} appearance-none`} style={inputStyle}>
-                                        <option value="MXN">MXN</option>
-                                        <option value="USD">USD</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Duration */}
-                        <div>
-                            <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
-                                <Clock className="size-3" /> Duración (minutos)
-                            </label>
-                            <input name="duration_minutes" type="number" min="0" step="5"
-                                value={form.duration_minutes} onChange={handleChange}
-                                placeholder="Ej. 120 = 2 horas" className={`${inputCls} max-w-xs`} style={inputStyle} />
-                        </div>
-
                         {/* Approval notice for new services */}
                         {!isEdit && (
                             <div className="flex items-start gap-3 rounded-xl border px-4 py-3"
@@ -335,6 +387,12 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 style={{ background: '#EF444410', borderColor: '#EF444440', color: '#EF4444' }}>
                                 <AlertCircle size={14} className="shrink-0" />
                                 {error}
+                            </div>
+                        )}
+
+                        {isEdit && initial?.id_service && (
+                            <div className="mt-2 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
+                                <ServiceActivitiesPanel serviceId={initial.id_service} />
                             </div>
                         )}
                     </div>
