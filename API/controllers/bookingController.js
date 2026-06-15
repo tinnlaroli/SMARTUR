@@ -26,6 +26,20 @@ export class BookingController {
         }
     }
 
+    static async updateBooking(req, res) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            if (Number.isNaN(id)) return res.status(400).json({ message: 'ID inválido' });
+            const { visit_date, visit_time, guests, notes } = safeBody(req);
+            const updated = await Booking.updateBooking(id, req.user.id, { visit_date, visit_time, guests, notes });
+            if (!updated) return res.status(404).json({ message: 'Reserva no encontrada o ya cancelada' });
+            res.json({ message: 'Reserva actualizada', booking: updated });
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ message: 'Error al actualizar reserva', error: e.message });
+        }
+    }
+
     static async getMyBookings(req, res) {
         try {
             const bookings = await Booking.getMyBookings(req.user.id);

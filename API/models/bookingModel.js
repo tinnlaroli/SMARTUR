@@ -88,6 +88,20 @@ export async function cancelBooking(id, { userId, companyId }) {
     return r.rows[0] ?? null;
 }
 
+export async function updateBooking(id, userId, { visit_date, visit_time, guests, notes }) {
+    const r = await pool.query(
+        `UPDATE booking
+         SET visit_date = COALESCE($3, visit_date),
+             visit_time = $4,
+             guests     = COALESCE($5, guests),
+             notes      = $6
+         WHERE id_booking = $1 AND user_id = $2 AND status != 'cancelled'
+         RETURNING *`,
+        [id, userId, visit_date ?? null, visit_time ?? null, guests ?? null, notes ?? null]
+    );
+    return r.rows[0] ?? null;
+}
+
 export async function createWalkin(empresaUserId, { id_service, visit_date, visit_time, guests, notes }) {
     const r = await pool.query(
         `INSERT INTO booking (user_id, id_service, visit_date, visit_time, guests, notes, is_walkin, status)

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
     RefreshCw, X, ShieldX, MapPin, Download,
-    Building2, User, Tag, Calendar, ChevronLeft, ChevronRight,
+    Building2, User, Tag, Calendar,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/axiosClient';
@@ -26,11 +26,11 @@ import {
     nextSort,
     sortRows,
 } from '../../../components/ui/DataTable';
+import { SharedPagination } from '../../../components/ui/SharedPagination';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
-const COLOR  = MODULE_COLORS.companyVerification;
-const PAGE_SIZE = 20;
+const COLOR = MODULE_COLORS.companyVerification;
 
 type StatusFilter = 'all' | 'pending_docs' | 'documents_submitted' | 'active' | 'rejected' | 'suspended';
 
@@ -512,7 +512,8 @@ export function AdminCompaniesVerificationPage() {
     const toast = useToast();
     const [companies, setCompanies]     = useState<PendingCompany[]>([]);
     const [total, setTotal]             = useState(0);
-    const [page, setPage]               = useState(0);
+    const [page, setPage]               = useState(1);
+    const [pageSize, setPageSize]       = useState(20);
     const [filter, setFilter]           = useState<StatusFilter>('all');
     const [loading, setLoading]         = useState(true);
     const [reviewing, setReviewing]     = useState<PendingCompany | null>(null);
@@ -524,10 +525,7 @@ export function AdminCompaniesVerificationPage() {
     const fetchCompanies = useCallback(async () => {
         setLoading(true);
         try {
-            const params: Record<string, string | number> = {
-                limit: PAGE_SIZE,
-                page: page + 1,
-            };
+            const params: Record<string, string | number> = { limit: pageSize, page };
             if (filter !== 'all') params.status = filter;
             const { data } = await api.get('/admin/companies', { params });
             setCompanies(data.companies);
@@ -537,7 +535,7 @@ export function AdminCompaniesVerificationPage() {
         } finally {
             setLoading(false);
         }
-    }, [page, filter]);
+    }, [page, pageSize, filter]);
 
     useEffect(() => { void fetchCompanies(); }, [fetchCompanies]);
     useEffect(() => { setSelected([]); }, [page, filter]);
@@ -571,7 +569,7 @@ export function AdminCompaniesVerificationPage() {
         }
     };
 
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
@@ -608,7 +606,7 @@ export function AdminCompaniesVerificationPage() {
                     {FILTER_OPTIONS.map(({ key, label }) => (
                         <button
                             key={key}
-                            onClick={() => { setFilter(key); setPage(0); }}
+                            onClick={() => { setFilter(key); setPage(1); }}
                             className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
                             style={filter === key
                                 ? { backgroundColor: COLOR, color: '#fff' }
@@ -676,7 +674,7 @@ export function AdminCompaniesVerificationPage() {
                                                 <ShieldCheck size={12} /> Estado
                                                 <DataTableHeaderSelect
                                                     value={filter}
-                                                    onChange={v => { setFilter(v as StatusFilter); setPage(0); }}
+                                                    onChange={v => { setFilter(v as StatusFilter); setPage(1); }}
                                                 >
                                                     <option value="all">Todos</option>
                                                     <option value="pending_docs">Pendiente docs</option>
@@ -764,53 +762,14 @@ export function AdminCompaniesVerificationPage() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 text-sm text-zinc-600 dark:text-zinc-400 border-t border-zinc-200 dark:border-zinc-800">
-                    <span>{total} empresas · Página {page + 1} de {totalPages}</span>
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={() => setPage(0)}
-                            disabled={page === 0}
-                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            <ChevronLeft size={14} /><ChevronLeft size={14} className="-ml-2" />
-                        </button>
-                        <button
-                            onClick={() => setPage(p => Math.max(0, p - 1))}
-                            disabled={page === 0}
-                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            <ChevronLeft size={16} strokeWidth={1.5} />
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i).filter(i => Math.abs(i - page) <= 2).map(i => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i)}
-                                className="min-w-[32px] px-2 py-1 rounded-md text-xs font-medium transition-colors"
-                                style={i === page
-                                    ? { backgroundColor: COLOR, color: '#fff' }
-                                    : undefined}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                            disabled={page >= totalPages - 1}
-                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            <ChevronRight size={16} strokeWidth={1.5} />
-                        </button>
-                        <button
-                            onClick={() => setPage(totalPages - 1)}
-                            disabled={page >= totalPages - 1}
-                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                            <ChevronRight size={14} /><ChevronRight size={14} className="-ml-2" />
-                        </button>
-                    </div>
-                </div>
-            )}
+            <SharedPagination
+                page={page}
+                totalPages={totalPages}
+                total={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={size => { setPageSize(size); setPage(1); }}
+            />
 
             {/* Review modal */}
             <AnimatePresence>

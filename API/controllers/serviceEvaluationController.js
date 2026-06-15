@@ -1,5 +1,6 @@
 import ServiceEvaluation from '../models/serviceEvaluationModel.js';
 import EvaluationDetail from '../models/evaluationDetailModel.js';
+import pool from '../config/db.js';
 
 class ServiceEvaluationController {
     static async findAllServiceEvaluationController(req, res) {
@@ -257,6 +258,22 @@ class ServiceEvaluationController {
                 message: 'Error interno en el servidor',
                 error: error.message,
             });
+        }
+    }
+
+    static async getByService(req, res) {
+        try {
+            const { serviceId } = req.params;
+            const { rows } = await pool.query(
+                `SELECT id_evaluation, total_score, status, evaluation_date, evaluator_id
+                 FROM service_evaluation
+                 WHERE id_service = $1 AND is_active = TRUE
+                 ORDER BY created_at DESC LIMIT 1`,
+                [serviceId]
+            );
+            res.json({ evaluation: rows[0] ?? null });
+        } catch (error) {
+            res.status(500).json({ message: 'Error en getByService', error: error.message });
         }
     }
 }

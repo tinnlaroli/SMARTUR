@@ -184,13 +184,61 @@ class AdminVerificationController {
         }
     }
 
+    static async getConfig(req, res) {
+        try {
+            const { rows } = await pool.query('SELECT key, value FROM app_config');
+            res.json(Object.fromEntries(rows.map(r => [r.key, r.value])));
+        } catch (error) {
+            console.error('Error en getConfig:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
+    static async setConfig(req, res) {
+        const { key } = req.params;
+        const { value } = req.body;
+        if (value === undefined || value === null) {
+            return res.status(400).json({ message: 'value es requerido.' });
+        }
+        try {
+            await pool.query(
+                `INSERT INTO app_config (key, value, updated_at) VALUES ($1, $2, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                [key, String(value)]
+            );
+            res.json({ key, value: String(value) });
+        } catch (error) {
+            console.error('Error en setConfig:', error);
+            return res.status(500).json({ message: 'Error del servidor.' });
+        }
+    }
+
     /**
      * PATCH /api/v2/admin/services/:id/approve
-     * Admin aprueba un servicio turístico.
+     * Aprueba un servicio turístico. Requiere evaluación completada con puntaje >= umbral.
      */
     static async approveService(req, res) {
         const { id } = req.params;
         try {
+            const { rows: cfg } = await pool.query(
+                `SELECT value FROM app_config WHERE key = 'evaluation_min_score'`
+            );
+            const minScore = parseFloat(cfg[0]?.value ?? '7');
+
+            const { rows: evals } = await pool.query(
+                `SELECT total_score FROM service_evaluation
+                 WHERE id_service = $1 AND is_active = TRUE AND status = 'completed'
+                 ORDER BY created_at DESC LIMIT 1`,
+                [id]
+            );
+            if (!evals[0] || parseFloat(evals[0].total_score) < minScore) {
+                return res.status(400).json({
+                    message: `El servicio debe tener una evaluación completada con puntaje mínimo de ${minScore}/10.`,
+                    code: 'EVALUATION_REQUIRED',
+                    minScore,
+                });
+            }
+
             const result = await pool.query(
                 `UPDATE tourist_service SET status = 'active', active = true
                  WHERE id_service = $1 AND status = 'pending_review'

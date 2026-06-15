@@ -11,6 +11,12 @@ router.get(
     ServiceEvaluationController.findAllServiceEvaluationController
 );
 router.get(
+    '/service-evaluation/service/:serviceId',
+    verifyToken,
+    requireRole([1, 4]),
+    ServiceEvaluationController.getByService
+);
+router.get(
     '/service-evaluation/:id_evaluation',
     verifyToken,
     ServiceEvaluationController.findServiceEvaluationByIdController

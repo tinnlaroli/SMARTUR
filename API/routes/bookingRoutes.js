@@ -10,6 +10,9 @@ const router = express.Router();
 router.post('/bookings',    verifyToken, requireRole([2]), BookingController.createBooking);
 router.get('/bookings/me',  verifyToken, requireRole([2]), BookingController.getMyBookings);
 
+// Tourist update their own booking
+router.patch('/bookings/:id', verifyToken, requireRole([2]), BookingController.updateBooking);
+
 // Tourist cancel their own booking
 router.patch('/bookings/:id/cancel', verifyToken, requireRole([2]), BookingController.cancelBooking);
 

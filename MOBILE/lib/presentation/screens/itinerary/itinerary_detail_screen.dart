@@ -18,6 +18,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/models/booking_model.dart';
 import '../../../data/services/booking_service.dart';
 import '../../../data/services/chat_service.dart';
 import '../../../data/services/itinerary_service.dart';
@@ -43,6 +44,7 @@ class ItineraryDetailScreen extends StatefulWidget {
 class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   late Itinerary _it;
   bool _loadingCopy = false;
+  final Map<int, Booking> _stopBookings = {};
 
   @override
   void initState() {
@@ -96,9 +98,34 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         dateRange: _it.startDate != null && _it.endDate != null
             ? DateTimeRange(start: _it.startDate!, end: _it.endDate!)
             : null,
+        onBooked: (booking) {
+          if (mounted) setState(() => _stopBookings[stop.placeId] = booking);
+        },
       ),
     );
   }
+
+  void _showManageBookingSheet(BuildContext context, ItineraryStop stop, Booking booking) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ManageBookingSheet(
+        booking: booking,
+        serviceName: stop.placeName,
+        dateRange: _it.startDate != null && _it.endDate != null
+            ? DateTimeRange(start: _it.startDate!, end: _it.endDate!)
+            : null,
+        onCancelled: () {
+          if (mounted) setState(() => _stopBookings.remove(stop.placeId));
+        },
+        onUpdated: (updated) {
+          if (mounted) setState(() => _stopBookings[stop.placeId] = updated);
+        },
+      ),
+    );
+  }
+
 
   void _showContactSheet(BuildContext context, ItineraryStop stop) {
     showModalBottomSheet(
@@ -593,30 +620,39 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                                     stop.placeLat != null)
                                   const SizedBox(width: 12),
                                 if (stop.placeKind == 'svc')
-                                  TextButton.icon(
-                                    onPressed: () =>
-                                        _showBookingSheet(context, stop),
-                                    icon: const Icon(
-                                        Icons.calendar_today_rounded,
-                                        size: 14),
-                                    label: Text(
-                                      AppLocalizations.of(context)!
-                                          .bookingTitle,
-                                      style: const TextStyle(
-                                        fontFamily: 'Outfit',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                  Builder(builder: (bCtx) {
+                                    final existing = _stopBookings[stop.placeId];
+                                    if (existing != null && !existing.isCancelled) {
+                                      return TextButton.icon(
+                                        onPressed: () => _showManageBookingSheet(bCtx, stop, existing),
+                                        icon: const Icon(Icons.check_circle_rounded, size: 14),
+                                        label: const Text(
+                                          'Reservado',
+                                          style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.green.shade600,
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                      );
+                                    }
+                                    return TextButton.icon(
+                                      onPressed: () => _showBookingSheet(bCtx, stop),
+                                      icon: const Icon(Icons.calendar_today_rounded, size: 14),
+                                      label: Text(
+                                        AppLocalizations.of(bCtx)!.bookingTitle,
+                                        style: const TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600),
                                       ),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: SmarturStyle.purple,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 4),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                  ),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: SmarturStyle.purple,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    );
+                                  }),
                                 if (stop.placeKind == 'svc') ...[
                                   const SizedBox(width: 6),
                                   TextButton.icon(
@@ -958,12 +994,14 @@ class _BookingSheet extends StatefulWidget {
   final String serviceName;
   final DateTime? initialDate;
   final DateTimeRange? dateRange;
+  final void Function(Booking)? onBooked;
 
   const _BookingSheet({
     required this.serviceId,
     required this.serviceName,
     this.initialDate,
     this.dateRange,
+    this.onBooked,
   });
 
   @override
@@ -1050,7 +1088,7 @@ class _BookingSheetState extends State<_BookingSheet> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _saving = true);
     try {
-      await _service.createBooking(
+      final booking = await _service.createBooking(
         serviceId: widget.serviceId,
         visitDate: _date,
         visitTime: _time,
@@ -1058,6 +1096,7 @@ class _BookingSheetState extends State<_BookingSheet> {
         notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
       );
       if (!mounted) return;
+      widget.onBooked?.call(booking);
       Navigator.pop(context);
       SmarturNotifications.showSuccess(context, l10n.bookingSuccess);
     } catch (e) {
@@ -1302,6 +1341,291 @@ class _BookingSheetState extends State<_BookingSheet> {
                       fontSize: 15,
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Manage existing booking (edit / cancel)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ManageBookingSheet extends StatefulWidget {
+  final Booking booking;
+  final String serviceName;
+  final DateTimeRange? dateRange;
+  final VoidCallback onCancelled;
+  final void Function(Booking) onUpdated;
+
+  const _ManageBookingSheet({
+    required this.booking,
+    required this.serviceName,
+    this.dateRange,
+    required this.onCancelled,
+    required this.onUpdated,
+  });
+
+  @override
+  State<_ManageBookingSheet> createState() => _ManageBookingSheetState();
+}
+
+class _ManageBookingSheetState extends State<_ManageBookingSheet> {
+  final _service = BookingService();
+  final _notesCtrl = TextEditingController();
+  late DateTime _date;
+  String? _time;
+  late int _guests;
+  bool _saving = false;
+  bool _cancelling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _date = widget.booking.visitDate;
+    _time = widget.booking.visitTime;
+    _guests = widget.booking.guests;
+    _notesCtrl.text = widget.booking.notes ?? '';
+  }
+
+  @override
+  void dispose() {
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final range = widget.dateRange;
+    final first = range != null && range.start.isAfter(DateTime.now())
+        ? range.start
+        : DateTime.now();
+    final last = range?.end ?? DateTime.now().add(const Duration(days: 365));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date.isAfter(first) ? _date : first,
+      firstDate: first,
+      lastDate: last,
+    );
+    if (picked != null && mounted) setState(() => _date = picked);
+  }
+
+  Future<void> _pickTime() async {
+    final initial = _time != null
+        ? TimeOfDay(
+            hour: int.parse(_time!.split(':')[0]),
+            minute: int.parse(_time!.split(':')[1]))
+        : TimeOfDay.now();
+    final picked = await showTimePicker(context: context, initialTime: initial);
+    if (picked != null && mounted) {
+      setState(() {
+        _time = '${picked.hour.toString().padLeft(2, '0')}:'
+            '${picked.minute.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      final updated = await _service.updateBooking(
+        id: widget.booking.id,
+        visitDate: _date,
+        visitTime: _time,
+        guests: _guests,
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      );
+      if (!mounted) return;
+      widget.onUpdated(updated);
+      Navigator.pop(context);
+      SmarturNotifications.showSuccess(context, 'Reserva actualizada');
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _cancel() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancelar reserva', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
+        content: const Text('¿Seguro que deseas cancelar esta reserva?', style: TextStyle(fontFamily: 'Outfit')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No', style: TextStyle(fontFamily: 'Outfit')),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade600),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sí, cancelar', style: TextStyle(fontFamily: 'Outfit')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _cancelling = true);
+    try {
+      await _service.cancelBooking(widget.booking.id);
+      if (!mounted) return;
+      widget.onCancelled();
+      Navigator.pop(context);
+      SmarturNotifications.showSuccess(context, 'Reserva cancelada');
+    } catch (e) {
+      if (mounted) SmarturNotifications.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _cancelling = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final mq = MediaQuery.of(context);
+    final statusColor = widget.booking.isPending
+        ? Colors.amber.shade700
+        : widget.booking.isConfirmed
+            ? Colors.green.shade600
+            : Colors.red.shade600;
+    final statusLabel = widget.booking.isPending
+        ? 'Pendiente'
+        : widget.booking.isConfirmed
+            ? 'Confirmada'
+            : 'Cancelada';
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + mq.viewInsets.bottom),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: scheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mi reserva',
+                      style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+                    ),
+                    Text(
+                      widget.serviceName,
+                      style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: scheme.primary),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600, color: statusColor),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          _Row(
+            label: 'Fecha',
+            trailing: TextButton(
+              onPressed: _pickDate,
+              child: Text(
+                '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}',
+                style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.primary),
+              ),
+            ),
+          ),
+          _Row(
+            label: 'Hora',
+            trailing: TextButton(
+              onPressed: _pickTime,
+              child: Text(
+                _time ?? '--:--',
+                style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: _time != null ? scheme.primary : scheme.outline),
+              ),
+            ),
+          ),
+          _Row(
+            label: 'Personas',
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline_rounded),
+                  onPressed: _guests > 1 ? () => setState(() => _guests--) : null,
+                  color: scheme.primary,
+                  visualDensity: VisualDensity.compact,
+                ),
+                Text('$_guests', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, fontSize: 16, color: scheme.onSurface)),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  onPressed: () => setState(() => _guests++),
+                  color: scheme.primary,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _notesCtrl,
+            decoration: InputDecoration(
+              labelText: 'Notas',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+              filled: true,
+              fillColor: scheme.surfaceContainerHighest,
+            ),
+            maxLines: 2,
+            style: const TextStyle(fontFamily: 'Outfit', fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+
+          FilledButton(
+            onPressed: (_saving || _cancelling) ? null : _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: SmarturStyle.purple,
+              minimumSize: const Size(double.infinity, 52),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: _saving
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Guardar cambios', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, fontSize: 15)),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: (_saving || _cancelling) ? null : _cancel,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red.shade600,
+              side: BorderSide(color: Colors.red.shade300),
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: _cancelling
+                ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red.shade600))
+                : const Text('Cancelar reserva', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, fontSize: 14)),
           ),
         ],
       ),

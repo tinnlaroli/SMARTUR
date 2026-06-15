@@ -55,6 +55,29 @@ class BookingService {
     return list.map((e) => Booking.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<Booking> updateBooking({
+    required int id,
+    required DateTime visitDate,
+    String? visitTime,
+    int guests = 1,
+    String? notes,
+  }) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.bookings}/$id');
+    final body = jsonEncode({
+      'visit_date': visitDate.toIso8601String().substring(0, 10),
+      'visit_time': visitTime,
+      'guests': guests,
+      'notes': notes,
+    });
+    final res = await ApiClient.patch(uri, body: body);
+    if (res.statusCode == 401) throw AuthException('Sesión expirada');
+    if (res.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      return Booking.fromJson(data['booking'] as Map<String, dynamic>? ?? data);
+    }
+    throw BookingException(_msg(res));
+  }
+
   Future<void> cancelBooking(int id) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.bookings}/$id/cancel');
     final res = await ApiClient.patch(uri, body: '{}');

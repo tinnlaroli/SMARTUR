@@ -56,7 +56,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'services',              label: t('sidebar.services'),              icon: Wrench,         path: '/dashboard/servicios',                 roles: [1, 4] },
         { id: 'locations',             label: t('sidebar.locations'),             icon: MapPin,         path: '/dashboard/ubicaciones',               roles: [1] },
         { id: 'company-verification',  label: t('sidebar.companyVerification'),   icon: ShieldCheck,    path: '/dashboard/verificacion-empresas',     roles: [1] },
-        { id: 'services-approval',     label: t('sidebar.servicesApproval'),      icon: ClipboardCheck, path: '/dashboard/servicios-pendientes',      roles: [1] },
+        { id: 'services-approval',     label: t('sidebar.servicesApproval'),      icon: ClipboardCheck, path: '/dashboard/servicios-pendientes',      roles: [1, 4] },
         { id: 'pois-approval',         label: 'POIs pendientes',                  icon: MapPin,         path: '/dashboard/pois-pendientes',            roles: [1] },
         { id: 'disputes',              label: t('sidebar.disputes'),              icon: GitCompare,     path: '/dashboard/disputas',                  roles: [1] },
         { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle,    path: '/dashboard/perfiles',                            roles: [1] },

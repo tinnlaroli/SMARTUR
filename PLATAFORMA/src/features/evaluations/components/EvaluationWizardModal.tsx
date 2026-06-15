@@ -19,7 +19,7 @@ import type { EvaluationCriterion, EvaluationDetailDTO } from '../types/types';
 import { useToast } from '../../../shared/context/ToastContext';
 import { instrumentApi } from '../../instrument-builder/api/instrumentApi';
 import type { InstrumentTemplate } from '../../instrument-builder/types/types';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { PdfUploadSection } from './PdfUploadSection';
 import { ScanValidationStep } from './ScanValidationStep';
@@ -111,6 +111,7 @@ const EvaluationWizardModal: React.FC<Props> = ({
 }) => {
     useEscapeKey(onClose);
     const { lang } = useLanguage();
+    const { user: sessionUser } = useUserPreferences();
     const mod = useMemo(() => getDashboardText(lang).modules.modals, [lang]);
     const ev = mod.evaluations;
     const stepsWithIcons = useMemo(
@@ -175,7 +176,7 @@ const EvaluationWizardModal: React.FC<Props> = ({
         const payload = {
             id_service: serviceId,
             id_template: selectedTemplate.id,
-            evaluator_id: 1,
+            evaluator_id: sessionUser?.id ?? 1,
             evaluation_date: new Date().toISOString().split('T')[0],
             evaluation_time: 1,
             general_observations: '',
@@ -294,7 +295,7 @@ const EvaluationWizardModal: React.FC<Props> = ({
         const payload = {
             id_service: serviceId,
             id_template: selectedTemplate!.id,
-            evaluator_id: 1,
+            evaluator_id: sessionUser?.id ?? 1,
             evaluation_date: new Date().toISOString().split('T')[0],
             evaluation_time: durationMinutes,
             general_observations: generalObservations,

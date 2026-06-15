@@ -1,4 +1,4 @@
-package com.example.app_smartur
+package mx.smartur.app
 
 import android.content.Intent
 import android.content.pm.PackageManager

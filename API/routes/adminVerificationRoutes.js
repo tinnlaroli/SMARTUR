@@ -6,8 +6,8 @@ import { requireRole } from '../middleware/rbacMiddleware.js';
 
 const router = Router();
 
-// Todas las rutas de este archivo requieren admin (role_id = 1)
-router.use('/admin', verifyToken, requireRole([1]));
+// Todas las rutas requieren autenticación. Las rutas específicas añaden requireRole adicional.
+router.use('/admin', verifyToken, requireRole([1, 4]));
 
 /**
  * GET /api/v2/admin/companies
@@ -70,6 +70,10 @@ router.patch('/admin/services/:id/reject', AdminVerificationController.rejectSer
 router.get('/admin/pois/pending',          AdminVerificationController.listPendingPOIs);
 router.patch('/admin/pois/:id/approve',    AdminVerificationController.approvePOI);
 router.patch('/admin/pois/:id/reject',     AdminVerificationController.rejectPOI);
+
+// ── Config (solo admin role 1) ────────────────────────────────────────────────
+router.get('/admin/config',         requireRole([1]), AdminVerificationController.getConfig);
+router.patch('/admin/config/:key',  requireRole([1]), AdminVerificationController.setConfig);
 
 // ── Itinerarios admin ─────────────────────────────────────────────────────────
 router.get('/admin/itineraries',              ItineraryController.adminList);

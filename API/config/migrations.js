@@ -681,6 +681,17 @@ ALTER TABLE tourist_service
 ALTER TABLE tourist_service ALTER COLUMN status SET DEFAULT 'pending_review';
 `,
     },
+    {
+        name: 'v37_app_config',
+        sql: `CREATE TABLE IF NOT EXISTS app_config (
+              key        VARCHAR(100) PRIMARY KEY,
+              value      TEXT NOT NULL,
+              updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          );
+          INSERT INTO app_config (key, value)
+          VALUES ('evaluation_min_score', '7')
+          ON CONFLICT (key) DO NOTHING;`,
+    },
 ];
 
 export async function runMigrations() {
