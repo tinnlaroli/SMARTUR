@@ -765,7 +765,7 @@ export function AdminCompaniesVerificationPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="shrink-0 flex items-center justify-between gap-4 border-t py-2 text-sm" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 text-sm text-zinc-600 dark:text-zinc-400 border-t border-zinc-200 dark:border-zinc-800">
                     <span>{total} empresas · Página {page + 1} de {totalPages}</span>
                     <div className="flex items-center gap-1">
                         <button
