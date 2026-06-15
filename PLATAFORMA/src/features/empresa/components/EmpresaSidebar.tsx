@@ -23,9 +23,8 @@ interface MenuItem {
 
 const MENU_GROUPS = [
     { label: 'Principal',          items: ['home'] },
-    { label: 'Gestión Comercial',  items: ['services', 'calendar', 'messages'] },
+    { label: 'Gestión Comercial',  items: ['services', 'calendar', 'messages', 'faqs'] },
     { label: 'Analíticas',         items: ['analytics'] },
-    { label: 'Soporte y Ayuda',    items: ['faqs'] },
     { label: 'Estatus',            items: ['verificacion', 'changes'] },
     { label: 'Mi Cuenta',          items: ['profile', 'settings'] },
 ];
