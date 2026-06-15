@@ -81,6 +81,7 @@ class _MainScreenState extends State<MainScreen> {
     setState(() => _currentIndex = index);
     if (index == MainTabIndex.home) {
       _homeScreenKey.currentState?.refreshUserIdentity();
+      _homeScreenKey.currentState?.reloadRecommendations();
     }
   }
 

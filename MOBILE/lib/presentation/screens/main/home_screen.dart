@@ -223,6 +223,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   /// Segundo toque en la pestaña Inicio: vuelve al inicio del scroll.
+  void reloadRecommendations() => _loadRecommendations();
+
   void scrollToTop() {
     if (!_homeScrollController.hasClients) return;
     _homeScrollController.animateTo(

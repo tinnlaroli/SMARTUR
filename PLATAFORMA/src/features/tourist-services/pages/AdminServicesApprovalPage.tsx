@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
     CheckCircle, XCircle, ClipboardCheck, X, Loader2, RefreshCw,
     Building2, MapPin, Clock, Phone, ImageOff,
+    Wrench, ShieldCheck, DollarSign, Calendar, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/axiosClient';
@@ -20,6 +21,11 @@ import {
     TABLE_CHECKBOX_CLASS,
     TABLE_BADGE_COLORS,
     TableBadge,
+    SortableHeadCell,
+    DataTableHeaderSelect,
+    type SortState,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
 
 const COLOR = MODULE_COLORS.servicesApproval;
@@ -314,13 +320,23 @@ export function AdminServicesApprovalPage() {
         }
     };
 
-    const filtered = services.filter(s =>
-        !search ||
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.company_name.toLowerCase().includes(search.toLowerCase()),
-    );
+    const [sort, setSort]   = useState<SortState | null>(null);
+    const [svcPage, setSvcPage] = useState(0);
+    const SVC_PAGE_SIZE = 20;
+    const handleSort = (key: string) => { setSort(s => nextSort(s, key)); setSvcPage(0); };
 
-    const allIds      = filtered.map(s => s.id_service);
+    const filtered = sortRows(
+        services.filter(s =>
+            !search ||
+            s.name.toLowerCase().includes(search.toLowerCase()) ||
+            s.company_name.toLowerCase().includes(search.toLowerCase()),
+        ),
+        sort,
+    );
+    const svcTotalPages = Math.max(1, Math.ceil(filtered.length / SVC_PAGE_SIZE));
+    const pagedServices = filtered.slice(svcPage * SVC_PAGE_SIZE, (svcPage + 1) * SVC_PAGE_SIZE);
+
+    const allIds      = pagedServices.map(s => s.id_service);
     const allSelected = allIds.length > 0 && allIds.every(id => selected.includes(id));
     const toggleAll   = () => setSelected(allSelected ? [] : allIds);
     const toggle      = (id: number) =>
@@ -461,15 +477,36 @@ export function AdminServicesApprovalPage() {
                                                 onChange={toggleAll}
                                             />
                                         </DataTableHeadCell>
-                                        <DataTableHeadCell>Servicio</DataTableHeadCell>
-                                        <DataTableHeadCell>Empresa</DataTableHeadCell>
-                                        <DataTableHeadCell>Estado</DataTableHeadCell>
-                                        <DataTableHeadCell>Precio</DataTableHeadCell>
-                                        <DataTableHeadCell>Enviado</DataTableHeadCell>
+                                        <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>
+                                            <Wrench size={12} className="shrink-0" /> Servicio
+                                        </SortableHeadCell>
+                                        <SortableHeadCell sortKey="company_name" sort={sort} onSort={handleSort}>
+                                            <Building2 size={12} className="shrink-0" /> Empresa
+                                        </SortableHeadCell>
+                                        <DataTableHeadCell>
+                                            <div className="flex items-center gap-1.5">
+                                                <ShieldCheck size={12} /> Estado
+                                                <DataTableHeaderSelect
+                                                    value={activeFilter ?? ''}
+                                                    onChange={v => { setActiveFilter(v || null); setSvcPage(0); }}
+                                                >
+                                                    <option value="">Todos</option>
+                                                    <option value="pending_review">En revisión</option>
+                                                    <option value="active">Activos</option>
+                                                    <option value="rejected">Rechazados</option>
+                                                </DataTableHeaderSelect>
+                                            </div>
+                                        </DataTableHeadCell>
+                                        <DataTableHeadCell>
+                                            <span className="flex items-center gap-1.5"><DollarSign size={12} /> Precio</span>
+                                        </DataTableHeadCell>
+                                        <SortableHeadCell sortKey="created_at" sort={sort} onSort={handleSort}>
+                                            <Calendar size={12} className="shrink-0" /> Enviado
+                                        </SortableHeadCell>
                                     </tr>
                                 </DataTableHead>
                                 <DataTableBody>
-                                    {filtered.map((service, i) => (
+                                    {pagedServices.map((service, i) => (
                                         <DataTableRow
                                             key={service.id_service}
                                             index={i}
@@ -543,6 +580,32 @@ export function AdminServicesApprovalPage() {
                     </DataTableScroll>
                 </DataTableShell>
             </div>
+
+            {/* Pagination */}
+            {svcTotalPages > 1 && (
+                <div className="shrink-0 flex items-center justify-between gap-4 border-t py-2 text-sm" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
+                    <span>{filtered.length} servicios · Página {svcPage + 1} de {svcTotalPages}</span>
+                    <div className="flex items-center gap-1">
+                        <button onClick={() => setSvcPage(0)} disabled={svcPage === 0} className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <ChevronLeft size={14} /><ChevronLeft size={14} className="-ml-2" />
+                        </button>
+                        <button onClick={() => setSvcPage(p => Math.max(0, p - 1))} disabled={svcPage === 0} className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <ChevronLeft size={16} strokeWidth={1.5} />
+                        </button>
+                        {Array.from({ length: svcTotalPages }, (_, i) => i).filter(i => Math.abs(i - svcPage) <= 2).map(i => (
+                            <button key={i} onClick={() => setSvcPage(i)} className="min-w-[32px] px-2 py-1 rounded-md text-xs font-medium transition-colors" style={i === svcPage ? { backgroundColor: COLOR, color: '#fff' } : undefined}>
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button onClick={() => setSvcPage(p => Math.min(svcTotalPages - 1, p + 1))} disabled={svcPage >= svcTotalPages - 1} className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <ChevronRight size={16} strokeWidth={1.5} />
+                        </button>
+                        <button onClick={() => setSvcPage(svcTotalPages - 1)} disabled={svcPage >= svcTotalPages - 1} className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <ChevronRight size={14} /><ChevronRight size={14} className="-ml-2" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Service preview modal */}
             <AnimatePresence>

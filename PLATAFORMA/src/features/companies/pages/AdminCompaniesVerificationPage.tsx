@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
     RefreshCw, X, ShieldX, MapPin, Download,
+    Building2, User, Tag, Calendar, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../../shared/api/axiosClient';
@@ -19,6 +20,11 @@ import {
     TABLE_BADGE_COLORS,
     TableBadge,
     TABLE_CHECKBOX_CLASS,
+    SortableHeadCell,
+    DataTableHeaderSelect,
+    type SortState,
+    nextSort,
+    sortRows,
 } from '../../../components/ui/DataTable';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
@@ -512,6 +518,8 @@ export function AdminCompaniesVerificationPage() {
     const [reviewing, setReviewing]     = useState<PendingCompany | null>(null);
     const [selected, setSelected]       = useState<number[]>([]);
     const [bulkWorking, setBulkWorking] = useState(false);
+    const [sort, setSort]               = useState<SortState | null>(null);
+    const handleSort = (key: string) => setSort(s => nextSort(s, key));
 
     const fetchCompanies = useCallback(async () => {
         setLoading(true);
@@ -534,6 +542,7 @@ export function AdminCompaniesVerificationPage() {
     useEffect(() => { void fetchCompanies(); }, [fetchCompanies]);
     useEffect(() => { setSelected([]); }, [page, filter]);
 
+    const sortedCompanies = sortRows(companies, sort);
     const allIds      = companies.map(c => c.id_company);
     const allSelected = allIds.length > 0 && allIds.every(id => selected.includes(id));
     const toggleAll   = () => setSelected(allSelected ? [] : allIds);
@@ -653,15 +662,38 @@ export function AdminCompaniesVerificationPage() {
                                                 onChange={toggleAll}
                                             />
                                         </DataTableHeadCell>
-                                        <DataTableHeadCell>Empresa</DataTableHeadCell>
-                                        <DataTableHeadCell>Propietario</DataTableHeadCell>
-                                        <DataTableHeadCell>Sector / Ciudad</DataTableHeadCell>
-                                        <DataTableHeadCell>Estado</DataTableHeadCell>
-                                        <DataTableHeadCell>Registro</DataTableHeadCell>
+                                        <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>
+                                            <Building2 size={12} className="shrink-0" /> Empresa
+                                        </SortableHeadCell>
+                                        <DataTableHeadCell>
+                                            <span className="flex items-center gap-1.5"><User size={12} /> Propietario</span>
+                                        </DataTableHeadCell>
+                                        <DataTableHeadCell>
+                                            <span className="flex items-center gap-1.5"><Tag size={12} /> Sector / Ciudad</span>
+                                        </DataTableHeadCell>
+                                        <DataTableHeadCell>
+                                            <div className="flex items-center gap-1.5">
+                                                <ShieldCheck size={12} /> Estado
+                                                <DataTableHeaderSelect
+                                                    value={filter}
+                                                    onChange={v => { setFilter(v as StatusFilter); setPage(0); }}
+                                                >
+                                                    <option value="all">Todos</option>
+                                                    <option value="pending_docs">Pendiente docs</option>
+                                                    <option value="documents_submitted">Docs enviados</option>
+                                                    <option value="active">Activa</option>
+                                                    <option value="rejected">Rechazada</option>
+                                                    <option value="suspended">Suspendida</option>
+                                                </DataTableHeaderSelect>
+                                            </div>
+                                        </DataTableHeadCell>
+                                        <SortableHeadCell sortKey="submitted_at" sort={sort} onSort={handleSort}>
+                                            <Calendar size={12} className="shrink-0" /> Registro
+                                        </SortableHeadCell>
                                     </tr>
                                 </DataTableHead>
                                 <DataTableBody>
-                                    {companies.map((company, i) => {
+                                    {sortedCompanies.map((company, i) => {
                                         const cfg = STATUS_CONFIG[company.status] ?? { label: company.status, color: TABLE_BADGE_COLORS.neutral };
                                         return (
                                             <DataTableRow
@@ -733,26 +765,50 @@ export function AdminCompaniesVerificationPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="shrink-0 flex justify-center gap-2">
-                    <button
-                        onClick={() => setPage(p => Math.max(0, p - 1))}
-                        disabled={page === 0}
-                        className="px-3 py-1.5 rounded-lg text-sm disabled:opacity-40 transition-colors hover:opacity-80"
-                        style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}
-                    >
-                        ← Anterior
-                    </button>
-                    <span className="px-3 py-1.5 text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {page + 1} / {totalPages}
-                    </span>
-                    <button
-                        onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                        disabled={page >= totalPages - 1}
-                        className="px-3 py-1.5 rounded-lg text-sm disabled:opacity-40 transition-colors hover:opacity-80"
-                        style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}
-                    >
-                        Siguiente →
-                    </button>
+                <div className="shrink-0 flex items-center justify-between gap-4 border-t py-2 text-sm" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
+                    <span>{total} empresas · Página {page + 1} de {totalPages}</span>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setPage(0)}
+                            disabled={page === 0}
+                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <ChevronLeft size={14} /><ChevronLeft size={14} className="-ml-2" />
+                        </button>
+                        <button
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0}
+                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <ChevronLeft size={16} strokeWidth={1.5} />
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i).filter(i => Math.abs(i - page) <= 2).map(i => (
+                            <button
+                                key={i}
+                                onClick={() => setPage(i)}
+                                className="min-w-[32px] px-2 py-1 rounded-md text-xs font-medium transition-colors"
+                                style={i === page
+                                    ? { backgroundColor: COLOR, color: '#fff' }
+                                    : undefined}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                            disabled={page >= totalPages - 1}
+                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <ChevronRight size={16} strokeWidth={1.5} />
+                        </button>
+                        <button
+                            onClick={() => setPage(totalPages - 1)}
+                            disabled={page >= totalPages - 1}
+                            className="p-1.5 rounded-md transition-colors disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        >
+                            <ChevronRight size={14} /><ChevronRight size={14} className="-ml-2" />
+                        </button>
+                    </div>
                 </div>
             )}
 
