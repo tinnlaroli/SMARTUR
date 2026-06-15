@@ -282,8 +282,8 @@ export function AdminItinerariesPage() {
                                             <DataTableCell>{it.owner_name}</DataTableCell>
                                             <DataTableCell className="text-center">{it.copy_count}</DataTableCell>
                                             <DataTableCell className="text-xs">{formatDate(it.created_at)}</DataTableCell>
-                                            <DataTableCell className="text-center">
-                                                <div className="flex justify-center">
+                                            <DataTableCell>
+                                                <div className="flex items-center justify-center w-full">
                                                 <button
                                                     onClick={() => handleCertify(it)}
                                                     disabled={actionId === it.id_itinerary}
