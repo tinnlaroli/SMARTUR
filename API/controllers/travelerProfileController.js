@@ -149,13 +149,18 @@ export class TravelerProfileController {
 
     static async savePreferences(req, res) {
         const userId = req.user.id;
-        const profileBody = { ...req.body };
+        // Soporte para estructura anidada { travelerProfile: {...} } (mobile) y campos al raíz (web)
+        const rawProfile = req.body.travelerProfile ?? req.body;
+        const profileBody = { ...rawProfile };
         delete profileBody.birth_date;
+        delete profileBody.birthDate;
 
+        // Soporte para birthDate (camelCase, mobile) y birth_date (snake_case, web)
+        const rawBirthDate = req.body.birthDate ?? req.body.birth_date ?? null;
         let birthDateToSet;
-        const hasBirthKey = Object.prototype.hasOwnProperty.call(req.body, 'birth_date');
+        const hasBirthKey = rawBirthDate !== null;
         if (hasBirthKey) {
-            const check = normalizeBirthDateInput(req.body.birth_date);
+            const check = normalizeBirthDateInput(rawBirthDate);
             if (!check.ok) {
                 return res.status(400).json({ message: check.error });
             }

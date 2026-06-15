@@ -363,7 +363,8 @@ class EmpresaController {
             const result = await pool.query(
                 `SELECT ts.id_service, ts.name, ts.description, ts.service_type,
                         ts.active, ts.status, ts.image_url, ts.id_location, ts.id_company,
-                        ts.price_from, ts.price_to, ts.currency, ts.duration_minutes, ts.contact_phone
+                        ts.price_from, ts.price_to, ts.currency, ts.duration_minutes, ts.contact_phone,
+                        ts.operating_hours
                    FROM tourist_service ts
                    ${whereClause}
                    ORDER BY ts.name

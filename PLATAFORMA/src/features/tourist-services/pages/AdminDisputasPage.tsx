@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../shared/api/axiosClient';
 import {
     AlertCircle, CheckCircle, Loader2, RefreshCw, ShieldCheck, ShieldX,
-    ChevronLeft, ChevronRight, Building2, MessageSquareDiff, X,
+    Building2, MessageSquareDiff, X,
 } from 'lucide-react';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
+import { SharedPagination } from '../../../components/ui/SharedPagination';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,38 +80,38 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#121214] rounded-xl shadow-2xl w-full max-w-lg border border-zinc-200 dark:border-zinc-800">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
-                    <h3 className="text-base font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <div className="rounded-xl shadow-2xl w-full max-w-lg border" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+                <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <h3 className="text-base font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
                         <ShieldCheck className="size-4 text-violet-500" />
-                        Resolver disputa #{log.id}
+                        Resolver aclaración #{log.id}
                     </h3>
-                    <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition-colors">
+                    <button onClick={onClose} className="rounded-lg p-1.5 transition-colors nav-item-idle">
                         <X className="size-4" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-y-5 max-h-[80vh] overflow-y-auto">
                     {/* Changes summary */}
-                    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                        <div className="bg-zinc-50 dark:bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                            Campos en disputa
+                    <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="px-4 py-2 text-xs font-bold uppercase tracking-widest" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}>
+                            Campos en aclaración
                         </div>
-                        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
                             {Object.entries(log.changes).map(([field, change]) => (
                                 <div key={field} className="px-4 py-3">
-                                    <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">{change.label}</p>
+                                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{change.label}</p>
                                     <div className="grid grid-cols-3 gap-2 text-xs">
                                         <div>
-                                            <span className="text-zinc-400 block mb-0.5">Admin editó:</span>
+                                            <span className="block mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Admin editó:</span>
                                             <span className="text-emerald-600 dark:text-emerald-400 font-medium">{formatValue(change.new)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-zinc-400 block mb-0.5">Original:</span>
+                                            <span className="block mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Original:</span>
                                             <span className="text-red-500 line-through">{formatValue(change.old)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-zinc-400 block mb-0.5">Empresa propone:</span>
+                                            <span className="block mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Empresa propone:</span>
                                             <span className="text-violet-600 dark:text-violet-400 font-medium">
                                                 {log.empresa_counter?.[field] != null
                                                     ? formatValue(log.empresa_counter[field])
@@ -133,7 +134,7 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
 
                     {/* Resolution choice */}
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-3">Resolución</p>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-alt)' }}>Resolución</p>
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
@@ -141,12 +142,13 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
                                 className={`flex flex-col items-center gap-1.5 rounded-xl border p-4 text-center transition-all ${
                                     resolution === 'keep_admin'
                                         ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30'
-                                        : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                                        : 'hover:border-zinc-300 dark:hover:border-zinc-600'
                                 }`}
+                                style={{ borderColor: resolution === 'keep_admin' ? '' : 'var(--color-border)' }}
                             >
-                                <ShieldCheck className={`size-5 ${resolution === 'keep_admin' ? 'text-violet-600' : 'text-zinc-400'}`} />
-                                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Mantener edición admin</span>
-                                <span className="text-[10px] text-zinc-400">Los cambios del admin quedan aplicados</span>
+                                <ShieldCheck className={`size-5 ${resolution === 'keep_admin' ? 'text-violet-600' : ''}`} style={{ color: resolution === 'keep_admin' ? '' : 'var(--color-text-alt)' }} />
+                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Mantener edición admin</span>
+                                <span className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>Los cambios del admin quedan aplicados</span>
                             </button>
                             <button
                                 type="button"
@@ -154,19 +156,20 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
                                 className={`flex flex-col items-center gap-1.5 rounded-xl border p-4 text-center transition-all ${
                                     resolution === 'accept_empresa'
                                         ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-2 ring-emerald-500/30'
-                                        : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                                        : 'hover:border-zinc-300 dark:hover:border-zinc-600'
                                 }`}
+                                style={{ borderColor: resolution === 'accept_empresa' ? '' : 'var(--color-border)' }}
                             >
-                                <ShieldX className={`size-5 ${resolution === 'accept_empresa' ? 'text-emerald-600' : 'text-zinc-400'}`} />
-                                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Aceptar versión empresa</span>
-                                <span className="text-[10px] text-zinc-400">Aplica la contra-propuesta de la empresa</span>
+                                <ShieldX className={`size-5 ${resolution === 'accept_empresa' ? 'text-emerald-600' : ''}`} style={{ color: resolution === 'accept_empresa' ? '' : 'var(--color-text-alt)' }} />
+                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Aceptar versión empresa</span>
+                                <span className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>Aplica la contra-propuesta de la empresa</span>
                             </button>
                         </div>
                     </div>
 
                     {/* Optional admin note */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-zinc-500 mb-1.5">
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-alt)' }}>
                             Nota para la empresa (opcional)
                         </label>
                         <textarea
@@ -174,7 +177,8 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
                             onChange={(e) => setNote(e.target.value)}
                             rows={2}
                             placeholder="Explica la decisión tomada..."
-                            className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-white px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 outline-none resize-none"
+                            className="w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 outline-none resize-none"
+                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
                         />
                     </div>
 
@@ -184,11 +188,12 @@ function ResolveModal({ log, onClose, onResolve }: ResolveModalProps) {
                         </p>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="flex justify-end gap-3 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 rounded-lg text-sm font-medium border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors nav-item-idle"
+                            style={{ borderColor: 'var(--color-border)' }}
                         >
                             Cancelar
                         </button>
@@ -216,43 +221,43 @@ interface DisputeCardProps {
 
 function DisputeCard({ log, onResolve }: DisputeCardProps) {
     return (
-        <div className="rounded-xl border border-violet-200 dark:border-violet-900 bg-white dark:bg-[#18181b] overflow-hidden">
-            <div className="flex items-start justify-between px-5 py-4 border-b border-violet-100 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-900/10">
+        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex items-start justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
                 <div className="flex flex-col gap-y-0.5">
                     <div className="flex items-center gap-2">
                         <Building2 className="size-3.5 text-violet-500" />
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                             {log.company_name ?? `Empresa #${log.target_id}`}
                         </p>
                     </div>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
                         {TARGET_LABELS[log.target_type] ?? log.target_type} #{log.target_id} · {formatDate(log.created_at)}
                     </p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 px-2.5 py-1 text-xs font-semibold">
                     <MessageSquareDiff className="size-3" />
-                    En disputa
+                    En aclaración
                 </span>
             </div>
 
             {/* Changes */}
             <div className="px-5 py-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Cambios disputados</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-alt)' }}>Cambios en aclaración</p>
                 <div className="space-y-3">
                     {Object.entries(log.changes).map(([field, change]) => (
-                        <div key={field} className="rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3">
-                            <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-2">{change.label}</p>
+                        <div key={field} className="rounded-lg p-3" style={{ background: 'var(--color-bg-alt)' }}>
+                            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-alt)' }}>{change.label}</p>
                             <div className="grid grid-cols-3 gap-2 text-xs">
                                 <div>
-                                    <span className="text-zinc-400 block">Antes:</span>
+                                    <span className="block" style={{ color: 'var(--color-text-alt)' }}>Antes:</span>
                                     <span className="text-red-500">{formatValue(change.old)}</span>
                                 </div>
                                 <div>
-                                    <span className="text-zinc-400 block">Admin editó:</span>
+                                    <span className="block" style={{ color: 'var(--color-text-alt)' }}>Admin editó:</span>
                                     <span className="text-emerald-600 dark:text-emerald-400">{formatValue(change.new)}</span>
                                 </div>
                                 <div>
-                                    <span className="text-zinc-400 block">Empresa propone:</span>
+                                    <span className="block" style={{ color: 'var(--color-text-alt)' }}>Empresa propone:</span>
                                     <span className="text-violet-600 dark:text-violet-400 font-medium">
                                         {log.empresa_counter?.[field] != null
                                             ? formatValue(log.empresa_counter[field])
@@ -270,19 +275,19 @@ function DisputeCard({ log, onResolve }: DisputeCardProps) {
                 <div className="px-5 pb-4">
                     <div className="rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 p-3">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">Justificación de la empresa</p>
-                        <p className="text-xs text-zinc-700 dark:text-zinc-300">{log.empresa_note}</p>
+                        <p className="text-xs" style={{ color: 'var(--color-text)' }}>{log.empresa_note}</p>
                     </div>
                 </div>
             )}
 
             {/* Resolve action */}
-            <div className="flex items-center gap-3 px-5 py-3 border-t border-violet-100 dark:border-violet-900/40 bg-violet-50/30 dark:bg-violet-900/5">
+            <div className="flex items-center gap-3 px-5 py-3 border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
                 <button
                     onClick={() => onResolve(log)}
                     className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
                 >
                     <CheckCircle className="size-3.5" />
-                    Resolver disputa
+                    Resolver aclaración
                 </button>
             </div>
         </div>
@@ -328,19 +333,26 @@ export function AdminDisputasPage() {
     };
 
     return (
-        <div className="flex flex-col gap-y-6 p-6">
+        <div className="flex flex-col gap-y-6">
             {/* Header */}
-            <div className="flex items-start justify-between">
-                <div>
-                    <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Disputas de cambios</h1>
-                    <p className="text-sm text-zinc-500 mt-0.5">
-                        {total} disputa{total !== 1 ? 's' : ''} pendiente{total !== 1 ? 's' : ''} de resolución
+            <div className="flex items-center gap-3">
+                <div
+                    className="flex size-10 items-center justify-center rounded-xl"
+                    style={{ background: 'rgba(139,92,246,0.12)', color: '#7c3aed' }}
+                >
+                    <MessageSquareDiff className="size-5" />
+                </div>
+                <div className="flex-1">
+                    <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Aclaraciones</h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {total} aclaración{total !== 1 ? 'es' : ''} pendiente{total !== 1 ? 's' : ''} de resolución
                     </p>
                 </div>
                 <button
                     onClick={() => load(page)}
                     disabled={loading}
-                    className="flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors nav-item-idle"
+                    style={{ borderColor: 'var(--color-border)' }}
                 >
                     <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
                     Actualizar
@@ -350,7 +362,7 @@ export function AdminDisputasPage() {
             {/* Content */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="size-6 animate-spin text-zinc-400" />
+                    <Loader2 className="size-6 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
                 </div>
             ) : error ? (
                 <div className="flex items-center gap-2 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 dark:text-red-400">
@@ -358,9 +370,9 @@ export function AdminDisputasPage() {
                 </div>
             ) : logs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <CheckCircle className="size-10 text-zinc-200 dark:text-zinc-700 mb-3" />
-                    <p className="text-sm font-medium text-zinc-500">Sin disputas activas</p>
-                    <p className="text-xs text-zinc-400 mt-1">Cuando una empresa dispute un cambio aparecerá aquí.</p>
+                    <CheckCircle className="size-10 mb-3" style={{ color: 'var(--color-border)' }} />
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>Sin aclaraciones activas</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-alt)' }}>Cuando una empresa solicite una aclaración aparecerá aquí.</p>
                 </div>
             ) : (
                 <div className="flex flex-col gap-y-4 max-w-3xl">
@@ -372,24 +384,14 @@ export function AdminDisputasPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2 max-w-3xl">
-                    <p className="text-xs text-zinc-400">Página {page} de {totalPages}</p>
-                    <div className="flex gap-2">
-                        <button
-                            disabled={page <= 1}
-                            onClick={() => load(page - 1)}
-                            className="rounded-lg border border-zinc-300 dark:border-zinc-700 p-1.5 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
-                        >
-                            <ChevronLeft className="size-4" />
-                        </button>
-                        <button
-                            disabled={page >= totalPages}
-                            onClick={() => load(page + 1)}
-                            className="rounded-lg border border-zinc-300 dark:border-zinc-700 p-1.5 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors"
-                        >
-                            <ChevronRight className="size-4" />
-                        </button>
-                    </div>
+                <div className="max-w-3xl">
+                    <SharedPagination
+                        page={page}
+                        totalPages={totalPages}
+                        total={total}
+                        pageSize={15}
+                        onPageChange={load}
+                    />
                 </div>
             )}
 

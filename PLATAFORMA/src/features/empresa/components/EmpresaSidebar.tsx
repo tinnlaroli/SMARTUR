@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
-    Calendar, MessageSquare, GitCompare, ShieldCheck, HelpCircle,
+    Calendar, MessageSquare, MessageSquareDiff, ShieldCheck, HelpCircle,
 } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,10 +21,13 @@ interface MenuItem {
     end?: boolean;
 }
 
-const MENU_GROUPS: { groupKey: string; items: string[] }[] = [
-    { groupKey: 'sidebar.group.principal', items: ['home'] },
-    { groupKey: 'sidebar.group.gestion', items: ['services', 'analytics', 'calendar', 'messages', 'faqs', 'profile', 'settings'] },
-    { groupKey: 'sidebar.group.verificacion', items: ['verificacion', 'changes'] },
+const MENU_GROUPS = [
+    { label: 'Principal',          items: ['home'] },
+    { label: 'Gestión Comercial',  items: ['services', 'calendar', 'messages'] },
+    { label: 'Analíticas',         items: ['analytics'] },
+    { label: 'Soporte y Ayuda',    items: ['faqs'] },
+    { label: 'Estatus',            items: ['verificacion', 'changes'] },
+    { label: 'Mi Cuenta',          items: ['profile', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -40,21 +43,21 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
     const badges = useBadges();
 
     const allItems = useMemo<MenuItem[]>(() => [
-        { id: 'home',         label: t('empresa.sidebar.home'),         icon: Home,         path: '/empresa/dashboard', end: true },
-        { id: 'services',     label: t('empresa.sidebar.services'),     icon: Wrench,       path: '/empresa/servicios' },
-        { id: 'analytics',    label: t('empresa.sidebar.analytics'),    icon: BarChart3,    path: '/empresa/analytics' },
-        { id: 'calendar',     label: t('empresa.sidebar.calendar'),     icon: Calendar,     path: '/empresa/calendario' },
-        { id: 'messages',     label: t('empresa.sidebar.messages'),     icon: MessageSquare,path: '/empresa/mensajes' },
-        { id: 'faqs',         label: 'Preguntas frecuentes',            icon: HelpCircle,   path: '/empresa/faqs' },
-        { id: 'profile',      label: t('empresa.sidebar.profile'),      icon: UserCircle,   path: '/empresa/perfil' },
-        { id: 'settings',     label: t('empresa.sidebar.settings'),     icon: Settings,     path: '/empresa/configuracion' },
-        { id: 'verificacion', label: 'Verificación',                     icon: ShieldCheck,  path: '/empresa/verificacion' },
-        { id: 'changes',      label: t('empresa.sidebar.changes'),      icon: GitCompare,   path: '/empresa/cambios' },
-    ], [t]);
+        { id: 'home',         label: 'Inicio',               icon: Home,             path: '/empresa/dashboard', end: true },
+        { id: 'services',     label: 'Mis Servicios',        icon: Wrench,           path: '/empresa/servicios' },
+        { id: 'calendar',     label: 'Agenda',               icon: Calendar,         path: '/empresa/calendario' },
+        { id: 'messages',     label: 'Mensajes',             icon: MessageSquare,    path: '/empresa/mensajes' },
+        { id: 'analytics',    label: 'Estadísticas',         icon: BarChart3,        path: '/empresa/analytics' },
+        { id: 'faqs',         label: 'Preguntas Frecuentes', icon: HelpCircle,       path: '/empresa/faqs' },
+        { id: 'verificacion', label: 'Oficio SMARTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
+        { id: 'changes',      label: 'Aclaraciones',         icon: MessageSquareDiff,path: '/empresa/cambios' },
+        { id: 'profile',      label: 'Perfil',               icon: UserCircle,       path: '/empresa/perfil' },
+        { id: 'settings',     label: 'Configuración',        icon: Settings,         path: '/empresa/configuracion' },
+    ], []);
 
     const filteredGroups = useMemo(() =>
         MENU_GROUPS.map((g) => ({
-            groupKey: g.groupKey,
+            label: g.label,
             items: g.items.map((id) => allItems.find((i) => i.id === id)).filter(Boolean) as MenuItem[],
         })).filter((g) => g.items.length > 0),
         [allItems],
@@ -138,7 +141,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
 
                 <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3">
                     {filteredGroups.map((group, gi) => (
-                        <div key={group.groupKey} className={gi > 0 ? 'mt-4' : ''}>
+                        <div key={group.label} className={gi > 0 ? 'mt-4' : ''}>
                             <AnimatePresence>
                                 {!isCollapsed && (
                                     <motion.p
@@ -149,7 +152,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                         className="mb-1 px-4 text-[10px] font-bold uppercase tracking-widest"
                                         style={{ color: 'var(--color-text-alt)' }}
                                     >
-                                        {t(group.groupKey)}
+                                        {group.label}
                                     </motion.p>
                                 )}
                             </AnimatePresence>
@@ -167,7 +170,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                             onClick={onClose}
                                             end={item.end}
                                             id={`sidebar-item-${item.id}`}
-                                            title={isCollapsed ? t('empresa.sidebar.' + item.id) : ''}
+                                            title={isCollapsed ? item.label : ''}
                                             className={({ isActive }) =>
                                                 `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
                                                     isCollapsed ? 'justify-center' : ''
@@ -195,7 +198,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                                                 isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
                                                             }`}
                                                         >
-                                                            {t('empresa.sidebar.' + item.id)}
+                                                            {item.label}
                                                         </span>
                                                         {!isCollapsed && badgeCount > 0 && (
                                                             <span className="ml-auto flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white leading-none">

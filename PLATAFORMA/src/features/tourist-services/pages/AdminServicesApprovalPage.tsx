@@ -75,9 +75,10 @@ interface ServicePreviewModalProps {
 }
 
 function ServicePreviewModal({ service, onClose, onReviewed, ev, minScore, onEvaluate }: ServicePreviewModalProps) {
-    const [reason, setReason]         = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError]           = useState<string | null>(null);
+    const [reason, setReason]             = useState('');
+    const [submitting, setSubmitting]     = useState(false);
+    const [error, setError]               = useState<string | null>(null);
+    const [hoveredAction, setHoveredAction] = useState<string | null>(null);
 
     useEscapeKey(onClose);
 
@@ -256,36 +257,38 @@ function ServicePreviewModal({ service, onClose, onReviewed, ev, minScore, onEva
                     {error && <p className="text-sm text-rose-500 mb-3">{error}</p>}
 
                     <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-80"
-                            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-alt)' }}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleReject}
-                            disabled={submitting}
-                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                            style={{ border: '1px solid #f43f5e', color: '#f43f5e', background: 'transparent' }}
-                        >
-                            {submitting && <Loader2 className="size-4 animate-spin" />}
-                            Rechazar
-                        </button>
                         {passed && service.status === 'pending_review' && (
                             <button
                                 type="button"
                                 onClick={handleApprove}
+                                onMouseEnter={() => setHoveredAction('approve')}
+                                onMouseLeave={() => setHoveredAction(null)}
                                 disabled={submitting}
-                                className="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ backgroundColor: '#10b981' }}
+                                className="flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+                                style={hoveredAction === 'approve'
+                                    ? { borderColor: '#10b981', background: 'rgba(16,185,129,0.1)', color: '#10b981' }
+                                    : { borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }
+                                }
                             >
-                                {submitting && <Loader2 className="size-4 animate-spin" />}
+                                {submitting ? <Loader2 className="mx-auto size-5 animate-spin" /> : <CheckCircle className="mx-auto size-5 mb-1" />}
                                 Aprobar
                             </button>
                         )}
+                        <button
+                            type="button"
+                            onClick={handleReject}
+                            onMouseEnter={() => setHoveredAction('reject')}
+                            onMouseLeave={() => setHoveredAction(null)}
+                            disabled={submitting}
+                            className="flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+                            style={hoveredAction === 'reject'
+                                ? { borderColor: '#f43f5e', background: 'rgba(244,63,94,0.1)', color: '#f43f5e' }
+                                : { borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }
+                            }
+                        >
+                            {submitting ? <Loader2 className="mx-auto size-5 animate-spin" /> : <XCircle className="mx-auto size-5 mb-1" />}
+                            Rechazar
+                        </button>
                     </div>
                 </div>
             </motion.div>

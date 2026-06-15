@@ -154,56 +154,7 @@ import { ui, defaultLang } from "../i18n/ui";
     <EmpresaCTA lang="es" />
   </section>
 
-  <PlansNew
-    id="pricing"
-    title={ui[defaultLang]["pricing.new.title"]}
-    subtitle={ui[defaultLang]["pricing.new.subtitle"]}
-    showToggle={true}
-    toggleMonthlyLabel={ui[defaultLang]["pricing.toggle.monthly"]}
-    toggleAnnualLabel={ui[defaultLang]["pricing.toggle.annual"]}
-    discountLabel={ui[defaultLang]["pricing.discount"]}
-    items={[
-      {
-        title: ui[defaultLang]["pricing.basic.title"],
-        description: ui[defaultLang]["pricing.basic.desc"],
-        price: {
-          monthly: 249,
-          annual: Math.round(249 * 12 * 0.8),
-          duration: ui[defaultLang]["pricing.basic.duration"],
-        },
-        link: {
-          title: ui[defaultLang]["button.contact"],
-          url: "#contacto",
-        },
-        features: [
-          { title: ui[defaultLang]["pricing.basic.feature1"] },
-          { title: ui[defaultLang]["pricing.basic.feature2"] },
-          { title: ui[defaultLang]["pricing.basic.feature3"] },
-          { title: ui[defaultLang]["pricing.basic.feature4"] },
-        ],
-      },
-      {
-        title: ui[defaultLang]["pricing.enterprise.title"],
-        description: ui[defaultLang]["pricing.enterprise.desc"],
-        price: {
-          monthly: 499,
-          annual: Math.round(499 * 12 * 0.8),
-          duration: ui[defaultLang]["pricing.enterprise.duration"],
-        },
-        link: {
-          title: ui[defaultLang]["button.contact"],
-          url: "#contacto",
-        },
-        features: [
-          { title: ui[defaultLang]["pricing.enterprise.feature1"] },
-          { title: ui[defaultLang]["pricing.enterprise.feature2"] },
-          { title: ui[defaultLang]["pricing.enterprise.feature3"] },
-          { title: ui[defaultLang]["pricing.enterprise.feature4"] },
-          { title: ui[defaultLang]["pricing.enterprise.feature5"] },
-        ],
-      },
-    ]}
-  />
+  {/* Sección de precios oculta temporalmente */}
 
   <section id="contacto">
     <ContactForm lang="es" />
@@ -237,4 +188,13 @@ import { ui, defaultLang } from "../i18n/ui";
   </section>
 
   <RegisterEmpresaModal />
+
+  <script>
+    document.querySelectorAll('a[href="#empresa"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('empresa')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  </script>
 </Layout>

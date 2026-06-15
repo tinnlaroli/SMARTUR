@@ -332,7 +332,7 @@ export function EmpresaCambiosPage() {
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
-                    <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Cambios del administrador</h1>
+                    <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Aclaraciones</h1>
                     <p className="text-sm text-zinc-500 mt-0.5">
                         {total} registro{total !== 1 ? 's' : ''} · {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
                     </p>

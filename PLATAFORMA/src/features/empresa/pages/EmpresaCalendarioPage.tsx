@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Calendar, RefreshCw, Plus, Check, X as XIcon, Clock, Users, Lock } from 'lucide-react';
 import { bookingEmpresaApi, type EmpresaBooking, type BookingStatus, type WalkinPayload } from '../api/bookingApi';
 import { useToast } from '../../../shared/context/ToastContext';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { empresaApi, type EmpresaService } from '../api/empresaApi';
 import { DATA_TABLE_SHELL_CLASS } from '../../../components/ui/DataTable';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
@@ -70,6 +71,7 @@ interface WalkinModalProps {
 
 function WalkinModal({ services, onClose, onSaved }: WalkinModalProps) {
     const { success, error } = useToast();
+    useEscapeKey(onClose);
     const today = new Date().toISOString().split('T')[0];
     const [form, setForm] = useState<WalkinPayload>({
         id_service: services[0]?.id_service ?? 0,
@@ -84,11 +86,11 @@ function WalkinModal({ services, onClose, onSaved }: WalkinModalProps) {
         setSaving(true);
         try {
             await bookingEmpresaApi.walkin(form);
-            success('Walk-in registrado');
+            success('Visita directa registrada');
             onSaved();
             onClose();
         } catch {
-            error('Error al registrar walk-in');
+            error('Error al registrar visita directa');
         } finally {
             setSaving(false);
         }
@@ -412,7 +414,7 @@ export function EmpresaCalendarioPage() {
                                                 <div className="flex items-center gap-1.5">
                                                     {b.is_walkin && (
                                                         <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                                            Walk-in
+                                                            Directa
                                                         </span>
                                                     )}
                                                     {b.tourist_name}

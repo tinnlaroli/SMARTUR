@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { getDashboardText } from '../shared/i18n/dashboardLocale';
 import { useToast, type NotificationType, type ToastNotification } from '../shared/context/ToastContext';
 import { useDashboardTour } from '../shared/hooks/useDashboardTour';
+import { AdminBadgesProvider } from '../features/dashboard/context/AdminBadgesContext';
 
 const NOTIFICATION_ICON_MAP: Record<NotificationType, typeof CheckCircle> = {
     success: CheckCircle,
@@ -414,6 +415,7 @@ export default function AppLayout() {
     const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
     return (
+        <AdminBadgesProvider>
         <>
         <SEOHelmet noindex title="Panel" />
         <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
@@ -466,5 +468,6 @@ export default function AppLayout() {
 
         </div>
         </>
+        </AdminBadgesProvider>
     );
 }

@@ -128,7 +128,12 @@ const EvaluationWizardModal: React.FC<Props> = ({
     const [state, dispatch] = useReducer(wizardReducer, undefined, initialWizardState);
     const { currentStep, responses, generalObservations, evidences } = state;
 
-    const startTimeRef = useRef<number>(Date.now());
+    const startTimeRef  = useRef<number>(Date.now());
+    const contentScrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        contentScrollRef.current?.scrollTo({ top: 0 });
+    }, [currentStep]);
 
     // Template selection state
     const [matchingTemplates, setMatchingTemplates] = useState<InstrumentTemplate[]>([]);
@@ -391,7 +396,7 @@ const EvaluationWizardModal: React.FC<Props> = ({
                 )}
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div ref={contentScrollRef} className="flex-1 overflow-y-auto p-8 custom-scrollbar">
 
                     {/* Loading templates */}
                     {loadingTemplates && (

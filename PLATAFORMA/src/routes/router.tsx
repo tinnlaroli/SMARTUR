@@ -52,6 +52,7 @@ const EmpresaCambiosPage             = lazy(() => import('../features/empresa/pa
 const AdminDisputasPage              = lazy(() => import('../features/tourist-services/pages/AdminDisputasPage').then(m => ({ default: m.AdminDisputasPage })));
 const AdminPOIsApprovalPage          = lazy(() => import('../features/points-of-interest/pages/AdminPOIsApprovalPage'));
 const EmpresaFAQsPage                = lazy(() => import('../features/empresa/pages/EmpresaFAQsPage').then(m => ({ default: m.EmpresaFAQsPage })));
+const AdminApprovalPage              = lazy(() => import('../features/admin-approval/pages/AdminApprovalPage').then(m => ({ default: m.AdminApprovalPage })));
 
 // Suspense wrapper used inline for route elements
 function S({
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
                                     { path: 'configuracion',        element: <S><SettingsPage /></S> },
                                     { path: 'disputas',             element: <S><AdminDisputasPage /></S> },
                                     { path: 'pois-pendientes',      element: <S><AdminPOIsApprovalPage /></S> },
+                                    { path: 'aprobacion',           element: <S><AdminApprovalPage /></S> },
                                     { path: '*',                    element: <NotFound /> },
                                 ],
                             },

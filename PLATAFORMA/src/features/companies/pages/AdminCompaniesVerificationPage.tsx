@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
-    RefreshCw, X, ShieldX, MapPin, Download,
+    RefreshCw, X, ShieldX, MapPin, Download, Search,
     Building2, User, Tag, Calendar,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -222,66 +222,6 @@ function ReviewModal({ company, onClose, onReviewed }: ReviewModalProps) {
                     <DocButton label="INE frente"  url={c.ine_front_url ?? null}     onPreview={setPreviewUrl} />
                     <DocButton label="INE reverso" url={c.ine_back_url ?? null}      onPreview={setPreviewUrl} />
                     <DocButton label="Comprobante" url={c.address_proof_url ?? null} onPreview={setPreviewUrl} />
-                </div>
-
-                {/* Certificado Smartur */}
-                <div
-                    className="rounded-xl px-4 py-3 mb-4 text-sm"
-                    style={c.is_certified
-                        ? { background: 'rgba(152,78,253,0.07)', border: '1px solid rgba(152,78,253,0.30)' }
-                        : { background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }
-                    }
-                >
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-alt)' }}>
-                            Certificado SMARTUR
-                        </p>
-                        {c.is_certified && (
-                            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold"
-                                style={{ background: 'rgba(152,78,253,0.15)', color: '#984EFD' }}>
-                                <ShieldCheck className="size-3" /> Certificada
-                            </span>
-                        )}
-                    </div>
-                    {c.is_certified ? (
-                        <div className="space-y-1.5">
-                            {c.certified_at && (
-                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    Certificada el {new Date(c.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                </p>
-                            )}
-                            {c.smartur_validation_certificate_url && (
-                                <a
-                                    href={c.smartur_validation_certificate_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
-                                    style={{ color: COLOR }}
-                                >
-                                    <Download className="size-3" /> Descargar certificado
-                                </a>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs" style={{ color: 'var(--color-text-alt)', opacity: 0.5 }}>
-                                Sin certificación emitida
-                            </span>
-                            {c.status === 'active' && (
-                                <button
-                                    type="button"
-                                    onClick={() => setAction('certify')}
-                                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
-                                    style={action === 'certify'
-                                        ? { background: 'rgba(152,78,253,0.15)', color: '#984EFD', border: '1px solid rgba(152,78,253,0.40)' }
-                                        : { background: 'var(--color-bg)', color: 'var(--color-text-alt)', border: '1px solid var(--color-border)' }
-                                    }
-                                >
-                                    <ShieldCheck className="size-3" /> Certificar empresa
-                                </button>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* Motivo rechazo previo */}
@@ -520,6 +460,8 @@ export function AdminCompaniesVerificationPage() {
     const [selected, setSelected]       = useState<number[]>([]);
     const [bulkWorking, setBulkWorking] = useState(false);
     const [sort, setSort]               = useState<SortState | null>(null);
+    const [search, setSearch]           = useState('');
+    const searchRef                     = useRef<HTMLInputElement>(null);
     const handleSort = (key: string) => setSort(s => nextSort(s, key));
 
     const fetchCompanies = useCallback(async () => {
@@ -527,6 +469,7 @@ export function AdminCompaniesVerificationPage() {
         try {
             const params: Record<string, string | number> = { limit: pageSize, page };
             if (filter !== 'all') params.status = filter;
+            if (search.trim()) params.search = search.trim();
             const { data } = await api.get('/admin/companies', { params });
             setCompanies(data.companies);
             setTotal(data.total);
@@ -535,10 +478,10 @@ export function AdminCompaniesVerificationPage() {
         } finally {
             setLoading(false);
         }
-    }, [page, pageSize, filter]);
+    }, [page, pageSize, filter, search]);
 
     useEffect(() => { void fetchCompanies(); }, [fetchCompanies]);
-    useEffect(() => { setSelected([]); }, [page, filter]);
+    useEffect(() => { setSelected([]); }, [page, filter, search]);
 
     const sortedCompanies = sortRows(companies, sort);
     const allIds      = companies.map(c => c.id_company);
@@ -602,6 +545,20 @@ export function AdminCompaniesVerificationPage() {
 
             {/* Filters + actions */}
             <div className="shrink-0 flex items-center gap-3 flex-wrap">
+                {/* Search */}
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 pointer-events-none" style={{ color: 'var(--color-text-alt)' }} />
+                    <input
+                        ref={searchRef}
+                        type="text"
+                        value={search}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
+                        placeholder="Buscar empresa..."
+                        className="rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 w-52"
+                        style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
+                    />
+                </div>
+
                 <div className="flex gap-2 flex-wrap">
                     {FILTER_OPTIONS.map(({ key, label }) => (
                         <button

@@ -1,9 +1,9 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-    X, Users, Building2, Wrench, Settings, MapPin,
+    X, Users, Building2, Wrench, Settings, MapPin, Map,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
-    Award, Star, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
-    ShieldCheck, ClipboardCheck, Route, GitCompare,
+    Award, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
+    ShieldCheck, ClipboardCheck, Route, MessageSquareDiff,
 } from 'lucide-react';
 import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,7 @@ import { useLanguage, useUserPreferences } from '../contexts/LanguageContext';
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
 import { clearAccessToken } from '../shared/api/axiosClient';
 import { TermsModal } from '../features/auth/components/TermsModal';
+import { useAdminBadges } from '../features/dashboard/context/AdminBadgesContext';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
@@ -18,16 +19,17 @@ interface MenuItem {
     id: string; label: string;
     icon: React.ComponentType<{ className?: string }>;
     path: string; end?: boolean; roles: number[];
+    badge?: number;
 }
 
-const MENU_GROUP_KEYS = [
-    { labelKey: 'sidebar.group.principal',       items: ['home'] },
-    { labelKey: 'sidebar.group.gestion',         items: ['users', 'companies', 'services', 'poi', 'locations'] },
-    { labelKey: 'sidebar.group.verificacion',    items: ['company-verification', 'services-approval', 'pois-approval', 'disputes'] },
-    { labelKey: 'sidebar.group.mobile',          items: ['community', 'itineraries', 'contacts', 'profiles'] },
-    { labelKey: 'sidebar.group.certifications',  items: ['certifications', 'templates', 'instruments'] },
-    { labelKey: 'sidebar.group.reports',         items: ['stats'] },
-    { labelKey: 'sidebar.group.system',          items: ['ml', 'notifications', 'settings'] },
+const MENU_GROUPS = [
+    { label: 'Principal',             items: ['home'] },
+    { label: 'Gestión',               items: ['users', 'companies', 'poi', 'services', 'locations'] },
+    { label: 'Monitoreo y Control',   items: ['company-verification', 'approval', 'disputes'] },
+    { label: 'Móvil y Comunidad',     items: ['community', 'itineraries', 'contacts', 'profiles'] },
+    { label: 'Auditoría y Soporte',   items: ['certifications', 'instruments'] },
+    { label: 'Reportes',              items: ['stats', 'ml'] },
+    { label: 'Sistema',               items: ['notifications', 'settings'] },
 ];
 
 const getInitials = (name: string) =>
@@ -42,6 +44,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { t } = useLanguage();
     const { user, clearUser } = useUserPreferences();
     const userRole = user?.role_id || 2;
+    const adminBadges = useAdminBadges();
 
     // Cierra el sidebar en mobile al cambiar de ruta
     useEffect(() => {
@@ -50,35 +53,34 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     }, [location.pathname]);
 
     const allItems = useMemo<MenuItem[]>(() => [
-        { id: 'home',           label: t('sidebar.home'),           icon: Home,          path: '/dashboard',                          end: true, roles: [1, 4] },
-        { id: 'users',          label: t('sidebar.users'),          icon: Users,         path: '/dashboard/usuarios',                            roles: [1] },
-        { id: 'companies',      label: t('sidebar.companies'),      icon: Building2,     path: '/dashboard/companias',                           roles: [1] },
-        { id: 'services',              label: t('sidebar.services'),              icon: Wrench,         path: '/dashboard/servicios',                 roles: [1, 4] },
-        { id: 'locations',             label: t('sidebar.locations'),             icon: MapPin,         path: '/dashboard/ubicaciones',               roles: [1] },
-        { id: 'company-verification',  label: t('sidebar.companyVerification'),   icon: ShieldCheck,    path: '/dashboard/verificacion-empresas',     roles: [1] },
-        { id: 'services-approval',     label: t('sidebar.servicesApproval'),      icon: ClipboardCheck, path: '/dashboard/servicios-pendientes',      roles: [1, 4] },
-        { id: 'pois-approval',         label: 'POIs pendientes',                  icon: MapPin,         path: '/dashboard/pois-pendientes',            roles: [1] },
-        { id: 'disputes',              label: t('sidebar.disputes'),              icon: GitCompare,     path: '/dashboard/disputas',                  roles: [1] },
-        { id: 'profiles',       label: t('sidebar.profiles'),       icon: UserCircle,    path: '/dashboard/perfiles',                            roles: [1] },
-        { id: 'certifications', label: t('sidebar.certifications'), icon: Award,         path: '/dashboard/certificaciones',                     roles: [1, 4] },
-        { id: 'poi',            label: t('sidebar.poi'),            icon: Star,          path: '/dashboard/poi',                                 roles: [1] },
-        { id: 'community',      label: t('sidebar.community'),      icon: MessageSquare, path: '/dashboard/comunidad',                           roles: [1] },
-        { id: 'itineraries',    label: t('sidebar.itineraries'),    icon: Route,         path: '/dashboard/itinerarios',                         roles: [1] },
-        { id: 'contacts',       label: t('sidebar.contacts'),       icon: Mail,          path: '/dashboard/contactos',                           roles: [1] },
-        { id: 'stats',          label: t('sidebar.stats'),          icon: BarChart3,     path: '/dashboard/estadisticas',                        roles: [1, 4] },
-        { id: 'instruments',    label: t('sidebar.instruments'),    icon: FileText,      path: '/dashboard/instrumentos',                        roles: [1, 4] },
-        { id: 'ml',             label: t('sidebar.ml'),             icon: BrainCircuit,  path: '/dashboard/ml',                                  roles: [1] },
-        { id: 'notifications',  label: t('sidebar.notifications'),  icon: Bell,          path: '/dashboard/notificaciones',                      roles: [1] },
-        { id: 'settings',       label: t('sidebar.settings'),       icon: Settings,      path: '/dashboard/configuracion',                       roles: [1, 4] },
-    ], [t]);
+        { id: 'home',                 label: 'Inicio',                 icon: Home,             path: '/dashboard',                       end: true, roles: [1, 4] },
+        { id: 'users',                label: 'Usuarios',               icon: Users,            path: '/dashboard/usuarios',                         roles: [1] },
+        { id: 'companies',            label: 'Prestadores',            icon: Building2,        path: '/dashboard/companias',                        roles: [1] },
+        { id: 'poi',                  label: 'Puntos de Interés',      icon: MapPin,           path: '/dashboard/poi',                              roles: [1] },
+        { id: 'services',             label: 'Actividades',            icon: Wrench,           path: '/dashboard/servicios',                        roles: [1, 4] },
+        { id: 'locations',            label: 'Ubicaciones',            icon: Map,              path: '/dashboard/ubicaciones',                      roles: [1] },
+        { id: 'company-verification', label: 'Registro de Socios',     icon: ShieldCheck,      path: '/dashboard/verificacion-empresas',            roles: [1] },
+        { id: 'approval',             label: 'Filtro de Aprobación',   icon: ClipboardCheck,   path: '/dashboard/aprobacion',                       roles: [1, 4] },
+        { id: 'disputes',             label: 'Aclaraciones',           icon: MessageSquareDiff, path: '/dashboard/disputas',                        roles: [1] },
+        { id: 'community',            label: 'Comunidad',              icon: MessageSquare,    path: '/dashboard/comunidad',                        roles: [1] },
+        { id: 'itineraries',          label: 'Rutas',                  icon: Route,            path: '/dashboard/itinerarios',                      roles: [1] },
+        { id: 'contacts',             label: 'Contactos',              icon: Mail,             path: '/dashboard/contactos',                        roles: [1] },
+        { id: 'profiles',             label: 'Perfiles',               icon: UserCircle,       path: '/dashboard/perfiles',                         roles: [1] },
+        { id: 'certifications',       label: 'Sellos de Calidad',      icon: Award,            path: '/dashboard/certificaciones',                  roles: [1, 4] },
+        { id: 'instruments',          label: 'Instrumentos',           icon: FileText,         path: '/dashboard/instrumentos',                     roles: [1, 4] },
+        { id: 'stats',                label: 'Estadísticas',           icon: BarChart3,        path: '/dashboard/estadisticas',                     roles: [1, 4] },
+        { id: 'ml',                   label: 'Modelo IA',              icon: BrainCircuit,     path: '/dashboard/ml',                               roles: [1] },
+        { id: 'notifications',        label: 'Notificaciones',         icon: Bell,             path: '/dashboard/notificaciones',                   roles: [1] },
+        { id: 'settings',             label: 'Configuración',          icon: Settings,         path: '/dashboard/configuracion',                    roles: [1, 4] },
+    ], []);
 
     const itemMap = useMemo(() => Object.fromEntries(allItems.map((i) => [i.id, i])), [allItems]);
     const filteredGroups = useMemo(() =>
-        MENU_GROUP_KEYS.map((g) => ({
-            label: t(g.labelKey),
+        MENU_GROUPS.map((g) => ({
+            label: g.label,
             items: g.items.map((id) => itemMap[id]).filter((i) => i && i.roles.includes(userRole)),
         })).filter((g) => g.items.length > 0),
-        [t, userRole, itemMap],
+        [userRole, itemMap],
     );
 
     const handleLogout = () => {
@@ -196,42 +198,52 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                                                 } ${isActive ? 'nav-item-active' : 'nav-item-idle'}`
                                             }
                                         >
-                                            {({ isActive }) => (
-                                                <>
-                                                    {/* icon */}
-                                                    <item.icon
-                                                        className={`size-[18px] shrink-0 transition-all duration-200 ${
-                                                            isActive
-                                                                ? 'scale-110'
-                                                                : 'group-hover:scale-110'
-                                                        }`}
-                                                    />
+                                            {({ isActive }) => {
+                                                const badgeCount = (adminBadges as unknown as Record<string, number>)[item.id] ?? 0;
+                                                return (
+                                                    <>
+                                                        <div className="relative shrink-0">
+                                                            <item.icon
+                                                                className={`size-[18px] transition-all duration-200 ${
+                                                                    isActive ? 'scale-110' : 'group-hover:scale-110'
+                                                                }`}
+                                                            />
+                                                            {isCollapsed && badgeCount > 0 && (
+                                                                <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[8px] font-bold text-white leading-none">
+                                                                    {Math.min(badgeCount, 99)}
+                                                                </span>
+                                                            )}
+                                                        </div>
 
-                                                    {/* label */}
-                                                    <span
-                                                        className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                                                            isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                                                        }`}
-                                                    >
-                                                        {item.label}
-                                                    </span>
-
-                                                    {/* active indicator */}
-                                                    {isActive && !isCollapsed && (
-                                                        <motion.span
-                                                            layoutId="active-dot"
-                                                            className="ml-auto h-1.5 w-1.5 rounded-full"
-                                                            style={{ background: 'var(--color-purple)' }}
-                                                        />
-                                                    )}
-                                                    {isActive && isCollapsed && (
                                                         <span
-                                                            className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full"
-                                                            style={{ background: 'var(--color-purple)' }}
-                                                        />
-                                                    )}
-                                                </>
-                                            )}
+                                                            className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
+                                                                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                                                            }`}
+                                                        >
+                                                            {item.label}
+                                                        </span>
+
+                                                        {!isCollapsed && badgeCount > 0 && (
+                                                            <span className="ml-auto flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white leading-none">
+                                                                {Math.min(badgeCount, 99)}
+                                                            </span>
+                                                        )}
+                                                        {isActive && !isCollapsed && badgeCount === 0 && (
+                                                            <motion.span
+                                                                layoutId="active-dot"
+                                                                className="ml-auto h-1.5 w-1.5 rounded-full"
+                                                                style={{ background: 'var(--color-purple)' }}
+                                                            />
+                                                        )}
+                                                        {isActive && isCollapsed && (
+                                                            <span
+                                                                className="absolute right-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-l-full"
+                                                                style={{ background: 'var(--color-purple)' }}
+                                                            />
+                                                        )}
+                                                    </>
+                                                );
+                                            }}
                                         </NavLink>
                                     </motion.div>
                                 ))}
