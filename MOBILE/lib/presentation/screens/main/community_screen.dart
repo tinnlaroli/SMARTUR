@@ -136,17 +136,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-        child: _CreatePostSheet(
-          onPublished: () {
-            Navigator.pop(ctx);
-            _load();
-          },
-        ),
+      builder: (_) => _CreatePostSheet(
+        onPublished: () {
+          Navigator.pop(context);
+          _load();
+        },
       ),
     );
   }
@@ -345,12 +343,12 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+    final keyboardBottom = MediaQuery.viewInsetsOf(context).bottom;
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + keyboardBottom),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
           children: [
             Center(
               child: Container(
@@ -465,7 +463,6 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
             ),
           ],
         ),
-      ),
     );
   }
 }
