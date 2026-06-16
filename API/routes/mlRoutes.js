@@ -447,10 +447,10 @@ router.post('/ml/wellness/assess', verifyToken, async (req, res) => {
         );
         const assessmentId = assessRows[0]?.assessment_id;
 
-        // 3. Persistir sesión de recomendación wellness
+        // 3. Persistir sesión de recomendación wellness (tabla separada del motor ML existente)
         const recIds = (data.destinations ?? []).map(d => d.id_destino);
         const { rows: sessRows } = await db.query(
-            `INSERT INTO ml_recommendation_session
+            `INSERT INTO wellness_recommendation_session
                (user_id, assessment_id, modo_viaje, recommended_ids, top_n)
              VALUES ($1,$2,$3,$4,$5)
              RETURNING session_id`,
@@ -490,7 +490,7 @@ router.post('/ml/wellness/satisfaction', verifyToken, async (req, res) => {
 
     try {
         await db.query(
-            `INSERT INTO ml_session_satisfaction (session_id, user_id, fit_rating, feedback_text)
+            `INSERT INTO wellness_satisfaction (session_id, user_id, fit_rating, feedback_text)
              VALUES ($1,$2,$3,$4)
              ON CONFLICT (session_id) DO UPDATE
                SET fit_rating = EXCLUDED.fit_rating,
@@ -516,8 +516,8 @@ router.get('/ml/wellness/history/me', verifyToken, async (req, res) => {
                     s.session_id, s.recommended_ids,
                     sat.fit_rating
              FROM stress_assessment a
-             LEFT JOIN ml_recommendation_session s ON s.assessment_id = a.assessment_id
-             LEFT JOIN ml_session_satisfaction sat ON sat.session_id = s.session_id
+             LEFT JOIN wellness_recommendation_session s ON s.assessment_id = a.assessment_id
+             LEFT JOIN wellness_satisfaction sat ON sat.session_id = s.session_id
              WHERE a.user_id = $1
              ORDER BY a.created_at DESC
              LIMIT 10`,
@@ -684,7 +684,7 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 2]), async (req, r
         ),
         safeQ(
             `SELECT ROUND(AVG(fit_rating),2)::float AS avg_rating, COUNT(*)::int AS responses
-             FROM ml_session_satisfaction
+             FROM wellness_satisfaction
              WHERE created_at > NOW() - INTERVAL '30 days'`,
             [{ avg_rating: null, responses: 0 }],
         ),
