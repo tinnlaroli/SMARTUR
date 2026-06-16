@@ -1,6 +1,7 @@
 import { useUserPreferences } from './UserPreferencesContext';
+import type { Theme } from './UserPreferencesContext';
 
-export type Theme = 'light' | 'dark';
+export type { Theme };
 
 interface ThemeContextType {
     theme: Theme;

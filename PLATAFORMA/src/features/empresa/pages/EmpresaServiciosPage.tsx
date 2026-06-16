@@ -61,12 +61,12 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     const [error, setError]               = useState<string | null>(null);
 
     // Wellness section
-    const [isWellness, setIsWellness]               = useState<boolean>((initial as Record<string,unknown>)?.is_wellness as boolean ?? false);
-    const [wellnessCategoria, setWellnessCategoria] = useState<string>((initial as Record<string,unknown>)?.categoria_wellness as string ?? '');
-    const [wellnessDesc, setWellnessDesc]           = useState<string>((initial as Record<string,unknown>)?.descripcion_bienestar as string ?? '');
-    const [wellnessAisl, setWellnessAisl]           = useState<number>(((initial as Record<string,unknown>)?.nivel_aislamiento as number) ?? 0.5);
-    const [wellnessRest, setWellnessRest]           = useState<number>(((initial as Record<string,unknown>)?.restauracion_pasiva as number) ?? 0.5);
-    const [wellnessDemanda, setWellnessDemanda]     = useState<number>(((initial as Record<string,unknown>)?.demanda_fisica as number) ?? 0.3);
+    const [isWellness, setIsWellness]               = useState<boolean>((initial as unknown as Record<string,unknown>)?.is_wellness as boolean ?? false);
+    const [wellnessCategoria, setWellnessCategoria] = useState<string>((initial as unknown as Record<string,unknown>)?.categoria_wellness as string ?? '');
+    const [wellnessDesc, setWellnessDesc]           = useState<string>((initial as unknown as Record<string,unknown>)?.descripcion_bienestar as string ?? '');
+    const [wellnessAisl, setWellnessAisl]           = useState<number>(((initial as unknown as Record<string,unknown>)?.nivel_aislamiento as number) ?? 0.5);
+    const [wellnessRest, setWellnessRest]           = useState<number>(((initial as unknown as Record<string,unknown>)?.restauracion_pasiva as number) ?? 0.5);
+    const [wellnessDemanda, setWellnessDemanda]     = useState<number>(((initial as unknown as Record<string,unknown>)?.demanda_fisica as number) ?? 0.3);
 
     const typeOptions = useMemo(() => {
         const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((o) => o.value);
