@@ -466,12 +466,12 @@ class EmpresaController {
 
             // Timeline últimos 30 días (user_interaction)
             const timelineResult = await pool.query(
-                `SELECT DATE(created_at) AS date, COUNT(*) AS interacciones
+                `SELECT TO_CHAR(created_at, 'YYYY-MM-DD') AS date, COUNT(*) AS interacciones
                    FROM user_interaction
                   WHERE place_id = ANY($1::int[]) AND place_kind = 'svc'
                     AND created_at >= NOW() - INTERVAL '30 days'
-                  GROUP BY DATE(created_at)
-                  ORDER BY date`,
+                  GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+                  ORDER BY date ASC`,
                 [idsParam],
             );
 

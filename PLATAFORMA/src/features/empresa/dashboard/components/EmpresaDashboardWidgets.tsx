@@ -472,7 +472,7 @@ export const EmpresaQualityScoreCard = ({
                     <p className="text-[2rem] font-bold leading-none" style={{ color: 'var(--color-text)' }}>
                         {score}
                         <span className="text-base font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                            /100
+                            /10
                         </span>
                     </p>
                     <span
@@ -489,7 +489,7 @@ export const EmpresaQualityScoreCard = ({
                     <div
                         className="h-full rounded-full transition-all duration-700"
                         style={{
-                            width: `${Math.min(score, 100)}%`,
+                            width: `${Math.min(score * 10, 100)}%`,
                             background: DASHBOARD_COLORS.orange,
                         }}
                     />

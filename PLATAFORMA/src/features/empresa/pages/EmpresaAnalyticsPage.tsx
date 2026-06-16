@@ -394,14 +394,14 @@ export function EmpresaAnalyticsPage() {
                                         {t('empresa.analytics.qualityTitle')}
                                     </p>
                                     <span className="font-bold" style={{ color: MODULE_COLORS.services }}>
-                                        {evalScore}/100
+                                        {evalScore}/10
                                     </span>
                                 </div>
                                 <div className="h-2.5 w-full overflow-hidden rounded-full" style={{ background: 'var(--color-bg-alt)' }}>
                                     <div
                                         className="h-full rounded-full transition-all duration-500"
                                         style={{
-                                            width: `${Math.min(evalScore, 100)}%`,
+                                            width: `${Math.min(evalScore * 10, 100)}%`,
                                             background: `linear-gradient(90deg, ${MODULE_COLORS.services}, var(--color-orange))`,
                                         }}
                                     />

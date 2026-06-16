@@ -99,11 +99,15 @@ export const deriveEmpresaDashboardViewModel = (
         },
     ];
 
-    const trendData: EmpresaTrendPoint[] = timeline_30d.map((point) => ({
-        date: point.date,
-        label: point.date.slice(5),
-        interacciones: point.interacciones,
-    }));
+    const trendData: EmpresaTrendPoint[] = timeline_30d.map((point) => {
+        const cleanDate = point.date.includes('T') ? point.date.split('T')[0] : point.date;
+        const [year, month, day] = cleanDate.split('-');
+        return {
+            date: cleanDate,
+            label: `${day}/${month}`,
+            interacciones: Number(point.interacciones),
+        };
+    });
 
     const totalInteractions = trendData.reduce((sum, point) => sum + point.interacciones, 0);
     const peakDay = trendData.reduce(
@@ -155,7 +159,7 @@ export const deriveEmpresaDashboardViewModel = (
         qualityScore,
         qualitySummary:
             qualityScore != null
-                ? `Calificacion SMARTUR: ${qualityScore}/100 para ${profile.name}.`
+                ? `Calificacion SMARTUR: ${qualityScore}/10 para ${profile.name}.`
                 : 'El equipo SMARTUR aún no ha asignado una evaluación de calidad.',
         showStatusBanner: profile.status !== 'active',
         statusMessage:
