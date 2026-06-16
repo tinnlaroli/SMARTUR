@@ -241,7 +241,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
           onPressed: _step == 5 ? () => Navigator.of(context).pop() : _prevStep,
         ),
         title: Text(
-          _step == 0 ? 'Tu modo de viaje' : _step <= 4 ? 'Cuéntanos cómo te sientes' : 'Tu recomendación',
+          _step == 0 ? 'WellTur' : _step <= 4 ? 'Cuéntanos cómo te sientes' : 'WellTur · Tu recomendación',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
@@ -281,6 +281,16 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
             child: const Icon(Icons.eco_outlined, size: 36, color: Color(0xFF10B981)),
           ),
           const SizedBox(height: 24),
+          const Text(
+            'WellTur',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+              color: Color(0xFF254117),
+            ),
+          ),
+          const SizedBox(height: 8),
           Text(
             '¿Quieres que adaptemos tu viaje\na cómo te sientes?',
             textAlign: TextAlign.center,
@@ -293,7 +303,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Responde 4 preguntas rápidas sobre tu energía y te recomendamos lugares de bienestar personalizados.',
+            'Responde 4 preguntas rápidas sobre tu energía y WellTur te recomienda lugares de bienestar personalizados.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -363,7 +373,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Acepto que SMARTUR use mis respuestas para personalizar mis recomendaciones de bienestar. '
+                    'Acepto que WellTur use mis respuestas para personalizar mis recomendaciones de bienestar. '
                     'Puedo borrar este historial en cualquier momento desde mi perfil.',
                     style: TextStyle(
                       fontSize: 12,

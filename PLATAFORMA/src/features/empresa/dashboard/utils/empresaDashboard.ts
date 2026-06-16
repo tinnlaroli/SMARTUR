@@ -156,12 +156,12 @@ export const deriveEmpresaDashboardViewModel = (
         qualitySummary:
             qualityScore != null
                 ? `Calificacion SMARTUR: ${qualityScore}/100 para ${profile.name}.`
-                : 'El equipo SMARTUR aun no ha asignado una evaluacion de calidad.',
+                : 'El equipo SMARTUR aún no ha asignado una evaluación de calidad.',
         showStatusBanner: profile.status !== 'active',
         statusMessage:
             profile.status === 'suspended'
-                ? 'Tu cuenta esta suspendida. Contacta al equipo SMARTUR para mas informacion.'
-                : 'Empresa en revision. Puedes explorar el portal mientras verificamos tu informacion.',
+                ? 'Tu cuenta está suspendida. Contacta al equipo SMARTUR para más información.'
+                : 'Empresa en revisión. Puedes explorar el portal mientras verificamos tu información.',
     };
 };
 

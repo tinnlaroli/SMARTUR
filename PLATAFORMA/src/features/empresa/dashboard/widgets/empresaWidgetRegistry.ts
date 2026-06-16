@@ -34,7 +34,7 @@ export const EMPRESA_WIDGET_REGISTRY: import('../../../home/widgets/widgetRegist
     {
         id: 'top-services',
         label: 'Top servicios',
-        description: 'Ranking de servicios con mayor engagement y calificacion.',
+        description: 'Ranking de servicios con mayor engagement y calificación.',
         iconName: 'Star',
         defaultColSpan: 1,
         defaultRowSpan: 2,
@@ -47,7 +47,7 @@ export const EMPRESA_WIDGET_REGISTRY: import('../../../home/widgets/widgetRegist
     {
         id: 'company-profile',
         label: 'Datos de la empresa',
-        description: 'Informacion registrada de tu perfil empresarial.',
+        description: 'Información registrada de tu perfil empresarial.',
         iconName: 'Building2',
         defaultColSpan: 1,
         defaultRowSpan: 2,
@@ -72,7 +72,7 @@ export const EMPRESA_WIDGET_REGISTRY: import('../../../home/widgets/widgetRegist
     },
     {
         id: 'quality-score',
-        label: 'Evaluacion SMARTUR',
+        label: 'Evaluación SMARTUR',
         description: 'Puntaje de calidad asignado por el equipo SMARTUR.',
         iconName: 'Award',
         defaultColSpan: 2,

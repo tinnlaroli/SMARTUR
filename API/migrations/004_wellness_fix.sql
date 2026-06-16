@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS wellness_destination (
     created_at           TIMESTAMP DEFAULT NOW(),
     -- FK correctas: point_of_interest usa "id", tourist_service usa "tourist_service_id"
     poi_fk_id            INT REFERENCES point_of_interest(id) ON DELETE SET NULL,
-    tourist_service_id   INT REFERENCES tourist_service(tourist_service_id) ON DELETE SET NULL
+    service_fk_id        INT REFERENCES tourist_service(id_service) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_wellness_dest_categoria    ON wellness_destination (categoria_wellness);

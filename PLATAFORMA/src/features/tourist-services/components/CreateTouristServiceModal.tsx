@@ -181,7 +181,7 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
                         </div>
                         {imagePreview && (
                             <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
-                                <img src={imagePreview} alt="Previsualizacion" className="h-32 w-full object-cover" />
+                                <img src={imagePreview} alt="Previsualización" className="h-32 w-full object-cover" />
                             </div>
                         )}
                     </div>

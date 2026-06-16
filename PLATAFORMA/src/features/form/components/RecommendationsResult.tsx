@@ -559,7 +559,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
 
                 ctx.fillStyle = '#a1a1aa';
                 ctx.font = '500 18px Inter, ui-sans-serif, system-ui, sans-serif';
-                const locationText = recommendation.locationLabel || 'Ubicacion por confirmar';
+                const locationText = recommendation.locationLabel || 'Ubicación por confirmar';
                 const locationLines = wrapCanvasText(ctx, locationText, 300, 2);
                 locationLines.forEach((line, lineIndex) => {
                     ctx.fillText(line, cardX + 34, cardY + 142 + lineIndex * 22);

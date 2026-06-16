@@ -2355,7 +2355,7 @@ class _WellnessBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Descubre tu modo de viaje',
+                    'WellTur · Descubre tu modo de viaje',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -2364,7 +2364,7 @@ class _WellnessBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '4 preguntas rápidas · lugares de bienestar personalizados',
+                    '4 preguntas rápidas · recomendaciones de bienestar',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.white.withValues(alpha: 0.8),
