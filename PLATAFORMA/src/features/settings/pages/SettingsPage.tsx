@@ -9,10 +9,12 @@ import {
     Settings,
     Shield,
     Sun,
+    Leaf,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { languages, useLanguage, useUserPreferences, type LanguageCode } from '../../../contexts/LanguageContext';
 import { useTheme } from '../../../contexts/ThemeContext';
+import type { Theme } from '../../../contexts/UserPreferencesContext';
 import { useToast } from '../../../shared/context/ToastContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
@@ -65,7 +67,7 @@ const PreferenceToggle = ({ checked, description, label, onChange }: PreferenceT
 
 export const SettingsPage = () => {
     const toast = useToast();
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const { lang, changeLanguage } = useLanguage();
     const { user } = useUserPreferences();
     const copy = getDashboardText(lang);
@@ -91,10 +93,8 @@ export const SettingsPage = () => {
         [preferences, savedPreferences],
     );
 
-    const handleThemeSelect = (nextTheme: 'light' | 'dark') => {
-        if (theme !== nextTheme) {
-            toggleTheme();
-        }
+    const handleThemeSelect = (nextTheme: Theme) => {
+        setTheme(nextTheme);
     };
 
     const updatePreference = (key: keyof SettingsPreferences) => {
@@ -206,7 +206,7 @@ export const SettingsPage = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             <button
                                 type="button"
                                 onClick={() => handleThemeSelect('light')}
@@ -244,6 +244,26 @@ export const SettingsPage = () => {
                                 </div>
                                 <p className="mt-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
                                     {copy.settings.darkDescription}
+                                </p>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => handleThemeSelect('smartur')}
+                                className="rounded-2xl border p-4 text-left transition-colors"
+                                style={{
+                                    background: theme === 'smartur' ? 'rgba(134, 43, 72, 0.10)' : 'var(--color-bg-alt)',
+                                    borderColor: theme === 'smartur' ? '#cd6184' : 'var(--color-border)',
+                                }}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Leaf className="size-4" style={{ color: '#97a273' }} />
+                                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        Modo Smartur
+                                    </p>
+                                </div>
+                                <p className="mt-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    Paleta rosa y salvia — identidad de marca
                                 </p>
                             </button>
                         </div>
@@ -388,7 +408,7 @@ export const SettingsPage = () => {
                                     {copy.settings.activeThemeLabel}
                                 </p>
                                 <p className="mt-1 text-sm font-semibold capitalize" style={{ color: 'var(--color-text)' }}>
-                                    {theme === 'dark' ? copy.settings.darkLabel : copy.settings.lightLabel}
+                                    {theme === 'dark' ? copy.settings.darkLabel : theme === 'smartur' ? 'Modo Smartur' : copy.settings.lightLabel}
                                 </p>
                             </div>
                             <div className="rounded-2xl border px-4 py-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>

@@ -1031,6 +1031,213 @@ def optimize_route_endpoint(req: OptimizeRouteRequest):
     return result
 
 
+# ─── WellTur — Wellness Tourism Endpoints ────────────────────────────────────
+
+class WellnessAssessmentRequest(BaseModel):
+    q1: int = Field(..., ge=1, le=4, description="Energía cognitiva (1=muy alta, 4=muy baja)")
+    q2: int = Field(..., ge=1, le=4, description="Tensión física")
+    q3: int = Field(..., ge=1, le=4, description="Rumiación / pensamientos recurrentes")
+    q4: int = Field(..., ge=1, le=4, description="Activación negativa / nerviosismo")
+    top_n: int = Field(default=3, ge=1, le=10)
+    user_preferences: Optional[Dict[str, Any]] = None
+    region_filter: Optional[str] = None  # e.g. "Veracruz"
+
+
+class WellnessDestinationItem(BaseModel):
+    id_destino: str
+    nombre_lugar: str
+    estado: str
+    categoria_wellness: str
+    match_pct: float
+    beneficio_optimo_pct: float
+    alineacion_pct: float
+    wellness_sentiment_score: float
+    rank: int
+    nivel_aislamiento: float
+    restauracion_pasiva: float
+    demanda_fisica: float
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    descripcion_bienestar: str
+    beneficio_descripcion: str
+
+
+class WellnessAssessmentResponse(BaseModel):
+    perfil_interno: str
+    modo_viaje: str          # 'modo_calma' | 'modo_restauracion' | 'modo_equilibrio'
+    modo_viaje_label: str    # 'Modo Calma' | 'Modo Restauración' | 'Modo Equilibrio'
+    modo_viaje_description: str
+    confianza: float
+    metodo: str
+    destinations: List[WellnessDestinationItem]
+
+
+_wellness_destinations_cache: Optional[Any] = None
+
+
+def _get_wellness_destinations():
+    global _wellness_destinations_cache
+    if _wellness_destinations_cache is None:
+        try:
+            from wellness_matchmaker import load_destinations
+            _wellness_destinations_cache = load_destinations()
+        except Exception as e:
+            logger.warning(f"[wellness] No se pudo cargar destinos: {e}")
+            import pandas as pd
+            _wellness_destinations_cache = pd.DataFrame()
+    return _wellness_destinations_cache
+
+
+@app.post("/wellness/assess", response_model=WellnessAssessmentResponse)
+def wellness_assess(payload: WellnessAssessmentRequest):
+    """
+    Clasifica el perfil de vitalidad del usuario (Q1-Q4) y retorna
+    las top-N recomendaciones de destinos wellness.
+    Nunca expone el nombre técnico interno en modo_viaje.
+    """
+    try:
+        from wellness_classifier import (
+            get_classifier,
+            MODO_VIAJE_LABELS,
+            MODO_VIAJE_DESCRIPTION,
+        )
+        from wellness_matchmaker import recommend_wellness
+
+        clf = get_classifier()
+        perfil, modo, proba_map, confianza, metodo = clf.predict(
+            payload.q1, payload.q2, payload.q3, payload.q4
+        )
+
+        destinations_df = _get_wellness_destinations()
+        recs = recommend_wellness(
+            destinations=destinations_df,
+            perfil=perfil,
+            q1=payload.q1,
+            q2=payload.q2,
+            q3=payload.q3,
+            q4=payload.q4,
+            top_n=payload.top_n,
+            stress_confidence=confianza,
+            user_preferences=payload.user_preferences,
+            region_filter=payload.region_filter,
+        )
+
+        return WellnessAssessmentResponse(
+            perfil_interno=perfil,
+            modo_viaje=modo,
+            modo_viaje_label=MODO_VIAJE_LABELS.get(modo, modo),
+            modo_viaje_description=MODO_VIAJE_DESCRIPTION.get(modo, ""),
+            confianza=round(confianza, 3),
+            metodo=metodo,
+            destinations=[WellnessDestinationItem(**r) for r in recs],
+        )
+    except Exception as e:
+        logger.error(f"[wellness] Error en assessment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/wellness/destinations")
+def wellness_destinations(
+    estado: Optional[str] = Query(None),
+    categoria: Optional[str] = Query(None),
+    approved_only: bool = Query(True),
+):
+    """
+    Lista destinos wellness disponibles en el catálogo.
+    Si approved_only=True, solo retorna los aprobados por el admin.
+    """
+    try:
+        df = _get_wellness_destinations()
+        if df.empty:
+            return {"destinations": []}
+
+        if estado:
+            df = df[df.get("estado", "").str.lower() == estado.lower()]
+        if categoria:
+            cat_col = "categoria_wellness" if "categoria_wellness" in df.columns else "categoria_principal"
+            df = df[df[cat_col].str.lower() == categoria.lower()]
+        if approved_only and "wellness_status" in df.columns:
+            df = df[df["wellness_status"] == "approved"]
+
+        return {"destinations": df.to_dict(orient="records"), "total": len(df)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/wellness/pending-count")
+def wellness_pending_count():
+    """
+    Conteo de servicios/POIs pendientes de validación wellness.
+    Usada por AdminBadgesContext para el badge del sidebar.
+    """
+    try:
+        import psycopg2
+        conn = psycopg2.connect(
+            host=os.getenv("POI_DB_HOST", "localhost"),
+            port=int(os.getenv("POI_DB_PORT", 5432)),
+            database=os.getenv("POI_DB_NAME", "smartur"),
+            user=os.getenv("POI_DB_USER", "postgres"),
+            password=os.getenv("POI_DB_PASSWORD", os.getenv("DB_PASSWORD", "")),
+        )
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM tourist_service WHERE wellness_status = 'pending'"
+            )
+            ts_count = cur.fetchone()[0]
+            cur.execute(
+                "SELECT COUNT(*) FROM point_of_interest WHERE wellness_status = 'pending'"
+            )
+            poi_count = cur.fetchone()[0]
+        conn.close()
+        return {"total_pending": ts_count + poi_count, "services": ts_count, "pois": poi_count}
+    except Exception as e:
+        logger.warning(f"[wellness] pending-count DB error: {e}")
+        return {"total_pending": 0, "services": 0, "pois": 0}
+
+
+@app.post("/wellness/train")
+def wellness_train(background_tasks: BackgroundTasks):
+    """Re-entrena el clasificador de perfil wellness en background."""
+    def _train():
+        try:
+            from wellness_classifier import WellnessProfileClassifier
+            clf = WellnessProfileClassifier()
+            metrics = clf.train()
+            logger.info(f"[wellness-train] Completado: accuracy={metrics.get('accuracy', '?'):.3f}")
+        except Exception as e:
+            logger.error(f"[wellness-train] Error: {e}")
+
+    background_tasks.add_task(_train)
+    return {"ok": True, "message": "Entrenamiento wellness iniciado en background"}
+
+
+@app.get("/wellness/metrics")
+def wellness_metrics():
+    """Devuelve métricas del clasificador wellness guardadas en meta.json."""
+    meta_path = Path("../models/wellness/wellness_profile.meta.json")
+    if not meta_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Modelo no entrenado aún. Ejecuta POST /wellness/train primero.",
+        )
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    return {
+        "classifier": {
+            "accuracy": meta.get("accuracy"),
+            "macro_f1": meta.get("macro_f1"),
+            "classification_report": meta.get("classification_report", {}),
+            "trained_at": meta.get("trained_at"),
+            "n_samples": meta.get("n_samples"),
+            "dataset": meta.get("dataset", "synthetic"),
+        },
+        "disclaimer": (
+            "Métricas generadas sobre datos sintéticos (5,000 registros ATARAXIA). "
+            "No reflejan desempeño con usuarios reales hasta acumular feedback de fit_rating."
+        ),
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

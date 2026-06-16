@@ -2,7 +2,7 @@ import React, { createContext, use, useCallback, useEffect, useLayoutEffect, use
 import { defaultLang, languages, ui, type LanguageCode } from './languageCatalog';
 import { USER_STORAGE_SYNC_EVENT, emitUserStorageSync } from '../shared/userStorageSync';
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'smartur';
 
 export type SessionUser = {
     id: number;
@@ -48,7 +48,7 @@ function readPrefsFromStorage(): StoredPrefs {
         const raw = localStorage.getItem(PREFS_KEY);
         if (raw) {
             const p = JSON.parse(raw) as Partial<StoredPrefs>;
-            const theme = p.theme === 'dark' || p.theme === 'light' ? p.theme : legacyTheme();
+            const theme = (p.theme === 'dark' || p.theme === 'light' || p.theme === 'smartur') ? p.theme : legacyTheme();
             const lang = p.lang && p.lang in languages ? p.lang : legacyLang();
             return { theme, lang };
         }

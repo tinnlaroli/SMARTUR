@@ -1,0 +1,183 @@
+id_destino,nombre_lugar,estado,nivel_aislamiento,restauracion_pasiva,demanda_fisica,categoria_principal,lat,lon,fuente,wellness_sentiment_score
+D-001,Grutas de Tolantongo,Hidalgo,0.75,0.85,0.45,Termal,20.215,-98.727,SECTUR_manual,0.9412
+D-002,Termas de San Joaquín,Nuevo León,0.7,0.9,0.25,Termal,24.558,-99.818,SECTUR_manual,0.9194
+D-003,Hierve el Agua,Oaxaca,0.65,0.7,0.55,Termal,16.866,-96.276,SECTUR_manual,0.9194
+D-004,Santuario de las Luciérnagas,Tlaxcala,0.6,0.8,0.35,Bosque,19.404,-98.537,SECTUR_manual,0.9194
+D-005,Valle de Bravo,Estado de México,0.55,0.75,0.4,Lago,19.193,-100.131,SECTUR_manual,0.9194
+D-006,Tepoztlán,Morelos,0.5,0.65,0.5,Montaña,18.985,-99.099,SECTUR_manual,0.8917
+D-007,Real del Monte,Hidalgo,0.6,0.7,0.45,Montaña,20.139,-98.673,SECTUR_manual,0.9412
+D-008,Mineral del Chico,Hidalgo,0.8,0.85,0.5,Bosque,20.14,-98.71,SECTUR_manual,0.9412
+D-009,Huasca de Ocampo,Hidalgo,0.75,0.8,0.4,Bosque,20.205,-98.577,SECTUR_manual,0.9412
+D-010,Mazamitla,Jalisco,0.7,0.75,0.45,Bosque,19.917,-103.023,SECTUR_manual,0.9194
+D-011,Tapalpa,Jalisco,0.65,0.7,0.4,Montaña,19.945,-103.758,SECTUR_manual,0.9268
+D-012,Barrancas del Cobre,Chihuahua,0.85,0.6,0.75,Ecoturismo_Activo,27.55,-107.775,SECTUR_manual,0.9194
+D-013,Copper Canyon Retreat,Chihuahua,0.9,0.95,0.2,Retiro_Silencio,27.6,-107.8,SECTUR_manual,0.9194
+D-014,Creel,Chihuahua,0.8,0.75,0.55,Bosque,27.75,-107.633,SECTUR_manual,0.9124
+D-015,San José del Pacífico,Oaxaca,0.85,0.9,0.3,Retiro_Silencio,16.339,-96.493,SECTUR_manual,0.9194
+D-016,Huatulco,Oaxaca,0.5,0.8,0.35,Playa,15.769,-96.134,SECTUR_manual,0.9194
+D-017,Mazunte,Oaxaca,0.7,0.85,0.3,Playa,15.664,-96.553,SECTUR_manual,0.9239
+D-018,Zipolite,Oaxaca,0.65,0.75,0.35,Playa,15.662,-96.513,SECTUR_manual,0.9194
+D-019,Puerto Escondido,Oaxaca,0.45,0.7,0.4,Playa,15.871,-97.074,SECTUR_manual,0.9194
+D-020,Bacalar,Quintana Roo,0.55,0.8,0.35,Lago,18.677,-88.389,SECTUR_manual,0.9537
+D-021,Holbox,Quintana Roo,0.75,0.85,0.3,Playa,21.523,-87.379,SECTUR_manual,0.9194
+D-022,Isla Mujeres,Quintana Roo,0.4,0.75,0.35,Playa,21.231,-86.731,SECTUR_manual,0.9194
+D-023,Tulum,Quintana Roo,0.5,0.7,0.45,Playa,20.211,-87.465,SECTUR_manual,0.8846
+D-024,Akumal,Quintana Roo,0.6,0.8,0.35,Playa,20.396,-87.314,SECTUR_manual,0.9194
+D-025,Celestún,Yucatán,0.7,0.75,0.3,Playa,20.858,-90.399,SECTUR_manual,0.9194
+D-026,Izamal,Yucatán,0.45,0.65,0.25,Cultural_Wellness,20.936,-89.017,SECTUR_manual,0.9145
+D-027,Uxmal,Yucatán,0.55,0.6,0.4,Cultural_Wellness,20.359,-89.771,SECTUR_manual,0.9194
+D-028,Calakmul,Campeche,0.9,0.8,0.5,Bosque,18.105,-89.811,SECTUR_manual,0.9194
+D-029,Palenque,Chiapas,0.75,0.7,0.45,Cultural_Wellness,17.484,-92.046,SECTUR_manual,0.9194
+D-030,Agua Azul,Chiapas,0.7,0.75,0.5,Termal,17.256,-92.113,SECTUR_manual,0.9194
+D-031,Misol-Ha,Chiapas,0.8,0.8,0.55,Bosque,17.121,-92.03,SECTUR_manual,0.9194
+D-032,San Cristóbal de las Casas,Chiapas,0.5,0.65,0.4,Montaña,16.737,-92.638,SECTUR_manual,0.9194
+D-033,Comitán,Chiapas,0.55,0.6,0.35,Cultural_Wellness,16.247,-92.135,SECTUR_manual,0.9194
+D-034,Lagunas de Montebello,Chiapas,0.8,0.75,0.4,Lago,16.1,-91.717,SECTUR_manual,0.9194
+D-035,Cuetzalan,Puebla,0.75,0.8,0.45,Montaña,20.018,-97.523,SECTUR_manual,0.9077
+D-036,Chignahuapan,Puebla,0.65,0.75,0.3,Termal,19.838,-98.481,SECTUR_manual,0.9194
+D-037,Atlixco,Puebla,0.4,0.6,0.3,Cultural_Wellness,18.913,-98.431,SECTUR_manual,0.872
+D-038,Cholula,Puebla,0.35,0.55,0.35,Cultural_Wellness,19.058,-98.303,SECTUR_manual,0.9306
+D-039,Zacatlán,Puebla,0.7,0.75,0.4,Bosque,19.777,-97.961,SECTUR_manual,0.9327
+D-040,Taxco,Guerrero,0.5,0.6,0.4,Montaña,18.556,-99.606,SECTUR_manual,0.9031
+D-041,Zihuatanejo,Guerrero,0.5,0.8,0.35,Playa,17.643,-101.551,SECTUR_manual,0.9194
+D-042,Troncones,Guerrero,0.75,0.85,0.3,Playa,17.789,-101.72,SECTUR_manual,0.9194
+D-043,Barra de Potosí,Guerrero,0.7,0.8,0.25,Playa,17.55,-101.55,SECTUR_manual,0.9194
+D-044,Sayulita,Nayarit,0.55,0.75,0.4,Playa,20.869,-105.44,SECTUR_manual,0.8166
+D-045,San Blas,Nayarit,0.65,0.75,0.3,Playa,21.544,-105.286,SECTUR_manual,0.9194
+D-046,Mexcaltitán,Nayarit,0.6,0.65,0.25,Cultural_Wellness,22.2,-105.467,SECTUR_manual,0.9194
+D-047,Mascota,Jalisco,0.7,0.75,0.4,Bosque,20.603,-104.787,SECTUR_manual,0.9194
+D-048,Tequila,Jalisco,0.45,0.55,0.35,Cultural_Wellness,20.882,-103.836,SECTUR_manual,0.8476
+D-049,Chapala,Jalisco,0.4,0.65,0.25,Lago,20.296,-103.192,SECTUR_manual,0.9194
+D-050,Ajijic,Jalisco,0.45,0.7,0.25,Lago,20.303,-103.259,SECTUR_manual,0.8765
+D-051,San Sebastián del Oeste,Jalisco,0.8,0.8,0.45,Montaña,20.756,-104.851,SECTUR_manual,0.9194
+D-052,Talpa de Allende,Jalisco,0.75,0.75,0.5,Montaña,20.38,-104.821,SECTUR_manual,0.9194
+D-053,Costalegre,Jalisco,0.7,0.85,0.3,Playa,19.65,-105.05,SECTUR_manual,0.9194
+D-054,Yelapa,Jalisco,0.8,0.85,0.4,Playa,20.487,-105.444,SECTUR_manual,0.9194
+D-055,Todos Santos,Baja California Sur,0.65,0.8,0.35,Playa,23.446,-110.225,SECTUR_manual,0.9194
+D-056,La Paz,Baja California Sur,0.4,0.7,0.3,Playa,24.142,-110.313,SECTUR_manual,0.9194
+D-057,Loreto,Baja California Sur,0.7,0.8,0.35,Playa,26.012,-111.348,SECTUR_manual,0.9227
+D-058,Mulegé,Baja California Sur,0.75,0.7,0.4,Desierto,26.884,-111.986,SECTUR_manual,0.9194
+D-059,San Ignacio,Baja California Sur,0.85,0.75,0.35,Desierto,27.042,-112.899,SECTUR_manual,0.9194
+D-060,Valle de Guadalupe,Baja California,0.55,0.65,0.3,Cultural_Wellness,32.095,-116.617,SECTUR_manual,0.9194
+D-061,Ensenada,Baja California,0.45,0.65,0.35,Playa,31.866,-116.596,SECTUR_manual,0.9194
+D-062,San Pedro Mártir,Baja California,0.9,0.85,0.6,Montaña,31.044,-115.47,SECTUR_manual,0.9194
+D-063,Cuatro Ciénegas,Coahuila,0.85,0.75,0.4,Desierto,26.986,-102.061,SECTUR_manual,0.9194
+D-064,Parras,Coahuila,0.55,0.6,0.3,Cultural_Wellness,25.442,-102.179,SECTUR_manual,0.8833
+D-065,Arteaga,Coahuila,0.75,0.8,0.45,Montaña,25.415,-100.846,SECTUR_manual,0.9194
+D-066,García Caves,Nuevo León,0.6,0.7,0.4,Montaña,25.8,-100.583,SECTUR_manual,0.9194
+D-067,Cola de Caballo,Nuevo León,0.65,0.7,0.5,Bosque,25.55,-100.45,SECTUR_manual,0.9194
+D-068,Bustamante Caves,Nuevo León,0.7,0.75,0.45,Montaña,26.55,-100.5,SECTUR_manual,0.9194
+D-069,Linares,Nuevo León,0.5,0.55,0.25,Cultural_Wellness,24.857,-99.568,SECTUR_manual,0.9194
+D-070,Galeana,Nuevo León,0.8,0.8,0.5,Montaña,24.825,-100.075,SECTUR_manual,0.9194
+D-071,Bernal,Querétaro,0.55,0.65,0.4,Montaña,20.741,-99.942,SECTUR_manual,0.5
+D-072,Tequisquiapan,Querétaro,0.5,0.8,0.25,Spa,20.522,-99.892,SECTUR_manual,0.9429
+D-073,Jalpan de Serra,Querétaro,0.75,0.7,0.45,Bosque,21.215,-99.474,SECTUR_manual,0.9194
+D-074,Peña de Bernal,Querétaro,0.6,0.7,0.55,Montaña,20.75,-99.95,SECTUR_manual,0.5
+D-075,Mineral de Pozos,Guanajuato,0.65,0.65,0.3,Cultural_Wellness,21.317,-100.317,SECTUR_manual,0.9194
+D-076,Dolores Hidalgo,Guanajuato,0.4,0.55,0.3,Cultural_Wellness,21.156,-100.932,SECTUR_manual,0.9194
+D-077,Salvatierra,Guanajuato,0.5,0.6,0.25,Cultural_Wellness,20.212,-100.883,SECTUR_manual,0.9194
+D-078,Yuriria,Guanajuato,0.55,0.65,0.3,Lago,20.207,-101.132,SECTUR_manual,0.9194
+D-079,Comala,Colima,0.55,0.7,0.3,Montaña,19.324,-103.759,SECTUR_manual,0.9194
+D-080,Nevado de Colima,Colima,0.85,0.8,0.7,Montaña,19.514,-103.617,SECTUR_manual,0.9194
+D-081,Manzanillo,Colima,0.45,0.7,0.3,Playa,19.051,-104.318,SECTUR_manual,0.9194
+D-082,Cuyutlán,Colima,0.6,0.75,0.25,Playa,18.917,-103.967,SECTUR_manual,0.9194
+D-083,Pátzcuaro,Michoacán,0.5,0.7,0.3,Lago,19.516,-101.608,SECTUR_manual,0.8777
+D-084,Santa Clara del Cobre,Michoacán,0.45,0.55,0.25,Cultural_Wellness,19.406,-101.64,SECTUR_manual,0.9194
+D-085,Uruapan,Michoacán,0.6,0.7,0.4,Bosque,19.411,-102.056,SECTUR_manual,0.9194
+D-086,Tzintzuntzan,Michoacán,0.55,0.65,0.3,Lago,19.623,-101.576,SECTUR_manual,0.9194
+D-087,Angangueo,Michoacán,0.75,0.8,0.45,Bosque,19.556,-100.284,SECTUR_manual,0.9194
+D-088,Morelia,Michoacán,0.35,0.6,0.3,Cultural_Wellness,19.7,-101.183,SECTUR_manual,0.9194
+D-089,Zamora de Hidalgo,Michoacán,0.4,0.55,0.25,Cultural_Wellness,19.985,-102.283,SECTUR_manual,0.9194
+D-090,Tuxpan,Michoacán,0.65,0.75,0.35,Bosque,19.556,-100.467,SECTUR_manual,0.9194
+D-091,El Chico,Hidalgo,0.8,0.85,0.5,Bosque,20.14,-98.71,SECTUR_manual,0.9412
+D-092,Tulancingo,Hidalgo,0.4,0.55,0.3,Cultural_Wellness,20.083,-98.368,SECTUR_manual,0.9412
+D-093,Tula,Hidalgo,0.45,0.55,0.35,Cultural_Wellness,20.054,-99.34,SECTUR_manual,0.9412
+D-094,Ixmiquilpan,Hidalgo,0.6,0.8,0.3,Termal,20.478,-99.217,SECTUR_manual,0.9412
+D-095,Tecozautla,Hidalgo,0.7,0.85,0.35,Termal,20.533,-99.635,SECTUR_manual,0.9412
+D-096,Zimapán,Hidalgo,0.75,0.75,0.45,Montaña,20.738,-99.382,SECTUR_manual,0.9412
+D-097,Metztitlán,Hidalgo,0.8,0.8,0.5,Bosque,20.597,-98.765,SECTUR_manual,0.9412
+D-098,Xilitla,San Luis Potosí,0.75,0.85,0.45,Bosque,21.385,-98.99,SECTUR_manual,0.9415
+D-099,Real de Catorce,San Luis Potosí,0.85,0.8,0.5,Desierto,23.69,-100.89,SECTUR_manual,0.9194
+D-100,Media Luna,San Luis Potosí,0.65,0.75,0.4,Lago,22.0,-100.883,SECTUR_manual,0.9194
+D-101,Tamul,San Luis Potosí,0.8,0.75,0.55,Termal,21.85,-99.2,SECTUR_manual,0.9194
+D-102,Aquismón,San Luis Potosí,0.85,0.85,0.5,Bosque,21.625,-99.017,SECTUR_manual,0.9194
+D-103,Tamasopo,San Luis Potosí,0.7,0.8,0.45,Termal,21.917,-99.383,SECTUR_manual,0.9194
+D-104,Ciudad Valles,San Luis Potosí,0.6,0.65,0.55,Ecoturismo_Activo,21.996,-99.01,SECTUR_manual,0.9194
+D-105,Gómez Palacio,Durango,0.55,0.55,0.3,Desierto,25.567,-103.496,SECTUR_manual,0.9194
+D-106,Mapimí,Durango,0.8,0.7,0.35,Desierto,25.833,-103.85,SECTUR_manual,0.9194
+D-107,Nombre de Dios,Durango,0.7,0.7,0.4,Montaña,23.85,-104.25,SECTUR_manual,0.9194
+D-108,Canatlán,Durango,0.75,0.75,0.45,Bosque,24.525,-104.917,SECTUR_manual,0.9194
+D-109,Zacatecas,Zacatecas,0.45,0.6,0.35,Cultural_Wellness,22.77,-102.583,SECTUR_manual,0.9194
+D-110,Jerez,Zacatecas,0.5,0.6,0.3,Cultural_Wellness,22.65,-103.0,SECTUR_manual,0.9194
+D-111,Sombrerete,Zacatecas,0.7,0.7,0.4,Montaña,23.633,-103.633,SECTUR_manual,0.9194
+D-112,La Quemada,Zacatecas,0.65,0.6,0.4,Cultural_Wellness,22.417,-102.817,SECTUR_manual,0.9194
+D-113,Tlaltenango,Zacatecas,0.75,0.75,0.45,Montaña,21.783,-103.3,SECTUR_manual,0.9194
+D-114,Aguascalientes,Aguascalientes,0.35,0.7,0.25,Spa,21.882,-102.291,SECTUR_manual,0.9194
+D-115,Calvillo,Aguascalientes,0.6,0.7,0.35,Bosque,21.846,-102.718,SECTUR_manual,0.9194
+D-116,Rincón de Romos,Aguascalientes,0.45,0.55,0.25,Cultural_Wellness,22.233,-102.317,SECTUR_manual,0.9194
+D-117,Tepic,Nayarit,0.4,0.6,0.3,Cultural_Wellness,21.508,-104.894,SECTUR_manual,0.9194
+D-118,Compostela,Nayarit,0.65,0.7,0.4,Montaña,21.233,-104.9,SECTUR_manual,0.9194
+D-119,Jala,Nayarit,0.75,0.75,0.45,Montaña,21.1,-104.433,SECTUR_manual,0.9194
+D-120,Isla María,Nayarit,0.9,0.9,0.35,Playa,21.65,-106.55,SECTUR_manual,0.9194
+D-121,Tuxtepec,Oaxaca,0.6,0.65,0.4,Bosque,18.083,-96.133,SECTUR_manual,0.9194
+D-122,Capulálpam,Oaxaca,0.8,0.8,0.45,Montaña,17.3,-96.45,SECTUR_manual,0.9194
+D-123,Mitla,Oaxaca,0.55,0.6,0.35,Cultural_Wellness,16.917,-96.367,SECTUR_manual,0.9194
+D-124,Monte Albán,Oaxaca,0.5,0.55,0.4,Cultural_Wellness,17.044,-96.767,SECTUR_manual,0.9194
+D-125,Teotitlán del Valle,Oaxaca,0.5,0.6,0.3,Cultural_Wellness,17.033,-96.517,SECTUR_manual,0.9194
+D-126,Yagul,Oaxaca,0.6,0.6,0.35,Cultural_Wellness,16.95,-96.45,SECTUR_manual,0.9194
+D-127,Playa Ventura,Oaxaca,0.7,0.8,0.3,Playa,15.7,-96.5,SECTUR_manual,0.9194
+D-128,Lagunas de Chacahua,Oaxaca,0.75,0.8,0.35,Playa,16.017,-97.683,SECTUR_manual,0.9194
+D-129,Pátzcuaro Retiro,Michoacán,0.7,0.9,0.2,Retiro_Silencio,19.52,-101.61,SECTUR_manual,0.8777
+D-130,Espíritu Santo,Baja California Sur,0.85,0.9,0.4,Playa,24.45,-110.35,SECTUR_manual,0.9194
+D-131,Sierra Gorda,Querétaro,0.85,0.85,0.55,Bosque,21.2,-99.45,SECTUR_manual,0.9194
+D-132,Retiro Monte Frio,Veracruz,0.8,0.95,0.15,Retiro_Silencio,19.85,-97.05,SECTUR_manual,0.9194
+D-133,Catemaco,Veracruz,0.7,0.75,0.35,Lago,18.417,-95.117,SECTUR_manual,0.9194
+D-134,Coatepec,Veracruz,0.55,0.7,0.3,Bosque,19.45,-96.967,SECTUR_manual,0.8906
+D-135,Xalapa,Veracruz,0.35,0.6,0.3,Cultural_Wellness,19.543,-96.91,SECTUR_manual,0.9194
+D-136,Papantla,Veracruz,0.5,0.6,0.35,Cultural_Wellness,20.447,-97.325,SECTUR_manual,0.9194
+D-137,Tajín,Veracruz,0.55,0.6,0.4,Cultural_Wellness,20.448,-97.378,SECTUR_manual,0.9194
+D-138,Filobobos,Veracruz,0.75,0.65,0.7,Ecoturismo_Activo,20.35,-97.65,SECTUR_manual,0.9194
+D-139,Los Tuxtlas,Veracruz,0.8,0.8,0.5,Bosque,18.583,-95.067,SECTUR_manual,0.9194
+D-140,Cascada de Texolo,Veracruz,0.65,0.75,0.45,Bosque,19.95,-97.05,SECTUR_manual,0.9194
+D-141,Huasteca Potosina,San Luis Potosí,0.7,0.75,0.5,Termal,21.5,-99.0,SECTUR_manual,0.9194
+D-142,Retiro Silencio Oaxaca,Oaxaca,0.9,0.98,0.1,Retiro_Silencio,17.1,-96.7,SECTUR_manual,0.9194
+D-143,Spa Ixtapan,Estado de México,0.45,0.9,0.2,Spa,18.844,-99.825,SECTUR_manual,0.9194
+D-144,Valle de Bravo Spa,Estado de México,0.55,0.85,0.25,Spa,19.2,-100.13,SECTUR_manual,0.9194
+D-145,Malinalco,Estado de México,0.6,0.7,0.4,Montaña,18.95,-99.5,SECTUR_manual,0.9459
+D-146,Tepotzotlán,Estado de México,0.3,0.75,0.2,Spa,19.717,-99.224,SECTUR_manual,0.875
+D-147,Metepec,Estado de México,0.35,0.6,0.25,Cultural_Wellness,19.267,-99.567,SECTUR_manual,0.9
+D-148,Nevado Toluca,Estado de México,0.85,0.8,0.75,Montaña,19.117,-99.758,SECTUR_manual,0.9194
+D-149,Desierto de los Leones,Ciudad de México,0.5,0.75,0.45,Bosque,19.317,-99.317,SECTUR_manual,0.9194
+D-150,Xochimilco,Ciudad de México,0.3,0.6,0.25,Lago,19.257,-99.104,SECTUR_manual,0.9194
+D-151,Retiro CDMX,Ciudad de México,0.4,0.85,0.15,Retiro_Silencio,19.35,-99.2,SECTUR_manual,0.9194
+D-152,Tepoztlán Retiro,Morelos,0.65,0.92,0.2,Retiro_Silencio,18.99,-99.1,SECTUR_manual,0.8917
+D-153,Tlayacapan,Morelos,0.5,0.65,0.3,Cultural_Wellness,18.606,-98.981,SECTUR_manual,0.9194
+D-154,Tepozteco,Morelos,0.55,0.7,0.55,Montaña,18.985,-99.095,SECTUR_manual,0.9194
+D-155,Cuernavaca Spa,Morelos,0.35,0.8,0.2,Spa,18.921,-99.23,SECTUR_manual,0.9194
+D-156,Taxco Spa,Guerrero,0.5,0.85,0.2,Spa,18.56,-99.6,SECTUR_manual,0.9031
+D-157,Ixtapa Wellness,Guerrero,0.45,0.75,0.3,Playa,17.667,-101.643,SECTUR_manual,0.9194
+D-158,Campeche Malecón,Campeche,0.35,0.6,0.25,Cultural_Wellness,19.845,-90.525,SECTUR_manual,0.9194
+D-159,Edzná,Campeche,0.6,0.6,0.4,Cultural_Wellness,19.597,-90.23,SECTUR_manual,0.9194
+D-160,Calakmul Retiro,Campeche,0.95,0.95,0.25,Retiro_Silencio,18.1,-89.8,SECTUR_manual,0.9194
+D-161,Cenote Ik Kil,Yucatán,0.55,0.7,0.4,Termal,20.667,-88.55,SECTUR_manual,0.9194
+D-162,Río Lagartos,Yucatán,0.75,0.7,0.3,Playa,21.583,-88.15,SECTUR_manual,0.9194
+D-163,Mérida Centro Wellness,Yucatán,0.3,0.75,0.2,Spa,20.967,-89.623,SECTUR_manual,0.9194
+D-164,Isla Holbox Retiro,Quintana Roo,0.8,0.9,0.2,Retiro_Silencio,21.52,-87.38,SECTUR_manual,0.9194
+D-165,Sian Ka'an,Quintana Roo,0.9,0.75,0.55,Ecoturismo_Activo,19.9,-87.7,SECTUR_manual,0.9194
+D-166,Cobá,Quintana Roo,0.65,0.65,0.45,Cultural_Wellness,20.494,-87.736,SECTUR_manual,0.9194
+D-167,Isla Contoy,Quintana Roo,0.85,0.85,0.3,Playa,21.483,-86.8,SECTUR_manual,0.9194
+D-168,Tabasco Wetlands,Tabasco,0.7,0.65,0.45,Ecoturismo_Activo,18.0,-92.95,SECTUR_manual,0.9194
+D-169,Comalcalco,Tabasco,0.55,0.55,0.3,Cultural_Wellness,18.267,-93.2,SECTUR_manual,0.9194
+D-170,Tapijulapa,Tabasco,0.75,0.8,0.4,Bosque,17.467,-92.783,SECTUR_manual,0.9194
+D-171,Retiro Tabasco,Tabasco,0.8,0.92,0.15,Retiro_Silencio,17.5,-92.8,SECTUR_manual,0.9194
+D-172,Tuxtla Gutiérrez Spa,Chiapas,0.35,0.75,0.2,Spa,16.75,-93.117,SECTUR_manual,0.9194
+D-173,Sumidero,Chiapas,0.65,0.6,0.55,Ecoturismo_Activo,16.85,-93.1,SECTUR_manual,0.9194
+D-174,Bonampak,Chiapas,0.8,0.65,0.4,Cultural_Wellness,16.7,-91.067,SECTUR_manual,0.9194
+D-175,Yaxchilán,Chiapas,0.85,0.7,0.5,Cultural_Wellness,16.9,-90.967,SECTUR_manual,0.9194
+D-176,Toniná,Chiapas,0.7,0.6,0.4,Cultural_Wellness,16.9,-92.0,SECTUR_manual,0.9194
+D-177,Retiro Chiapas Selva,Chiapas,0.92,0.96,0.2,Retiro_Silencio,16.5,-92.5,SECTUR_manual,0.9194
+D-178,Tlaxco,Tlaxcala,0.65,0.7,0.4,Montaña,19.417,-98.117,SECTUR_manual,0.9194
+D-179,Huamantla,Tlaxcala,0.45,0.55,0.3,Cultural_Wellness,19.317,-97.917,SECTUR_manual,0.9194
+D-180,Nanacamilpa,Tlaxcala,0.7,0.8,0.35,Bosque,19.5,-98.533,SECTUR_manual,0.9194
+D-181,Malinche,Tlaxcala,0.75,0.75,0.65,Montaña,19.233,-98.033,SECTUR_manual,0.9194
+D-182,Retiro Tlaxcala,Tlaxcala,0.75,0.93,0.15,Retiro_Silencio,19.4,-98.5,SECTUR_manual,0.9194

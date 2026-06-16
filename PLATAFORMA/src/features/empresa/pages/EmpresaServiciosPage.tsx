@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import axios from 'axios';
-import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle } from 'lucide-react';
+import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle, Leaf } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
 import {
     empresaApi,
@@ -59,6 +59,14 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
     const [errors, setErrors]             = useState<Record<string, string>>({});
     const [saving, setSaving]             = useState(false);
     const [error, setError]               = useState<string | null>(null);
+
+    // Wellness section
+    const [isWellness, setIsWellness]               = useState<boolean>((initial as Record<string,unknown>)?.is_wellness as boolean ?? false);
+    const [wellnessCategoria, setWellnessCategoria] = useState<string>((initial as Record<string,unknown>)?.categoria_wellness as string ?? '');
+    const [wellnessDesc, setWellnessDesc]           = useState<string>((initial as Record<string,unknown>)?.descripcion_bienestar as string ?? '');
+    const [wellnessAisl, setWellnessAisl]           = useState<number>(((initial as Record<string,unknown>)?.nivel_aislamiento as number) ?? 0.5);
+    const [wellnessRest, setWellnessRest]           = useState<number>(((initial as Record<string,unknown>)?.restauracion_pasiva as number) ?? 0.5);
+    const [wellnessDemanda, setWellnessDemanda]     = useState<number>(((initial as Record<string,unknown>)?.demanda_fisica as number) ?? 0.3);
 
     const typeOptions = useMemo(() => {
         const known = EMPRESA_SERVICE_TYPE_OPTIONS.map((o) => o.value);
@@ -120,6 +128,14 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                 duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null,
                 contact_phone:    form.contact_phone?.trim() || undefined,
                 image:            imageFile,
+                // Wellness fields
+                is_wellness:          isWellness || undefined,
+                wellness_status:      isWellness ? 'pending' : undefined,
+                categoria_wellness:   isWellness && wellnessCategoria ? wellnessCategoria : undefined,
+                descripcion_bienestar: isWellness && wellnessDesc ? wellnessDesc.trim() : undefined,
+                nivel_aislamiento:    isWellness ? wellnessAisl : undefined,
+                restauracion_pasiva:  isWellness ? wellnessRest : undefined,
+                demanda_fisica:       isWellness ? wellnessDemanda : undefined,
             };
 
             if (isEdit && initial) {
@@ -368,6 +384,104 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                             )}
                             <input ref={imgInputRef} type="file" accept="image/*" className="hidden"
                                 onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
+                        </div>
+
+                        {/* ── Wellness Section ──────────────────────────────────── */}
+                        <div className="border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
+                            {/* Toggle */}
+                            <button
+                                type="button"
+                                onClick={() => setIsWellness(p => !p)}
+                                className="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-sm transition-colors"
+                                style={{
+                                    background: isWellness ? 'rgba(34,197,94,0.08)' : 'var(--color-bg-alt)',
+                                    borderColor: isWellness ? '#22c55e40' : 'var(--color-border)',
+                                }}
+                            >
+                                <span className="flex items-center gap-2 font-semibold" style={{ color: isWellness ? '#22c55e' : 'var(--color-text)' }}>
+                                    <Leaf className="size-4" />
+                                    Servicio de Bienestar (opcional)
+                                </span>
+                                <span className={`text-xs rounded-full px-2.5 py-0.5 font-medium ${isWellness ? 'text-white' : ''}`}
+                                    style={{ background: isWellness ? '#22c55e' : 'var(--color-border)', color: isWellness ? 'white' : 'var(--color-text-alt)' }}>
+                                    {isWellness ? 'Activado' : 'Desactivado'}
+                                </span>
+                            </button>
+
+                            {isWellness && (
+                                <div className="mt-3 space-y-4">
+                                    <div className="rounded-xl border px-4 py-3"
+                                        style={{ background: 'rgba(34,197,94,0.04)', borderColor: '#22c55e30' }}>
+                                        <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                                            Al marcar este servicio como de bienestar, quedará en revisión por el equipo SMARTUR
+                                            antes de aparecer en las recomendaciones wellness de la app. No afecta tu listado regular.
+                                        </p>
+                                    </div>
+
+                                    {/* Category */}
+                                    <div>
+                                        <label className={labelCls} style={labelStyle}>Categoría wellness</label>
+                                        <select
+                                            value={wellnessCategoria}
+                                            onChange={e => setWellnessCategoria(e.target.value)}
+                                            className={`${inputCls} appearance-none`}
+                                            style={{ ...inputStyle, borderColor: 'var(--color-border)' }}
+                                        >
+                                            <option value="">Seleccionar categoría…</option>
+                                            {['Termal', 'Spa', 'Bosque', 'Montaña', 'Lago', 'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque'].map(c => (
+                                                <option key={c} value={c}>{c.replace('_', ' ')}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Description */}
+                                    <div>
+                                        <label className={labelCls} style={labelStyle}>¿Qué experiencia de bienestar ofrece?</label>
+                                        <textarea
+                                            rows={2} maxLength={300}
+                                            value={wellnessDesc}
+                                            onChange={e => setWellnessDesc(e.target.value)}
+                                            placeholder="Ej. Aguas termales con propiedades relajantes en entorno natural…"
+                                            className={`${inputCls} resize-none`}
+                                            style={{ ...inputStyle, borderColor: 'var(--color-border)' }}
+                                        />
+                                    </div>
+
+                                    {/* Sliders */}
+                                    <div className="space-y-3">
+                                        {[
+                                            {
+                                                label: 'Nivel de aislamiento', hint: '0 = centro urbano · 10 = muy aislado',
+                                                value: wellnessAisl, onChange: setWellnessAisl,
+                                            },
+                                            {
+                                                label: 'Relajación / Restauración', hint: '0 = activo · 10 = muy relajante',
+                                                value: wellnessRest, onChange: setWellnessRest,
+                                            },
+                                            {
+                                                label: 'Demanda física', hint: '0 = sin esfuerzo · 10 = alta exigencia física',
+                                                value: wellnessDemanda, onChange: setWellnessDemanda,
+                                            },
+                                        ].map(({ label, hint, value, onChange }) => (
+                                            <div key={label}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className={`${labelCls} mb-0`} style={labelStyle}>{label}</span>
+                                                    <span className="text-sm font-bold tabular-nums" style={{ color: '#22c55e' }}>
+                                                        {(value * 10).toFixed(0)}/10
+                                                    </span>
+                                                </div>
+                                                <input
+                                                    type="range" min={0} max={1} step={0.05}
+                                                    value={value}
+                                                    onChange={e => onChange(parseFloat(e.target.value))}
+                                                    className="w-full h-1.5 cursor-pointer accent-green-500"
+                                                />
+                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Approval notice for new services */}

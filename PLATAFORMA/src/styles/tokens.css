@@ -104,6 +104,26 @@
   --color-border: rgba(255, 255, 255, 0.1);
 }
 
+/* ── Modo Smartur ── paleta rosa viejo / verde salvia / mostaza ─────────── */
+[data-theme="smartur"] {
+  --rgb-pink-primary: 205, 97, 132;    /* #cd6184 rosa viejo */
+  --rgb-purple-accent: 134, 43, 72;    /* #862b48 vino — estados activos */
+  --rgb-cyan-accent: 84, 94, 52;       /* #545e34 verde oliva oscuro */
+  --rgb-green-accent: 151, 162, 115;   /* #97a273 verde salvia */
+  --rgb-orange-cta: 184, 114, 5;       /* #b87205 ámbar oscuro — CTA */
+
+  --rgb-bg: 255, 236, 242;             /* #ffecf2 rosa pastel */
+  --rgb-bg-alt: 255, 224, 236;         /* #ffe0ec ligeramente más profundo */
+  --rgb-text: 30, 10, 20;              /* casi-negro con tono cálido */
+  --rgb-text-alt: 171, 67, 100;        /* #ab4364 rosa viejo oscuro */
+
+  --color-bg: rgb(var(--rgb-bg));
+  --color-bg-alt: rgb(var(--rgb-bg-alt));
+  --color-text: rgb(var(--rgb-text));
+  --color-text-alt: rgb(var(--rgb-text-alt));
+  --color-border: rgba(205, 97, 132, 0.18);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

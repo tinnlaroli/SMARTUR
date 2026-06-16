@@ -31,6 +31,7 @@ import '../settings/settings_screen.dart';
 import '../auth/welcome_screen.dart';
 import '../../widgets/add_to_route_sheet.dart';
 import '../explore/detail_view_page.dart';
+import 'wellness_assessment_screen.dart';
 
 /// Module-level like cache — liked state persists across widget rebuilds and scroll recycling.
 /// Key: place.id (e.g. 'poi_3', 'svc_7').  Value: liked this session.
@@ -1569,6 +1570,22 @@ class HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    // Wellness banner — entrada al assessment de bienestar
+    slivers.add(
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+        sliver: SliverToBoxAdapter(
+          child: _WellnessBanner(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const WellnessAssessmentScreen(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
     // Hero card (first place)
     slivers.add(
       SliverPadding(
@@ -2286,6 +2303,83 @@ class _SwipeOverlayButton extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: iconColor, size: size),
+      ),
+    );
+  }
+}
+
+// ── Wellness Banner — entrada al assessment de bienestar ──────────────────────
+
+class _WellnessBanner extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _WellnessBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF254117), Color(0xFF1a3010)],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF254117).withValues(alpha: 0.30),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.spa_outlined, size: 22, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Descubre tu modo de viaje',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '4 preguntas rápidas · lugares de bienestar personalizados',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ],
+        ),
       ),
     );
   }

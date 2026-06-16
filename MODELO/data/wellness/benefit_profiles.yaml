@@ -1,0 +1,38 @@
+# Pesos de beneficio terapéutico por perfil de vitalidad (WellTur/SMARTUR)
+# beneficio = suma ponderada de atributos del destino
+# category_bonus aumentados a ±0.20-0.25 (antes ±0.12, insuficiente vs. feature weights 0.35-0.45)
+
+Burnout:
+  description: Recuperación cognitiva — silencio, baja demanda, retiro
+  weights:
+    restauracion_pasiva: 0.45
+    nivel_aislamiento: 0.25
+    demanda_fisica: -0.35
+  category_bonus:
+    Retiro_Silencio: 0.25
+    Spa: 0.22
+    Termal: 0.20
+
+Fatiga_Fisica:
+  description: Recuperación corporal — termal, spa, mínimo esfuerzo
+  weights:
+    restauracion_pasiva: 0.35
+    demanda_fisica: -0.45
+    nivel_aislamiento: 0.15
+  category_bonus:
+    Termal: 0.25
+    Spa: 0.22
+    Lago: 0.20
+
+Hiperactividad_Ansiosa:
+  description: Regulación — aislamiento, estructura pasiva, evitar sobre-estimulación
+  weights:
+    nivel_aislamiento: 0.35
+    restauracion_pasiva: 0.30
+    demanda_fisica: -0.25
+  category_bonus:
+    Retiro_Silencio: 0.25
+    Bosque: 0.22
+    Montaña: 0.18
+  category_penalty:
+    Ecoturismo_Activo: -0.20
