@@ -66,10 +66,9 @@ const parseCoordinate = (value?: string | null) => {
     return Number.isFinite(parsed) ? parsed : null;
 };
 
-const getEntityLocationId = (entity?: TouristService | POI) => {
+const getEntityLocationId = (entity?: TouristService | POI): number | null => {
     if (!entity) return null;
-    if ('id_location' in entity) return entity.id_location;
-    if ('locationId' in entity) return entity.locationId;
+    if ('id_location' in entity && entity.id_location != null) return entity.id_location;
     return null;
 };
 
