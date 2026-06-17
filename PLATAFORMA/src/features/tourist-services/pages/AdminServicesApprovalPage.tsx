@@ -427,17 +427,6 @@ export function AdminServicesApprovalPage() {
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
-            {/* Header */}
-            <div className="shrink-0">
-                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
-                    Servicios turísticos
-                </h1>
-                <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                    {total} servicio{total !== 1 ? 's' : ''} {activeFilter === 'pending_review' ? 'esperando revisión' : activeFilter ? `con estado "${SERVICE_FILTERS.find(f => f.key === activeFilter)?.label ?? activeFilter}"` : 'en total'}
-                    {' · '}Puntaje mínimo de evaluación: <span className="font-semibold">{minScore}/10</span>
-                </p>
-            </div>
-
             {/* Info banner */}
             <div
                 className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0"
