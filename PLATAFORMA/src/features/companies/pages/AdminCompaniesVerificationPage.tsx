@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
-    RefreshCw, X, ShieldX, MapPin, Search,
+    RefreshCw, X, ShieldX, MapPin,
     Building2, User, Tag, Calendar,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -546,18 +546,14 @@ export function AdminCompaniesVerificationPage() {
             {/* Filters + actions */}
             <div className="shrink-0 flex items-center gap-3 flex-wrap">
                 {/* Search */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 pointer-events-none" style={{ color: 'var(--color-text-alt)' }} />
-                    <input
-                        ref={searchRef}
-                        type="text"
-                        value={search}
-                        onChange={e => { setSearch(e.target.value); setPage(1); }}
-                        placeholder="Buscar empresa..."
-                        className="rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 w-52"
-                        style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}
-                    />
-                </div>
+                <input
+                    ref={searchRef}
+                    type="text"
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setPage(1); }}
+                    placeholder="Buscar empresa..."
+                    className="w-64 rounded-lg border border-zinc-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                />
 
                 <div className="flex gap-2 flex-wrap">
                     {FILTER_OPTIONS.map(({ key, label }) => (

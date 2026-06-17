@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-    CheckCircle, XCircle, ClipboardCheck, X, Loader2, RefreshCw,
+    CheckCircle, XCircle, X, Loader2, RefreshCw,
     Building2, MapPin, Clock, Phone, ImageOff,
     Wrench, ShieldCheck, DollarSign, Calendar, ClipboardList,
 } from 'lucide-react';
@@ -427,22 +427,6 @@ export function AdminServicesApprovalPage() {
 
     return (
         <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
-            {/* Info banner */}
-            <div
-                className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0"
-                style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-            >
-                <ClipboardCheck className="size-5 mt-0.5 shrink-0" style={{ color: COLOR }} />
-                <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
-                        Validación de servicios turísticos
-                    </p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Para aprobar un servicio primero debe pasar una evaluación con puntaje ≥ {minScore}/10. Haz clic en cualquier fila para revisar el detalle, evaluar o aprobar.
-                    </p>
-                </div>
-            </div>
-
             {actionError && (
                 <p className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
                     {actionError}
