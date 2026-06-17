@@ -101,7 +101,7 @@ export const deriveEmpresaDashboardViewModel = (
 
     const trendData: EmpresaTrendPoint[] = timeline_30d.map((point) => {
         const cleanDate = point.date.includes('T') ? point.date.split('T')[0] : point.date;
-        const [year, month, day] = cleanDate.split('-');
+        const [, month, day] = cleanDate.split('-');
         return {
             date: cleanDate,
             label: `${day}/${month}`,
