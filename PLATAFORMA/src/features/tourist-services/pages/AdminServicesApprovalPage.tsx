@@ -313,7 +313,7 @@ const SERVICE_STATUS_CONFIG: Record<string, { label: string; color: string }> = 
 
 export function AdminServicesApprovalPage() {
     const [services, setServices]         = useState<PendingService[]>([]);
-    const [total, setTotal]               = useState(0);
+    const [, setTotal]                    = useState(0);
     const [loading, setLoading]           = useState(true);
     const [search, setSearch]             = useState('');
     const [activeFilter, setActiveFilter] = useState<string | null>('pending_review');
