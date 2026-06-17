@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { createRoot } from 'react-dom/client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes/router.tsx';
@@ -9,7 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { UserPreferencesProvider } from './contexts/LanguageContext.tsx';
 import { AuthModalProvider } from './features/auth/context/AuthModalContext.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
-import { initSession, setAccessToken } from './shared/api/axiosClient.ts';
+import { initSession, setAccessToken, getStoredRefreshToken } from './shared/api/axiosClient.ts';
 
 // Consume registration token from LANDING redirect (/empresa/dashboard#token=...&user=...)
 // Must run synchronously before React renders so ProtectedRoute sees the token.
@@ -63,14 +63,20 @@ if (sentryDsn) {
 }
 
 function SessionGate({ children }: { children: React.ReactNode }) {
+    // If there's a stored refresh token, we must restore the access token BEFORE
+    // any child component mounts and fires its own API calls. Otherwise the page's
+    // useEffect and the axios 401-interceptor both race to call /auth/refresh with
+    // the same single-use token, one of them fails and logs the user out.
+    const [ready, setReady] = useState(() => !getStoredRefreshToken());
+
     useEffect(() => {
-        void initSession();
         const path = window.location.pathname;
-        if (path === '/' || path === '') {
-            void import('./features/landing/pages/Landing');
-        }
+        if (path === '/' || path === '') void import('./features/landing/pages/Landing');
+        if (ready) return;
+        initSession().finally(() => setReady(true));
     }, []);
 
+    if (!ready) return null;
     return <>{children}</>;
 }
 
