@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Star, Loader2, Leaf, ImagePlus } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
@@ -18,21 +18,13 @@ interface Props {
 export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     useEscapeKey(onClose);
     const { t } = useLanguage();
-    const poiTypes = useMemo(() => [
-        { label: t('poi.type.natural'), value: 1 },
-        { label: t('poi.type.cultural'), value: 2 },
-        { label: t('poi.type.historic'), value: 3 },
-        { label: t('poi.type.recreational'), value: 4 },
-    ], [t]);
     const [locations, setLocations] = useState<Location[]>([]);
     const [loadingLocations, setLoadingLocations] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
     const [name, setName] = useState(poi.name);
     const [description, setDescription] = useState(poi.description ?? '');
-    const [idType, setIdType] = useState(poi.typeId);
-    const [idLocation, setIdLocation] = useState(poi.locationId);
-    const [sustainability, setSustainability] = useState(poi.sustainability);
+    const [idLocation, setIdLocation] = useState<number>(poi.id_location ?? 0);
     const [error, setError] = useState('');
 
     const [image, setImage] = useState<File | null>(null);
@@ -72,9 +64,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
         const ok = await onSubmit(poi.id, {
             name: name.trim(),
             description: description.trim() || undefined,
-            id_type: idType,
-            id_location: idLocation,
-            sustainability,
+            id_location: idLocation || undefined,
             image: image ?? undefined,
             is_wellness: isWellness,
             ...(isWellness && {
@@ -125,50 +115,24 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.type')}</label>
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.location')}</label>
+                        {loadingLocations ? (
+                            <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                <Loader2 className="size-3.5 animate-spin" /> Cargando…
+                            </div>
+                        ) : (
                             <select
-                                value={idType}
-                                onChange={(e) => setIdType(Number(e.target.value))}
+                                value={idLocation}
+                                onChange={(e) => setIdLocation(Number(e.target.value))}
                                 className={inputClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {poiTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+                                <option value={0}>Seleccionar ubicación…</option>
+                                {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                             </select>
-                        </div>
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.location')}</label>
-                            {loadingLocations ? (
-                                <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    <Loader2 className="size-3.5 animate-spin" /> Cargando…
-                                </div>
-                            ) : (
-                                <select
-                                    value={idLocation}
-                                    onChange={(e) => setIdLocation(Number(e.target.value))}
-                                    className={inputClass}
-                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                                >
-                                    {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                                </select>
-                            )}
-                        </div>
+                        )}
                     </div>
-
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60" style={{ borderColor: 'var(--color-border)' }}>
-                        <input
-                            type="checkbox"
-                            checked={sustainability}
-                            onChange={(e) => setSustainability(e.target.checked)}
-                            className="size-4 rounded text-violet-600"
-                        />
-                        <Leaf className="size-4 text-emerald-500" />
-                        <div>
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{t('poi.sustainable')}</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Marca si el POI cumple criterios de sostenibilidad</p>
-                        </div>
-                    </label>
 
                     {/* Imagen */}
                     <div>

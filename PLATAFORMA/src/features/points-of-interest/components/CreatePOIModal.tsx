@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { X, Star, Loader2, Leaf, ImagePlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Star, Loader2, ImagePlus } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
@@ -18,21 +18,13 @@ interface Props {
 export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     useEscapeKey(onClose);
     const { t } = useLanguage();
-    const poiTypes = useMemo(() => [
-        { label: t('poi.type.natural'), value: 1 },
-        { label: t('poi.type.cultural'), value: 2 },
-        { label: t('poi.type.historic'), value: 3 },
-        { label: t('poi.type.recreational'), value: 4 },
-    ], [t]);
     const [locations, setLocations] = useState<Location[]>([]);
     const [loadingLocations, setLoadingLocations] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [idType, setIdType] = useState(1);
     const [idLocation, setIdLocation] = useState(0);
-    const [sustainability, setSustainability] = useState(false);
     const [error, setError] = useState('');
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
@@ -63,9 +55,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
         const ok = await onSubmit({
             name: name.trim(),
             description: description.trim() || undefined,
-            id_type: idType,
             id_location: idLocation,
-            sustainability,
             image: image ?? undefined,
             ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
         });
@@ -111,35 +101,22 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.type')}</label>
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.location')}</label>
+                        {loadingLocations ? (
+                            <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                <Loader2 className="size-3.5 animate-spin" /> Cargando…
+                            </div>
+                        ) : (
                             <select
-                                value={idType}
-                                onChange={(e) => setIdType(Number(e.target.value))}
+                                value={idLocation}
+                                onChange={(e) => setIdLocation(Number(e.target.value))}
                                 className={inputClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             >
-                                {poiTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+                                {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                             </select>
-                        </div>
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>{t('poi.location')}</label>
-                            {loadingLocations ? (
-                                <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    <Loader2 className="size-3.5 animate-spin" /> Cargando…
-                                </div>
-                            ) : (
-                                <select
-                                    value={idLocation}
-                                    onChange={(e) => setIdLocation(Number(e.target.value))}
-                                    className={inputClass}
-                                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                                >
-                                    {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                                </select>
-                            )}
-                        </div>
+                        )}
                     </div>
 
                     <div>
@@ -171,20 +148,6 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             </div>
                         )}
                     </div>
-
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60" style={{ borderColor: 'var(--color-border)' }}>
-                        <input
-                            type="checkbox"
-                            checked={sustainability}
-                            onChange={(e) => setSustainability(e.target.checked)}
-                            className="size-4 rounded text-violet-600"
-                        />
-                        <Leaf className="size-4 text-emerald-500" />
-                        <div>
-                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{t('poi.sustainable')}</p>
-                            <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Marca si el POI cumple criterios de sostenibilidad</p>
-                        </div>
-                    </label>
 
                     {error && <p className="text-xs text-rose-500">{error}</p>}
 

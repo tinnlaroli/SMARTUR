@@ -2,9 +2,7 @@ export interface POI {
     id: number;
     name: string;
     description?: string;
-    typeId: number;
-    locationId: number;
-    sustainability: boolean;
+    id_location?: number;
     image_url?: string | null;
     is_wellness?: boolean;
     wellness_status?: string;
@@ -18,18 +16,14 @@ export interface POI {
 export interface CreatePOIDTO {
     name: string;
     description?: string;
-    id_type: number;
-    id_location: number;
-    sustainability: boolean;
+    id_location?: number;
     image?: File | null;
 }
 
 export interface UpdatePOIDTO {
     name?: string;
     description?: string;
-    id_type?: number;
     id_location?: number;
-    sustainability?: boolean;
     image?: File | null;
     is_wellness?: boolean;
     categoria_wellness?: string;

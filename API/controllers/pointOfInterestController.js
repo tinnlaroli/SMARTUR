@@ -218,20 +218,19 @@ class PointOfInterestController {
     static async createController(req, res) {
         try {
             const name = String(req.body?.name || '').trim();
-            const categoriesRaw = String(req.body?.categories_raw || '').trim();
-
-            if (!name || !categoriesRaw) {
-                return res.status(400).json({
-                    message: 'name and categories_raw are required',
-                });
+            if (!name) {
+                return res.status(400).json({ message: 'name is required' });
             }
 
+            const categoriesRaw = String(req.body?.categories_raw || '').trim();
             const categoriesMapped = mapCategories(categoriesRaw);
             const priceLevel = parsePriceLevel(req.body?.price_level);
             const isAccessible = parseBoolean(req.body?.is_accessible, false);
             const outdoor = parseBoolean(req.body?.outdoor, false);
             const latitude = parseNumber(req.body?.latitude, null);
             const longitude = parseNumber(req.body?.longitude, null);
+            const idLocation = parseNumber(req.body?.id_location, null);
+            const description = String(req.body?.description || '').trim() || null;
 
             let image_url = null;
             if (req.file) {
@@ -240,8 +239,8 @@ class PointOfInterestController {
 
             const result = await pool.query(
                 `INSERT INTO point_of_interest
-                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, image_url)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING *`,
                 [
                     name,
@@ -252,6 +251,8 @@ class PointOfInterestController {
                     outdoor,
                     latitude,
                     longitude,
+                    idLocation,
+                    description,
                     image_url,
                 ]
             );
@@ -282,6 +283,16 @@ class PointOfInterestController {
             if (req.body?.name !== undefined) {
                 updates.push(`name = $${idx++}`);
                 values.push(String(req.body.name).trim());
+            }
+
+            if (req.body?.description !== undefined) {
+                updates.push(`description = $${idx++}`);
+                values.push(String(req.body.description).trim() || null);
+            }
+
+            if (req.body?.id_location !== undefined) {
+                updates.push(`id_location = $${idx++}`);
+                values.push(parseNumber(req.body.id_location, null));
             }
 
             if (req.body?.categories_raw !== undefined) {

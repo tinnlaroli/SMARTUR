@@ -3,7 +3,7 @@ import { usePOI } from '../hooks/usePOI';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../users/components/Pagination';
 import SearchInput from '../../users/components/SearchInput';
-import { Star, Leaf, Tag, Plus } from 'lucide-react';
+import { Star, Leaf, Plus } from 'lucide-react';
 import { TableBodyRows } from '../../../components/ui/TableSkeleton';
 import { SelectionBar } from '../../../components/ui/SelectionBar';
 import { useConfirm } from '../../../components/ui/ConfirmModal';
@@ -14,7 +14,6 @@ import {
     DataTableCell,
     DataTableHead,
     DataTableHeadCell,
-    DataTableHeaderSelect,
     DataTableRow,
     DataTableScroll,
     DataTableShell,
@@ -32,12 +31,6 @@ import CreatePOIModal from '../components/CreatePOIModal';
 import EditPOIModal from '../components/EditPOIModal';
 import type { POI } from '../types/types';
 
-const POI_TYPE_LABELS: Record<number, string> = {
-    1: 'Natural',
-    2: 'Cultural',
-    3: 'Histórico',
-    4: 'Recreativo',
-};
 
 export const POIPage = () => {
     const { lang, t } = useLanguage();
@@ -48,9 +41,8 @@ export const POIPage = () => {
     const limit = Number(searchParams.get('limit')) || 10;
     const [searchTerm, setSearchTerm] = useState(urlSearch);
     const [sort, setSort] = useState<SortState | null>(null);
-    const [sustainableFilter, setSustainableFilter] = useState('');
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
-    const displayData = useMemo(() => sortRows(points.filter(p => !sustainableFilter || String(p.sustainability) === sustainableFilter), sort), [points, sort, sustainableFilter]);
+    const displayData = useMemo(() => sortRows(points, sort), [points, sort]);
 
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -150,24 +142,11 @@ export const POIPage = () => {
                                     </DataTableHeadCell>
                                     <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>{m.poi.colName}</SortableHeadCell>
                                     <DataTableHeadCell>{m.poi.colDescription}</DataTableHeadCell>
-                                    <SortableHeadCell sortKey="price_level" sort={sort} onSort={handleSort}>
-                                        <span className="flex items-center gap-1.5">
-                                            <Tag className="h-3.5 w-3.5" />
-                                            {m.poi.colType}
-                                        </span>
-                                    </SortableHeadCell>
                                     <DataTableHeadCell>
-                                        <div className="flex items-center gap-2">
-                                            <span className="flex items-center gap-1.5">
-                                                <Leaf className="h-3.5 w-3.5" />
-                                                {m.poi.colSustainable}
-                                            </span>
-                                            <DataTableHeaderSelect value={sustainableFilter} onChange={setSustainableFilter}>
-                                                <option value="">{t('filter.all')}</option>
-                                                <option value="true">{t('filter.sustainable')}</option>
-                                                <option value="false">{t('filter.standard')}</option>
-                                            </DataTableHeaderSelect>
-                                        </div>
+                                        <span className="flex items-center gap-1.5">
+                                            <Leaf className="h-3.5 w-3.5" />
+                                            Bienestar
+                                        </span>
                                     </DataTableHeadCell>
                                 </tr>
                             </DataTableHead>
@@ -201,24 +180,13 @@ export const POIPage = () => {
                                                 </p>
                                             </DataTableCell>
                                             <DataTableCell>
-                                                <span
-                                                    className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                                    style={{
-                                                        background: 'rgba(var(--rgb-purple-accent),0.12)',
-                                                        color: 'var(--color-purple)',
-                                                    }}
-                                                >
-                                                    {POI_TYPE_LABELS[poi.typeId] ?? '—'}
-                                                </span>
-                                            </DataTableCell>
-                                            <DataTableCell>
-                                                {poi.sustainability ? (
+                                                {poi.is_wellness ? (
                                                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${TABLE_BADGE_COLORS.emerald}`}>
                                                         <Leaf className="size-3" />
-                                                        {m.poi.badgeSustainable}
+                                                        WellTur
                                                     </span>
                                                 ) : (
-                                                    <TableBadge text={m.poi.badgeStandard} color={TABLE_BADGE_COLORS.neutral} />
+                                                    <TableBadge text="Estándar" color={TABLE_BADGE_COLORS.neutral} />
                                                 )}
                                             </DataTableCell>
                                         </DataTableRow>
