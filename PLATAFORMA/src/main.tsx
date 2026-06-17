@@ -22,17 +22,29 @@ import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshTok
         const token = params.get('token');
         const refreshToken = params.get('refresh');
         const userEncoded = params.get('user');
-        if (token) {
-            clearStoredRefreshToken();
-            localStorage.removeItem('user');
-            setAccessToken(token);
-            if (refreshToken) setStoredRefreshToken(refreshToken, false);
-            if (userEncoded) {
-                const user = JSON.parse(atob(decodeURIComponent(userEncoded)));
-                localStorage.setItem('user', JSON.stringify(user));
-            }
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        if (!token) return;
+
+        clearStoredRefreshToken();
+        localStorage.removeItem('user');
+        setAccessToken(token);
+        if (refreshToken) setStoredRefreshToken(refreshToken, false);
+
+        // Resolve user: prefer encoded user param, fall back to JWT payload.
+        // JWT always has id/email/role_id/id_company — enough for ProtectedRoute.
+        let userData: Record<string, unknown> | null = null;
+        if (userEncoded) {
+            try { userData = JSON.parse(atob(decodeURIComponent(userEncoded))); } catch { /* fall through */ }
         }
+        if (!userData) {
+            try {
+                const [, payload] = token.split('.');
+                const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+                userData = JSON.parse(atob(b64 + '='.repeat((4 - b64.length % 4) % 4)));
+            } catch { /* ignore */ }
+        }
+        if (userData) localStorage.setItem('user', JSON.stringify(userData));
+
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
     } catch { /* invalid hash — ignore */ }
 }());
 

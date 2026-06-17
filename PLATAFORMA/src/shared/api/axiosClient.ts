@@ -32,6 +32,7 @@ export const api = axios.create({
 let _accessToken: string | null = null;
 export const setAccessToken = (t: string) => { _accessToken = t; };
 export const clearAccessToken = () => { _accessToken = null; };
+export const getAccessToken = () => _accessToken;
 
 // ── Refresh token storage helpers ────────────────────────────────────────────
 // "Recordarme" → localStorage con expiración de 7 días
