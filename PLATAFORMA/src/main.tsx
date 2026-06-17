@@ -9,19 +9,24 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { UserPreferencesProvider } from './contexts/LanguageContext.tsx';
 import { AuthModalProvider } from './features/auth/context/AuthModalContext.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
-import { initSession, setAccessToken, getStoredRefreshToken } from './shared/api/axiosClient.ts';
+import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshToken, clearStoredRefreshToken } from './shared/api/axiosClient.ts';
 
-// Consume registration token from LANDING redirect (/empresa/dashboard#token=...&user=...)
+// Consume registration token from LANDING redirect (/empresa/dashboard#token=...&refresh=...&user=...)
 // Must run synchronously before React renders so ProtectedRoute sees the token.
+// Also clears any previous session to avoid SessionGate racing with a stale refresh token.
 (function consumeHashToken() {
     const hash = window.location.hash;
     if (!hash.startsWith('#token=') && !hash.includes('token=')) return;
     try {
         const params = new URLSearchParams(hash.replace(/^#/, ''));
         const token = params.get('token');
+        const refreshToken = params.get('refresh');
         const userEncoded = params.get('user');
         if (token) {
+            clearStoredRefreshToken();
+            localStorage.removeItem('user');
             setAccessToken(token);
+            if (refreshToken) setStoredRefreshToken(refreshToken, false);
             if (userEncoded) {
                 const user = JSON.parse(atob(decodeURIComponent(userEncoded)));
                 localStorage.setItem('user', JSON.stringify(user));

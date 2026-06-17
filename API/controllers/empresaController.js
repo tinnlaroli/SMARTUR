@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import cloudinary from '../config/cloudinary.js';
 import { validatePassword } from '../validators/userValidators.js';
+import { generateRefreshToken, storeRefreshToken } from '../utils/refreshTokenHelper.js';
 import { sendRegistrationConfirmation, sendExistingAccountNotification } from '../utils/mailer.js';
 
 async function uploadServiceImage(buffer, id_company) {
@@ -303,9 +304,13 @@ class EmpresaController {
                 { expiresIn: '15m' },
             );
 
+            const rawRefresh = generateRefreshToken();
+            await storeRefreshToken(user.user_id, rawRefresh);
+
             return res.status(201).json({
                 message: 'Email verificado. Empresa registrada correctamente.',
                 token,
+                refreshToken: rawRefresh,
                 user: {
                     id: user.user_id,
                     name: user.name,

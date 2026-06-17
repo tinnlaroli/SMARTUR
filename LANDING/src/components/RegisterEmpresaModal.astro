@@ -872,7 +872,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       }
       otpStep.hidden = true; success.hidden = false;
       var encUser = json.user ? btoa(JSON.stringify(json.user)) : '';
-      window.location.href = plataformaUrl + '/empresa/dashboard#token=' + encodeURIComponent(json.token) + '&user=' + encodeURIComponent(encUser);
+      var hashParts = '#token=' + encodeURIComponent(json.token);
+      if (json.refreshToken) hashParts += '&refresh=' + encodeURIComponent(json.refreshToken);
+      if (encUser) hashParts += '&user=' + encodeURIComponent(encUser);
+      window.location.href = plataformaUrl + '/empresa/dashboard' + hashParts;
     } catch (_) {
       otpErr.textContent = errConnection; otpErr.hidden = false;
     } finally {
