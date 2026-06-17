@@ -118,6 +118,7 @@ let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
 
 function clearSessionAndRedirect() {
+    console.error('[auth] clearSessionAndRedirect — session wiped, redirecting to /');
     _accessToken = null;
     clearStoredRefreshToken();
     localStorage.removeItem('user');
@@ -139,9 +140,11 @@ api.interceptors.response.use(
             originalRequest?.url?.includes('/auth/refresh');
 
         if (error.response?.status === 401 && !isAuthRoute && !originalRequest._retried) {
+            console.error(`[auth] 401 on ${originalRequest?.url} — attempting refresh`);
             const refreshToken = getStoredRefreshToken();
 
             if (!refreshToken) {
+                console.error('[auth] No refresh token — clearing session');
                 clearSessionAndRedirect();
                 return Promise.reject(error);
             }
@@ -177,9 +180,17 @@ api.interceptors.response.use(
 
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
                 return api(originalRequest);
-            } catch {
+            } catch (refreshError) {
                 refreshQueue = [];
-                clearSessionAndRedirect();
+                // Only wipe the session when the refresh endpoint explicitly rejects the
+                // token (HTTP 401 = invalid/expired). For transient failures (network
+                // error, 5xx, timeout) keep the session alive — the user should not be
+                // logged out because the API restarted during a deploy.
+                const refreshStatus = (refreshError as { response?: { status?: number } })?.response?.status;
+                console.error('[auth] Refresh failed — status:', refreshStatus ?? 'network/timeout');
+                if (refreshStatus === 401) {
+                    clearSessionAndRedirect();
+                }
                 return Promise.reject(error);
             } finally {
                 isRefreshing = false;
