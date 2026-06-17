@@ -1,4 +1,14 @@
 import pool from '../config/db.js';
+import cloudinary from '../config/cloudinary.js';
+
+function uploadToCloudinary(buffer, folder) {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            { folder, resource_type: 'image' },
+            (error, result) => { if (error) return reject(error); resolve(result.secure_url); }
+        ).end(buffer);
+    });
+}
 
 const YELP_WHITELIST = new Set([
     'Active Life',
@@ -225,7 +235,6 @@ class PointOfInterestController {
 
             let image_url = null;
             if (req.file) {
-                const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
                 image_url = await uploadToCloudinary(req.file.buffer, 'pois');
             }
 
@@ -348,7 +357,6 @@ class PointOfInterestController {
             }
 
             if (req.file) {
-                const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
                 const image_url = await uploadToCloudinary(req.file.buffer, 'pois');
                 updates.push(`image_url = $${idx++}`);
                 values.push(image_url);
@@ -440,7 +448,6 @@ export async function createEmpresaController(req, res) {
 
         let image_url = null;
         if (req.file) {
-            const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
             image_url = await uploadToCloudinary(req.file.buffer, 'pois');
         }
 
