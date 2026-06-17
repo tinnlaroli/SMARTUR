@@ -70,6 +70,13 @@ export default function Landing() {
         }
     }, [location.state, location.pathname, navigate]);
 
+    // Empresa users should never linger on the tourist landing page.
+    // If session is active and role_id=3, send them straight to their dashboard.
+    useEffect(() => {
+        const role = (sessionUser as Record<string, unknown> | null)?.role_id;
+        if (role === 3) navigate('/empresa/dashboard', { replace: true });
+    }, [sessionUser, navigate]);
+
     const { t } = useLanguage();
 
     useEffect(() => {

@@ -522,7 +522,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const plataformaUrl = isLocal
     ? 'http://localhost:5173'
-    : (document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.smartur.online').replace(/\/+$/, '');
+    : (() => {
+        const raw = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.smartur.online';
+        try { return new URL(raw).origin; } catch { return raw.replace(/\/+$/, ''); }
+      })();
 
   /* ─────────── Validadores por campo ─────────── */
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

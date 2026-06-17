@@ -321,6 +321,31 @@ class EmpresaController {
             });
         } catch (error) {
             await client.query('ROLLBACK');
+            // Orphaned empresa user: email already exists from a prior partial registration
+            if (error.code === '23505') {
+                try {
+                    const recovered = await pool.query(
+                        'SELECT user_id, name, email, role_id, id_company FROM "user" WHERE LOWER(email) = LOWER($1) AND role_id = 3',
+                        [trimmedEmail],
+                    );
+                    if (recovered.rowCount > 0) {
+                        const u = recovered.rows[0];
+                        const token = jwt.sign(
+                            { id: u.user_id, email: u.email, role_id: u.role_id, id_company: u.id_company },
+                            process.env.JWT_SECRET,
+                            { expiresIn: '15m' },
+                        );
+                        const rawRefresh = generateRefreshToken();
+                        await storeRefreshToken(u.user_id, rawRefresh);
+                        return res.status(200).json({
+                            message: 'Cuenta ya verificada. Sesión iniciada.',
+                            token,
+                            refreshToken: rawRefresh,
+                            user: { id: u.user_id, name: u.name, email: u.email, role_id: u.role_id, id_company: u.id_company },
+                        });
+                    }
+                } catch { /* fall through to generic 500 */ }
+            }
             console.error('Error en verifyEmailOTP:', error);
             return res.status(500).json({ message: 'Error del servidor.' });
         } finally {
