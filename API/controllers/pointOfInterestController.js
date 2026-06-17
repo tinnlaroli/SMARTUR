@@ -303,6 +303,43 @@ class PointOfInterestController {
                 values.push(parseNumber(req.body.longitude, null));
             }
 
+            if (req.body?.is_wellness !== undefined) {
+                updates.push(`is_wellness = $${idx++}`);
+                values.push(parseBoolean(req.body.is_wellness, false));
+                if (parseBoolean(req.body.is_wellness, false)) {
+                    updates.push(`wellness_status = $${idx++}`);
+                    values.push('approved');
+                }
+            }
+
+            if (req.body?.categoria_wellness !== undefined) {
+                updates.push(`categoria_wellness = $${idx++}`);
+                values.push(String(req.body.categoria_wellness).trim() || null);
+            }
+
+            if (req.body?.nivel_aislamiento !== undefined) {
+                const v = parseFloat(req.body.nivel_aislamiento);
+                updates.push(`nivel_aislamiento = $${idx++}`);
+                values.push(isNaN(v) ? null : Math.min(1, Math.max(0, v)));
+            }
+
+            if (req.body?.restauracion_pasiva !== undefined) {
+                const v = parseFloat(req.body.restauracion_pasiva);
+                updates.push(`restauracion_pasiva = $${idx++}`);
+                values.push(isNaN(v) ? null : Math.min(1, Math.max(0, v)));
+            }
+
+            if (req.body?.demanda_fisica !== undefined) {
+                const v = parseFloat(req.body.demanda_fisica);
+                updates.push(`demanda_fisica = $${idx++}`);
+                values.push(isNaN(v) ? null : Math.min(1, Math.max(0, v)));
+            }
+
+            if (req.body?.descripcion_bienestar !== undefined) {
+                updates.push(`descripcion_bienestar = $${idx++}`);
+                values.push(String(req.body.descripcion_bienestar).trim() || null);
+            }
+
             if (!updates.length) {
                 return res.status(400).json({ message: 'No fields to update' });
             }

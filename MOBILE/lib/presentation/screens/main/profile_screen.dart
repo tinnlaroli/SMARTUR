@@ -6,6 +6,8 @@ import '../../../core/theme/style_guide.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
+import '../../../data/services/wellness_service.dart';
+import 'wellness_assessment_screen.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_user_avatar.dart';
@@ -41,6 +43,11 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool _diaryLoading = true;
   List<Map<String, dynamic>> _favorites = [];
 
+  // WellTur wellness history
+  final _wellnessSvc = WellnessService();
+  List<Map<String, dynamic>> _wellnessHistory = [];
+  bool _deletingWellness = false;
+
 
   @override
   void initState() {
@@ -50,6 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       if (mounted) {
         _loadProfile();
         _loadDiary();
+        _loadWellnessHistory();
       }
     });
   }
@@ -58,6 +66,23 @@ class _ProfileScreenState extends State<ProfileScreen>
   void dispose() {
     _tabCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadWellnessHistory() async {
+    try {
+      final history = await _wellnessSvc.getHistory();
+      if (mounted) setState(() => _wellnessHistory = history);
+    } catch (_) {}
+  }
+
+  Future<void> _deleteWellnessHistory() async {
+    setState(() => _deletingWellness = true);
+    try {
+      await _wellnessSvc.deleteHistory();
+      if (mounted) setState(() => _wellnessHistory = []);
+    } catch (_) {} finally {
+      if (mounted) setState(() => _deletingWellness = false);
+    }
   }
 
   Future<void> _loadDiary() async {
@@ -205,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   icon: Icon(Icons.settings_outlined, color: scheme.onSurface),
                   onPressed: () async {
                     await Navigator.push(context, smarturFadeRoute(const SettingsScreen()));
-                    _loadProfile();
+                    _loadProfile(); _loadWellnessHistory();
                   },
                 ),
               ],
@@ -282,6 +307,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
                   children: [
+                    _buildWellnessSection(context, scheme),
+                    const SizedBox(height: 24),
                     if (_interests.isNotEmpty) ...[
                       _buildSection(l10n.myInterests),
                       const SizedBox(height: 12),
@@ -468,6 +495,169 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ],
       ),
+    );
+  }
+
+  // ── WellTur wellness section ────────────────────────────────────────────
+
+  static const _modoLabels = {
+    'modo_calma':        'Modo Calma',
+    'modo_restauracion': 'Modo Restauración',
+    'modo_equilibrio':   'Modo Equilibrio',
+  };
+  static const _modoColors = {
+    'modo_calma':        Color(0xFF10B981),
+    'modo_restauracion': Color(0xFF3B82F6),
+    'modo_equilibrio':   Color(0xFF8B5CF6),
+  };
+  static const _modoIcons = {
+    'modo_calma':        Icons.spa_outlined,
+    'modo_restauracion': Icons.water_outlined,
+    'modo_equilibrio':   Icons.self_improvement_outlined,
+  };
+
+  Widget _buildWellnessSection(BuildContext context, ColorScheme scheme) {
+    final last = _wellnessHistory.isNotEmpty ? _wellnessHistory.first : null;
+    final modo = last?['modo_viaje'] as String?;
+    final createdAt = last != null ? DateTime.tryParse(last['created_at']?.toString() ?? '') : null;
+    final modoLabel = modo != null ? (_modoLabels[modo] ?? modo) : null;
+    final modoColor = modo != null ? (_modoColors[modo] ?? SmarturStyle.green) : SmarturStyle.green;
+    final modoIcon  = modo != null ? (_modoIcons[modo]  ?? Icons.eco_outlined) : Icons.eco_outlined;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.eco_outlined, size: 18, color: Color(0xFF254117)),
+            const SizedBox(width: 6),
+            Text(
+              'WellTur',
+              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18, color: const Color(0xFF254117)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (last != null && modoLabel != null) ...[
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: modoColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(modoIcon, size: 14, color: modoColor),
+                          const SizedBox(width: 5),
+                          Text(
+                            modoLabel,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: modoColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    if (createdAt != null)
+                      Text(
+                        '${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 11,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ] else ...[
+                Text(
+                  'Descubre tu modo de viaje',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 13,
+                    color: scheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(context, smarturFadeRoute(const WellnessAssessmentScreen()));
+                        _loadWellnessHistory();
+                      },
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: Text(last != null ? 'Actualizar estado' : 'Comenzar'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF254117),
+                        side: const BorderSide(color: Color(0xFF254117)),
+                        textStyle: const TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                  if (_wellnessHistory.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _deletingWellness ? null : () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Borrar historial', style: TextStyle(fontFamily: 'Outfit')),
+                            content: const Text(
+                              'Se eliminará todo tu historial de bienestar. Esta acción no se puede deshacer.',
+                              style: TextStyle(fontFamily: 'Outfit'),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) _deleteWellnessHistory();
+                      },
+                      icon: _deletingWellness
+                          ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.delete_outline, size: 16),
+                      label: const Text('Borrar'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        textStyle: const TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

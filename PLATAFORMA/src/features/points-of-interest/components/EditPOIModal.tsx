@@ -35,6 +35,18 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     const [sustainability, setSustainability] = useState(poi.sustainability);
     const [error, setError] = useState('');
 
+    const [isWellness, setIsWellness] = useState(poi.is_wellness ?? false);
+    const [categoriaWellness, setCategoriaWellness] = useState(poi.categoria_wellness ?? '');
+    const [nivelAislamiento, setNivelAislamiento] = useState(poi.nivel_aislamiento ?? 0.5);
+    const [restauracionPasiva, setRestauracionPasiva] = useState(poi.restauracion_pasiva ?? 0.5);
+    const [demandaFisica, setDemandaFisica] = useState(poi.demanda_fisica ?? 0.3);
+    const [descripcionBienestar, setDescripcionBienestar] = useState(poi.descripcion_bienestar ?? '');
+
+    const WELLNESS_CATEGORIES = [
+        'Termal', 'Spa', 'Bosque', 'Montaña', 'Lago',
+        'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque',
+    ];
+
     useEffect(() => {
         let cancelled = false;
         locationApi.findAll(1, 200).then((res) => {
@@ -48,7 +60,21 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
         e.preventDefault();
         if (!name.trim()) { setError(t('validation.nameRequired')); return; }
         setSubmitting(true);
-        const ok = await onSubmit(poi.id, { name: name.trim(), description: description.trim() || undefined, id_type: idType, id_location: idLocation, sustainability });
+        const ok = await onSubmit(poi.id, {
+            name: name.trim(),
+            description: description.trim() || undefined,
+            id_type: idType,
+            id_location: idLocation,
+            sustainability,
+            is_wellness: isWellness,
+            ...(isWellness && {
+                categoria_wellness: categoriaWellness || undefined,
+                nivel_aislamiento: nivelAislamiento,
+                restauracion_pasiva: restauracionPasiva,
+                demanda_fisica: demandaFisica,
+                descripcion_bienestar: descripcionBienestar.trim() || undefined,
+            }),
+        });
         setSubmitting(false);
         if (ok) onClose();
     };
@@ -133,6 +159,64 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                             <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Marca si el POI cumple criterios de sostenibilidad</p>
                         </div>
                     </label>
+
+                    {/* Wellness section */}
+                    <div className="rounded-xl border" style={{ borderColor: 'var(--color-border)' }}>
+                        <label className="flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                            <input
+                                type="checkbox"
+                                checked={isWellness}
+                                onChange={(e) => setIsWellness(e.target.checked)}
+                                className="size-4 rounded accent-emerald-500"
+                            />
+                            <Leaf className="size-4 text-emerald-500" />
+                            <div>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Lugar de Bienestar (WellTur)</p>
+                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Incluir en el pool de recomendaciones wellness</p>
+                            </div>
+                        </label>
+                        {isWellness && (
+                            <div className="space-y-3 border-t px-3 pb-3 pt-3" style={{ borderColor: 'var(--color-border)' }}>
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Categoría wellness</label>
+                                    <select
+                                        value={categoriaWellness}
+                                        onChange={(e) => setCategoriaWellness(e.target.value)}
+                                        className={inputClass}
+                                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                                    >
+                                        <option value="">Seleccionar…</option>
+                                        {WELLNESS_CATEGORIES.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Descripción de bienestar</label>
+                                    <input
+                                        type="text"
+                                        value={descripcionBienestar}
+                                        onChange={(e) => setDescripcionBienestar(e.target.value)}
+                                        placeholder="¿Qué experiencia de bienestar ofrece?"
+                                        className={inputClass}
+                                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                                    />
+                                </div>
+                                {[
+                                    { label: 'Aislamiento', hint: 'Qué tan alejado del ruido urbano', value: nivelAislamiento, set: setNivelAislamiento },
+                                    { label: 'Relajación pasiva', hint: 'Qué tan relajante es la experiencia', value: restauracionPasiva, set: setRestauracionPasiva },
+                                    { label: 'Demanda física', hint: 'Cuánto esfuerzo físico requiere', value: demandaFisica, set: setDemandaFisica },
+                                ].map(({ label, hint, value, set }) => (
+                                    <div key={label}>
+                                        <div className="flex items-center justify-between mb-0.5">
+                                            <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</span>
+                                            <span className="text-xs font-mono" style={{ color: 'var(--color-text-alt)' }}>{value.toFixed(2)}</span>
+                                        </div>
+                                        <input type="range" min={0} max={1} step={0.05} value={value} onChange={e => set(parseFloat(e.target.value))} className="w-full h-1.5 cursor-pointer accent-emerald-500" />
+                                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {error && <p className="text-xs text-rose-500">{error}</p>}
 

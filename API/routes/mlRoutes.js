@@ -711,7 +711,7 @@ router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 2]), async (req,
         const data = await resp.json();
         res.json(data);
     } catch (err) {
-        logger.error('[wellness-metrics]', err.message);
+        console.error('[wellness-metrics]', err.message);
         res.status(503).json({ error: 'No se pudo obtener métricas del modelo', detail: err.message });
     }
 });

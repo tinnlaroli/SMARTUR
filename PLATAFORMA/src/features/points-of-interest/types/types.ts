@@ -5,6 +5,13 @@ export interface POI {
     typeId: number;
     locationId: number;
     sustainability: boolean;
+    is_wellness?: boolean;
+    wellness_status?: string;
+    categoria_wellness?: string;
+    nivel_aislamiento?: number;
+    restauracion_pasiva?: number;
+    demanda_fisica?: number;
+    descripcion_bienestar?: string;
 }
 
 export interface CreatePOIDTO {
@@ -21,6 +28,12 @@ export interface UpdatePOIDTO {
     id_type?: number;
     id_location?: number;
     sustainability?: boolean;
+    is_wellness?: boolean;
+    categoria_wellness?: string;
+    nivel_aislamiento?: number;
+    restauracion_pasiva?: number;
+    demanda_fisica?: number;
+    descripcion_bienestar?: string;
 }
 
 export interface POIResponse {
