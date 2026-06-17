@@ -10,6 +10,7 @@ import 'core/motion/smartur_routes.dart';
 import 'core/navigation/notification_router.dart';
 import 'core/theme/style_guide.dart';
 import 'core/theme/smartur_theme_extensions.dart';
+import 'core/theme/welltur_theme.dart';
 import 'core/settings/app_settings.dart';
 import 'core/settings/app_settings_scope.dart';
 import 'data/services/api_client.dart';
@@ -79,14 +80,21 @@ class SmarturApp extends StatelessWidget {
       child: ValueListenableBuilder<AppSettings>(
         valueListenable: settings,
         builder: (context, appSettings, _) {
+          final isWelltur = appSettings.themeMode == AppThemeMode.welltur;
+          final flutterThemeMode = switch (appSettings.themeMode) {
+            AppThemeMode.light   => ThemeMode.light,
+            AppThemeMode.dark    => ThemeMode.dark,
+            AppThemeMode.welltur => ThemeMode.light,
+            AppThemeMode.system  => ThemeMode.system,
+          };
           return AppSettingsScope(
             notifier: settings,
             child: MaterialApp(
               title: 'SMARTUR',
               debugShowCheckedModeBanner: false,
-              themeMode: appSettings.themeMode,
-              theme: _buildLightTheme(),
-              darkTheme: _buildDarkTheme(),
+              themeMode: flutterThemeMode,
+              theme: isWelltur ? buildWellturTheme() : _buildLightTheme(),
+              darkTheme: isWelltur ? buildWellturTheme() : _buildDarkTheme(),
               locale: appSettings.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,

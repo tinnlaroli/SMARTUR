@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/app_settings_scope.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
@@ -23,7 +24,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final AuthService _authService = AuthService();
-  ThemeMode _themeMode = ThemeMode.system;
+  AppThemeMode _themeMode = AppThemeMode.system;
   String _language = 'Sistema';
   String _appVersion = '…';
   bool _checkingUpdate = false;
@@ -47,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settings = AppSettingsScope.of(context);
     final code = settings.value.locale?.languageCode;
     setState(() {
-      _themeMode = settings.value.themeMode;
+      _themeMode = settings.value.themeMode; // AppThemeMode
       _language = _languageLabelFromCode(code);
     });
   }
@@ -64,13 +65,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  String _themeLabelFromMode(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light: return AppLocalizations.of(context)!.themeLight;
-      case ThemeMode.dark: return AppLocalizations.of(context)!.themeDark;
-      case ThemeMode.system: return AppLocalizations.of(context)!.systemTheme;
-    }
-  }
+  String _themeLabelFromMode(AppThemeMode mode) => switch (mode) {
+    AppThemeMode.light   => AppLocalizations.of(context)!.themeLight,
+    AppThemeMode.dark    => AppLocalizations.of(context)!.themeDark,
+    AppThemeMode.welltur => 'WellTur',
+    AppThemeMode.system  => AppLocalizations.of(context)!.systemTheme,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -392,7 +392,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showThemeDialog() {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final List<String> themes = [l10n.systemTheme, l10n.themeLight, l10n.themeDark];
+
+    final options = <(AppThemeMode, String, IconData?)>[
+      (AppThemeMode.system,  l10n.systemTheme, Icons.brightness_auto_outlined),
+      (AppThemeMode.light,   l10n.themeLight,  Icons.light_mode_outlined),
+      (AppThemeMode.dark,    l10n.themeDark,   Icons.dark_mode_outlined),
+      (AppThemeMode.welltur, 'WellTur',        Icons.spa_outlined),
+    ];
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -415,21 +422,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(l10n.darkMode,
                 style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 8),
-            ...themes.map((t) => ListTile(
-                  title: Text(t, style: const TextStyle(fontFamily: 'Outfit')),
-                  trailing: _themeLabelFromMode(_themeMode) == t
-                      ? const Icon(Icons.check_circle, color: SmarturStyle.purple)
-                      : null,
-                  onTap: () {
-                    final mode = switch (t) {
-                      _ when t == l10n.themeLight => ThemeMode.light,
-                      _ when t == l10n.themeDark => ThemeMode.dark,
-                      _ => ThemeMode.system,
-                    };
-                    AppSettingsScope.of(context).setThemeMode(mode);
-                    Navigator.pop(ctx);
-                  },
-                )),
+            ...options.map((opt) {
+              final (mode, label, icon) = opt;
+              final isWelltur = mode == AppThemeMode.welltur;
+              const wellturRosa = Color(0xFFCD6184);
+              return ListTile(
+                leading: Icon(
+                  icon,
+                  color: isWelltur ? wellturRosa : SmarturStyle.purple,
+                ),
+                title: Text(label, style: const TextStyle(fontFamily: 'Outfit')),
+                subtitle: isWelltur
+                    ? const Text(
+                        'Rosa · Verde · Mostaza',
+                        style: TextStyle(fontFamily: 'Outfit', fontSize: 11),
+                      )
+                    : null,
+                trailing: _themeMode == mode
+                    ? Icon(Icons.check_circle,
+                        color: isWelltur ? wellturRosa : SmarturStyle.purple)
+                    : null,
+                onTap: () {
+                  AppSettingsScope.of(context).setThemeMode(mode);
+                  Navigator.pop(ctx);
+                },
+              );
+            }),
             const SizedBox(height: 16),
           ],
         ),

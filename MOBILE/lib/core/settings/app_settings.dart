@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum AppThemeMode { system, light, dark, welltur }
+
 @immutable
 class AppSettings {
-  final ThemeMode themeMode;
+  final AppThemeMode themeMode;
   final Locale? locale;
 
   const AppSettings({
@@ -12,7 +14,7 @@ class AppSettings {
   });
 
   AppSettings copyWith({
-    ThemeMode? themeMode,
+    AppThemeMode? themeMode,
     Locale? locale,
   }) {
     return AppSettings(
@@ -23,8 +25,9 @@ class AppSettings {
 }
 
 class AppSettingsNotifier extends ValueNotifier<AppSettings> {
-  static const String _darkModeKey = 'dark_mode';
-  static const String _languageKey = 'language';
+  static const String _themeModeKey = 'theme_mode';
+  static const String _darkModeKey  = 'dark_mode'; // legacy — read once for migration
+  static const String _languageKey  = 'language';
 
   final SharedPreferences _prefs;
 
@@ -33,35 +36,33 @@ class AppSettingsNotifier extends ValueNotifier<AppSettings> {
   static Future<AppSettingsNotifier> load() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final dark = prefs.getBool(_darkModeKey);
-    final themeMode = dark == null ? ThemeMode.system : (dark ? ThemeMode.dark : ThemeMode.light);
+    AppThemeMode themeMode;
+    final stored = prefs.getString(_themeModeKey);
+    if (stored != null) {
+      themeMode = _themeModeFromString(stored);
+    } else {
+      // Migrate from legacy bool key
+      final legacy = prefs.getBool(_darkModeKey);
+      themeMode = legacy == null
+          ? AppThemeMode.system
+          : (legacy ? AppThemeMode.dark : AppThemeMode.light);
+    }
 
     final languageStored = prefs.getString(_languageKey);
     final locale = languageStored == null ? null : _localeFromStoredValue(languageStored);
 
     return AppSettingsNotifier._(
       prefs,
-      AppSettings(
-        themeMode: themeMode,
-        locale: locale,
-      ),
+      AppSettings(themeMode: themeMode, locale: locale),
     );
   }
 
-  bool get isDarkMode => value.themeMode == ThemeMode.dark;
+  bool get isDarkMode => value.themeMode == AppThemeMode.dark;
 
-  Future<void> setThemeMode(ThemeMode mode) async {
+  Future<void> setThemeMode(AppThemeMode mode) async {
     value = AppSettings(themeMode: mode, locale: value.locale);
-    if (mode == ThemeMode.system) {
-      await _prefs.remove(_darkModeKey);
-    } else {
-      await _prefs.setBool(_darkModeKey, mode == ThemeMode.dark);
-    }
+    await _prefs.setString(_themeModeKey, _stringFromThemeMode(mode));
   }
-
-  Future<void> setDarkMode(bool enabled) => setThemeMode(enabled ? ThemeMode.dark : ThemeMode.light);
-
-  Future<void> toggleDarkMode() => setDarkMode(!isDarkMode);
 
   Future<void> setLocale(Locale? locale) async {
     value = AppSettings(themeMode: value.themeMode, locale: locale);
@@ -71,6 +72,20 @@ class AppSettingsNotifier extends ValueNotifier<AppSettings> {
       await _prefs.setString(_languageKey, locale.languageCode);
     }
   }
+
+  static String _stringFromThemeMode(AppThemeMode mode) => switch (mode) {
+    AppThemeMode.light   => 'light',
+    AppThemeMode.dark    => 'dark',
+    AppThemeMode.welltur => 'welltur',
+    AppThemeMode.system  => 'system',
+  };
+
+  static AppThemeMode _themeModeFromString(String value) => switch (value) {
+    'light'   => AppThemeMode.light,
+    'dark'    => AppThemeMode.dark,
+    'welltur' => AppThemeMode.welltur,
+    _         => AppThemeMode.system,
+  };
 
   static Locale _localeFromStoredValue(String value) {
     switch (value) {
