@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Star, Loader2, Leaf } from 'lucide-react';
+import { X, Star, Loader2, Leaf, ImagePlus } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
@@ -36,6 +36,14 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     const [error, setError] = useState('');
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        setImage(file);
+        setImagePreview(file ? URL.createObjectURL(file) : null);
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -58,6 +66,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
             id_type: idType,
             id_location: idLocation,
             sustainability,
+            image: image ?? undefined,
             ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
         });
         setSubmitting(false);
@@ -142,6 +151,24 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
                                 {lat.toFixed(6)}, {lng.toFixed(6)}
                             </p>
+                        )}
+                    </div>
+
+                    {/* Imagen */}
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Imagen</label>
+                        <div className="flex items-center gap-3">
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-zinc-300 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-zinc-500 transition-colors hover:border-violet-500/60 hover:text-violet-500 dark:border-zinc-700 dark:text-zinc-400">
+                                <ImagePlus className="size-4" />
+                                {image ? 'Cambiar imagen' : 'Subir imagen'}
+                                <input type="file" accept="image/*" className="sr-only" onChange={handleImageChange} />
+                            </label>
+                            <span className="text-xs text-zinc-400">{image ? image.name : 'JPG, PNG, WebP'}</span>
+                        </div>
+                        {imagePreview && (
+                            <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+                                <img src={imagePreview} alt="Previsualización" className="h-32 w-full object-cover" />
+                            </div>
                         )}
                     </div>
 

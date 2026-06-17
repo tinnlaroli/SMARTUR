@@ -223,10 +223,16 @@ class PointOfInterestController {
             const latitude = parseNumber(req.body?.latitude, null);
             const longitude = parseNumber(req.body?.longitude, null);
 
+            let image_url = null;
+            if (req.file) {
+                const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
+                image_url = await uploadToCloudinary(req.file.buffer, 'pois');
+            }
+
             const result = await pool.query(
                 `INSERT INTO point_of_interest
-                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, image_url)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *`,
                 [
                     name,
@@ -237,6 +243,7 @@ class PointOfInterestController {
                     outdoor,
                     latitude,
                     longitude,
+                    image_url,
                 ]
             );
 
@@ -338,6 +345,13 @@ class PointOfInterestController {
             if (req.body?.descripcion_bienestar !== undefined) {
                 updates.push(`descripcion_bienestar = $${idx++}`);
                 values.push(String(req.body.descripcion_bienestar).trim() || null);
+            }
+
+            if (req.file) {
+                const { uploadToCloudinary } = await import('../utils/cloudinaryHelper.js');
+                const image_url = await uploadToCloudinary(req.file.buffer, 'pois');
+                updates.push(`image_url = $${idx++}`);
+                values.push(image_url);
             }
 
             if (!updates.length) {

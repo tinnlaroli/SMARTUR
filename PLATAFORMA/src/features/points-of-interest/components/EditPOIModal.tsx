@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Star, Loader2, Leaf } from 'lucide-react';
+import { X, Star, Loader2, Leaf, ImagePlus } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
@@ -35,6 +35,15 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     const [sustainability, setSustainability] = useState(poi.sustainability);
     const [error, setError] = useState('');
 
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(poi.image_url ?? null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        setImage(file);
+        setImagePreview(file ? URL.createObjectURL(file) : (poi.image_url ?? null));
+    };
+
     const [isWellness, setIsWellness] = useState(poi.is_wellness ?? false);
     const [categoriaWellness, setCategoriaWellness] = useState(poi.categoria_wellness ?? '');
     const [nivelAislamiento, setNivelAislamiento] = useState(poi.nivel_aislamiento ?? 0.5);
@@ -66,6 +75,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
             id_type: idType,
             id_location: idLocation,
             sustainability,
+            image: image ?? undefined,
             is_wellness: isWellness,
             ...(isWellness && {
                 categoria_wellness: categoriaWellness || undefined,
@@ -159,6 +169,24 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                             <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Marca si el POI cumple criterios de sostenibilidad</p>
                         </div>
                     </label>
+
+                    {/* Imagen */}
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Imagen</label>
+                        <div className="flex items-center gap-3">
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-zinc-300 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-zinc-500 transition-colors hover:border-violet-500/60 hover:text-violet-500 dark:border-zinc-700 dark:text-zinc-400">
+                                <ImagePlus className="size-4" />
+                                {image ? 'Cambiar imagen' : imagePreview ? 'Reemplazar' : 'Subir imagen'}
+                                <input type="file" accept="image/*" className="sr-only" onChange={handleImageChange} />
+                            </label>
+                            <span className="text-xs text-zinc-400">{image ? image.name : 'JPG, PNG, WebP'}</span>
+                        </div>
+                        {imagePreview && (
+                            <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+                                <img src={imagePreview} alt="Previsualización" className="h-32 w-full object-cover" />
+                            </div>
+                        )}
+                    </div>
 
                     {/* Wellness section */}
                     <div className="rounded-xl border" style={{ borderColor: 'var(--color-border)' }}>
