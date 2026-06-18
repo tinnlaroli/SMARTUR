@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 // @ts-ignore
 import * as flubber from "flubber";
-import smarturLogo from "../../../assets/landing/logo.png";
+import wellturLogo from "../../../assets/landing/logo.png";
 import "./SmartURLoader.css";
 import { useLanguage } from "../../../contexts/LanguageContext";
 
@@ -119,7 +119,7 @@ const ALL_ICON_PATHS = [
 /* ═══════════════════════════════════════════════════════════════════════════
  * PATHS DEL PIN / MARCADOR (carcasa del logo)
  * ═══════════════════════════════════════════════════════════════════════════
- * Estos definen las piezas del marcador de mapa de SMARTUR.
+ * Estos definen las piezas del marcador de mapa de WELLTUR.
  * Se dibujan con un efecto "stroke-draw" (trazo progresivo) y después
  * se rellenan con su color final.
  *
@@ -197,7 +197,7 @@ const PRECALCULATED_PLANES = [
  * COMPONENTE PRINCIPAL: SmartURLoader
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Loader animado de la marca SMARTUR. Secuencia de animación:
+ * Loader animado de la marca WELLTUR. Secuencia de animación:
  *
  *   1. ENTRADA (0s–1.2s):
  *      Cuatro aviones de papel aparecen desde el centro, cada uno en su
@@ -441,8 +441,8 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
 
         const releaseApp = () => {
           try {
-            (window as Window & { __SMARTUR_APP_READY__?: boolean }).__SMARTUR_APP_READY__ = true;
-            window.dispatchEvent(new CustomEvent("smartur:loaded"));
+            (window as Window & { __WELLTUR_APP_READY__?: boolean }).__WELLTUR_APP_READY__ = true;
+            window.dispatchEvent(new CustomEvent("welltur:loaded"));
             document.body.classList.remove("is-loading");
           } catch {
             /* ignore */
@@ -463,7 +463,7 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
           }, 0);
 
         tl.to(percentRef.current, { opacity: 0, duration: 0.3 }, assembleStart);
-        tl.to(".smartur-loader-overlay", {
+        tl.to(".welltur-loader-overlay", {
             opacity: 0,
             duration: 0.8,
             ease: "power2.inOut",
@@ -496,12 +496,12 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
   );
 
   return (
-    <div ref={containerRef} className="smartur-loader-overlay">
-      <div className="smartur-loader-content">
+    <div ref={containerRef} className="welltur-loader-overlay">
+      <div className="welltur-loader-content">
         <svg
           ref={svgRef}
           viewBox="0 0 169.42 218.53"
-          className="smartur-loader-svg"
+          className="welltur-loader-svg"
           aria-label={t('auth.loader.ariaLabel')}
         >
           <g>
@@ -532,8 +532,8 @@ export default function SmartURLoader({ onFinished, isReady = false }: SmartURLo
 
         <img
           ref={logoRef}
-          src={smarturLogo}
-          alt="SMARTUR"
+          src={wellturLogo}
+          alt="WELLTUR"
           className="loader-full-logo"
           style={{
             position: "absolute",

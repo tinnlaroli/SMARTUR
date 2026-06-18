@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { emitUserStorageSync } from '../userStorageSync';
 
 /** En dev, VITE_API_URL=http://localhost:4000 evita el proxy de Vite y provoca CORS. */
@@ -39,8 +39,8 @@ export const getAccessToken = () => _accessToken;
 // Sin "recordarme" → sessionStorage (destruido al cerrar el navegador)
 
 const LS_REFRESH  = 'refreshToken';
-const LS_REMEMBER = 'smartur:remember';
-const LS_EXPIRY   = 'smartur:session_expiry';
+const LS_REMEMBER = 'welltur:remember';
+const LS_EXPIRY   = 'welltur:session_expiry';
 const SEVEN_DAYS  = 7 * 24 * 60 * 60 * 1000;
 
 export function setStoredRefreshToken(token: string, remember: boolean) {

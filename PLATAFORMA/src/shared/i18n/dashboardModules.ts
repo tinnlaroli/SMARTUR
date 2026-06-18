@@ -1,4 +1,4 @@
-import type { LanguageCode } from '../../contexts/LanguageContext';
+﻿import type { LanguageCode } from '../../contexts/LanguageContext';
 import type { DashboardModalsLocale } from './dashboardModalsLocale';
 import { dashboardModalsByLang } from './dashboardModalsLocale';
 
@@ -811,7 +811,7 @@ const es: DashboardModules = {
             recommendationFallback: 'Destino Turístico',
             mapVisible: 'Visible en mapa',
             mapUnavailable: 'Sin punto disponible',
-            descriptionFallback: 'Una experiencia única te espera en este destino seleccionado por SMARTUR.',
+            descriptionFallback: 'Una experiencia única te espera en este destino seleccionado por WELLTUR.',
             locationFallback: 'No se encontró una ubicación exacta en el catálogo',
             focusLabel: 'En foco',
             selectedLabel: 'Seleccionado',
@@ -1274,7 +1274,7 @@ const en: DashboardModules = {
             recommendationFallback: 'Tourist Destination',
             mapVisible: 'Visible on map',
             mapUnavailable: 'No point available',
-            descriptionFallback: 'A unique experience awaits at this destination selected by SMARTUR.',
+            descriptionFallback: 'A unique experience awaits at this destination selected by WELLTUR.',
             locationFallback: 'No exact location found in the catalog',
             focusLabel: 'Focused',
             selectedLabel: 'Selected',
@@ -1737,7 +1737,7 @@ const fr: DashboardModules = {
             recommendationFallback: 'Destination touristique',
             mapVisible: 'Visible sur la carte',
             mapUnavailable: 'Aucun point disponible',
-            descriptionFallback: 'Une expérience unique vous attend dans cette destination sélectionnée par SMARTUR.',
+            descriptionFallback: 'Une expérience unique vous attend dans cette destination sélectionnée par WELLTUR.',
             locationFallback: 'Aucune localisation exacte trouvée dans le catalogue',
             focusLabel: 'Ciblé',
             selectedLabel: 'Sélectionné',

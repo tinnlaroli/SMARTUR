@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+﻿import { X } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
@@ -8,7 +8,7 @@ const TERMS_TEXT: Record<string, string> = {
     es: `Última actualización: marzo de 2025.
 
 1. Objeto
-SMARTUR es una plataforma para explorar destinos turísticos, recomendaciones y funciones de comunidad en la región de Las Altas Montañas, Veracruz.
+WELLTUR es una plataforma para explorar destinos turísticos, recomendaciones y funciones de comunidad en la región de Las Altas Montañas, Veracruz.
 
 2. Registro y cuenta
 Al crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.
@@ -20,7 +20,7 @@ Te comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de
 Los contenidos de la plataforma (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.
 
 5. Datos personales
-El tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar SMARTUR aceptas las prácticas descritas en la política de privacidad del servicio.
+El tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar WELLTUR aceptas las prácticas descritas en la política de privacidad del servicio.
 
 6. Modificaciones
 Podemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la plataforma tras la actualización implica la aceptación de los nuevos términos.
@@ -30,7 +30,7 @@ Para consultas sobre estos términos, utiliza los canales de soporte indicados e
     en: `Last updated: March 2025.
 
 1. Purpose
-SMARTUR is a platform to explore tourist destinations, recommendations, and community features in the Las Altas Montañas region, Veracruz.
+WELLTUR is a platform to explore tourist destinations, recommendations, and community features in the Las Altas Montañas region, Veracruz.
 
 2. Registration and account
 By creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.
@@ -42,7 +42,7 @@ You agree to use the service lawfully, without infringing third-party rights or 
 Platform content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.
 
 5. Personal data
-Processing of your personal data complies with applicable law. By using SMARTUR you accept the practices described in the service privacy policy.
+Processing of your personal data complies with applicable law. By using WELLTUR you accept the practices described in the service privacy policy.
 
 6. Changes
 We may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.
@@ -52,7 +52,7 @@ For questions about these terms, use the support channels provided in the platfo
     fr: `Dernière mise à jour : mars 2025.
 
 1. Objet
-SMARTUR est une plateforme pour explorer des destinations touristiques, des recommandations et des fonctions communautaires dans la région de Las Altas Montañas, Veracruz.
+WELLTUR est une plateforme pour explorer des destinations touristiques, des recommandations et des fonctions communautaires dans la région de Las Altas Montañas, Veracruz.
 
 2. Inscription et compte
 En créant un compte, vous confirmez que vos informations sont exactes. Vous êtes responsable de la confidentialité de votre mot de passe et des activités sous votre compte.
@@ -64,7 +64,7 @@ Vous vous engagez à utiliser le service de manière licite, sans porter atteint
 Les contenus de la plateforme (textes, design, marques) sont protégés. Toute reproduction non autorisée est interdite.
 
 5. Données personnelles
-Le traitement de vos données personnelles est conforme à la législation applicable. En utilisant SMARTUR, vous acceptez les pratiques décrites dans la politique de confidentialité du service.
+Le traitement de vos données personnelles est conforme à la législation applicable. En utilisant WELLTUR, vous acceptez les pratiques décrites dans la politique de confidentialité du service.
 
 6. Modifications
 Nous pouvons mettre à jour ces conditions. Les changements importants seront communiqués par des moyens raisonnables ; l'utilisation continue après mise à jour vaut acceptation des nouvelles conditions.
@@ -77,7 +77,7 @@ const PRIVACY_TEXT: Record<string, string> = {
     es: `Última actualización: marzo de 2025.
 
 1. Responsable del tratamiento
-SMARTUR es el responsable del tratamiento de tus datos personales.
+WELLTUR es el responsable del tratamiento de tus datos personales.
 
 2. Datos que recopilamos
 Recopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la plataforma (preferencias de viaje, historial de recomendaciones).
@@ -102,7 +102,7 @@ Para consultas sobre privacidad, utiliza los canales de soporte indicados en la 
     en: `Last updated: March 2025.
 
 1. Data controller
-SMARTUR is the controller of your personal data.
+WELLTUR is the controller of your personal data.
 
 2. Data we collect
 We collect the data you provide when registering (name, email, optional profile photo) and data generated through platform use (travel preferences, recommendation history).
@@ -127,7 +127,7 @@ For privacy inquiries, use the support channels provided in the platform.`,
     fr: `Dernière mise à jour : mars 2025.
 
 1. Responsable du traitement
-SMARTUR est le responsable du traitement de vos données personnelles.
+WELLTUR est le responsable du traitement de vos données personnelles.
 
 2. Données collectées
 Nous collectons les données que vous fournissez lors de l'inscription (nom, e-mail, photo de profil optionnelle) et les données générées par l'utilisation de la plateforme (préférences de voyage, historique des recommandations).

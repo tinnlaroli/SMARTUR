@@ -1,4 +1,4 @@
-import type { DashboardStats } from '../api/dashboardApi';
+﻿import type { DashboardStats } from '../api/dashboardApi';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import type { LanguageCode } from '../../../contexts/LanguageContext';
 
@@ -13,7 +13,7 @@ export const DASHBOARD_COLORS = {
     danger: '#F97316',
 } as const;
 
-export const DASHBOARD_STORAGE_KEY = 'smartur-dashboard-preferences';
+export const DASHBOARD_STORAGE_KEY = 'welltur-dashboard-preferences';
 
 export type ChartMode = 'mixed' | 'volume' | 'score';
 export type DensityMode = 'comfortable' | 'compact';

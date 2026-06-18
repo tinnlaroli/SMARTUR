@@ -1,4 +1,4 @@
-// Split from LanguageContext — shared translation catalog for i18n
+﻿// Split from LanguageContext — shared translation catalog for i18n
 export const languages = {
     es: 'Español',
     en: 'English',
@@ -60,7 +60,7 @@ export const ui = {
         'sidebar.admin': 'Administrador',
         'sidebar.terms': 'Términos',
         'sidebar.privacy': 'Privacidad',
-        'header.search.placeholder': 'Buscar en Smartur...',
+        'header.search.placeholder': 'Buscar en Welltur...',
         'header.openMenu': 'Abrir menú',
         'header.logout': 'Cerrar sesión',
         // Navigation
@@ -84,7 +84,7 @@ export const ui = {
         // Hero
         'hero.label': 'Las Altas Montañas • Veracruz • México',
         'hero.title': 'Tu próxima aventura\nvive entre la neblina',
-        'hero.subtitle': 'SMARTUR conoce los rincones que los mapas no muestran. Cuéntanos qué buscas y te diseñamos una ruta a la medida de tu alma viajera.',
+        'hero.subtitle': 'WELLTUR conoce los rincones que los mapas no muestran. Cuéntanos qué buscas y te diseñamos una ruta a la medida de tu alma viajera.',
         'hero.cta': 'Descubrir mi ruta ideal',
         'hero.cta.secondary': 'Ver cómo funciona',
         'hero.marquee.1': 'Café de altura',
@@ -107,7 +107,7 @@ export const ui = {
         // Impact
         'impact.label': 'Impacto real',
         'impact.title': 'Cada viaje, una historia que transforma',
-        'impact.subtitle': 'Cuando usas SMARTUR, no solo descubres un destino — contribuyes directamente a la economía de familias veracruzanas.',
+        'impact.subtitle': 'Cuando usas WELLTUR, no solo descubres un destino — contribuyes directamente a la economía de familias veracruzanas.',
         'impact.stat1.number': '100',
         'impact.stat1.suffix': '+',
         'impact.stat1.label': 'MiPyMEs impulsadas',
@@ -130,7 +130,7 @@ export const ui = {
         'story.conflict.text': 'El viajero actual no quiere ser un número: busca rutas auténticas en las Altas Montañas. Ese productor de café que te invita a su milpa, esa cascada que solo conocen quienes viven aquí: joyas ocultas que las guías genéricas nunca te cuentan.',
         'story.guide.label': 'La solución',
         'story.guide.title': 'Tu insider local.\nInteligente y personal.',
-        'story.guide.text': 'SMARTUR combina datos regionales e inteligencia artificial para recomendaciones de viaje hechas a tu medida: turismo en Veracruz con sentido, sin listas intercambiables.',
+        'story.guide.text': 'WELLTUR combina datos regionales e inteligencia artificial para recomendaciones de viaje hechas a tu medida: turismo en Veracruz con sentido, sin listas intercambiables.',
         'story.cta.label': 'Tu aventura empieza aquí',
         'story.cta.title': 'El primer paso de tu viaje.',
         'story.cta.text': 'Cuéntanos qué experiencia buscas en las Altas Montañas. Cuanto más te conocemos, más finas son las recomendaciones con IA.',
@@ -142,13 +142,13 @@ export const ui = {
         'testimonials.subtitle': 'Experiencias reales de quienes ya exploraron Veracruz con recomendaciones hechas a su medida.',
         'testimonials.item1.name': 'Andrea M.',
         'testimonials.item1.role': 'Viajera independiente, CDMX',
-        'testimonials.item1.content': 'Jamás hubiera encontrado la cabaña entre los pinos de Nogales sola. SMARTUR me llevó exactamente ahí. El café de olla al amanecer fue el momento más auténtico de mi vida.',
+        'testimonials.item1.content': 'Jamás hubiera encontrado la cabaña entre los pinos de Nogales sola. WELLTUR me llevó exactamente ahí. El café de olla al amanecer fue el momento más auténtico de mi vida.',
         'testimonials.item2.name': 'Carlos R.',
         'testimonials.item2.role': 'Familia de 4, Puebla',
-        'testimonials.item2.content': 'Le pregunté a SMARTUR qué hacer con niños en la zona. En 5 minutos tenía un itinerario perfecto: desde el Pico de Orizaba hasta una chocolatería artesanal en Córdoba.',
+        'testimonials.item2.content': 'Le pregunté a WELLTUR qué hacer con niños en la zona. En 5 minutos tenía un itinerario perfecto: desde el Pico de Orizaba hasta una chocolatería artesanal en Córdoba.',
         'testimonials.item3.name': 'Sophie L.',
         'testimonials.item3.role': 'Turista internacional, Francia',
-        'testimonials.item3.content': 'Le pedí a SMARTUR cultura de café auténtica y me llevó a una finca pequeña en Huatusco. Los dueños me recibieron como en casa. Por momentos así vale la pena viajar.',
+        'testimonials.item3.content': 'Le pedí a WELLTUR cultura de café auténtica y me llevó a una finca pequeña en Huatusco. Los dueños me recibieron como en casa. Por momentos así vale la pena viajar.',
 
         // Contact
         'contact.label': 'Contáctanos',
@@ -165,9 +165,9 @@ export const ui = {
         'contact.sending': 'Enviando…',
         'contact.success': 'Mensaje enviado. Nos pondremos en contacto contigo pronto.',
         'contact.sendAnother': 'Enviar otra consulta',
-        'contact.error': 'No se pudo enviar. Intenta de nuevo o escríbenos a smarturutcv@gmail.com.',
+        'contact.error': 'No se pudo enviar. Intenta de nuevo o escríbenos a wellturutcv@gmail.com.',
         'contact.modal.title': 'Cuéntanos sobre tu viaje',
-        'contact.modal.subtitle': 'El equipo SMARTUR te responderá con orientación pensada para turistas.',
+        'contact.modal.subtitle': 'El equipo WELLTUR te responderá con orientación pensada para turistas.',
         'contact.modal.close': 'Cancelar',
         'contact.reason.placeholder': 'Selecciona el motivo…',
         'contact.reason.download': 'Problemas con la app móvil',
@@ -182,13 +182,13 @@ export const ui = {
         // FAQs
         'faqs.label': 'Preguntas frecuentes',
         'faqs.title': 'Preguntas Frecuentes',
-        'faq1.question': '¿SMARTUR es gratuito para turistas?',
-        'faq1.answer': 'Sí. SMARTUR es completamente gratuito para viajeros. Nuestro modelo de negocio se basa en el apoyo a las MiPyMEs locales, no en cobrarte a ti.',
-        'faq2.question': '¿Cómo personaliza SMARTUR mis recomendaciones?',
+        'faq1.question': '¿WELLTUR es gratuito para turistas?',
+        'faq1.answer': 'Sí. WELLTUR es completamente gratuito para viajeros. Nuestro modelo de negocio se basa en el apoyo a las MiPyMEs locales, no en cobrarte a ti.',
+        'faq2.question': '¿Cómo personaliza WELLTUR mis recomendaciones?',
         'faq2.answer': 'Nuestros modelos de aprendizaje automático analizan tus preferencias, presupuesto, ritmo de viaje y contexto para sugerirte experiencias reales en la región de las Altas Montañas —siempre con foco en turismo veracruzano auténtico.',
         'faq3.question': '¿Los negocios recomendados son reales y verificados?',
         'faq3.answer': 'Sí. Trabajamos con MiPyMEs registradas en la plataforma; no somos un agregador anónimo. Así fortalecemos la economía local y te damos confianza en cada recomendación.',
-        'faq4.question': '¿Puedo usar SMARTUR desde mi app móvil?',
+        'faq4.question': '¿Puedo usar WELLTUR desde mi app móvil?',
         'faq4.answer': 'Sí. Usa la app móvil o la web: mismas recomendaciones inteligentes para planear tu turismo en Veracruz desde cualquier dispositivo.',
         'faq5.question': '¿Y si no me gustan las recomendaciones?',
         'faq5.answer': 'Cuéntanos qué no encajó: cada comentario mejora el motor de recomendaciones. Puedes ajustar tus preferencias cuando quieras para afinar rutas y descubrir nuevas joyas en la región.',
@@ -227,10 +227,10 @@ export const ui = {
         'actionBridge.business.description': 'Ver planes y precios',
         'actionBridge.business.cta': 'Potenciar mi negocio',
 
-        'about.sectionLabel': 'Sobre SMARTUR',
+        'about.sectionLabel': 'Sobre WELLTUR',
         'about.headingPrefix': 'Impulsando el futuro del ',
         'about.headingHighlight': 'Turismo Regional',
-        'about.subtitle': 'SMARTUR es la plataforma de IA ganadora del Galardón Turístico Mi Veracruz 2024, diseñada para revolucionar la forma en que exploramos nuestras montañas.',
+        'about.subtitle': 'WELLTUR es la plataforma de IA ganadora del Galardón Turístico Mi Veracruz 2024, diseñada para revolucionar la forma en que exploramos nuestras montañas.',
         'about.award.badge': 'Veracruz',
         'about.award.title': 'Galardón Turístico Mi Veracruz',
         'about.award.year': '2024',
@@ -253,7 +253,7 @@ export const ui = {
 
         // PWA Info Cards / Modals (Landing)
         'pwa.info.company-values.title': 'Nuestro ADN',
-        'pwa.info.company-values.highlight': 'Valores SMARTUR',
+        'pwa.info.company-values.highlight': 'Valores WELLTUR',
         'pwa.info.company-values.description': 'Transparencia, innovación responsable y turismo regenerativo para que cada experiencia genere impacto positivo.',
         'pwa.info.pymes.title': 'Impulso a PyMES',
         'pwa.info.pymes.highlight': 'Apoyo a MiPyMEs',
@@ -262,7 +262,7 @@ export const ui = {
         'pwa.info.ods.highlight': 'Agenda 2030',
         'pwa.info.ods.description': 'Cada recomendación prioriza proyectos con enfoque sostenible y comunidades cuidadas.',
         'pwa.modal.understood': 'Entendido',
-        'pwa.modal.aboutLabel': 'Sobre SMARTUR',
+        'pwa.modal.aboutLabel': 'Sobre WELLTUR',
         'pwa.modal.title': 'Conoce nuestra esencia',
         'pwa.modal.subtitle': 'Toca una tarjeta para ver más detalle.',
 
@@ -416,7 +416,7 @@ export const ui = {
 
         // Empresa servicios
         'empresa.servicios.title': 'Mis servicios',
-        'empresa.servicios.description': 'Administra los servicios turísticos que ofrece tu empresa en SMARTUR.',
+        'empresa.servicios.description': 'Administra los servicios turísticos que ofrece tu empresa en WELLTUR.',
         'empresa.servicios.badgeTitle': 'Servicios turísticos',
         'empresa.servicios.badgeDescription': 'Publica y actualiza las ofertas de tu empresa.',
         'empresa.servicios.newService': 'Nuevo servicio',
@@ -438,7 +438,7 @@ export const ui = {
         'empresa.servicios.modal.createService': 'Crear servicio',
         'empresa.servicios.modal.saving': 'Guardando…',
         'empresa.servicios.modal.errorRequired': 'Nombre y tipo de servicio son obligatorios.',
-        'empresa.servicios.modal.errorNoLocation': 'Tu empresa no tiene municipio asignado. Contacta al administrador SMARTUR.',
+        'empresa.servicios.modal.errorNoLocation': 'Tu empresa no tiene municipio asignado. Contacta al administrador WELLTUR.',
         'empresa.servicios.toast.updated': 'Servicio actualizado',
         'empresa.servicios.toast.created': 'Servicio creado',
         'empresa.servicios.toast.deleteError': 'No se pudo desactivar ',
@@ -464,7 +464,7 @@ export const ui = {
         'empresa.analytics.executiveSummary': 'Resumen ejecutivo',
         'empresa.analytics.interactions30d': 'Total de interacciones en 30 dias',
         'empresa.analytics.activeServices': 'Servicios activos',
-        'empresa.analytics.qualityTitle': 'Evaluación de calidad SMARTUR',
+        'empresa.analytics.qualityTitle': 'Evaluación de calidad WELLTUR',
         'empresa.analytics.noDataTitle': 'Sin datos de engagement por ahora',
         'empresa.analytics.noDataDescription': 'Cuando los turistas interactuen con tus servicios, aqui veras su rendimiento.',
         'empresa.analytics.noEngagementServices': 'No hay servicios con engagement registrado.',
@@ -491,7 +491,7 @@ export const ui = {
         'empresa.register.success': '¡Empresa registrada!',
         'empresa.register.pendingVerification': 'Tu cuenta está pendiente de verificación. Redirigiendo…',
         'empresa.register.errorGeneric': 'Error al registrar empresa.',
-        'empresa.register.subtitle': 'SMARTUR — Altas Montañas, Veracruz',
+        'empresa.register.subtitle': 'WELLTUR — Altas Montañas, Veracruz',
         'empresa.register.hoteleria': 'Hotelería',
         'empresa.register.restaurantes': 'Restaurantes',
         'empresa.register.aventura': 'Turismo de aventura',
@@ -511,10 +511,10 @@ export const ui = {
         'empresa.dashboard.profileCard': 'Datos de la empresa',
         'empresa.dashboard.quickAccessTitle': 'Accesos rapidos',
         'empresa.dashboard.quickAccessSubtitle': 'Gestiona servicios, analíticas y perfil desde un solo lugar.',
-        'empresa.dashboard.qualityScore': 'Evaluación SMARTUR',
+        'empresa.dashboard.qualityScore': 'Evaluación WELLTUR',
         'empresa.dashboard.emptyNoInteractions': 'Aun no hay interacciones para construir la grafica.',
         'empresa.dashboard.emptyNoEngagement': 'Cuando exista engagement, el ranking aparecera aqui.',
-        'empresa.dashboard.emptyNoEvaluation': 'El equipo SMARTUR aún no ha asignado una evaluación de calidad.',
+        'empresa.dashboard.emptyNoEvaluation': 'El equipo WELLTUR aún no ha asignado una evaluación de calidad.',
         'empresa.dashboard.viewServices': 'Ver mis servicios',
         'empresa.dashboard.viewAnalytics': 'Analytics completo',
         'empresa.dashboard.editProfile': 'Editar perfil',
@@ -537,9 +537,9 @@ export const ui = {
         'empresa.dashboard.quickActionServices': 'Servicios',
         'empresa.dashboard.quickActionAnalytics': 'Analíticas',
         'empresa.dashboard.quickActionProfile': 'Perfil',
-        'empresa.dashboard.qualityTitle': 'Evaluación SMARTUR',
-        'empresa.dashboard.qualityEmpty': 'El equipo SMARTUR aún no ha asignado una evaluación de calidad.',
-        'empresa.dashboard.qualityBadge': 'Calidad SMARTUR',
+        'empresa.dashboard.qualityTitle': 'Evaluación WELLTUR',
+        'empresa.dashboard.qualityEmpty': 'El equipo WELLTUR aún no ha asignado una evaluación de calidad.',
+        'empresa.dashboard.qualityBadge': 'Calidad WELLTUR',
         'empresa.dashboard.visits': 'visitas',
         'empresa.dashboard.favorites': 'favoritos',
         'empresa.dashboard.rec': 'rec.',
@@ -663,7 +663,7 @@ export const ui = {
 
         // Notifications (Push)
         'notifications.title': 'Notificaciones Push',
-        'notifications.description': 'Envía notificaciones FCM a usuarios de la app SMARTUR',
+        'notifications.description': 'Envía notificaciones FCM a usuarios de la app WELLTUR',
         'notifications.composeTitle': 'Redactar mensaje',
         'notifications.titleLabel': 'Título',
         'notifications.titlePh': 'Ej: ¡Nueva ruta disponible en Orizaba!',
@@ -728,7 +728,7 @@ export const ui = {
         'evaluation.noSpecificObs': 'Sin observaciones específicas',
         'evaluation.generalObservations': 'Observaciones generales',
         'evaluation.noGeneralObs': 'No se registraron observaciones generales.',
-        'evaluation.generatedBy': 'Generado por SMARTUR',
+        'evaluation.generatedBy': 'Generado por WELLTUR',
 
         // Community create post
         'community.createPost.placeholder': 'Escribe algo sobre este lugar...',
@@ -749,7 +749,7 @@ export const ui = {
         'form.progress.ariaLabel': 'Progreso del formulario',
 
         // Auth
-        'auth.loader.ariaLabel': 'Cargando SMARTUR',
+        'auth.loader.ariaLabel': 'Cargando WELLTUR',
         'auth.terms.closeAriaLabel': 'Cerrar',
 
         // Validation
@@ -819,7 +819,7 @@ export const ui = {
         'sidebar.admin': 'Administrator',
         'sidebar.terms': 'Terms',
         'sidebar.privacy': 'Privacy',
-        'header.search.placeholder': 'Search in Smartur...',
+        'header.search.placeholder': 'Search in Welltur...',
         'header.openMenu': 'Open menu',
         'header.logout': 'Log out',
         // Navigation
@@ -843,7 +843,7 @@ export const ui = {
         // Hero
         'hero.label': 'Altas Montañas • Veracruz • Mexico',
         'hero.title': 'Your next adventure\nlives in the mist',
-        'hero.subtitle': 'SMARTUR knows the hidden corners that maps don\'t show. Tell us what you\'re looking for and we\'ll design a route tailored to your traveler\'s soul.',
+        'hero.subtitle': 'WELLTUR knows the hidden corners that maps don\'t show. Tell us what you\'re looking for and we\'ll design a route tailored to your traveler\'s soul.',
         'hero.cta': 'Discover my ideal route',
         'hero.cta.secondary': 'See how it works',
         'hero.marquee.1': 'High-altitude coffee',
@@ -866,7 +866,7 @@ export const ui = {
         // Impact
         'impact.label': 'Real impact',
         'impact.title': 'Every trip, a story that transforms',
-        'impact.subtitle': 'When you use SMARTUR, you\'re not just discovering a destination — you\'re directly contributing to the economy of Veracruz families.',
+        'impact.subtitle': 'When you use WELLTUR, you\'re not just discovering a destination — you\'re directly contributing to the economy of Veracruz families.',
         'impact.stat1.number': '100',
         'impact.stat1.suffix': '+',
         'impact.stat1.label': 'SMEs empowered',
@@ -889,10 +889,10 @@ export const ui = {
         'story.conflict.text': 'Modern travelers don\'t want to be a number. They want to connect with the essence of the Altas Montañas: a coffee farmer who\'d invite you to his farm, a waterfall only locals know about.',
         'story.guide.label': 'The solution',
         'story.guide.title': 'Your local insider.\nIntelligent and personal.',
-        'story.guide.text': 'SMARTUR understands that no two travelers are alike. So it doesn\'t give you a list — it designs a route that breathes Veracruz.',
+        'story.guide.text': 'WELLTUR understands that no two travelers are alike. So it doesn\'t give you a list — it designs a route that breathes Veracruz.',
         'story.cta.label': 'Your adventure starts here',
         'story.cta.title': 'The first step of your journey.',
-        'story.cta.text': 'Tell us what kind of experience you\'re looking for. The magic begins when SMARTUR gets to know you.',
+        'story.cta.text': 'Tell us what kind of experience you\'re looking for. The magic begins when WELLTUR gets to know you.',
         'story.cta.button': 'Personalize my adventure now',
 
         // Testimonials
@@ -901,13 +901,13 @@ export const ui = {
         'testimonials.subtitle': 'Real stories from travelers who explored Veracruz with recommendations tailored to them.',
         'testimonials.item1.name': 'Andrea M.',
         'testimonials.item1.role': 'Solo traveler, Mexico City',
-        'testimonials.item1.content': 'I never would have found the cabin among the Nogales pines on my own. SMARTUR took me exactly there. The morning coffee at dawn was the most authentic moment of my life.',
+        'testimonials.item1.content': 'I never would have found the cabin among the Nogales pines on my own. WELLTUR took me exactly there. The morning coffee at dawn was the most authentic moment of my life.',
         'testimonials.item2.name': 'Carlos R.',
         'testimonials.item2.role': 'Family of 4, Puebla',
-        'testimonials.item2.content': 'I asked SMARTUR what to do with kids in the area. In 5 minutes I had a perfect itinerary: from Pico de Orizaba to an artisan chocolate shop in Córdoba.',
+        'testimonials.item2.content': 'I asked WELLTUR what to do with kids in the area. In 5 minutes I had a perfect itinerary: from Pico de Orizaba to an artisan chocolate shop in Córdoba.',
         'testimonials.item3.name': 'Sophie L.',
         'testimonials.item3.role': 'International tourist, France',
-        'testimonials.item3.content': 'I told SMARTUR I wanted to find authentic coffee culture. It sent me to a small farm in Huatusco. The owners became like family. This is why travel exists.',
+        'testimonials.item3.content': 'I told WELLTUR I wanted to find authentic coffee culture. It sent me to a small farm in Huatusco. The owners became like family. This is why travel exists.',
 
         // Contact
         'contact.label': 'Contact us',
@@ -924,9 +924,9 @@ export const ui = {
         'contact.sending': 'Sending…',
         'contact.success': 'Message sent. We will be in touch with you soon.',
         'contact.sendAnother': 'Send another inquiry',
-        'contact.error': 'Could not send. Try again or email us at smarturutcv@gmail.com.',
+        'contact.error': 'Could not send. Try again or email us at wellturutcv@gmail.com.',
         'contact.modal.title': 'Tell us about your trip',
-        'contact.modal.subtitle': 'The SMARTUR team will reply with guidance tailored for travelers.',
+        'contact.modal.subtitle': 'The WELLTUR team will reply with guidance tailored for travelers.',
         'contact.modal.close': 'Cancel',
         'contact.reason.placeholder': 'Select a reason…',
         'contact.reason.download': 'Issues with the mobile app',
@@ -941,14 +941,14 @@ export const ui = {
         // FAQs
         'faqs.label': 'FAQ',
         'faqs.title': 'Frequently Asked Questions',
-        'faq1.question': 'Is SMARTUR free for tourists?',
-        'faq1.answer': 'Yes. SMARTUR is completely free for travelers. Our business model is based on supporting local SMEs, not charging you.',
-        'faq2.question': 'How does SMARTUR personalize my recommendations?',
+        'faq1.question': 'Is WELLTUR free for tourists?',
+        'faq1.answer': 'Yes. WELLTUR is completely free for travelers. Our business model is based on supporting local SMEs, not charging you.',
+        'faq2.question': 'How does WELLTUR personalize my recommendations?',
         'faq2.answer': 'We use Machine Learning algorithms that learn from your travel preferences, budget, interests, and context to suggest experiences you\'ll genuinely enjoy.',
         'faq3.question': 'Are the recommended businesses real and verified?',
         'faq3.answer': 'Absolutely. We work directly with SMEs from the Altas Montañas that are registered on our platform. We are not a generic aggregator.',
-        'faq4.question': 'Can I use SMARTUR from my mobile app?',
-        'faq4.answer': 'Yes. SMARTUR is available as a mobile app and also as a web platform. The same smart recommendations on any device.',
+        'faq4.question': 'Can I use WELLTUR from my mobile app?',
+        'faq4.answer': 'Yes. WELLTUR is available as a mobile app and also as a web platform. The same smart recommendations on any device.',
         'faq5.question': 'What if I don\'t like the recommendations?',
         'faq5.answer': 'Tell us and we\'ll improve. Every piece of feedback trains our AI better. You can refine your preferences at any time to get more tailored suggestions.',
 
@@ -986,10 +986,10 @@ export const ui = {
         'actionBridge.business.description': 'View plans & pricing',
         'actionBridge.business.cta': 'Grow my business',
 
-        'about.sectionLabel': 'About SMARTUR',
+        'about.sectionLabel': 'About WELLTUR',
         'about.headingPrefix': 'Powering the future of ',
         'about.headingHighlight': 'Regional Tourism',
-        'about.subtitle': 'SMARTUR is the AI platform that won the Mi Veracruz Tourism Award 2024, designed to revolutionize the way we explore our mountains.',
+        'about.subtitle': 'WELLTUR is the AI platform that won the Mi Veracruz Tourism Award 2024, designed to revolutionize the way we explore our mountains.',
         'about.award.badge': 'Veracruz',
         'about.award.title': 'Mi Veracruz Tourism Award',
         'about.award.year': '2024',
@@ -1012,7 +1012,7 @@ export const ui = {
 
         // PWA Info Cards / Modals (Landing)
         'pwa.info.company-values.title': 'Our DNA',
-        'pwa.info.company-values.highlight': 'SMARTUR Values',
+        'pwa.info.company-values.highlight': 'WELLTUR Values',
         'pwa.info.company-values.description': 'Transparency, responsible innovation, and regenerative tourism so every experience creates positive impact.',
         'pwa.info.pymes.title': 'SME Boost',
         'pwa.info.pymes.highlight': 'Supporting MiPyMEs',
@@ -1021,7 +1021,7 @@ export const ui = {
         'pwa.info.ods.highlight': '2030 Agenda',
         'pwa.info.ods.description': 'Every recommendation prioritizes projects with a sustainable approach and respected communities.',
         'pwa.modal.understood': 'Got it',
-        'pwa.modal.aboutLabel': 'About SMARTUR',
+        'pwa.modal.aboutLabel': 'About WELLTUR',
         'pwa.modal.title': 'Discover our essence',
         'pwa.modal.subtitle': 'Tap a card to see more detail.',
 
@@ -1175,7 +1175,7 @@ export const ui = {
 
         // Empresa servicios
         'empresa.servicios.title': 'My Services',
-        'empresa.servicios.description': 'Manage the tourism services your company offers on SMARTUR.',
+        'empresa.servicios.description': 'Manage the tourism services your company offers on WELLTUR.',
         'empresa.servicios.badgeTitle': 'Tourism Services',
         'empresa.servicios.badgeDescription': 'Publish and update your company\'s offerings.',
         'empresa.servicios.newService': 'New Service',
@@ -1197,7 +1197,7 @@ export const ui = {
         'empresa.servicios.modal.createService': 'Create Service',
         'empresa.servicios.modal.saving': 'Saving…',
         'empresa.servicios.modal.errorRequired': 'Name and service type are required.',
-        'empresa.servicios.modal.errorNoLocation': 'Your company has no assigned municipality. Contact SMARTUR admin.',
+        'empresa.servicios.modal.errorNoLocation': 'Your company has no assigned municipality. Contact WELLTUR admin.',
         'empresa.servicios.toast.updated': 'Service Updated',
         'empresa.servicios.toast.created': 'Service Created',
         'empresa.servicios.toast.deleteError': 'Could not deactivate ',
@@ -1223,7 +1223,7 @@ export const ui = {
         'empresa.analytics.executiveSummary': 'Executive Summary',
         'empresa.analytics.interactions30d': 'Total interactions in 30 days',
         'empresa.analytics.activeServices': 'Active Services',
-        'empresa.analytics.qualityTitle': 'SMARTUR Quality Assessment',
+        'empresa.analytics.qualityTitle': 'WELLTUR Quality Assessment',
         'empresa.analytics.noDataTitle': 'No engagement data yet',
         'empresa.analytics.noDataDescription': 'When tourists interact with your services, their performance will appear here.',
         'empresa.analytics.noEngagementServices': 'No services with registered engagement.',
@@ -1250,7 +1250,7 @@ export const ui = {
         'empresa.register.success': 'Company Registered!',
         'empresa.register.pendingVerification': 'Your account is pending verification. Redirecting…',
         'empresa.register.errorGeneric': 'Error registering company.',
-        'empresa.register.subtitle': 'SMARTUR — Altas Montañas, Veracruz',
+        'empresa.register.subtitle': 'WELLTUR — Altas Montañas, Veracruz',
         'empresa.register.hoteleria': 'Hotels & Lodging',
         'empresa.register.restaurantes': 'Restaurants',
         'empresa.register.aventura': 'Adventure Tourism',
@@ -1270,10 +1270,10 @@ export const ui = {
         'empresa.dashboard.profileCard': 'Company Data',
         'empresa.dashboard.quickAccessTitle': 'Quick Access',
         'empresa.dashboard.quickAccessSubtitle': 'Manage services, analytics and profile from one place.',
-        'empresa.dashboard.qualityScore': 'SMARTUR Assessment',
+        'empresa.dashboard.qualityScore': 'WELLTUR Assessment',
         'empresa.dashboard.emptyNoInteractions': 'No interactions yet to build the chart.',
         'empresa.dashboard.emptyNoEngagement': 'When engagement exists, the ranking will appear here.',
-        'empresa.dashboard.emptyNoEvaluation': 'The SMARTUR team has not yet assigned a quality assessment.',
+        'empresa.dashboard.emptyNoEvaluation': 'The WELLTUR team has not yet assigned a quality assessment.',
         'empresa.dashboard.viewServices': 'View My Services',
         'empresa.dashboard.viewAnalytics': 'Full Analytics',
         'empresa.dashboard.editProfile': 'Edit Profile',
@@ -1296,9 +1296,9 @@ export const ui = {
         'empresa.dashboard.quickActionServices': 'Services',
         'empresa.dashboard.quickActionAnalytics': 'Analytics',
         'empresa.dashboard.quickActionProfile': 'Profile',
-        'empresa.dashboard.qualityTitle': 'SMARTUR Assessment',
-        'empresa.dashboard.qualityEmpty': 'The SMARTUR team has not yet assigned a quality assessment.',
-        'empresa.dashboard.qualityBadge': 'SMARTUR Quality',
+        'empresa.dashboard.qualityTitle': 'WELLTUR Assessment',
+        'empresa.dashboard.qualityEmpty': 'The WELLTUR team has not yet assigned a quality assessment.',
+        'empresa.dashboard.qualityBadge': 'WELLTUR Quality',
         'empresa.dashboard.visits': 'visits',
         'empresa.dashboard.favorites': 'favorites',
         'empresa.dashboard.rec': 'rec.',
@@ -1422,7 +1422,7 @@ export const ui = {
 
         // Notifications (Push)
         'notifications.title': 'Push Notifications',
-        'notifications.description': 'Send FCM notifications to SMARTUR app users',
+        'notifications.description': 'Send FCM notifications to WELLTUR app users',
         'notifications.composeTitle': 'Compose message',
         'notifications.titleLabel': 'Title',
         'notifications.titlePh': 'E.g.: New route available in Orizaba!',
@@ -1487,7 +1487,7 @@ export const ui = {
         'evaluation.noSpecificObs': 'No specific observations',
         'evaluation.generalObservations': 'General Observations',
         'evaluation.noGeneralObs': 'No general observations recorded.',
-        'evaluation.generatedBy': 'Generated by SMARTUR',
+        'evaluation.generatedBy': 'Generated by WELLTUR',
 
         // Community create post
         'community.createPost.placeholder': 'Write something about this place...',
@@ -1508,7 +1508,7 @@ export const ui = {
         'form.progress.ariaLabel': 'Form progress',
 
         // Auth
-        'auth.loader.ariaLabel': 'Loading SMARTUR',
+        'auth.loader.ariaLabel': 'Loading WELLTUR',
         'auth.terms.closeAriaLabel': 'Close',
 
         // Validation
@@ -1578,7 +1578,7 @@ export const ui = {
         'sidebar.admin': 'Administrateur',
         'sidebar.terms': 'Conditions',
         'sidebar.privacy': 'Confidentialité',
-        'header.search.placeholder': 'Rechercher dans Smartur...',
+        'header.search.placeholder': 'Rechercher dans Welltur...',
         'header.openMenu': 'Ouvrir le menu',
         'header.logout': 'Se déconnecter',
         // Navigation
@@ -1602,7 +1602,7 @@ export const ui = {
         // Hero
         'hero.label': 'Altas Montañas • Veracruz • Mexique',
         'hero.title': 'Votre prochaine aventure\nvit dans la brume',
-        'hero.subtitle': 'SMARTUR connaît les recoins que les cartes ne montrent pas. Dites-nous ce que vous cherchez et nous concevons un itinéraire sur mesure pour votre âme de voyageur.',
+        'hero.subtitle': 'WELLTUR connaît les recoins que les cartes ne montrent pas. Dites-nous ce que vous cherchez et nous concevons un itinéraire sur mesure pour votre âme de voyageur.',
         'hero.cta': 'Découvrir mon itinéraire',
         'hero.cta.secondary': 'Voir comment ça marche',
         'hero.marquee.1': 'Café d\'altitude',
@@ -1625,7 +1625,7 @@ export const ui = {
         // Impact
         'impact.label': 'Impact réel',
         'impact.title': 'Chaque voyage, une histoire qui transforme',
-        'impact.subtitle': 'En utilisant SMARTUR, vous ne découvrez pas seulement une destination — vous contribuez directement à l\'économie des familles vénézuéliennes.',
+        'impact.subtitle': 'En utilisant WELLTUR, vous ne découvrez pas seulement une destination — vous contribuez directement à l\'économie des familles vénézuéliennes.',
         'impact.stat1.number': '100',
         'impact.stat1.suffix': '+',
         'impact.stat1.label': 'PME soutenues',
@@ -1648,10 +1648,10 @@ export const ui = {
         'story.conflict.text': 'Le voyageur moderne ne veut pas être un numéro. Il veut se connecter avec l\'essence des Altas Montañas.',
         'story.guide.label': 'La solution',
         'story.guide.title': 'Votre guide local.\nIntelligent et personnel.',
-        'story.guide.text': 'SMARTUR comprend qu\'il n\'y a pas deux voyageurs identiques. Il ne vous donne pas une liste — il conçoit un itinéraire qui respire Veracruz.',
+        'story.guide.text': 'WELLTUR comprend qu\'il n\'y a pas deux voyageurs identiques. Il ne vous donne pas une liste — il conçoit un itinéraire qui respire Veracruz.',
         'story.cta.label': 'Votre aventure commence ici',
         'story.cta.title': 'La première étape de votre voyage.',
-        'story.cta.text': 'Dites-nous quel type d\'expérience vous recherchez. La magie commence quand SMARTUR vous connaît.',
+        'story.cta.text': 'Dites-nous quel type d\'expérience vous recherchez. La magie commence quand WELLTUR vous connaît.',
         'story.cta.button': 'Personnaliser mon aventure maintenant',
 
         // Testimonials
@@ -1660,13 +1660,13 @@ export const ui = {
         'testimonials.subtitle': 'Des expériences réelles de voyageurs qui ont exploré Veracruz avec des recommandations sur mesure.',
         'testimonials.item1.name': 'Andrea M.',
         'testimonials.item1.role': 'Voyageuse solo, Mexico',
-        'testimonials.item1.content': 'Je n\'aurais jamais trouvé le chalet parmi les pins de Nogales seule. SMARTUR m\'y a emmenée exactement. Le café au lever du soleil fut le moment le plus authentique de ma vie.',
+        'testimonials.item1.content': 'Je n\'aurais jamais trouvé le chalet parmi les pins de Nogales seule. WELLTUR m\'y a emmenée exactement. Le café au lever du soleil fut le moment le plus authentique de ma vie.',
         'testimonials.item2.name': 'Carlos R.',
         'testimonials.item2.role': 'Famille de 4, Puebla',
-        'testimonials.item2.content': 'J\'ai demandé à SMARTUR quoi faire avec des enfants dans la région. En 5 minutes, j\'avais un itinéraire parfait.',
+        'testimonials.item2.content': 'J\'ai demandé à WELLTUR quoi faire avec des enfants dans la région. En 5 minutes, j\'avais un itinéraire parfait.',
         'testimonials.item3.name': 'Sophie L.',
         'testimonials.item3.role': 'Touriste internationale, France',
-        'testimonials.item3.content': 'J\'ai dit à SMARTUR que je voulais trouver une culture authentique du café. Il m\'a envoyée dans une petite ferme à Huatusco. Les propriétaires sont devenus comme une famille.',
+        'testimonials.item3.content': 'J\'ai dit à WELLTUR que je voulais trouver une culture authentique du café. Il m\'a envoyée dans une petite ferme à Huatusco. Les propriétaires sont devenus comme une famille.',
 
         // Contact
         'contact.label': 'Contactez-nous',
@@ -1683,9 +1683,9 @@ export const ui = {
         'contact.sending': 'Envoi en cours…',
         'contact.success': 'Message envoyé. Nous vous contacterons bientôt.',
         'contact.sendAnother': 'Envoyer une autre demande',
-        'contact.error': 'Envoi impossible. Réessayez ou écrivez à smarturutcv@gmail.com.',
+        'contact.error': 'Envoi impossible. Réessayez ou écrivez à wellturutcv@gmail.com.',
         'contact.modal.title': 'Parlez-nous de votre voyage',
-        'contact.modal.subtitle': 'L\'équipe SMARTUR vous répondra avec des conseils pensés pour les touristes.',
+        'contact.modal.subtitle': 'L\'équipe WELLTUR vous répondra avec des conseils pensés pour les touristes.',
         'contact.modal.close': 'Annuler',
         'contact.reason.placeholder': 'Sélectionnez un motif…',
         'contact.reason.download': "Problème avec l'application mobile",
@@ -1700,14 +1700,14 @@ export const ui = {
         // FAQs
         'faqs.label': 'FAQ',
         'faqs.title': 'Questions Fréquentes',
-        'faq1.question': 'SMARTUR est-il gratuit pour les touristes?',
-        'faq1.answer': 'Oui. SMARTUR est entièrement gratuit pour les voyageurs.',
-        'faq2.question': 'Comment SMARTUR personnalise mes recommandations?',
+        'faq1.question': 'WELLTUR est-il gratuit pour les touristes?',
+        'faq1.answer': 'Oui. WELLTUR est entièrement gratuit pour les voyageurs.',
+        'faq2.question': 'Comment WELLTUR personnalise mes recommandations?',
         'faq2.answer': 'Nous utilisons des algorithmes de Machine Learning qui apprennent de vos préférences de voyage.',
         'faq3.question': 'Les entreprises recommandées sont-elles réelles?',
         'faq3.answer': 'Absolument. Nous travaillons directement avec des PME des Altas Montañas.',
-        'faq4.question': 'Puis-je utiliser SMARTUR depuis mon application mobile?',
-        'faq4.answer': 'Oui. SMARTUR est disponible en application mobile et en plateforme web.',
+        'faq4.question': 'Puis-je utiliser WELLTUR depuis mon application mobile?',
+        'faq4.answer': 'Oui. WELLTUR est disponible en application mobile et en plateforme web.',
         'faq5.question': 'Et si je n\'aime pas les recommandations?',
         'faq5.answer': 'Dites-le nous et nous améliorerons. Chaque retour entraîne mieux notre IA.',
 
@@ -1745,10 +1745,10 @@ export const ui = {
         'actionBridge.business.description': 'Voir les plans et tarifs',
         'actionBridge.business.cta': 'Développer mon activité',
 
-        'about.sectionLabel': 'À propos de SMARTUR',
+        'about.sectionLabel': 'À propos de WELLTUR',
         'about.headingPrefix': 'Propulser l\'avenir du ',
         'about.headingHighlight': 'Tourisme régional',
-        'about.subtitle': 'SMARTUR est la plateforme d\'IA lauréate du prix touristique Mi Veracruz 2024, conçue pour révolutionner la façon dont nous explorons nos montagnes.',
+        'about.subtitle': 'WELLTUR est la plateforme d\'IA lauréate du prix touristique Mi Veracruz 2024, conçue pour révolutionner la façon dont nous explorons nos montagnes.',
         'about.award.badge': 'Veracruz',
         'about.award.title': 'Prix touristique Mi Veracruz',
         'about.award.year': '2024',
@@ -1771,7 +1771,7 @@ export const ui = {
 
         // PWA Info Cards / Modals (Landing)
         'pwa.info.company-values.title': 'Notre ADN',
-        'pwa.info.company-values.highlight': 'Valeurs SMARTUR',
+        'pwa.info.company-values.highlight': 'Valeurs WELLTUR',
         'pwa.info.company-values.description': 'Transparence, innovation responsable et tourisme régénératif pour que chaque expérience génère un impact positif.',
         'pwa.info.pymes.title': 'Impulsion aux PME',
         'pwa.info.pymes.highlight': 'Soutenir les MiPyMEs',
@@ -1780,7 +1780,7 @@ export const ui = {
         'pwa.info.ods.highlight': 'Agenda 2030',
         'pwa.info.ods.description': 'Chaque recommandation priorise des projets axés sur le développement durable et des communautés respectées.',
         'pwa.modal.understood': 'Compris',
-        'pwa.modal.aboutLabel': 'A propos de SMARTUR',
+        'pwa.modal.aboutLabel': 'A propos de WELLTUR',
         'pwa.modal.title': 'Découvrez notre essence',
         'pwa.modal.subtitle': 'Touchez une carte pour voir plus de détails.',
 
@@ -1934,7 +1934,7 @@ export const ui = {
 
         // Empresa servicios
         'empresa.servicios.title': 'Mes services',
-        'empresa.servicios.description': 'Gérez les services touristiques que votre entreprise propose sur SMARTUR.',
+        'empresa.servicios.description': 'Gérez les services touristiques que votre entreprise propose sur WELLTUR.',
         'empresa.servicios.badgeTitle': 'Services touristiques',
         'empresa.servicios.badgeDescription': 'Publiez et mettez à jour les offres de votre entreprise.',
         'empresa.servicios.newService': 'Nouveau service',
@@ -1956,7 +1956,7 @@ export const ui = {
         'empresa.servicios.modal.createService': 'Créer le service',
         'empresa.servicios.modal.saving': 'Enregistrement…',
         'empresa.servicios.modal.errorRequired': 'Le nom et le type de service sont obligatoires.',
-        'empresa.servicios.modal.errorNoLocation': 'Votre entreprise n\'a pas de municipalité attribuée. Contactez l\'administrateur SMARTUR.',
+        'empresa.servicios.modal.errorNoLocation': 'Votre entreprise n\'a pas de municipalité attribuée. Contactez l\'administrateur WELLTUR.',
         'empresa.servicios.toast.updated': 'Service mis à jour',
         'empresa.servicios.toast.created': 'Service créé',
         'empresa.servicios.toast.deleteError': 'Impossible de désactiver ',
@@ -1982,7 +1982,7 @@ export const ui = {
         'empresa.analytics.executiveSummary': 'Résumé exécutif',
         'empresa.analytics.interactions30d': 'Total des interactions sur 30 jours',
         'empresa.analytics.activeServices': 'Services actifs',
-        'empresa.analytics.qualityTitle': 'Évaluation de qualité SMARTUR',
+        'empresa.analytics.qualityTitle': 'Évaluation de qualité WELLTUR',
         'empresa.analytics.noDataTitle': 'Aucune donnée d\'engagement pour l\'instant',
         'empresa.analytics.noDataDescription': 'Quand les touristes interagiront avec vos services, leur performance apparaîtra ici.',
         'empresa.analytics.noEngagementServices': 'Aucun service avec engagement enregistré.',
@@ -2009,7 +2009,7 @@ export const ui = {
         'empresa.register.success': 'Entreprise enregistrée !',
         'empresa.register.pendingVerification': 'Votre compte est en attente de vérification. Redirection…',
         'empresa.register.errorGeneric': 'Erreur lors de l\'enregistrement.',
-        'empresa.register.subtitle': 'SMARTUR — Altas Montañas, Veracruz',
+        'empresa.register.subtitle': 'WELLTUR — Altas Montañas, Veracruz',
         'empresa.register.hoteleria': 'Hôtellerie',
         'empresa.register.restaurantes': 'Restaurants',
         'empresa.register.aventura': 'Tourisme d\'aventure',
@@ -2029,10 +2029,10 @@ export const ui = {
         'empresa.dashboard.profileCard': 'Données de l\'entreprise',
         'empresa.dashboard.quickAccessTitle': 'Accès rapides',
         'empresa.dashboard.quickAccessSubtitle': 'Gérez services, analytics et profil depuis un seul endroit.',
-        'empresa.dashboard.qualityScore': 'Évaluation SMARTUR',
+        'empresa.dashboard.qualityScore': 'Évaluation WELLTUR',
         'empresa.dashboard.emptyNoInteractions': 'Aucune interaction pour construire le graphique.',
         'empresa.dashboard.emptyNoEngagement': 'Quand il y aura de l\'engagement, le classement apparaîtra ici.',
-        'empresa.dashboard.emptyNoEvaluation': 'L\'équipe SMARTUR n\'a pas encore attribué d\'évaluation de qualité.',
+        'empresa.dashboard.emptyNoEvaluation': 'L\'équipe WELLTUR n\'a pas encore attribué d\'évaluation de qualité.',
         'empresa.dashboard.viewServices': 'Voir mes services',
         'empresa.dashboard.viewAnalytics': 'Analytique complète',
         'empresa.dashboard.editProfile': 'Modifier le profil',
@@ -2055,9 +2055,9 @@ export const ui = {
         'empresa.dashboard.quickActionServices': 'Services',
         'empresa.dashboard.quickActionAnalytics': 'Analytique',
         'empresa.dashboard.quickActionProfile': 'Profil',
-        'empresa.dashboard.qualityTitle': 'Évaluation SMARTUR',
-        'empresa.dashboard.qualityEmpty': 'L\'équipe SMARTUR n\'a pas encore attribué d\'évaluation de qualité.',
-        'empresa.dashboard.qualityBadge': 'Qualité SMARTUR',
+        'empresa.dashboard.qualityTitle': 'Évaluation WELLTUR',
+        'empresa.dashboard.qualityEmpty': 'L\'équipe WELLTUR n\'a pas encore attribué d\'évaluation de qualité.',
+        'empresa.dashboard.qualityBadge': 'Qualité WELLTUR',
         'empresa.dashboard.visits': 'visites',
         'empresa.dashboard.favorites': 'favoris',
         'empresa.dashboard.rec': 'rec.',
@@ -2181,7 +2181,7 @@ export const ui = {
 
         // Notifications (Push)
         'notifications.title': 'Notifications Push',
-        'notifications.description': 'Envoyer des notifications FCM aux utilisateurs de l\'app SMARTUR',
+        'notifications.description': 'Envoyer des notifications FCM aux utilisateurs de l\'app WELLTUR',
         'notifications.composeTitle': 'Rédiger un message',
         'notifications.titleLabel': 'Titre',
         'notifications.titlePh': 'Ex: Nouvelle route disponible à Orizaba!',
@@ -2246,7 +2246,7 @@ export const ui = {
         'evaluation.noSpecificObs': 'Aucune observation spécifique',
         'evaluation.generalObservations': 'Observations générales',
         'evaluation.noGeneralObs': 'Aucune observation générale enregistrée.',
-        'evaluation.generatedBy': 'Généré par SMARTUR',
+        'evaluation.generatedBy': 'Généré par WELLTUR',
 
         // Community create post
         'community.createPost.placeholder': 'Écrivez quelque chose sur cet endroit...',
@@ -2267,7 +2267,7 @@ export const ui = {
         'form.progress.ariaLabel': 'Progression du formulaire',
 
         // Auth
-        'auth.loader.ariaLabel': 'Chargement de SMARTUR',
+        'auth.loader.ariaLabel': 'Chargement de WELLTUR',
         'auth.terms.closeAriaLabel': 'Fermer',
 
         // Validation

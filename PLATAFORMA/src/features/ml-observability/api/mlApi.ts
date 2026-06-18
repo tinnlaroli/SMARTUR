@@ -1,4 +1,4 @@
-import { api } from '../../../shared/api/axiosClient';
+﻿import { api } from '../../../shared/api/axiosClient';
 
 export interface AlgorithmMetric {
     rmse: number;
@@ -27,7 +27,7 @@ export interface MLMetrics {
         businesses_count: number;
         top_categories: string[];
         features_count: number;
-        real_smartur_interactions: number;
+        real_welltur_interactions: number;
         uses_real_data: boolean;
     };
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+﻿import React, { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { initPhoneScene } from '../../../assets/3D/phone';
@@ -184,15 +184,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             });
         };
 
-        window.addEventListener('smartur:loaded', startHeroIntro, { once: true });
+        window.addEventListener('welltur:loaded', startHeroIntro, { once: true });
 
-        const win = window as Window & { __SMARTUR_APP_READY__?: boolean };
-        if (win.__SMARTUR_APP_READY__ || !document.body.classList.contains('is-loading')) {
+        const win = window as Window & { __WELLTUR_APP_READY__?: boolean };
+        if (win.__WELLTUR_APP_READY__ || !document.body.classList.contains('is-loading')) {
             startHeroIntro();
         }
 
         return () => {
-            window.removeEventListener('smartur:loaded', startHeroIntro);
+            window.removeEventListener('welltur:loaded', startHeroIntro);
             cleanupSplineRef.current?.();
         };
     }, []);

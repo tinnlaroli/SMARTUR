@@ -1,4 +1,4 @@
----
+﻿---
 
 ---
 
@@ -883,7 +883,7 @@ void main() {
   // Defer WebGL context creation until after the page loader completes.
   // During the loader (3.4s), we avoid competing WebGL contexts with Spline.
   if (document.body.classList.contains("is-loading")) {
-    window.addEventListener("smartur:loaded", initGLScene, { once: true });
+    window.addEventListener("welltur:loaded", initGLScene, { once: true });
   } else {
     requestAnimationFrame(initGLScene);
   }

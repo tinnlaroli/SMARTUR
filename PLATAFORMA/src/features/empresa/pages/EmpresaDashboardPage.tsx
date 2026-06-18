@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { DashboardHeader, DashboardLoadingShell } from '../../home/components/DashboardWidgets';
 import { WidgetCatalog } from '../../home/components/WidgetCatalog';
@@ -245,7 +245,7 @@ export function EmpresaDashboardPage() {
                     Bienvenido, {user?.name?.split(' ')[0] ?? 'Empresa'}
                 </h1>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-                    Activa tu cuenta para empezar a publicar tus servicios turísticos en SMARTUR.
+                    Activa tu cuenta para empezar a publicar tus servicios turísticos en WELLTUR.
                 </p>
                 <ActivationStepper
                     status={profile.status}

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, User, Mail, Lock, Phone, MapPin, Loader2, CheckCircle2, Eye, EyeOff, X, Check, ArrowLeft } from 'lucide-react';
 import { empresaApi } from '../api/empresaApi';
@@ -106,7 +106,7 @@ export function RegisterEmpresaPage() {
                         <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center">
                             <Building2 className="text-white" size={20} />
                         </div>
-                        <span className="text-2xl font-bold text-white tracking-tight">SMARTUR</span>
+                        <span className="text-2xl font-bold text-white tracking-tight">WELLTUR</span>
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-2">{t('empresa.register.title')}</h1>
                     <p className="text-zinc-400 text-sm">

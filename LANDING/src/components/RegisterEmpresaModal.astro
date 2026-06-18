@@ -1,4 +1,4 @@
----
+﻿---
 /**
  * RegisterEmpresaModal — registro público de empresas turísticas.
  * Validaciones en tiempo real, reglas de contraseña visibles,
@@ -132,7 +132,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
           <button type="button" id="rem-open-terms" class="rem-terms-link">
             {t["register.termsOfUse"]}
           </button>
-          de SMARTUR.
+          de WELLTUR.
         </label>
       </div>
       <span class="rem-field-error" id="err-terms" hidden></span>
@@ -214,15 +214,15 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       </button>
     </div>
     <div class="rem-terms-body">
-      <p><strong>1. Aceptación</strong><br/>Al registrarte en SMARTUR como empresa turística, aceptas estos términos y te comprometes a cumplirlos. Si no estás de acuerdo, no completes el registro.</p>
+      <p><strong>1. Aceptación</strong><br/>Al registrarte en WELLTUR como empresa turística, aceptas estos términos y te comprometes a cumplirlos. Si no estás de acuerdo, no completes el registro.</p>
       <p><strong>2. Uso de la plataforma</strong><br/>Tu cuenta es personal e intransferible. Eres responsable de toda la actividad realizada con tus credenciales. Debes mantener la información de tu empresa actualizada y verídica.</p>
-      <p><strong>3. Contenido</strong><br/>Garantizas que los servicios, imágenes y descripciones que publiques son auténticos y no infringen derechos de terceros. SMARTUR puede moderar o eliminar contenido que viole estas normas.</p>
-      <p><strong>4. Verificación</strong><br/>El equipo SMARTUR revisará tu registro en un plazo de 24 horas. Nos reservamos el derecho de rechazar o suspender cuentas que no cumplan nuestros estándares de calidad o que proporcionen información falsa.</p>
+      <p><strong>3. Contenido</strong><br/>Garantizas que los servicios, imágenes y descripciones que publiques son auténticos y no infringen derechos de terceros. WELLTUR puede moderar o eliminar contenido que viole estas normas.</p>
+      <p><strong>4. Verificación</strong><br/>El equipo WELLTUR revisará tu registro en un plazo de 24 horas. Nos reservamos el derecho de rechazar o suspender cuentas que no cumplan nuestros estándares de calidad o que proporcionen información falsa.</p>
       <p><strong>5. Privacidad</strong><br/>Tus datos serán tratados conforme a nuestra Política de Privacidad. No compartimos tu información personal con terceros sin tu consentimiento, excepto cuando lo exija la ley.</p>
-      <p><strong>6. Propiedad intelectual</strong><br/>SMARTUR y su tecnología son propiedad de sus desarrolladores. No puedes copiar, modificar ni distribuir el software sin autorización expresa.</p>
-      <p><strong>7. Responsabilidad</strong><br/>SMARTUR actúa como intermediario entre turistas y empresas. No somos responsables de las transacciones, calidad de servicios o disputas entre usuarios y empresas registradas.</p>
+      <p><strong>6. Propiedad intelectual</strong><br/>WELLTUR y su tecnología son propiedad de sus desarrolladores. No puedes copiar, modificar ni distribuir el software sin autorización expresa.</p>
+      <p><strong>7. Responsabilidad</strong><br/>WELLTUR actúa como intermediario entre turistas y empresas. No somos responsables de las transacciones, calidad de servicios o disputas entre usuarios y empresas registradas.</p>
       <p><strong>8. Modificaciones</strong><br/>Podemos actualizar estos términos en cualquier momento. Te notificaremos por correo y el uso continuado de la plataforma implica aceptación de los cambios.</p>
-      <p class="rem-terms-date">Última actualización: enero 2025 · SMARTUR — Las Altas Montañas, Veracruz</p>
+      <p class="rem-terms-date">Última actualización: enero 2025 · WELLTUR — Las Altas Montañas, Veracruz</p>
     </div>
     <div class="rem-terms-footer">
       <button type="button" id="rem-terms-accept" class="rem-btn rem-btn--terms">
@@ -523,7 +523,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   const plataformaUrl = isLocal
     ? `${window.location.protocol}//${window.location.hostname}:5173`
     : (() => {
-        const raw = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.smartur.online';
+        const raw = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.welltur.online';
         try { return new URL(raw).origin; } catch { return raw.replace(/\/+$/, ''); }
       })();
 

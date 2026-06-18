@@ -1,4 +1,4 @@
----
+﻿---
 ---
 <div
   id="cookie-banner"
@@ -9,7 +9,7 @@
 >
   <p>
     Usamos almacenamiento local para gestionar tu sesión y preferencias de viaje.
-    <a href="https://smartur.online/privacidad" target="_blank" rel="noopener noreferrer">Más información</a>
+    <a href="https://welltur.online/privacidad" target="_blank" rel="noopener noreferrer">Más información</a>
   </p>
   <button id="cookie-accept" type="button">Entendido</button>
 </div>
@@ -17,12 +17,12 @@
 <script>
   const banner = document.getElementById('cookie-banner') as HTMLElement;
   if (!banner) { /* noop */ }
-  else if (localStorage.getItem('smartur_consent')) {
+  else if (localStorage.getItem('welltur_consent')) {
     banner.remove();
   } else {
     banner.style.display = 'flex';
     document.getElementById('cookie-accept')?.addEventListener('click', () => {
-      localStorage.setItem('smartur_consent', '1');
+      localStorage.setItem('welltur_consent', '1');
       banner.style.opacity = '0';
       banner.style.transform = 'translateY(8px)';
       setTimeout(() => banner.remove(), 300);

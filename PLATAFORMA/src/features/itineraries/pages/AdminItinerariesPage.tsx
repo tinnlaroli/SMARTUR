@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Route, CheckCircle, XCircle, RefreshCw, Award, Users, Copy, X, Plus, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,7 +71,7 @@ export function AdminItinerariesPage() {
                 success('Certificación eliminada');
             } else {
                 await itineraryAdminApi.certify(it.id_itinerary);
-                success('Ruta certificada SMARTUR ✓');
+                success('Ruta certificada WELLTUR ✓');
             }
             await load();
         } catch {
@@ -142,10 +142,10 @@ export function AdminItinerariesPage() {
                 <Route className="size-5 mt-0.5 shrink-0" style={{ color: COLOR }} />
                 <div>
                     <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>
-                        Rutas y certificación SMARTUR
+                        Rutas y certificación WELLTUR
                     </p>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        Crea rutas oficiales o certifica itinerarios de la comunidad con el sello SMARTUR. Las rutas certificadas aparecen primero en el explorador de la app.
+                        Crea rutas oficiales o certifica itinerarios de la comunidad con el sello WELLTUR. Las rutas certificadas aparecen primero en el explorador de la app.
                     </p>
                 </div>
             </div>

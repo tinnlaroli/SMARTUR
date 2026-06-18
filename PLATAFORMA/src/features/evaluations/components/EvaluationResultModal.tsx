@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
 import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer, FileText, ExternalLink, Download } from 'lucide-react';
 import { evaluationsApi } from '../api/evaluationsApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -83,7 +83,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
 <html lang="${lang}">
 <head>
   <meta charset="UTF-8">
-  <title>${t('evaluation.totalScore')} #${evaluationId} — SMARTUR</title>
+  <title>${t('evaluation.totalScore')} #${evaluationId} — WELLTUR</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; color: #18181b; padding: 2.5rem; max-width: 680px; margin: 0 auto; }
@@ -109,7 +109,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
 <body>
   <div class="header">
     <div>
-      <div class="logo">SMARTUR</div>
+      <div class="logo">WELLTUR</div>
       <div class="meta">Resultado de Evaluación · ID #${evaluationId}</div>
     </div>
   </div>

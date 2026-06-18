@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ComponentType } from 'react';
+﻿import { useEffect, useMemo, useState, type CSSProperties, type ComponentType } from 'react';
 import {
     TrendingUp,
     Star,
@@ -81,8 +81,8 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Analytics se activa una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Analytics se activa una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@welltur.online para más información.'}
                     </p>
                 </div>
             </div>
@@ -232,7 +232,7 @@ export function EmpresaAnalyticsPage() {
                         {[
                             { done: hasProfile, label: 'Completa tu perfil de empresa', href: '/empresa/perfil' },
                             { done: hasServices, label: 'Agrega al menos un servicio', href: '/empresa/servicios' },
-                            { done: false, label: 'Los turistas descubrirán tu empresa en la app SMARTUR (puede tomar unos días)', href: null },
+                            { done: false, label: 'Los turistas descubrirán tu empresa en la app WELLTUR (puede tomar unos días)', href: null },
                         ].map((step, i) => (
                             <div key={i} className="flex items-start gap-3">
                                 {step.done

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 
 const SCREENS = [
     {
@@ -9,7 +9,7 @@ const SCREENS = [
             <div style={{ padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {/* Top bar */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <div style={{ fontSize: 8, fontWeight: 700, color: '#FC478E' }}>SMARTUR</div>
+                    <div style={{ fontSize: 8, fontWeight: 700, color: '#FC478E' }}>WELLTUR</div>
                     <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#984EFD22', border: '1.5px solid #984EFD55' }} />
                 </div>
                 <div style={{ fontSize: 6, color: '#aaa', marginBottom: 4 }}>Lugares para ti hoy ✨</div>

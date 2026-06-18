@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     DEFAULT_WIDGET_INSTANCES,
     WIDGET_REGISTRY_MAP,
@@ -6,7 +6,7 @@ import {
 } from '../widgets/widgetRegistry';
 import { useToast } from '../../../shared/context/ToastContext';
 
-const GRID_STORAGE_KEY = 'smartur-widget-grid-v2';
+const GRID_STORAGE_KEY = 'welltur-widget-grid-v2';
 const MAX_WIDGETS = 12;
 
 function readGrid(): WidgetInstance[] {

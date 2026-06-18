@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import axios from 'axios';
 import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle, Leaf } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
@@ -196,7 +196,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                         </h2>
                         {!isEdit && (
                             <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                El servicio será revisado por el equipo SMARTUR antes de publicarse.
+                                El servicio será revisado por el equipo WELLTUR antes de publicarse.
                             </p>
                         )}
                     </div>
@@ -413,7 +413,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                     <div className="rounded-xl border px-4 py-3"
                                         style={{ background: 'rgba(34,197,94,0.04)', borderColor: '#22c55e30' }}>
                                         <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                                            Al marcar este servicio como de bienestar, quedará en revisión por el equipo SMARTUR
+                                            Al marcar este servicio como de bienestar, quedará en revisión por el equipo WELLTUR
                                             antes de aparecer en las recomendaciones wellness de la app. No afecta tu listado regular.
                                         </p>
                                     </div>
@@ -491,7 +491,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 <AlertCircle className="size-4 shrink-0 mt-0.5" style={{ color: '#F59E0B' }} />
                                 <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                                     Tu servicio iniciará como <strong style={{ color: 'var(--color-text)' }}>En revisión</strong> y
-                                    será publicado en la app una vez que el equipo SMARTUR lo apruebe (1–2 días hábiles).
+                                    será publicado en la app una vez que el equipo WELLTUR lo apruebe (1–2 días hábiles).
                                 </p>
                             </div>
                         )}
@@ -549,8 +549,8 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Los servicios se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Los servicios se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@welltur.online para más información.'}
                     </p>
                 </div>
             </div>

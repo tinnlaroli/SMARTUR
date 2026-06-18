@@ -1,7 +1,7 @@
-import type { EmpresaProfile, AnalyticsResponse } from '../../api/empresaApi';
+﻿import type { EmpresaProfile, AnalyticsResponse } from '../../api/empresaApi';
 import { DASHBOARD_COLORS } from '../../../home/utils/dashboard';
 
-export const EMPRESA_DASHBOARD_STORAGE_KEY = 'smartur-empresa-dashboard-preferences';
+export const EMPRESA_DASHBOARD_STORAGE_KEY = 'welltur-empresa-dashboard-preferences';
 
 export type EmpresaDensityMode = 'comfortable' | 'compact';
 
@@ -159,12 +159,12 @@ export const deriveEmpresaDashboardViewModel = (
         qualityScore,
         qualitySummary:
             qualityScore != null
-                ? `Calificacion SMARTUR: ${qualityScore}/10 para ${profile.name}.`
-                : 'El equipo SMARTUR aún no ha asignado una evaluación de calidad.',
+                ? `Calificacion WELLTUR: ${qualityScore}/10 para ${profile.name}.`
+                : 'El equipo WELLTUR aún no ha asignado una evaluación de calidad.',
         showStatusBanner: profile.status !== 'active',
         statusMessage:
             profile.status === 'suspended'
-                ? 'Tu cuenta está suspendida. Contacta al equipo SMARTUR para más información.'
+                ? 'Tu cuenta está suspendida. Contacta al equipo WELLTUR para más información.'
                 : 'Empresa en revisión. Puedes explorar el portal mientras verificamos tu información.',
     };
 };

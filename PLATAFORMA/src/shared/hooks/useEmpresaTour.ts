@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react';
+﻿import { useCallback, useEffect, useRef } from 'react';
 
-const TOUR_KEY = 'smartur_empresa_tour_v1';
+const TOUR_KEY = 'welltur_empresa_tour_v1';
 
 const kw = (text: string) =>
     `<strong style="color:var(--color-purple)">${text}</strong>`;
@@ -21,7 +21,7 @@ const STEPS: StepText[] = [
     },
     {
         title: 'Mis Servicios',
-        description: `Gestiona los ${kw('servicios turísticos')} de tu empresa: hoteles, restaurantes, tours. Aquí puedes agregar nuevos servicios, editar información y activar o desactivar cada uno. ${dim('Los servicios activos aparecen en la app móvil de SMARTUR.')}`,
+        description: `Gestiona los ${kw('servicios turísticos')} de tu empresa: hoteles, restaurantes, tours. Aquí puedes agregar nuevos servicios, editar información y activar o desactivar cada uno. ${dim('Los servicios activos aparecen en la app móvil de WELLTUR.')}`,
     },
     {
         title: 'Analíticas',
@@ -29,7 +29,7 @@ const STEPS: StepText[] = [
     },
     {
         title: 'Perfil',
-        description: `Consulta y edita la ${kw('información de tu empresa')}: nombre, dirección, teléfono, sector y ubicación. También puedes ver aquí el estado de tu cuenta (activa, en revisión o suspendida). ${dim('Los cambios los valida el equipo SMARTUR antes de publicarse.')}`,
+        description: `Consulta y edita la ${kw('información de tu empresa')}: nombre, dirección, teléfono, sector y ubicación. También puedes ver aquí el estado de tu cuenta (activa, en revisión o suspendida). ${dim('Los cambios los valida el equipo WELLTUR antes de publicarse.')}`,
     },
     {
         title: 'Configuración',
@@ -64,10 +64,10 @@ const TOUR_CSS = `
       0 0 0 1px rgba(var(--rgb-purple-accent), 0.15),
       0 24px 64px rgba(0,0,0,0.18),
       0 4px 16px rgba(var(--rgb-purple-accent), 0.12) !important;
-    animation: smarturTourIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    animation: wellturTourIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     max-width: 380px !important;
   }
-  @keyframes smarturTourIn {
+  @keyframes wellturTourIn {
     from { opacity: 0; transform: scale(0.94) translateY(6px); }
     to   { opacity: 1; transform: scale(1)    translateY(0); }
   }
@@ -150,9 +150,9 @@ export function useEmpresaTour(navigate?: (path: string) => void) {
 
     const startTour = useCallback(async () => {
         try {
-            if (!cssInjected.current && !document.getElementById('smartur-empresa-tour-css')) {
+            if (!cssInjected.current && !document.getElementById('welltur-empresa-tour-css')) {
                 const style = document.createElement('style');
-                style.id = 'smartur-empresa-tour-css';
+                style.id = 'welltur-empresa-tour-css';
                 style.textContent = TOUR_CSS;
                 document.head.appendChild(style);
                 cssInjected.current = true;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '../../../../shared/context/ToastContext';
 import {
     DEFAULT_EMPRESA_WIDGET_INSTANCES,
@@ -6,7 +6,7 @@ import {
     type WidgetInstance,
 } from '../widgets/empresaWidgetRegistry';
 
-const GRID_STORAGE_KEY = 'smartur-empresa-widget-grid-v1';
+const GRID_STORAGE_KEY = 'welltur-empresa-widget-grid-v1';
 const MAX_WIDGETS = 12;
 
 function readGrid(): WidgetInstance[] {

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import { useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -36,7 +36,7 @@ export const NotFound = () => {
     const t = copy[lang as keyof typeof copy] ?? copy.es;
 
     useEffect(() => {
-        document.title = '404 — SMARTUR';
+        document.title = '404 — WELLTUR';
     }, []);
 
     return (
@@ -100,7 +100,7 @@ export const NotFound = () => {
                     onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
                     onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
-                    Smartur
+                    Welltur
                 </Link>
             </div>
         </div>

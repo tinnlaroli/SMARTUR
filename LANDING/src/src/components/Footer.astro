@@ -1,4 +1,4 @@
----
+﻿---
 import logoImage from "../assets/imgs/logo_costado.png";
 import type { Link } from "../types";
 
@@ -81,7 +81,7 @@ const {
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
-                <a href="mailto:smarturutcv@gmail.com">smarturutcv@gmail.com</a>
+                <a href="mailto:wellturutcv@gmail.com">wellturutcv@gmail.com</a>
               </li>
               <li>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -129,7 +129,7 @@ const {
             <div class="app-download">
               <span class="version-tag">{mobileAppVersion}: <span id="footer-app-version">…</span></span>
               <a
-                href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
+                href="https://github.com/tinnlaroli/welltur-movil/releases/latest/download/app-release.apk"
                 class="download-button"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -442,7 +442,7 @@ const {
     const el = document.getElementById("footer-app-version");
     if (!el) return;
     try {
-      const res = await fetch("https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest", {
+      const res = await fetch("https://api.github.com/repos/tinnlaroli/welltur-movil/releases/latest", {
         headers: { Accept: "application/vnd.github+json" },
       });
       if (res.ok) {

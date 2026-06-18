@@ -1,4 +1,4 @@
-/* Shared Design Tokens (Plataforma) — source of truth for the ecosystem */
+﻿/* Shared Design Tokens (Plataforma) — source of truth for the ecosystem */
 :root {
   /* Brand RGB channels */
   --rgb-pink-primary: 252, 71, 142;
@@ -104,8 +104,8 @@
   --color-border: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Modo Smartur ── paleta rosa viejo / verde salvia / mostaza ─────────── */
-[data-theme="smartur"] {
+/* ── Modo Welltur ── paleta rosa viejo / verde salvia / mostaza ─────────── */
+[data-theme="welltur"] {
   --rgb-pink-primary: 205, 97, 132;    /* #cd6184 rosa viejo */
   --rgb-purple-accent: 134, 43, 72;    /* #862b48 vino — estados activos */
   --rgb-cyan-accent: 84, 94, 52;       /* #545e34 verde oliva oscuro */

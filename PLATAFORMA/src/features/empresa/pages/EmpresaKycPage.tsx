@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Upload, FileText, X, Loader2, CheckCircle,
@@ -133,11 +133,11 @@ function StatusBanner({ kyc }: { kyc: KycStatusResponse }) {
                             <ShieldCheck className="size-5" style={{ color: CERT }} />
                         </div>
                         <div>
-                            <p className="font-semibold text-sm" style={{ color: CERT }}>Certificada por SMARTUR</p>
+                            <p className="font-semibold text-sm" style={{ color: CERT }}>Certificada por WELLTUR</p>
                             <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
                                 {kyc.certified_at
                                     ? `Certificación otorgada el ${new Date(kyc.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}.`
-                                    : 'Tu empresa cuenta con la certificación oficial SMARTUR.'
+                                    : 'Tu empresa cuenta con la certificación oficial WELLTUR.'
                                 }
                             </p>
                         </div>
@@ -348,7 +348,7 @@ function SuccessScreen({ onBack }: { onBack: () => void }) {
             </div>
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>Documentos enviados</h2>
             <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-text-alt)' }}>
-                El equipo de SMARTUR revisará tu información en{' '}
+                El equipo de WELLTUR revisará tu información en{' '}
                 <strong style={{ color: 'var(--color-text)' }}>1–3 días hábiles</strong>.
                 Te notificaremos por correo cuando tu cuenta esté activa.
             </p>

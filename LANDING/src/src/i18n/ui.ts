@@ -1,4 +1,4 @@
-export const languages = {
+﻿export const languages = {
   es: "Español",
   en: "English",
   fr: "Français",
@@ -22,13 +22,13 @@ export const ui = {
 
     // Branding
     "header.logo.alt":
-      "Logotipo de SMARTUR - Plataforma de Turismo Inteligente con IA",
+      "Logotipo de WELLTUR - Plataforma de Turismo Inteligente con IA",
 
     // Buttons
     "button.get-started": "Comenzar",
     "button.learn-more": "Saber Más",
     "button.login": "Soy turista",
-    "button.discover": "Descubrir SMARTUR",
+    "button.discover": "Descubrir WELLTUR",
     "button.know-more": "Conoce Más",
     "button.view-plans": "Ver Planes",
     "button.contact": "Contactar",
@@ -37,8 +37,8 @@ export const ui = {
     "hero.title":
       'IA que <span style="color: var(--color-purple)">guía,</span><br><span style="color: var(--color-cyan)">turismo</span> que une.',
     "hero.subtitle":
-      "SMARTUR conecta turistas con experiencias auténticas mediante IA, impulsando a las MiPyMEs de Veracruz en su transformación digital.",
-    "hero.cta": "Sé Parte De SMARTUR",
+      "WELLTUR conecta turistas con experiencias auténticas mediante IA, impulsando a las MiPyMEs de Veracruz en su transformación digital.",
+    "hero.cta": "Sé Parte De WELLTUR",
 
     // About
     "about.title":
@@ -59,7 +59,7 @@ export const ui = {
     "about.values.text":
       "<strong>Ética y Honestidad:</strong> Actuamos con transparencia y fiabilidad.<br/><strong>Empatía e Inclusión:</strong> Diseñamos para todos con respeto y equidad.<br/><strong>Responsabilidad:</strong> Comprometidos con el desarrollo local sostenible.<br/><strong>Seguridad e Imparcialidad:</strong> Garantizamos confianza en cada recomendación.",
     "about.description":
-      "Galardonados con el 'Galardón Turístico Mi Veracruz 2024', SMARTUR utiliza algoritmos avanzados de Machine Learning para ofrecer recomendaciones personalizadas que benefician tanto a viajeros como a negocios locales.",
+      "Galardonados con el 'Galardón Turístico Mi Veracruz 2024', WELLTUR utiliza algoritmos avanzados de Machine Learning para ofrecer recomendaciones personalizadas que benefician tanto a viajeros como a negocios locales.",
     "about.stat1.number": "100",
     "about.stat1.suffix": "+",
     "about.stat1.label": "MiPyMEs Registradas",
@@ -74,19 +74,19 @@ export const ui = {
     "introducing.title":
       'Transformando el <span style="color: var(--color-cyan)">turismo</span> regional con <span style="color: var(--color-purple)">tecnología</span> e <span style="color: var(--color-pink)">innovación</span>',
     "introducing.text":
-      "SMARTUR nace del manual de procedimientos galardonado 'Galardón Turístico Mi Veracruz 2024'. Nuestra misión es empoderar a las MiPyMEs turísticas de las Altas Montañas mediante inteligencia artificial, ofreciendo recomendaciones personalizadas que conectan a viajeros con experiencias auténticas y fortalecen la economía local.",
+      "WELLTUR nace del manual de procedimientos galardonado 'Galardón Turístico Mi Veracruz 2024'. Nuestra misión es empoderar a las MiPyMEs turísticas de las Altas Montañas mediante inteligencia artificial, ofreciendo recomendaciones personalizadas que conectan a viajeros con experiencias auténticas y fortalecen la economía local.",
 
     // Region
     "region.title":
       'Las <span style="color: var(--color-green)">Altas Montañas</span> de Veracruz',
     "region.text":
-      "Una región rica en cultura, naturaleza y tradiciones. Desde pueblos mágicos hasta paisajes montañosos impresionantes, Las Altas Montañas ofrece experiencias turísticas únicas que SMARTUR ayuda a descubrir y promover.",
+      "Una región rica en cultura, naturaleza y tradiciones. Desde pueblos mágicos hasta paisajes montañosos impresionantes, Las Altas Montañas ofrece experiencias turísticas únicas que WELLTUR ayuda a descubrir y promover.",
 
     // Technology
     "tech.title":
       '<span style="color: var(--color-purple)">Tecnología</span> que impulsa el <span style="color: var(--color-cyan)">turismo</span>',
     "tech.text":
-      "SMARTUR utiliza algoritmos de Machine Learning para analizar preferencias, comportamientos y contextos, generando recomendaciones turísticas personalizadas que benefician tanto a viajeros como a negocios locales.",
+      "WELLTUR utiliza algoritmos de Machine Learning para analizar preferencias, comportamientos y contextos, generando recomendaciones turísticas personalizadas que benefician tanto a viajeros como a negocios locales.",
     "tech.feature1.title": "Recomendaciones Personalizadas",
     "tech.feature1.desc":
       "Algoritmos de IA que aprenden de las preferencias de cada usuario para sugerir experiencias únicas y relevantes.",
@@ -123,7 +123,7 @@ export const ui = {
       "Qué están buscando los turistas en las Altas Montañas para que sepas qué vender más.",
     "tech.partner.feature3.title": "Posicionamiento de Marca Local",
     "tech.partner.feature3.desc":
-      "Cómo SMARTUR te hace destacar frente a las grandes cadenas internacionales.",
+      "Cómo WELLTUR te hace destacar frente a las grandes cadenas internacionales.",
     "tech.partner.feature4.title": "Continuidad de Negocio",
     "tech.partner.feature4.desc":
       "Garantía de que su escaparate digital siempre estará activo y vendiendo.",
@@ -133,7 +133,7 @@ export const ui = {
       'Nuestro <span style="color: var(--color-orange)">camino</span>',
     "timeline.step1.title": "Galardón Turístico Mi Veracruz 2024",
     "timeline.step1.text":
-      "SMARTUR nace del manual de procedimientos galardonado, reconocido por su innovación en la promoción del turismo regional.",
+      "WELLTUR nace del manual de procedimientos galardonado, reconocido por su innovación en la promoción del turismo regional.",
     "timeline.step2.title": "Desarrollo de algoritmos de IA",
     "timeline.step2.text":
       "Creación de un sistema de recomendaciones inteligente basado en Machine Learning, diseñado específicamente para el contexto turístico de Las Altas Montañas.",
@@ -157,7 +157,7 @@ export const ui = {
 
     // Pricing
     "pricing.title":
-      'Planes <span style="color: var(--color-pink)">SMARTUR</span>',
+      'Planes <span style="color: var(--color-pink)">WELLTUR</span>',
     "pricing.subtitle": "Soluciones para MiPyMEs turísticas",
     "pricing.discount": "-20%",
     "pricing.basic.title": "Básico",
@@ -207,7 +207,7 @@ export const ui = {
     "benefits.title":
       '¿Por qué <span style="color: var(--color-green)">elegirnos?</span>',
     "benefits.subtitle":
-      'Beneficios de pertenecer a <span style="color: var(--color-cyan)">SMARTUR</span>',
+      'Beneficios de pertenecer a <span style="color: var(--color-cyan)">WELLTUR</span>',
     "benefits.improvements.title":
       'Mejoras claras con <span style="color: var(--color-purple)">IA</span>',
 
@@ -224,7 +224,7 @@ export const ui = {
     "testimonials.item1.role": "Propietario",
     "testimonials.item1.business": "Café Las Montañas",
     "testimonials.item1.content":
-      "Desde que nos unimos a SMARTUR, nuestras reservas aumentaron un 45%. La plataforma nos conecta con turistas que realmente valoran la experiencia auténtica que ofrecemos.",
+      "Desde que nos unimos a WELLTUR, nuestras reservas aumentaron un 45%. La plataforma nos conecta con turistas que realmente valoran la experiencia auténtica que ofrecemos.",
     "testimonials.item2.name": "María González",
     "testimonials.item2.role": "Gerente",
     "testimonials.item2.business": "Hotel Vista Hermosa",
@@ -234,7 +234,7 @@ export const ui = {
     "testimonials.item3.role": "Guía Turístico",
     "testimonials.item3.business": "Aventuras Veracruz",
     "testimonials.item3.content":
-      "SMARTUR transformó mi negocio. Ahora puedo enfocarme en ofrecer experiencias memorables mientras la plataforma se encarga de conectarme con los viajeros adecuados.",
+      "WELLTUR transformó mi negocio. Ahora puedo enfocarme en ofrecer experiencias memorables mientras la plataforma se encarga de conectarme con los viajeros adecuados.",
 
     // New Pricing Plans
     "pricing.new.title":
@@ -270,20 +270,20 @@ export const ui = {
 
     // FAQs
     "faqs.title": "Preguntas Frecuentes",
-    "faqs.subtitle": "Respuestas a tus dudas sobre SMARTUR",
-    "faq1.question": "¿Qué es SMARTUR?",
+    "faqs.subtitle": "Respuestas a tus dudas sobre WELLTUR",
+    "faq1.question": "¿Qué es WELLTUR?",
     "faq1.answer":
-      "SMARTUR es una plataforma de recomendación turística inteligente que utiliza IA para conectar a viajeros con experiencias auténticas en Las Altas Montañas de Veracruz, mientras apoya a las MiPyMEs locales.",
+      "WELLTUR es una plataforma de recomendación turística inteligente que utiliza IA para conectar a viajeros con experiencias auténticas en Las Altas Montañas de Veracruz, mientras apoya a las MiPyMEs locales.",
     "faq2.question": "¿Cómo funciona el sistema de recomendaciones?",
     "faq2.answer":
       "Utilizamos algoritmos de Machine Learning que analizan preferencias, comportamientos y contextos para generar sugerencias personalizadas de hoteles, restaurantes y actividades turísticas.",
     "faq3.question": "¿Es gratuito para los negocios locales?",
     "faq3.answer":
-      "SMARTUR ofrece planes accesibles diseñados específicamente para MiPyMEs, con opciones que se adaptan a diferentes necesidades y presupuestos.",
+      "WELLTUR ofrece planes accesibles diseñados específicamente para MiPyMEs, con opciones que se adaptan a diferentes necesidades y presupuestos.",
     "faq4.question": "¿Mis datos están seguros?",
     "faq4.answer":
       "Sí. Implementamos estándares de seguridad y privacidad de clase mundial para proteger toda la información de usuarios y negocios.",
-    "faq5.question": "¿Cómo puedo integrar mi negocio a SMARTUR?",
+    "faq5.question": "¿Cómo puedo integrar mi negocio a WELLTUR?",
     "faq5.answer":
       "Contáctanos a través del formulario en nuestra página. Nuestro equipo te guiará en el proceso de registro y configuración de tu perfil empresarial.",
 
@@ -302,7 +302,7 @@ export const ui = {
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
     // Tab visibility
-    "tab.away": "¿A dónde fuiste?  Regresa a SMARTUR",
+    "tab.away": "¿A dónde fuiste?  Regresa a WELLTUR",
 
     // ActionBridge
     "action.tourist.label": "Soy Turista",
@@ -350,13 +350,13 @@ export const ui = {
     "nav.contact": "Contact",
 
     // Branding
-    "header.logo.alt": "SMARTUR Logo - Intelligent Tourism AI Platform",
+    "header.logo.alt": "WELLTUR Logo - Intelligent Tourism AI Platform",
 
     // Buttons
     "button.get-started": "Get Started",
     "button.learn-more": "Learn More",
     "button.login": "I'm a Tourist",
-    "button.discover": "Discover SMARTUR",
+    "button.discover": "Discover WELLTUR",
     "button.know-more": "Learn More",
     "button.view-plans": "View Plans",
     "button.contact": "Contact",
@@ -365,7 +365,7 @@ export const ui = {
     "benefits.title":
       'Why <span style="color: var(--color-green)">Choose Us?</span>',
     "benefits.subtitle":
-      'Benefits of joining <span style="color: var(--color-cyan)">SMARTUR</span>',
+      'Benefits of joining <span style="color: var(--color-cyan)">WELLTUR</span>',
     "benefits.improvements.title":
       'Clear improvements with <span style="color: var(--color-purple)">AI</span>',
 
@@ -379,8 +379,8 @@ export const ui = {
     "hero.title":
       'AI that <span style="color: var(--color-purple)">guides,</span><br><span style="color: var(--color-cyan)">tourism</span> that unites.',
     "hero.subtitle":
-      "SMARTUR connects tourists with authentic experiences through AI, empowering Veracruz SMEs in their digital transformation.",
-    "hero.cta": "Discover SMARTUR",
+      "WELLTUR connects tourists with authentic experiences through AI, empowering Veracruz SMEs in their digital transformation.",
+    "hero.cta": "Discover WELLTUR",
 
     // Testimonials
     "testimonials.title":
@@ -389,7 +389,7 @@ export const ui = {
     "testimonials.item1.role": "Owner",
     "testimonials.item1.business": "Café Las Montañas",
     "testimonials.item1.content":
-      "Since joining SMARTUR, our bookings increased by 45%. The platform connects us with tourists who truly value the authentic experience we offer.",
+      "Since joining WELLTUR, our bookings increased by 45%. The platform connects us with tourists who truly value the authentic experience we offer.",
     "testimonials.item2.name": "María González",
     "testimonials.item2.role": "Manager",
     "testimonials.item2.business": "Hotel Vista Hermosa",
@@ -399,7 +399,7 @@ export const ui = {
     "testimonials.item3.role": "Tour Guide",
     "testimonials.item3.business": "Aventuras Veracruz",
     "testimonials.item3.content":
-      "SMARTUR transformed my business. Now I can focus on offering memorable experiences while the platform takes care of connecting me with the right travelers.",
+      "WELLTUR transformed my business. Now I can focus on offering memorable experiences while the platform takes care of connecting me with the right travelers.",
 
     // About
     "about.title": 'Who <span style="color: var(--color-pink)">We Are</span>',
@@ -419,7 +419,7 @@ export const ui = {
     "about.values.text":
       "<strong>Ethics & Honesty:</strong> We act with transparency and reliability.<br/><strong>Empathy & Inclusion:</strong> We design for everyone with respect and equity.<br/><strong>Responsibility:</strong> Committed to sustainable local development.<br/><strong>Security & Impartiality:</strong> We guarantee trust in every recommendation.",
     "about.description":
-      "Awarded the 'Mi Veracruz Tourism Award 2024', SMARTUR uses advanced Machine Learning algorithms to offer personalized recommendations that benefit both travelers and local businesses.",
+      "Awarded the 'Mi Veracruz Tourism Award 2024', WELLTUR uses advanced Machine Learning algorithms to offer personalized recommendations that benefit both travelers and local businesses.",
     "about.stat1.number": "100",
     "about.stat1.suffix": "+",
     "about.stat1.label": "Registered SMEs",
@@ -434,19 +434,19 @@ export const ui = {
     "introducing.title":
       'Transforming regional <span style="color: var(--color-cyan)">tourism</span> with <span style="color: var(--color-purple)">technology</span> and <span style="color: var(--color-pink)">innovation</span>',
     "introducing.text":
-      "SMARTUR was born from the award-winning procedures manual 'Mi Veracruz Tourism Award 2024'. Our mission is to empower tourism SMEs in the High Mountains through artificial intelligence, offering personalized recommendations that connect travelers with authentic experiences and strengthen the local economy.",
+      "WELLTUR was born from the award-winning procedures manual 'Mi Veracruz Tourism Award 2024'. Our mission is to empower tourism SMEs in the High Mountains through artificial intelligence, offering personalized recommendations that connect travelers with authentic experiences and strengthen the local economy.",
 
     // Region
     "region.title":
       'The <span style="color: var(--color-green)">High Mountains</span> of Veracruz',
     "region.text":
-      "A region rich in culture, nature, and traditions. From magical towns to breathtaking mountain landscapes, the High Mountains offer unique tourism experiences that SMARTUR helps discover and promote.",
+      "A region rich in culture, nature, and traditions. From magical towns to breathtaking mountain landscapes, the High Mountains offer unique tourism experiences that WELLTUR helps discover and promote.",
 
     // Technology
     "tech.title":
       '<span style="color: var(--color-purple)">Technology</span> that drives <span style="color: var(--color-cyan)">tourism</span>',
     "tech.text":
-      "SMARTUR uses Machine Learning algorithms to analyze preferences, behaviors, and contexts, generating personalized tourism recommendations that benefit both travelers and local businesses.",
+      "WELLTUR uses Machine Learning algorithms to analyze preferences, behaviors, and contexts, generating personalized tourism recommendations that benefit both travelers and local businesses.",
     "tech.feature1.title": "Personalized Recommendations",
     "tech.feature1.desc":
       "AI algorithms that learn from each user's preferences to suggest unique and relevant experiences.",
@@ -483,7 +483,7 @@ export const ui = {
       "What tourists are looking for in the High Mountains so you know what to sell more.",
     "tech.partner.feature3.title": "Local Brand Positioning",
     "tech.partner.feature3.desc":
-      "How SMARTUR makes you stand out against large international chains.",
+      "How WELLTUR makes you stand out against large international chains.",
     "tech.partner.feature4.title": "Business Continuity",
     "tech.partner.feature4.desc":
       "Guarantee that your digital showcase will always be active and selling.",
@@ -493,7 +493,7 @@ export const ui = {
       'Our <span style="color: var(--color-orange)">Journey</span>',
     "timeline.step1.title": "Mi Veracruz Tourism Award 2024",
     "timeline.step1.text":
-      "SMARTUR was born from the award-winning procedures manual, recognized for its innovation in promoting regional tourism.",
+      "WELLTUR was born from the award-winning procedures manual, recognized for its innovation in promoting regional tourism.",
     "timeline.step2.title": "AI Algorithm Development",
     "timeline.step2.text":
       "Creation of an intelligent recommendation system based on Machine Learning, specifically designed for the tourism context of the High Mountains.",
@@ -517,7 +517,7 @@ export const ui = {
 
     // Pricing
     "pricing.title":
-      'SMARTUR <span style="color: var(--color-pink)">Plans</span>',
+      'WELLTUR <span style="color: var(--color-pink)">Plans</span>',
     "pricing.subtitle": "Solutions for tourism SMEs",
     "pricing.discount": "-20%",
 
@@ -598,20 +598,20 @@ export const ui = {
 
     // FAQs
     "faqs.title": "Frequently Asked Questions",
-    "faqs.subtitle": "Answers to your questions about SMARTUR",
-    "faq1.question": "What is SMARTUR?",
+    "faqs.subtitle": "Answers to your questions about WELLTUR",
+    "faq1.question": "What is WELLTUR?",
     "faq1.answer":
-      "SMARTUR is an intelligent tourism recommendation platform that uses AI to connect travelers with authentic experiences in the High Mountains of Veracruz, while supporting local SMEs.",
+      "WELLTUR is an intelligent tourism recommendation platform that uses AI to connect travelers with authentic experiences in the High Mountains of Veracruz, while supporting local SMEs.",
     "faq2.question": "How does the recommendation system work?",
     "faq2.answer":
       "We use Machine Learning algorithms that analyze preferences, behaviors, and contexts to generate personalized suggestions for hotels, restaurants, and tourism activities.",
     "faq3.question": "Is it free for local businesses?",
     "faq3.answer":
-      "SMARTUR offers accessible plans specifically designed for SMEs, with options that adapt to different needs and budgets.",
+      "WELLTUR offers accessible plans specifically designed for SMEs, with options that adapt to different needs and budgets.",
     "faq4.question": "Is my data secure?",
     "faq4.answer":
       "Yes. We implement world-class security and privacy standards to protect all user and business information.",
-    "faq5.question": "How can I integrate my business into SMARTUR?",
+    "faq5.question": "How can I integrate my business into WELLTUR?",
     "faq5.answer":
       "Contact us through the form on our page. Our team will guide you through the registration process and business profile setup.",
 
@@ -630,7 +630,7 @@ export const ui = {
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
     // Tab visibility
-    "tab.away": "Where did you go?  Come back to SMARTUR",
+    "tab.away": "Where did you go?  Come back to WELLTUR",
 
     // ActionBridge
     "action.tourist.label": "I'm a Tourist",
@@ -674,7 +674,7 @@ export const ui = {
 
     // Branding
     "header.logo.alt":
-      "Logo SMARTUR - Plateforme de Tourisme Intelligent avec IA",
+      "Logo WELLTUR - Plateforme de Tourisme Intelligent avec IA",
     "nav.about": "À propos",
     "nav.technology": "Bénéfices",
     "nav.destination": "Destination",
@@ -685,7 +685,7 @@ export const ui = {
     "button.get-started": "Commencer",
     "button.learn-more": "En savoir plus",
     "button.login": "Je suis touriste",
-    "button.discover": "Découvrir SMARTUR",
+    "button.discover": "Découvrir WELLTUR",
     "button.know-more": "En savoir plus",
     "button.view-plans": "Voir les plans",
     "button.contact": "Contacter",
@@ -694,7 +694,7 @@ export const ui = {
     "benefits.title":
       'Pourquoi <span style="color: var(--color-green)">nous choisir ?</span>',
     "benefits.subtitle":
-      'Avantages de rejoindre <span style="color: var(--color-cyan)">SMARTUR</span>',
+      'Avantages de rejoindre <span style="color: var(--color-cyan)">WELLTUR</span>',
     "benefits.improvements.title":
       'Des améliorations claires avec l\'<span style="color: var(--color-purple)">IA</span>',
 
@@ -708,8 +708,8 @@ export const ui = {
     "hero.title":
       'L\'IA qui <span style="color: var(--color-purple)">guide,</span><br>le <span style="color: var(--color-cyan)">tourisme</span> qui unit.',
     "hero.subtitle":
-      "SMARTUR connecte les touristes avec des expériences authentiques grâce à l'IA, en soutenant les PME de Veracruz dans leur transformation numérique.",
-    "hero.cta": "Découvrir SMARTUR",
+      "WELLTUR connecte les touristes avec des expériences authentiques grâce à l'IA, en soutenant les PME de Veracruz dans leur transformation numérique.",
+    "hero.cta": "Découvrir WELLTUR",
 
     // Testimonials
     "testimonials.title":
@@ -718,7 +718,7 @@ export const ui = {
     "testimonials.item1.role": "Propriétaire",
     "testimonials.item1.business": "Café Las Montañas",
     "testimonials.item1.content":
-      "Depuis que nous avons rejoint SMARTUR, nos réservations ont augmenté de 45 %. La plateforme nous connecte avec des touristes qui apprécient vraiment l'expérience authentique que nous offrons.",
+      "Depuis que nous avons rejoint WELLTUR, nos réservations ont augmenté de 45 %. La plateforme nous connecte avec des touristes qui apprécient vraiment l'expérience authentique que nous offrons.",
     "testimonials.item2.name": "María González",
     "testimonials.item2.role": "Gérante",
     "testimonials.item2.business": "Hôtel Vista Hermosa",
@@ -728,7 +728,7 @@ export const ui = {
     "testimonials.item3.role": "Guide Touristique",
     "testimonials.item3.business": "Aventures Veracruz",
     "testimonials.item3.content":
-      "SMARTUR a transformé mon entreprise. Maintenant, je peux me concentrer sur l'offre d'expériences mémorables pendant que la plateforme s'occupe de me connecter avec les bons voyageurs.",
+      "WELLTUR a transformé mon entreprise. Maintenant, je peux me concentrer sur l'offre d'expériences mémorables pendant que la plateforme s'occupe de me connecter avec les bons voyageurs.",
 
     // About
     "about.title":
@@ -749,7 +749,7 @@ export const ui = {
     "about.values.text":
       "<strong>Éthique et Honnêteté :</strong> Nous agissons avec transparence et fiabilité.<br/><strong>Empathie et Inclusion :</strong> Nous concevons pour tous avec respect et équité.<br/><strong>Responsabilité :</strong> Engagés dans le développement local durable.<br/><strong>Sécurité et Impartialité :</strong> Nous garantissons la confiance dans chaque recommandation.",
     "about.description":
-      "Lauréat du 'Prix Touristique Mi Veracruz 2024', SMARTUR utilise des algorithmes avancés de Machine Learning pour offrir des recommandations personnalisées qui profitent aux voyageurs et aux entreprises locales.",
+      "Lauréat du 'Prix Touristique Mi Veracruz 2024', WELLTUR utilise des algorithmes avancés de Machine Learning pour offrir des recommandations personnalisées qui profitent aux voyageurs et aux entreprises locales.",
     "about.stat1.number": "100",
     "about.stat1.suffix": "+",
     "about.stat1.label": "PME Enregistrées",
@@ -764,13 +764,13 @@ export const ui = {
     "introducing.title":
       'Transformer le <span style="color: var(--color-cyan)">tourisme</span> régional avec la <span style="color: var(--color-purple)">technologie</span> et l\'<span style="color: var(--color-pink)">innovation</span>',
     "introducing.text":
-      "SMARTUR est né du manuel de procédures primé 'Prix Touristique Mi Veracruz 2024'. Notre mission est d'autonomiser les PME touristiques des Hautes Montagnes grâce à l'intelligence artificielle, en offrant des recommandations personnalisées qui connectent les voyageurs avec des expériences authentiques et renforcent l'économie locale.",
+      "WELLTUR est né du manuel de procédures primé 'Prix Touristique Mi Veracruz 2024'. Notre mission est d'autonomiser les PME touristiques des Hautes Montagnes grâce à l'intelligence artificielle, en offrant des recommandations personnalisées qui connectent les voyageurs avec des expériences authentiques et renforcent l'économie locale.",
 
     // Region
     "region.title":
       'Les <span style="color: var(--color-green)">Hautes Montagnes</span> de Veracruz',
     "region.text":
-      "Une région riche en culture, nature et traditions. Des villages magiques aux paysages montagneux époustouflants, les Hautes Montagnes offrent des expériences touristiques uniques que SMARTUR aide à découvrir et promouvoir.",
+      "Une région riche en culture, nature et traditions. Des villages magiques aux paysages montagneux époustouflants, les Hautes Montagnes offrent des expériences touristiques uniques que WELLTUR aide à découvrir et promouvoir.",
 
     "video.ariaLabel":
       "Vidéo explorant la richesse des Hautes Montagnes de Veracruz",
@@ -780,7 +780,7 @@ export const ui = {
     "tech.title":
       '<span style="color: var(--color-purple)">Technologie</span> qui stimule le <span style="color: var(--color-cyan)">tourisme</span>',
     "tech.text":
-      "SMARTUR utilise des algorithmes de Machine Learning pour analyser les préférences, les comportements et les contextes, générant des recommandations touristiques personnalisées qui profitent aux voyageurs et aux entreprises locales.",
+      "WELLTUR utilise des algorithmes de Machine Learning pour analyser les préférences, les comportements et les contextes, générant des recommandations touristiques personnalisées qui profitent aux voyageurs et aux entreprises locales.",
     "tech.feature1.title": "Recommandations Personnalisées",
     "tech.feature1.desc":
       "Algorithmes d'IA qui apprennent des préférences de chaque utilisateur pour suggérer des expériences uniques et pertinentes.",
@@ -817,7 +817,7 @@ export const ui = {
       "Ce que les touristes recherchent dans les Hautes Montagnes pour savoir quoi vendre le plus.",
     "tech.partner.feature3.title": "Positionnement de Marque Locale",
     "tech.partner.feature3.desc":
-      "Comment SMARTUR vous permet de vous démarquer face aux grandes chaînes internationales.",
+      "Comment WELLTUR vous permet de vous démarquer face aux grandes chaînes internationales.",
     "tech.partner.feature4.title": "Continuité des Affaires",
     "tech.partner.feature4.desc":
       "Garantie que votre vitrine numérique sera toujours active et vendeuse.",
@@ -827,7 +827,7 @@ export const ui = {
       'Notre <span style="color: var(--color-orange)">Parcours</span>',
     "timeline.step1.title": "Prix Touristique Mi Veracruz 2024",
     "timeline.step1.text":
-      "SMARTUR est né du manuel de procédures primé, reconnu pour son innovation dans la promotion du tourisme régional.",
+      "WELLTUR est né du manuel de procédures primé, reconnu pour son innovation dans la promotion du tourisme régional.",
     "timeline.step2.title": "Développement d'algorithmes IA",
     "timeline.step2.text":
       "Création d'un système de recommandations intelligent basé sur le Machine Learning, spécifiquement conçu pour le contexte touristique des Hautes Montagnes.",
@@ -851,7 +851,7 @@ export const ui = {
 
     // Pricing
     "pricing.title":
-      'Plans <span style="color: var(--color-pink)">SMARTUR</span>',
+      'Plans <span style="color: var(--color-pink)">WELLTUR</span>',
     "pricing.subtitle": "Solutions pour les PME touristiques",
     "pricing.discount": "-20%",
 
@@ -926,7 +926,7 @@ export const ui = {
     "footer.address": "Avenida Universidad 350, 94910 Cuitláhuac, Ver.",
 
     // Tab visibility
-    "tab.away": "Où êtes-vous allé(e) ? Revenez sur SMARTUR",
+    "tab.away": "Où êtes-vous allé(e) ? Revenez sur WELLTUR",
 
     // ActionBridge
     "action.tourist.label": "Je suis touriste",
@@ -962,20 +962,20 @@ export const ui = {
 
     // FAQs
     "faqs.title": "Foire Aux Questions",
-    "faqs.subtitle": "Réponses à vos questions sur SMARTUR",
-    "faq1.question": "Qu'est-ce que SMARTUR ?",
+    "faqs.subtitle": "Réponses à vos questions sur WELLTUR",
+    "faq1.question": "Qu'est-ce que WELLTUR ?",
     "faq1.answer":
-      "SMARTUR est une plateforme de recommandation touristique intelligente qui utilise l'IA pour connecter les voyageurs avec des expériences authentiques dans les Hautes Montagnes de Veracruz, tout en soutenant les PME locales.",
+      "WELLTUR est une plateforme de recommandation touristique intelligente qui utilise l'IA pour connecter les voyageurs avec des expériences authentiques dans les Hautes Montagnes de Veracruz, tout en soutenant les PME locales.",
     "faq2.question": "Comment fonctionne le système de recommandations ?",
     "faq2.answer":
       "Nous utilisons des algorithmes de Machine Learning qui analysent les préférences, les comportements et les contextes pour générer des suggestions personnalisées d'hôtels, de restaurants et d'activités touristiques.",
     "faq3.question": "Est-ce gratuit pour les entreprises locales ?",
     "faq3.answer":
-      "SMARTUR propose des plans accessibles conçus spécifiquement pour les PME, avec des options qui s'adaptent à différents besoins et budgets.",
+      "WELLTUR propose des plans accessibles conçus spécifiquement pour les PME, avec des options qui s'adaptent à différents besoins et budgets.",
     "faq4.question": "Mes données sont-elles en sécurité ?",
     "faq4.answer":
       "Oui. Nous mettons en œuvre des normes de sécurité et de confidentialité de classe mondiale pour protéger toutes les informations des utilisateurs et des entreprises.",
-    "faq5.question": "Comment puis-je intégrer mon entreprise à SMARTUR ?",
+    "faq5.question": "Comment puis-je intégrer mon entreprise à WELLTUR ?",
     "faq5.answer":
       "Contactez-nous via le formulaire sur notre page. Notre équipe vous guidera dans le processus d'inscription et de configuration de votre profil d'entreprise.",
   },

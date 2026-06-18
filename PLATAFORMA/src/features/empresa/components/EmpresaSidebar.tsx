@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+﻿import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
     Calendar, MessageSquare, MessageSquareDiff, ShieldCheck, HelpCircle,
@@ -48,7 +48,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
         { id: 'messages',     label: 'Mensajes',             icon: MessageSquare,    path: '/empresa/mensajes' },
         { id: 'analytics',    label: 'Estadísticas',         icon: BarChart3,        path: '/empresa/analytics' },
         { id: 'faqs',         label: 'Preguntas Frecuentes', icon: HelpCircle,       path: '/empresa/faqs' },
-        { id: 'verificacion', label: 'Oficio SMARTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
+        { id: 'verificacion', label: 'Oficio WELLTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
         { id: 'changes',      label: 'Aclaraciones',         icon: MessageSquareDiff,path: '/empresa/cambios' },
         { id: 'profile',      label: 'Perfil',               icon: UserCircle,       path: '/empresa/perfil' },
         { id: 'settings',     label: 'Configuración',        icon: Settings,         path: '/empresa/configuracion' },
@@ -102,8 +102,8 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                         {isCollapsed ? (
                             <a key="icon-link" href="/" className="shrink-0">
                                 <motion.img
-                                    src="/image.png"
-                                    alt="Smartur"
+                                    src="/wellturLogo.png"
+                                    alt="Welltur"
                                     initial={{ opacity: 0, scale: 0.7 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.7 }}
@@ -120,7 +120,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                     transition={{ duration: 0.2 }}
                                     className="flex items-center gap-2"
                                 >
-                                    <img src="/smartur.png" alt="Smartur" className="h-20 w-auto object-contain" />
+                                    <img src="/wellturLogo.png" alt="Welltur" className="h-20 w-auto object-contain" />
                                     <span className="text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
                                         {t('empresa.sidebar.badge')}
                                     </span>

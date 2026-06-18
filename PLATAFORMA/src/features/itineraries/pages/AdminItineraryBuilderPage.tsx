@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, MapPin, Building2, Plus, Trash2,
@@ -249,7 +249,7 @@ export function AdminItineraryBuilderPage() {
                                         style={{ accentColor: COLOR }}
                                     />
                                     <span className="text-sm" style={{ color: 'var(--color-text)' }}>
-                                        Certificada SMARTUR
+                                        Certificada WELLTUR
                                         <span
                                             className="ml-1.5 text-[10px] font-bold uppercase tracking-wide rounded-full px-1.5 py-0.5"
                                             style={{ background: `${COLOR}20`, color: COLOR }}

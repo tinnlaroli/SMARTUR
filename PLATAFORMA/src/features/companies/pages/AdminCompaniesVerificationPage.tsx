@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
     RefreshCw, X, ShieldX, MapPin,
@@ -53,7 +53,7 @@ interface PendingCompany {
     sector_name: string | null;
     location_name: string | null;
     id_location: number | null;
-    smartur_validation_certificate_url: string | null;
+    welltur_validation_certificate_url: string | null;
     certificate_issued_at: string | null;
     is_certified: boolean;
     certified_at: string | null;

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef } from 'react';
+﻿import { useCallback, useEffect, useRef } from 'react';
 import type { LanguageCode } from '../../contexts/LanguageContext';
 
-const TOUR_KEY = 'smartur_dashboard_tour_v2';
+const TOUR_KEY = 'welltur_dashboard_tour_v2';
 
 const kw = (text: string) =>
     `<strong style="color:var(--color-purple)">${text}</strong>`;
@@ -14,7 +14,7 @@ type StepText = { title: string; description: string };
 const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     es: [
         {
-            title: '✦ Bienvenido a SMARTUR Admin',
+            title: '✦ Bienvenido a WELLTUR Admin',
             description: `Este tour rápido te guiará por los módulos del panel. Usa ${kw('→ / ←')} para avanzar o retroceder, ${kw('Esc')} para salir. ${dim('El tour navega automáticamente a cada módulo.')}`,
         },
         {
@@ -79,7 +79,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
         },
         {
             title: 'Rutas Certificadas',
-            description: `Gestiona itinerarios públicos y otorga el ${kw('sello SMARTUR')} a las mejores rutas de la comunidad. Las rutas certificadas tienen prioridad en el explorador. ${dim('Selección masiva disponible con checkboxes.')}`,
+            description: `Gestiona itinerarios públicos y otorga el ${kw('sello WELLTUR')} a las mejores rutas de la comunidad. Las rutas certificadas tienen prioridad en el explorador. ${dim('Selección masiva disponible con checkboxes.')}`,
         },
         {
             title: 'Configuración',
@@ -88,7 +88,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     ],
     en: [
         {
-            title: '✦ Welcome to SMARTUR Admin',
+            title: '✦ Welcome to WELLTUR Admin',
             description: `This quick tour walks you through the main modules. Use ${kw('→ / ←')} to navigate or ${kw('Esc')} to exit. ${dim('The tour automatically navigates to each module.')}`,
         },
         {
@@ -153,7 +153,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
         },
         {
             title: 'Certified Routes',
-            description: `Manage public itineraries and award the ${kw('SMARTUR badge')} to the best community routes. Certified routes get priority in the explorer. ${dim('Bulk selection available with checkboxes.')}`,
+            description: `Manage public itineraries and award the ${kw('WELLTUR badge')} to the best community routes. Certified routes get priority in the explorer. ${dim('Bulk selection available with checkboxes.')}`,
         },
         {
             title: 'Settings',
@@ -162,7 +162,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
     ],
     fr: [
         {
-            title: '✦ Bienvenue sur SMARTUR Admin',
+            title: '✦ Bienvenue sur WELLTUR Admin',
             description: `Cette visite rapide vous guide à travers les modules. Utilisez ${kw('→ / ←')} pour naviguer ou ${kw('Échap')} pour quitter. ${dim('Le tour navigue automatiquement vers chaque module.')}`,
         },
         {
@@ -227,7 +227,7 @@ const STEPS_BY_LANG: Record<LanguageCode, StepText[]> = {
         },
         {
             title: 'Itinéraires Certifiés',
-            description: `Gérez les itinéraires publics et attribuez le ${kw('label SMARTUR')} aux meilleures routes communautaires. Les routes certifiées sont prioritaires dans l'explorateur. ${dim('Sélection multiple disponible avec les cases à cocher.')}`,
+            description: `Gérez les itinéraires publics et attribuez le ${kw('label WELLTUR')} aux meilleures routes communautaires. Les routes certifiées sont prioritaires dans l'explorateur. ${dim('Sélection multiple disponible avec les cases à cocher.')}`,
         },
         {
             title: 'Paramètres',
@@ -292,10 +292,10 @@ const TOUR_CSS = `
       0 0 0 1px rgba(var(--rgb-purple-accent), 0.15),
       0 24px 64px rgba(0,0,0,0.18),
       0 4px 16px rgba(var(--rgb-purple-accent), 0.12) !important;
-    animation: smarturTourIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    animation: wellturTourIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
     max-width: 380px !important;
   }
-  @keyframes smarturTourIn {
+  @keyframes wellturTourIn {
     from { opacity: 0; transform: scale(0.94) translateY(6px); }
     to   { opacity: 1; transform: scale(1)    translateY(0); }
   }
@@ -386,9 +386,9 @@ export function useDashboardTour(
     const startTour = useCallback(async () => {
         try {
             // CSS injection (once)
-            if (!cssInjected.current && !document.getElementById('smartur-tour-css')) {
+            if (!cssInjected.current && !document.getElementById('welltur-tour-css')) {
                 const style = document.createElement('style');
-                style.id = 'smartur-tour-css';
+                style.id = 'welltur-tour-css';
                 style.textContent = TOUR_CSS;
                 document.head.appendChild(style);
                 cssInjected.current = true;

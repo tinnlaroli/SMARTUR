@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageSquare, Send, RefreshCw, Lock } from 'lucide-react';
 import { chatEmpresaApi, type EmpresaConversation, type ChatMessage } from '../api/chatApi';
 import { empresaApi } from '../api/empresaApi';
@@ -26,8 +26,8 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Los mensajes se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Los mensajes se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@welltur.online para más información.'}
                     </p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Instagram, Mail, Phone, MapPin, Download } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
 
     useEffect(() => {
         const controller = new AbortController();
-        fetch('https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest', { signal: controller.signal })
+        fetch('https://api.github.com/repos/tinnlaroli/welltur-movil/releases/latest', { signal: controller.signal })
             .then((res) => { if (res.ok) return res.json(); })
             .then((data) => { if (data?.tag_name) setLatestVersion(data.tag_name); })
             .catch(() => {});
@@ -56,8 +56,8 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                     <div className="flex flex-col gap-6">
                         <span className="block w-44">
                             <img
-                                src="/smartur.png"
-                                alt="SMARTUR"
+                                src="/welltur.png"
+                                alt="WELLTUR"
                                 className="h-auto w-full object-contain"
                                 style={{ filter: 'var(--logo-filter, none)' }}
                             />
@@ -111,13 +111,13 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                 <li className="flex items-start gap-3">
                                     <Mail className="mt-0.5 size-4 flex-shrink-0" style={{ color: 'var(--color-purple)' }} />
                                     <a
-                                        href="mailto:smarturutcv@gmail.com"
+                                        href="mailto:wellturutcv@gmail.com"
                                         className="break-all text-sm font-medium transition-colors duration-200"
                                         style={{ color: 'var(--color-text-alt)' }}
                                         onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-cyan)')}
                                         onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-alt)')}
                                     >
-                                        smarturutcv@gmail.com
+                                        wellturutcv@gmail.com
                                     </a>
                                 </li>
                                 <li className="flex items-start gap-3">
@@ -186,7 +186,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                     {t('footer.mobileApp.version')}: {latestVersion}
                                 </span>
                                 <a
-                                    href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
+                                    href="https://github.com/tinnlaroli/welltur-movil/releases/latest/download/app-release.apk"
                                     className="group inline-flex w-fit items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5"
                                     style={{
                                         background: 'var(--color-cyan)',
@@ -215,7 +215,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                     style={{ borderColor: 'var(--color-border)' }}
                 >
                     <p className="text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> SMARTUR. {t('footer.copyright')}
+                        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> WELLTUR. {t('footer.copyright')}
                     </p>
                 </div>
             </div>

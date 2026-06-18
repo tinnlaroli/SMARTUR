@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+﻿import jsPDF from 'jspdf';
 import type { EvaluationRubric, EvaluationCriterion } from '../types/types';
 
 export function generateBlankEvaluationForm(
@@ -30,7 +30,7 @@ export function generateBlankEvaluationForm(
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(160, 160, 160);
-        doc.text('SMARTUR — Sistema de Evaluación Turística', margin, fy);
+        doc.text('WELLTUR — Sistema de Evaluación Turística', margin, fy);
         doc.text(`Página ${pageNum}`, pageWidth - margin, fy, { align: 'right' });
         doc.setTextColor(0, 0, 0);
     };

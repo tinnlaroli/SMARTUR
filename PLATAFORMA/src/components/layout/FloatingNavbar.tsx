@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage, languages } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -213,7 +213,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                 }}
                                 className="flex-shrink-0"
                                 >
-                                    <img src={logoSrc} alt="SMARTUR" className="h-7 sm:h-9 w-auto transition-all duration-300" />
+                                    <img src={logoSrc} alt="WELLTUR" className="h-7 sm:h-9 w-auto transition-all duration-300" />
                                 </a>
 
                             {/* Desktop Menu */}

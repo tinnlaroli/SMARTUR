@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEOHelmet } from '../shared/components/SEOHelmet';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import Sidebar from './Sidebar';
@@ -307,7 +307,7 @@ const DashboardHeader = memo(function DashboardHeader({
                 </button>
 
                 <span className="ml-3 text-base font-bold" style={{ color: 'var(--color-purple)' }}>
-                    Smartur
+                    Welltur
                 </span>
 
                 <div className="ml-auto flex items-center gap-2">

@@ -1,8 +1,8 @@
-import React, { createContext, use, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+﻿import React, { createContext, use, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { defaultLang, languages, ui, type LanguageCode } from './languageCatalog';
 import { USER_STORAGE_SYNC_EVENT, emitUserStorageSync } from '../shared/userStorageSync';
 
-export type Theme = 'light' | 'dark' | 'smartur';
+export type Theme = 'light' | 'dark' | 'welltur';
 
 export type SessionUser = {
     id: number;
@@ -12,7 +12,7 @@ export type SessionUser = {
 };
 
 const USER_KEY = 'user';
-const PREFS_KEY = 'smartur-preferences';
+const PREFS_KEY = 'welltur-preferences';
 
 type StoredPrefs = {
     theme: Theme;
@@ -38,7 +38,7 @@ function legacyTheme(): Theme {
 }
 
 function legacyLang(): LanguageCode {
-    const stored = localStorage.getItem('smartur-lang') as LanguageCode | null;
+    const stored = localStorage.getItem('welltur-lang') as LanguageCode | null;
     if (stored && stored in languages) return stored;
     return defaultLang;
 }
@@ -48,7 +48,7 @@ function readPrefsFromStorage(): StoredPrefs {
         const raw = localStorage.getItem(PREFS_KEY);
         if (raw) {
             const p = JSON.parse(raw) as Partial<StoredPrefs>;
-            const theme = (p.theme === 'dark' || p.theme === 'light' || p.theme === 'smartur') ? p.theme : legacyTheme();
+            const theme = (p.theme === 'dark' || p.theme === 'light' || p.theme === 'welltur') ? p.theme : legacyTheme();
             const lang = p.lang && p.lang in languages ? p.lang : legacyLang();
             return { theme, lang };
         }
@@ -62,7 +62,7 @@ function writePrefs(theme: Theme, lang: LanguageCode) {
     const payload: StoredPrefs = { theme, lang };
     localStorage.setItem(PREFS_KEY, JSON.stringify(payload));
     localStorage.setItem('theme', theme);
-    localStorage.setItem('smartur-lang', lang);
+    localStorage.setItem('welltur-lang', lang);
 }
 
 type UserPreferencesContextValue = {
@@ -101,7 +101,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
     useEffect(() => {
         const onStorage = (e: StorageEvent) => {
-            if (e.key === USER_KEY || e.key === PREFS_KEY || e.key === 'theme' || e.key === 'smartur-lang') {
+            if (e.key === USER_KEY || e.key === PREFS_KEY || e.key === 'theme' || e.key === 'welltur-lang') {
                 hydrateFromStorage();
             }
         };

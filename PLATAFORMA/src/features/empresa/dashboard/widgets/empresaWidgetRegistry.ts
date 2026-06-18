@@ -1,4 +1,4 @@
-export type {
+﻿export type {
     WidgetCategory,
     WidgetDef,
     WidgetInstance,
@@ -72,8 +72,8 @@ export const EMPRESA_WIDGET_REGISTRY: import('../../../home/widgets/widgetRegist
     },
     {
         id: 'quality-score',
-        label: 'Evaluación SMARTUR',
-        description: 'Puntaje de calidad asignado por el equipo SMARTUR.',
+        label: 'Evaluación WELLTUR',
+        description: 'Puntaje de calidad asignado por el equipo WELLTUR.',
         iconName: 'Award',
         defaultColSpan: 2,
         defaultRowSpan: 1,

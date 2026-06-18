@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import {
     Bell, Send, Users, Building2, Globe,
     CheckCircle2, AlertCircle, Loader2,
@@ -295,7 +295,7 @@ export function NotificacionesPage() {
                                         {title || t('notifications.previewTitle')}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                        SMARTUR · {t('notifications.now')}
+                                        WELLTUR · {t('notifications.now')}
                                     </p>
                                 </div>
                             </div>

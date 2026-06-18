@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import {
     Bell,
     Globe,
@@ -18,7 +18,7 @@ import type { Theme } from '../../../contexts/UserPreferencesContext';
 import { useToast } from '../../../shared/context/ToastContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 
-const STORAGE_KEY = 'smartur-dashboard-settings';
+const STORAGE_KEY = 'welltur-dashboard-settings';
 
 type SettingsPreferences = {
     evaluationAlerts: boolean;
@@ -249,17 +249,17 @@ export const SettingsPage = () => {
 
                             <button
                                 type="button"
-                                onClick={() => handleThemeSelect('smartur')}
+                                onClick={() => handleThemeSelect('welltur')}
                                 className="rounded-2xl border p-4 text-left transition-colors"
                                 style={{
-                                    background: theme === 'smartur' ? 'rgba(134, 43, 72, 0.10)' : 'var(--color-bg-alt)',
-                                    borderColor: theme === 'smartur' ? '#cd6184' : 'var(--color-border)',
+                                    background: theme === 'welltur' ? 'rgba(134, 43, 72, 0.10)' : 'var(--color-bg-alt)',
+                                    borderColor: theme === 'welltur' ? '#cd6184' : 'var(--color-border)',
                                 }}
                             >
                                 <div className="flex items-center gap-2">
                                     <Leaf className="size-4" style={{ color: '#97a273' }} />
                                     <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                        Modo Smartur
+                                        Modo Welltur
                                     </p>
                                 </div>
                                 <p className="mt-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
@@ -408,7 +408,7 @@ export const SettingsPage = () => {
                                     {copy.settings.activeThemeLabel}
                                 </p>
                                 <p className="mt-1 text-sm font-semibold capitalize" style={{ color: 'var(--color-text)' }}>
-                                    {theme === 'dark' ? copy.settings.darkLabel : theme === 'smartur' ? 'Modo Smartur' : copy.settings.lightLabel}
+                                    {theme === 'dark' ? copy.settings.darkLabel : theme === 'welltur' ? 'Modo Welltur' : copy.settings.lightLabel}
                                 </p>
                             </div>
                             <div className="rounded-2xl border px-4 py-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>

@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin, Star, Share2, Download, ArrowRight, X, LocateFixed } from 'lucide-react';
-import smarturLogo from '../../../assets/landing/logo_costado.png';
+import wellturLogo from '../../../assets/landing/logo_costado.png';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -428,12 +428,12 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
     }, [resetMapView]);
 
     const buildShareText = () => {
-        return ['Recomendaciones SMARTUR', ...formattedRecommendations].join('\n');
+        return ['Recomendaciones WELLTUR', ...formattedRecommendations].join('\n');
     };
 
     const downloadImage = async () => {
         const title = 'Itinerario recomendado';
-        const subtitle = 'Ruta sugerida por SMARTUR para tu proxima experiencia';
+        const subtitle = 'Ruta sugerida por WELLTUR para tu proxima experiencia';
         const width = 1080;
         const height = 1480;
         const canvas = document.createElement('canvas');
@@ -447,7 +447,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
         }
 
         try {
-            const logo = await loadCanvasImage(smarturLogo);
+            const logo = await loadCanvasImage(wellturLogo);
             const itineraryItems = resolvedRecommendations.slice(0, 5);
 
             const background = ctx.createLinearGradient(0, 0, width, height);
@@ -570,7 +570,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
 
             ctx.fillStyle = '#e4e4e7';
             ctx.font = '600 22px Inter, ui-sans-serif, system-ui, sans-serif';
-            ctx.fillText('SMARTUR · Recomendaciones inteligentes para planear tu recorrido', 118, height - 118);
+            ctx.fillText('WELLTUR · Recomendaciones inteligentes para planear tu recorrido', 118, height - 118);
 
             ctx.fillStyle = '#71717a';
             ctx.font = '16px Inter, ui-sans-serif, system-ui, sans-serif';
@@ -579,11 +579,11 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
             const dataUrl = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.href = dataUrl;
-            link.download = 'itinerario-smartur.png';
+            link.download = 'itinerario-welltur.png';
             document.body.appendChild(link);
             link.click();
             link.remove();
-            toast.success('Descarga iniciada', 'Se genero tu itinerario visual con SMARTUR');
+            toast.success('Descarga iniciada', 'Se genero tu itinerario visual con WELLTUR');
         } catch (error) {
             toast.error('No se pudo generar la imagen', 'Ocurrio un problema al preparar el itinerario descargable');
         }
@@ -598,7 +598,7 @@ export const RecommendationsResult: React.FC<RecommendationsResultProps> = ({ re
         try {
             if (navigator.share) {
                 await navigator.share({
-                    title: 'Recomendaciones SMARTUR',
+                    title: 'Recomendaciones WELLTUR',
                     text,
                 });
                 toast.success(copy.shareSuccessTitle, copy.shareSuccessBody);

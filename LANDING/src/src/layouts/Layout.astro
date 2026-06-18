@@ -1,4 +1,4 @@
----
+﻿---
 import { Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import PageLoader from "../components/PageLoader.astro";
@@ -51,35 +51,35 @@ const links = linksMap[currentLang as keyof typeof linksMap] || linksMap.es;
 // Localized SEO metadata
 const seoMetadata = {
   es: {
-    title: "SMARTUR - Turismo Inteligente en las Altas Montañas",
+    title: "WELLTUR - Turismo Inteligente en las Altas Montañas",
     description:
-      "SMARTUR: Plataforma de recomendación turística inteligente para MiPyMEs en las Altas Montañas de Veracruz. Utilizamos IA para potenciar el turismo regional con recomendaciones personalizadas.",
+      "WELLTUR: Plataforma de recomendación turística inteligente para MiPyMEs en las Altas Montañas de Veracruz. Utilizamos IA para potenciar el turismo regional con recomendaciones personalizadas.",
     keywords:
-      "Turismo Veracruz, SMARTUR, IA Turística, Altas Montañas, Recomendaciones Personalizadas, MiPyMEs Turísticas, Inteligencia Artificial, Turismo Regional, Machine Learning, Veracruz México",
-    ogTitle: "SMARTUR - Turismo Inteligente en las Altas Montañas de Veracruz",
+      "Turismo Veracruz, WELLTUR, IA Turística, Altas Montañas, Recomendaciones Personalizadas, MiPyMEs Turísticas, Inteligencia Artificial, Turismo Regional, Machine Learning, Veracruz México",
+    ogTitle: "WELLTUR - Turismo Inteligente en las Altas Montañas de Veracruz",
     ogDescription:
       "Plataforma de IA para recomendaciones turísticas personalizadas en la región de Las Altas Montañas, Veracruz",
     locale: "es_MX",
   },
   en: {
-    title: "SMARTUR - Smart Tourism for the High Mountains",
+    title: "WELLTUR - Smart Tourism for the High Mountains",
     description:
-      "SMARTUR: Intelligent tourism recommendation platform for SMEs in the High Mountains of Veracruz. We use AI to boost regional tourism with personalized recommendations.",
+      "WELLTUR: Intelligent tourism recommendation platform for SMEs in the High Mountains of Veracruz. We use AI to boost regional tourism with personalized recommendations.",
     keywords:
-      "Veracruz Tourism, SMARTUR, Tourism AI, High Mountains, Personalized Recommendations, Tourism SMEs, Artificial Intelligence, Regional Tourism, Machine Learning, Veracruz Mexico",
-    ogTitle: "SMARTUR - Smart Tourism for the High Mountains of Veracruz",
+      "Veracruz Tourism, WELLTUR, Tourism AI, High Mountains, Personalized Recommendations, Tourism SMEs, Artificial Intelligence, Regional Tourism, Machine Learning, Veracruz Mexico",
+    ogTitle: "WELLTUR - Smart Tourism for the High Mountains of Veracruz",
     ogDescription:
       "AI platform for personalized tourism recommendations in the High Mountains region, Veracruz",
     locale: "en_US",
   },
   fr: {
-    title: "SMARTUR - Tourisme Intelligent pour les Hautes Montagnes",
+    title: "WELLTUR - Tourisme Intelligent pour les Hautes Montagnes",
     description:
-      "SMARTUR: Plateforme de recommandation touristique intelligente pour les PME dans les Hautes Montagnes de Veracruz. Nous utilisons l'IA pour stimuler le tourisme régional avec des recommandations personnalisées.",
+      "WELLTUR: Plateforme de recommandation touristique intelligente pour les PME dans les Hautes Montagnes de Veracruz. Nous utilisons l'IA pour stimuler le tourisme régional avec des recommandations personnalisées.",
     keywords:
-      "Tourisme Veracruz, SMARTUR, IA Touristique, Hautes Montagnes, Recommandations Personnalisées, PME Touristiques, Intelligence Artificielle, Tourisme Régional, Machine Learning, Veracruz Mexique",
+      "Tourisme Veracruz, WELLTUR, IA Touristique, Hautes Montagnes, Recommandations Personnalisées, PME Touristiques, Intelligence Artificielle, Tourisme Régional, Machine Learning, Veracruz Mexique",
     ogTitle:
-      "SMARTUR - Tourisme Intelligent pour les Hautes Montagnes de Veracruz",
+      "WELLTUR - Tourisme Intelligent pour les Hautes Montagnes de Veracruz",
     ogDescription:
       "Plateforme d'IA pour des recommandations touristiques personnalisées dans la région des Hautes Montagnes, Veracruz",
     locale: "fr_FR",
@@ -94,11 +94,11 @@ const seo = seoMetadata[currentLang];
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- SMARTUR SEO Metadata -->
+    <!-- WELLTUR SEO Metadata -->
     <title>{title} | {seo.title}</title>
     <meta name="description" content={seo.description} />
     <meta name="keywords" content={seo.keywords} />
-    <meta name="author" content="SMARTUR" />
+    <meta name="author" content="WELLTUR" />
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
@@ -120,7 +120,7 @@ const seo = seoMetadata[currentLang];
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="SMARTUR - Turismo Inteligente en Veracruz"
+      content="WELLTUR - Turismo Inteligente en Veracruz"
     />
     <meta
       name="twitter:description"
@@ -132,10 +132,10 @@ const seo = seoMetadata[currentLang];
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "SMARTUR",
+        "name": "WELLTUR",
         "description": "{seo.description}",
-        "url": "https://smartur.mx",
-        "logo": "https://smartur.mx/logo.png",
+        "url": "https://welltur.mx",
+        "logo": "https://welltur.mx/logo.png",
         "address": {
           "@type": "PostalAddress",
           "addressRegion": "Veracruz",
@@ -163,7 +163,7 @@ const seo = seoMetadata[currentLang];
         </main>
         <Footer
           logoUrl="/"
-          logoAlt="SMARTUR"
+          logoAlt="WELLTUR"
           links={links}
           slogan={t("footer.slogan")}
           description={t("footer.description")}
@@ -241,7 +241,7 @@ const seo = seoMetadata[currentLang];
   (() => {
     const originalTitle = document.title;
     const tabAwayMessage =
-      document.body.dataset.tabAway || "¿A dónde fuiste?  Regresa a SMARTUR";
+      document.body.dataset.tabAway || "¿A dónde fuiste?  Regresa a WELLTUR";
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {

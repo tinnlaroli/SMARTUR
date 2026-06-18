@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+﻿import * as Sentry from '@sentry/react';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
 import './index.css';
@@ -78,7 +78,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 if (import.meta.env.PROD) {
   const c = (color: string) => `color:${color};font-weight:700;font-size:13px`;
   console.log(
-    '%cSMARTUR%c  Turismo Inteligente · Altas Montañas de Veracruz\n%c¿Te gusta lo que ves? Hablemos: martinlaraolivares@gmail.com',
+    '%cWELLTUR%c  Turismo Inteligente · Altas Montañas de Veracruz\n%c¿Te gusta lo que ves? Hablemos: martinlaraolivares@gmail.com',
     `${c('#FC478E')};font-size:20px`, c('#984EFD'),
     'color:#aaa;font-weight:400;font-size:11px'
   );

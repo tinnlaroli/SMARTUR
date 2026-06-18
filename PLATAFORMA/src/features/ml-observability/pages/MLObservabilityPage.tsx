@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
 import { mlApi, type ModelStatus, type SchedulerConfig, type ExtendedStats } from '../api/mlApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -19,7 +19,7 @@ import {
 
 // 8 minutes — RF + GBM + LightFM full training cycle
 const TRAINING_LOCK_MS = 8 * 60 * 1000;
-const TRAINING_LOCK_KEY = 'smartur_ml_training_lock';
+const TRAINING_LOCK_KEY = 'welltur_ml_training_lock';
 // Poll health every 30 s while training is running
 const POLL_INTERVAL_MS = 30_000;
 
@@ -1001,7 +1001,7 @@ export const MLObservabilityPage = () => {
                                 ? <CheckCircle2 className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.success }} />
                                 : <AlertCircle className="size-4 shrink-0" style={{ color: DASHBOARD_COLORS.warning }} />}
                             <span style={{ color: 'var(--color-text)' }}>
-                                <span className="font-semibold">{metrics.data_quality.real_smartur_interactions}</span> interacciones reales de SMARTUR
+                                <span className="font-semibold">{metrics.data_quality.real_welltur_interactions}</span> interacciones reales de WELLTUR
                                 {metrics.data_quality.uses_real_data
                                     ? ' — incorporadas al entrenamiento (≥10)'
                                     : ' — aún no suficientes para refinar el modelo (mínimo 10)'}

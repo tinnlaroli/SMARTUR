@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Pencil, Check, X, HelpCircle, Loader2, Lock } from 'lucide-react';
 import { api } from '../../../shared/api/axiosClient';
@@ -29,7 +29,7 @@ function ModuleLocked() {
                         Empresa en revisión
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                        Las Preguntas frecuentes se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.
+                        Las Preguntas frecuentes se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.
                     </p>
                 </div>
                 <button

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { Calendar, RefreshCw, Plus, Check, X as XIcon, Clock, Users, Lock } from 'lucide-react';
 import { bookingEmpresaApi, type EmpresaBooking, type BookingStatus, type WalkinPayload } from '../api/bookingApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -30,8 +30,8 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Las reservas se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Las reservas se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@welltur.online para más información.'}
                     </p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-export const CONTACT_EMAIL = 'smarturutcv@gmail.com';
+﻿export const CONTACT_EMAIL = 'wellturutcv@gmail.com';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

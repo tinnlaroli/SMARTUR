@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { Check, ChevronRight, AlertTriangle, Clock, Unlock } from 'lucide-react';
 import type { EmpresaStatus } from '../api/empresaApi';
 
@@ -11,8 +11,8 @@ interface Step {
 const STEPS: Step[] = [
     { label: 'Cuenta creada',    description: 'Registro completado exitosamente.',                                            route: '/empresa/perfil' },
     { label: 'Subir documentos', description: 'Proporciona datos del propietario y documentos de identidad.',                route: '/empresa/verificacion' },
-    { label: 'En revisión',      description: 'El equipo de SMARTUR revisa tus documentos (1-3 días hábiles).',              route: '/empresa/verificacion' },
-    { label: 'Cuenta activa',    description: 'Acceso completo a todos los servicios de SMARTUR.',                           route: '/empresa/servicios' },
+    { label: 'En revisión',      description: 'El equipo de WELLTUR revisa tus documentos (1-3 días hábiles).',              route: '/empresa/verificacion' },
+    { label: 'Cuenta activa',    description: 'Acceso completo a todos los servicios de WELLTUR.',                           route: '/empresa/servicios' },
 ];
 
 function stepFromStatus(status: EmpresaStatus): number {
@@ -42,7 +42,7 @@ export function ActivationStepper({ status, rejectionReason }: Props) {
                     Activa tu cuenta de empresa
                 </h2>
                 <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    Completa la verificación para publicar tus servicios en SMARTUR.
+                    Completa la verificación para publicar tus servicios en WELLTUR.
                 </p>
             </div>
 

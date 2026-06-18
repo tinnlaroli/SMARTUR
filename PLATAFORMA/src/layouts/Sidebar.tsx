@@ -124,8 +124,8 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                         {isCollapsed ? (
                             <a key="icon-link" href="/" className="shrink-0">
                                 <motion.img
-                                    src="/image.png"
-                                    alt="Smartur"
+                                    src="/wellturLogo.png"
+                                    alt="Welltur"
                                     initial={{ opacity: 0, scale: 0.7 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.7 }}
@@ -136,8 +136,8 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                         ) : (
                             <a key="logo-link" href="/" className="shrink-0">
                                 <motion.img
-                                    src="/smartur.png"
-                                    alt="Smartur"
+                                    src="/wellturLogo.png"
+                                    alt="Welltur"
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
