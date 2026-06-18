@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
@@ -100,18 +100,18 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
   void _submit() {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedBirthDate == null) {
-      SmarturNotifications.showError(context, l10n.enterBirthYear);
+      WellturNotifications.showError(context, l10n.enterBirthYear);
       return;
     }
     if (!_formKey.currentState!.validate()) return;
     if (_selectedGender == null) {
-      SmarturNotifications.showError(context, l10n.selectGender);
+      WellturNotifications.showError(context, l10n.selectGender);
       return;
     }
 
     final birth = _selectedBirthDate!;
     if (!_isValidBirthDate(birth)) {
-      SmarturNotifications.showError(context, l10n.invalidYear);
+      WellturNotifications.showError(context, l10n.invalidYear);
       return;
     }
 
@@ -167,7 +167,7 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
               fontStyle: FontStyle.italic,
             ),
           ),
-          const SizedBox(height: SmarturStyle.spacingSm),
+          const SizedBox(height: WellturStyle.spacingSm),
           Semantics(
             button: true,
             label: l10n.birthYear,
@@ -195,13 +195,13 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
               ),
             ),
           ),
-          const SizedBox(height: SmarturStyle.spacingLg),
+          const SizedBox(height: WellturStyle.spacingLg),
 
           Text(
             l10n.gender,
             style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.onSurface),
           ),
-          const SizedBox(height: SmarturStyle.spacingSm),
+          const SizedBox(height: WellturStyle.spacingSm),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -222,7 +222,7 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
               );
             }).toList(),
           ),
-          const SizedBox(height: SmarturStyle.spacingXl),
+          const SizedBox(height: WellturStyle.spacingXl),
 
           ElevatedButton(
             onPressed: _submit,

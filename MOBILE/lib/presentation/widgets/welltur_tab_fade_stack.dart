@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../core/motion/smartur_motion.dart';
+import '../../core/motion/welltur_motion.dart';
 
 /// [IndexedStack] que conserva el estado de cada pestaña y hace crossfade al cambiar.
-class SmarturTabFadeStack extends StatefulWidget {
+class WellturTabFadeStack extends StatefulWidget {
   final int index;
   final List<Widget> children;
   final Duration duration;
 
-  const SmarturTabFadeStack({
+  const WellturTabFadeStack({
     super.key,
     required this.index,
     required this.children,
-    this.duration = SmarturMotion.tabFade,
+    this.duration = WellturMotion.tabFade,
   });
 
   @override
-  State<SmarturTabFadeStack> createState() => _SmarturTabFadeStackState();
+  State<WellturTabFadeStack> createState() => _WellturTabFadeStackState();
 }
 
-class _SmarturTabFadeStackState extends State<SmarturTabFadeStack>
+class _WellturTabFadeStackState extends State<WellturTabFadeStack>
     with TickerProviderStateMixin {
   late List<AnimationController> _controllers;
 
@@ -40,7 +40,7 @@ class _SmarturTabFadeStackState extends State<SmarturTabFadeStack>
   }
 
   @override
-  void didUpdateWidget(SmarturTabFadeStack oldWidget) {
+  void didUpdateWidget(WellturTabFadeStack oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.children.length != widget.children.length) {
       for (final c in _controllers) {
@@ -50,7 +50,7 @@ class _SmarturTabFadeStackState extends State<SmarturTabFadeStack>
       return;
     }
     if (oldWidget.index == widget.index) return;
-    if (SmarturMotion.prefersReducedMotion(context)) {
+    if (WellturMotion.prefersReducedMotion(context)) {
       for (var i = 0; i < _controllers.length; i++) {
         _controllers[i].value = i == widget.index ? 1.0 : 0.0;
       }
@@ -77,8 +77,8 @@ class _SmarturTabFadeStackState extends State<SmarturTabFadeStack>
     return FadeTransition(
       opacity: CurvedAnimation(
         parent: _controllers[i],
-        curve: SmarturMotion.standard,
-        reverseCurve: SmarturMotion.exit,
+        curve: WellturMotion.standard,
+        reverseCurve: WellturMotion.exit,
       ),
       child: IgnorePointer(
         // Solo la pestaña activa recibe toques (el fade es solo visual).

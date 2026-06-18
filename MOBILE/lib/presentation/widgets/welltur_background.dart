@@ -1,17 +1,17 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/smartur_theme_extensions.dart';
+import '../../core/theme/welltur_theme_extensions.dart';
 
 /// Inverted variant: animated color band at the TOP (~15 % of screen height),
 /// fading into [scheme.surface]. Ideal for Home / inner screens.
-class SmarturBackgroundTop extends StatefulWidget {
+class WellturBackgroundTop extends StatefulWidget {
   final Widget child;
   final double blurSigma;
   final double opacity;
   /// Fraction of screen height covered by the color band (0-1). Default 0.15.
   final double bandFraction;
 
-  const SmarturBackgroundTop({
+  const WellturBackgroundTop({
     super.key,
     required this.child,
     this.blurSigma = 14.0,
@@ -20,10 +20,10 @@ class SmarturBackgroundTop extends StatefulWidget {
   });
 
   @override
-  State<SmarturBackgroundTop> createState() => _SmarturBackgroundTopState();
+  State<WellturBackgroundTop> createState() => _WellturBackgroundTopState();
 }
 
-class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
+class _WellturBackgroundTopState extends State<WellturBackgroundTop>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Color?> _colorAnimation;
@@ -40,7 +40,7 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     _colorAnimation = TweenSequence<Color?>(
       [
         _seq(sem.accent, sem.leaf),
@@ -112,12 +112,12 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
 
 /// A professional background component that subtly cycles through a palette
 /// of brand colors with a frosted glass effect. Colors come from the active theme.
-class SmarturBackground extends StatefulWidget {
+class WellturBackground extends StatefulWidget {
   final Widget child;
   final double blurSigma;
   final double opacity;
 
-  const SmarturBackground({
+  const WellturBackground({
     super.key,
     required this.child,
     this.blurSigma = 12.0,
@@ -125,10 +125,10 @@ class SmarturBackground extends StatefulWidget {
   });
 
   @override
-  State<SmarturBackground> createState() => _SmarturBackgroundState();
+  State<WellturBackground> createState() => _WellturBackgroundState();
 }
 
-class _SmarturBackgroundState extends State<SmarturBackground>
+class _WellturBackgroundState extends State<WellturBackground>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Color?> _colorAnimation;
@@ -145,7 +145,7 @@ class _SmarturBackgroundState extends State<SmarturBackground>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     _colorAnimation = TweenSequence<Color?>(
       [
         _seq(sem.leaf, sem.accent),

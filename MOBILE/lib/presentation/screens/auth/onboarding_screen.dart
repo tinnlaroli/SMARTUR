@@ -1,15 +1,15 @@
-
+﻿
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
-import '../../../core/motion/smartur_motion.dart';
-import '../../widgets/smartur_ui_kit.dart';
+import '../../../core/motion/welltur_motion.dart';
+import '../../widgets/welltur_ui_kit.dart';
 import 'welcome_screen.dart';
-import '../../widgets/smartur_background.dart';
-import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/welltur_background.dart';
+import '../../widgets/welltur_skeleton.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -99,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final contents = getOnboardingContents(l10n);
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: SmarturBackground(
+      body: WellturBackground(
         opacity: 0.55,
         child: Stack(
           alignment: Alignment.center,
@@ -176,8 +176,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       (index) {
                         final active = _pageOffset.round() == index;
                         return AnimatedContainer(
-                          duration: SmarturMotion.fast,
-                          curve: SmarturMotion.standard,
+                          duration: WellturMotion.fast,
+                          curve: WellturMotion.standard,
                           height: 8,
                           width: active ? 28 : 8,
                           margin: const EdgeInsets.only(right: 6),
@@ -233,7 +233,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 _storeOnboardingInfo();
                                 Navigator.pushReplacement(
                                   context,
-                                  smarturFadeRoute(const WelcomeScreen()),
+                                  wellturFadeRoute(const WelcomeScreen()),
                                 );
                               },
                               child: Text(l10n.startNow),

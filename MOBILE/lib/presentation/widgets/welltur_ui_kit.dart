@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../core/motion/smartur_motion.dart';
+import '../../core/motion/welltur_motion.dart';
 import '../../core/theme/style_guide.dart';
-import '../../core/theme/smartur_theme_extensions.dart';
+import '../../core/theme/welltur_theme_extensions.dart';
 
-export '../../core/motion/smartur_routes.dart'
+export '../../core/motion/welltur_routes.dart'
     show
-        SmarturNavigator,
-        smarturDetailRoute,
-        smarturFadeRoute;
+        WellturNavigator,
+        wellturDetailRoute,
+        wellturFadeRoute;
 
-export 'smartur_loading_overlay.dart';
-export 'smartur_tab_fade_stack.dart';
+export 'welltur_loading_overlay.dart';
+export 'welltur_tab_fade_stack.dart';
 
 /// Entrada escalonada para listas y secciones.
-class SmarturFadeIn extends StatefulWidget {
+class WellturFadeIn extends StatefulWidget {
   final Widget child;
   final int index;
   final Duration baseDelay;
 
-  const SmarturFadeIn({
+  const WellturFadeIn({
     super.key,
     required this.child,
     this.index = 0,
@@ -27,10 +27,10 @@ class SmarturFadeIn extends StatefulWidget {
   });
 
   @override
-  State<SmarturFadeIn> createState() => _SmarturFadeInState();
+  State<WellturFadeIn> createState() => _WellturFadeInState();
 }
 
-class _SmarturFadeInState extends State<SmarturFadeIn>
+class _WellturFadeInState extends State<WellturFadeIn>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _anim;
@@ -40,12 +40,12 @@ class _SmarturFadeInState extends State<SmarturFadeIn>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: SmarturMotion.fast,
+      duration: WellturMotion.fast,
     );
-    _anim = CurvedAnimation(parent: _ctrl, curve: SmarturMotion.standard);
+    _anim = CurvedAnimation(parent: _ctrl, curve: WellturMotion.standard);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (SmarturMotion.prefersReducedMotion(context)) {
+      if (WellturMotion.prefersReducedMotion(context)) {
         _ctrl.value = 1;
         return;
       }
@@ -75,12 +75,12 @@ class _SmarturFadeInState extends State<SmarturFadeIn>
 }
 
 /// Crossfade suave entre esqueleto/cargador y contenido listo.
-class SmarturLoadTransition extends StatelessWidget {
+class WellturLoadTransition extends StatelessWidget {
   final bool loading;
   final Widget loadingChild;
   final Widget child;
 
-  const SmarturLoadTransition({
+  const WellturLoadTransition({
     super.key,
     required this.loading,
     required this.loadingChild,
@@ -90,9 +90,9 @@ class SmarturLoadTransition extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: SmarturMotion.normal,
-      switchInCurve: SmarturMotion.enter,
-      switchOutCurve: SmarturMotion.exit,
+      duration: WellturMotion.normal,
+      switchInCurve: WellturMotion.enter,
+      switchOutCurve: WellturMotion.exit,
       layoutBuilder: (current, previous) => Stack(
         fit: StackFit.expand,
         alignment: Alignment.topCenter,
@@ -104,8 +104,8 @@ class SmarturLoadTransition extends StatelessWidget {
       transitionBuilder: (child, animation) {
         final curved = CurvedAnimation(
           parent: animation,
-          curve: SmarturMotion.standard,
-          reverseCurve: SmarturMotion.exit,
+          curve: WellturMotion.standard,
+          reverseCurve: WellturMotion.exit,
         );
         return FadeTransition(
           opacity: curved,
@@ -119,19 +119,19 @@ class SmarturLoadTransition extends StatelessWidget {
         );
       },
       child: loading
-          ? KeyedSubtree(key: const ValueKey('smartur_load'), child: loadingChild)
-          : KeyedSubtree(key: const ValueKey('smartur_content'), child: child),
+          ? KeyedSubtree(key: const ValueKey('welltur_load'), child: loadingChild)
+          : KeyedSubtree(key: const ValueKey('welltur_content'), child: child),
     );
   }
 }
 
 /// Panel con borde suave — tarjetas, formularios, bloques de ajustes.
-class SmarturPanel extends StatelessWidget {
+class WellturPanel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
 
-  const SmarturPanel({
+  const WellturPanel({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
@@ -162,10 +162,10 @@ class SmarturPanel extends StatelessWidget {
 }
 
 /// Encabezado de sección (Ajustes, listas agrupadas).
-class SmarturSectionHeader extends StatelessWidget {
+class WellturSectionHeader extends StatelessWidget {
   final String title;
 
-  const SmarturSectionHeader(this.title, {super.key});
+  const WellturSectionHeader(this.title, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -187,14 +187,14 @@ class SmarturSectionHeader extends StatelessWidget {
 }
 
 /// Estado vacío / error amigable.
-class SmarturEmptyState extends StatelessWidget {
+class WellturEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
   final Widget? action;
   final Color? iconColor;
 
-  const SmarturEmptyState({
+  const WellturEmptyState({
     super.key,
     required this.icon,
     required this.title,
@@ -206,7 +206,7 @@ class SmarturEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final tint = iconColor ?? SmarturSemanticColors.of(context).accent;
+    final tint = iconColor ?? WellturSemanticColors.of(context).accent;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: Column(
@@ -224,7 +224,7 @@ class SmarturEmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 8),
@@ -250,7 +250,7 @@ class SmarturEmptyState extends StatelessWidget {
 }
 
 /// TabBar con indicador redondeado (Diario, etc.).
-TabBar smarturTabBar(
+TabBar wellturTabBar(
   BuildContext context, {
   required List<Widget> tabs,
   TabController? controller,

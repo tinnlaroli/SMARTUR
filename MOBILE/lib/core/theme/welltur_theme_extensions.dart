@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 @immutable
-class SmarturSemanticColors extends ThemeExtension<SmarturSemanticColors> {
+class WellturSemanticColors extends ThemeExtension<WellturSemanticColors> {
   // ── Image overlays ─────────────────────────────────────────────────────────
   final Color onImageText;
   final Color onImageMuted;
@@ -16,19 +16,19 @@ class SmarturSemanticColors extends ThemeExtension<SmarturSemanticColors> {
   final Color info;
   final Color panelBackground;
 
-  // ── Brand palette (theme-aware; replaces SmarturStyle.* hardcodes) ─────────
-  /// Replaces SmarturStyle.purple — primary brand accent
+  // ── Brand palette (theme-aware; replaces WellturStyle.* hardcodes) ─────────
+  /// Replaces WellturStyle.purple — primary brand accent
   final Color accent;
-  /// Replaces SmarturStyle.pink — secondary brand accent
+  /// Replaces WellturStyle.pink — secondary brand accent
   final Color altAccent;
-  /// Replaces SmarturStyle.blue — info/ocean color
+  /// Replaces WellturStyle.blue — info/ocean color
   final Color sea;
-  /// Replaces SmarturStyle.green — nature/success color
+  /// Replaces WellturStyle.green — nature/success color
   final Color leaf;
-  /// Replaces SmarturStyle.orange — warm/energy color
+  /// Replaces WellturStyle.orange — warm/energy color
   final Color ember;
 
-  const SmarturSemanticColors({
+  const WellturSemanticColors({
     required this.onImageText,
     required this.onImageMuted,
     required this.imageScrimSoft,
@@ -46,11 +46,11 @@ class SmarturSemanticColors extends ThemeExtension<SmarturSemanticColors> {
     required this.ember,
   });
 
-  static SmarturSemanticColors of(BuildContext context) =>
-      Theme.of(context).extension<SmarturSemanticColors>()!;
+  static WellturSemanticColors of(BuildContext context) =>
+      Theme.of(context).extension<WellturSemanticColors>()!;
 
   @override
-  SmarturSemanticColors copyWith({
+  WellturSemanticColors copyWith({
     Color? onImageText,
     Color? onImageMuted,
     Color? imageScrimSoft,
@@ -67,7 +67,7 @@ class SmarturSemanticColors extends ThemeExtension<SmarturSemanticColors> {
     Color? leaf,
     Color? ember,
   }) {
-    return SmarturSemanticColors(
+    return WellturSemanticColors(
       onImageText: onImageText ?? this.onImageText,
       onImageMuted: onImageMuted ?? this.onImageMuted,
       imageScrimSoft: imageScrimSoft ?? this.imageScrimSoft,
@@ -87,9 +87,9 @@ class SmarturSemanticColors extends ThemeExtension<SmarturSemanticColors> {
   }
 
   @override
-  SmarturSemanticColors lerp(ThemeExtension<SmarturSemanticColors>? other, double t) {
-    if (other is! SmarturSemanticColors) return this;
-    return SmarturSemanticColors(
+  WellturSemanticColors lerp(ThemeExtension<WellturSemanticColors>? other, double t) {
+    if (other is! WellturSemanticColors) return this;
+    return WellturSemanticColors(
       onImageText: Color.lerp(onImageText, other.onImageText, t) ?? onImageText,
       onImageMuted: Color.lerp(onImageMuted, other.onImageMuted, t) ?? onImageMuted,
       imageScrimSoft: Color.lerp(imageScrimSoft, other.imageScrimSoft, t) ?? imageScrimSoft,

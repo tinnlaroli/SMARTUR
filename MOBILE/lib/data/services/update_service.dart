@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,18 +6,18 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:smartur/core/theme/smartur_theme_extensions.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/core/theme/welltur_theme_extensions.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
 enum UpdateInstallResult { launched, needsPermission }
 
 class UpdateService {
-  static const _installChannel = MethodChannel('mx.smartur.app/installer');
+  static const _installChannel = MethodChannel('mx.welltur.app/installer');
 
   static const _apiUrl =
-      'https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest';
+      'https://api.github.com/repos/tinnlaroli/welltur-movil/releases/latest';
   static const _fallbackDownloadUrl =
-      'https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk';
+      'https://github.com/tinnlaroli/welltur-movil/releases/latest/download/app-release.apk';
 
   static DateTime? _lastCheck;
   static ({bool hasUpdate, String latestVersion, String currentVersion})? _cached;
@@ -109,7 +109,7 @@ class UpdateService {
       }
     }
     if (tag.isNotEmpty) {
-      return 'https://github.com/tinnlaroli/smartur-movil/releases/download/v$tag/app-release.apk';
+      return 'https://github.com/tinnlaroli/welltur-movil/releases/download/v$tag/app-release.apk';
     }
     return null;
   }
@@ -135,7 +135,7 @@ class UpdateService {
     void Function(double progress)? onProgress,
   }) async {
     final dir = await getTemporaryDirectory();
-    final filePath = '${dir.path}/smartur-update.apk';
+    final filePath = '${dir.path}/welltur-update.apk';
     final file = File(filePath);
     if (await file.exists()) {
       await file.delete();
@@ -251,7 +251,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
     final isDownloading = _progress != null;
 
     return AlertDialog(

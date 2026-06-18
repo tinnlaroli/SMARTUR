@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import 'smartur_motion.dart';
+import 'welltur_motion.dart';
 
-enum SmarturRouteKind { fade, detail }
+enum WellturRouteKind { fade, detail }
 
 /// Transición por defecto en [MaterialApp.pageTransitionsTheme] (Android + iOS).
-class SmarturPageTransitionsBuilder extends PageTransitionsBuilder {
-  const SmarturPageTransitionsBuilder();
+class WellturPageTransitionsBuilder extends PageTransitionsBuilder {
+  const WellturPageTransitionsBuilder();
 
   @override
   Widget buildTransitions<T>(
@@ -16,32 +16,32 @@ class SmarturPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return SmarturRouteTransitions.build(
+    return WellturRouteTransitions.build(
       animation: animation,
       secondaryAnimation: secondaryAnimation,
       child: child,
-      kind: SmarturRouteKind.fade,
+      kind: WellturRouteKind.fade,
     );
   }
 }
 
 /// Animaciones compartidas para rutas push/pop.
-class SmarturRouteTransitions {
-  SmarturRouteTransitions._();
+class WellturRouteTransitions {
+  WellturRouteTransitions._();
 
   static Widget build({
     required Animation<double> animation,
     required Animation<double> secondaryAnimation,
     required Widget child,
-    SmarturRouteKind kind = SmarturRouteKind.fade,
+    WellturRouteKind kind = WellturRouteKind.fade,
   }) {
     final curved = CurvedAnimation(
       parent: animation,
-      curve: SmarturMotion.standard,
-      reverseCurve: SmarturMotion.standard,
+      curve: WellturMotion.standard,
+      reverseCurve: WellturMotion.standard,
     );
 
-    final slideBegin = kind == SmarturRouteKind.detail
+    final slideBegin = kind == WellturRouteKind.detail
         ? const Offset(0.06, 0)
         : const Offset(0.04, 0);
 
@@ -56,12 +56,12 @@ class SmarturRouteTransitions {
     if (secondaryAnimation.status != AnimationStatus.dismissed) {
       final parallax = Tween<Offset>(
         begin: Offset.zero,
-        end: Offset(kind == SmarturRouteKind.detail ? -0.03 : -0.015, 0),
+        end: Offset(kind == WellturRouteKind.detail ? -0.03 : -0.015, 0),
       ).animate(
         CurvedAnimation(
           parent: secondaryAnimation,
-          curve: SmarturMotion.exit,
-          reverseCurve: SmarturMotion.standard,
+          curve: WellturMotion.exit,
+          reverseCurve: WellturMotion.standard,
         ),
       );
       page = SlideTransition(position: parallax, child: page);
@@ -71,17 +71,17 @@ class SmarturRouteTransitions {
   }
 }
 
-Route<T> _smarturRoute<T>(
+Route<T> _wellturRoute<T>(
   Widget page, {
-  required SmarturRouteKind kind,
+  required WellturRouteKind kind,
   RouteSettings? settings,
 }) {
-  final inDuration = kind == SmarturRouteKind.detail
-      ? SmarturMotion.routeDetailIn
-      : SmarturMotion.routeIn;
-  final outDuration = kind == SmarturRouteKind.detail
-      ? SmarturMotion.routeDetailOut
-      : SmarturMotion.routeOut;
+  final inDuration = kind == WellturRouteKind.detail
+      ? WellturMotion.routeDetailIn
+      : WellturMotion.routeIn;
+  final outDuration = kind == WellturRouteKind.detail
+      ? WellturMotion.routeDetailOut
+      : WellturMotion.routeOut;
 
   return PageRouteBuilder<T>(
     settings: settings,
@@ -89,13 +89,13 @@ Route<T> _smarturRoute<T>(
     transitionDuration: inDuration,
     reverseTransitionDuration: outDuration,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      if (SmarturMotion.prefersReducedMotion(context)) {
+      if (WellturMotion.prefersReducedMotion(context)) {
         return FadeTransition(
           opacity: animation,
           child: child,
         );
       }
-      return SmarturRouteTransitions.build(
+      return WellturRouteTransitions.build(
         animation: animation,
         secondaryAnimation: secondaryAnimation,
         child: child,
@@ -106,43 +106,43 @@ Route<T> _smarturRoute<T>(
 }
 
 /// Pantallas secundarias (ajustes, preferencias, formularios).
-Route<T> smarturFadeRoute<T>(Widget page, {RouteSettings? settings}) {
-  return _smarturRoute<T>(page, kind: SmarturRouteKind.fade, settings: settings);
+Route<T> wellturFadeRoute<T>(Widget page, {RouteSettings? settings}) {
+  return _wellturRoute<T>(page, kind: WellturRouteKind.fade, settings: settings);
 }
 
 /// Drill-down: detalle de lugar, mapas, resultados.
-Route<T> smarturDetailRoute<T>(Widget page, {RouteSettings? settings}) {
-  return _smarturRoute<T>(page, kind: SmarturRouteKind.detail, settings: settings);
+Route<T> wellturDetailRoute<T>(Widget page, {RouteSettings? settings}) {
+  return _wellturRoute<T>(page, kind: WellturRouteKind.detail, settings: settings);
 }
 
-extension SmarturNavigator on BuildContext {
-  Future<T?> pushSmartur<T>(Widget page, {bool detail = false}) {
+extension WellturNavigator on BuildContext {
+  Future<T?> pushWelltur<T>(Widget page, {bool detail = false}) {
     return Navigator.push<T>(
       this,
-      detail ? smarturDetailRoute(page) : smarturFadeRoute(page),
+      detail ? wellturDetailRoute(page) : wellturFadeRoute(page),
     );
   }
 
-  void pushSmarturReplacement<T extends Object?, TO extends Object?>(
+  void pushWellturReplacement<T extends Object?, TO extends Object?>(
     Widget page, {
     bool detail = false,
     TO? result,
   }) {
     Navigator.pushReplacement<T, TO>(
       this,
-      detail ? smarturDetailRoute(page) : smarturFadeRoute(page),
+      detail ? wellturDetailRoute(page) : wellturFadeRoute(page),
       result: result,
     );
   }
 
-  void pushSmarturAndRemoveUntil<T extends Object?>(
+  void pushWellturAndRemoveUntil<T extends Object?>(
     Widget page,
     RoutePredicate predicate, {
     bool detail = false,
   }) {
     Navigator.pushAndRemoveUntil<T>(
       this,
-      detail ? smarturDetailRoute(page) : smarturFadeRoute(page),
+      detail ? wellturDetailRoute(page) : wellturFadeRoute(page),
       predicate,
     );
   }

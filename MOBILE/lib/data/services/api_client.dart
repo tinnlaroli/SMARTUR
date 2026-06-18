@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 import 'auth_service.dart';
 
-/// Centralized HTTP client for all SMARTUR API calls.
+/// Centralized HTTP client for all WELLTUR API calls.
 ///
 /// Responsibilities:
 /// - Injects Authorization header on every request.

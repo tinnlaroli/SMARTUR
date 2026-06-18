@@ -1,4 +1,4 @@
-// ignore: unused_import
+﻿// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
@@ -9,7 +9,7 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appTitle => 'SMARTUR';
+  String get appTitle => 'WELLTUR';
 
   @override
   String get settingsTitle => 'Paramètres';
@@ -59,11 +59,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get termsAndConditionsBody =>
-      'Dernière mise à jour : mars 2025.\n\n1. Objet\nSMARTUR est une application mobile pour explorer des destinations touristiques, des recommandations et des fonctions communautaires.\n\n2. Inscription et compte\nEn créant un compte, vous confirmez que vos informations sont exactes. Vous êtes responsable de la confidentialité de votre mot de passe et des activités sous votre compte.\n\n3. Utilisation autorisée\nVous vous engagez à utiliser le service de manière licite, sans porter atteinte aux droits de tiers ni au fonctionnement de la plateforme.\n\n4. Contenu et propriété intellectuelle\nLes contenus de l\'application (textes, design, marques) sont protégés. Toute reproduction non autorisée est interdite.\n\n5. Données personnelles\nLe traitement de vos données personnelles est conforme à la législation applicable. En utilisant SMARTUR, vous acceptez les pratiques décrites dans la politique de confidentialité du service.\n\n6. Modifications\nNous pouvons mettre à jour ces conditions. Les changements importants seront communiqués par des moyens raisonnables ; l\'utilisation continue après mise à jour vaut acceptation des nouvelles conditions.\n\n7. Contact\nPour toute question sur ces conditions, utilisez les canaux d\'assistance indiqués dans l\'application ou sur le site officiel.';
+      'Dernière mise à jour : mars 2025.\n\n1. Objet\nWELLTUR est une application mobile pour explorer des destinations touristiques, des recommandations et des fonctions communautaires.\n\n2. Inscription et compte\nEn créant un compte, vous confirmez que vos informations sont exactes. Vous êtes responsable de la confidentialité de votre mot de passe et des activités sous votre compte.\n\n3. Utilisation autorisée\nVous vous engagez à utiliser le service de manière licite, sans porter atteinte aux droits de tiers ni au fonctionnement de la plateforme.\n\n4. Contenu et propriété intellectuelle\nLes contenus de l\'application (textes, design, marques) sont protégés. Toute reproduction non autorisée est interdite.\n\n5. Données personnelles\nLe traitement de vos données personnelles est conforme à la législation applicable. En utilisant WELLTUR, vous acceptez les pratiques décrites dans la politique de confidentialité du service.\n\n6. Modifications\nNous pouvons mettre à jour ces conditions. Les changements importants seront communiqués par des moyens raisonnables ; l\'utilisation continue après mise à jour vaut acceptation des nouvelles conditions.\n\n7. Contact\nPour toute question sur ces conditions, utilisez les canaux d\'assistance indiqués dans l\'application ou sur le site officiel.';
 
   @override
   String get privacyPolicyBody =>
-      'Dernière mise à jour : mars 2025.\n\n1. Responsable du traitement\nSMARTUR est le responsable du traitement de vos données personnelles.\n\n2. Données collectées\nNous collectons les données que vous fournissez lors de l\'inscription (nom, e-mail, photo de profil optionnelle) et les données générées par l\'utilisation de l\'application (préférences de voyage, historique des recommandations, évaluations de lieux).\n\n3. Finalité du traitement\nVos données sont utilisées pour personnaliser les recommandations touristiques, améliorer l\'application et communiquer avec vous sur le service.\n\n4. Base légale\nLe traitement est basé sur votre consentement explicite lors de l\'acceptation de ces conditions et sur l\'exécution du contrat de service.\n\n5. Conservation des données\nNous conservons vos données tant que votre compte est actif. Vous pouvez demander leur suppression à tout moment via Paramètres → Supprimer le compte.\n\n6. Droits des utilisateurs\nVous avez le droit d\'accéder, de rectifier, de supprimer et de porter vos données personnelles. Pour exercer ces droits, contactez-nous via les canaux d\'assistance.\n\n7. Sécurité\nNous appliquons des mesures techniques et organisationnelles pour protéger vos données contre les accès non autorisés ou les pertes accidentelles.\n\n8. Contact\nPour toute question sur la confidentialité : smarturutcv@gmail.com';
+      'Dernière mise à jour : mars 2025.\n\n1. Responsable du traitement\nWELLTUR est le responsable du traitement de vos données personnelles.\n\n2. Données collectées\nNous collectons les données que vous fournissez lors de l\'inscription (nom, e-mail, photo de profil optionnelle) et les données générées par l\'utilisation de l\'application (préférences de voyage, historique des recommandations, évaluations de lieux).\n\n3. Finalité du traitement\nVos données sont utilisées pour personnaliser les recommandations touristiques, améliorer l\'application et communiquer avec vous sur le service.\n\n4. Base légale\nLe traitement est basé sur votre consentement explicite lors de l\'acceptation de ces conditions et sur l\'exécution du contrat de service.\n\n5. Conservation des données\nNous conservons vos données tant que votre compte est actif. Vous pouvez demander leur suppression à tout moment via Paramètres → Supprimer le compte.\n\n6. Droits des utilisateurs\nVous avez le droit d\'accéder, de rectifier, de supprimer et de porter vos données personnelles. Pour exercer ces droits, contactez-nous via les canaux d\'assistance.\n\n7. Sécurité\nNous appliquons des mesures techniques et organisationnelles pour protéger vos données contre les accès non autorisés ou les pertes accidentelles.\n\n8. Contact\nPour toute question sur la confidentialité : wellturutcv@gmail.com';
 
   @override
   String get logout => 'Se déconnecter';
@@ -213,7 +213,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get routesSectionLabel => 'Itinéraires';
 
   @override
-  String get routesSectionCertified => 'Itinéraires certifiés SMARTUR';
+  String get routesSectionCertified => 'Itinéraires certifiés WELLTUR';
 
   @override
   String get routesSectionMostCopied => 'Les plus copiés';
@@ -360,7 +360,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String recommendationSubtitle(Object city) {
-    return 'Suggéré par l\'IA de SMARTUR pour votre visite à $city.';
+    return 'Suggéré par l\'IA de WELLTUR pour votre visite à $city.';
   }
 
   @override
@@ -390,7 +390,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterMuseumsOnly => 'Musées uniquement';
 
   @override
-  String get aiSmartur => 'IA Smartur';
+  String get aiWelltur => 'IA Welltur';
 
   @override
   String get enableBiometricsHint =>
@@ -403,7 +403,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noBiometricsEnrolled => 'Aucune empreinte enregistrée';
 
   @override
-  String get biometricReason => 'Accédez à vos itinéraires SMARTUR';
+  String get biometricReason => 'Accédez à vos itinéraires WELLTUR';
 
   @override
   String get sessionExpired => 'Session expirée. Veuillez vous reconnecter.';
@@ -432,7 +432,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Confirmez votre empreinte pour activer l\'accès rapide';
 
   @override
-  String get biometricActivateTitle => 'Activer l\'empreinte — SMARTUR';
+  String get biometricActivateTitle => 'Activer l\'empreinte — WELLTUR';
 
   @override
   String get biometricTouchSensor => 'Touchez le capteur';
@@ -747,7 +747,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get strengthVeryStrong => 'Très fort';
 
   @override
-  String get defaultUserName => 'Touriste SMARTUR';
+  String get defaultUserName => 'Touriste WELLTUR';
 
   @override
   String get myInterests => 'Mes centres d\'intérêt';
@@ -1191,7 +1191,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String settingsAppUpToDate(Object version) {
-    return 'SMARTUR v$version est à jour.';
+    return 'WELLTUR v$version est à jour.';
   }
 
   @override
@@ -1244,7 +1244,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String updateBody(Object version) {
-    return 'La version $version de SMARTUR est disponible.\nElle sera téléchargée et installée depuis l\'application.';
+    return 'La version $version de WELLTUR est disponible.\nElle sera téléchargée et installée depuis l\'application.';
   }
 
   @override
@@ -1289,11 +1289,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Basé sur mon profil de voyageur intelligent';
 
   @override
-  String get imageShareGeneratedBy => 'Généré par SMARTUR AI';
+  String get imageShareGeneratedBy => 'Généré par WELLTUR AI';
 
   @override
   String imageShareMessage(Object city) {
-    return 'Regardez ce que SMARTUR me recommande à $city !';
+    return 'Regardez ce que WELLTUR me recommande à $city !';
   }
 
   @override
@@ -1349,7 +1349,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String recoShareList(Object items) {
-    return '🌿 Mes destinations recommandées à Altas Montañas, Veracruz :\n\n• $items\n\n📱 Découvrez-les avec SMARTUR';
+    return '🌿 Mes destinations recommandées à Altas Montañas, Veracruz :\n\n• $items\n\n📱 Découvrez-les avec WELLTUR';
   }
 
   @override
@@ -1359,7 +1359,7 @@ class AppLocalizationsFr extends AppLocalizations {
     Object description,
     Object mapsUrl,
   ) {
-    return 'Découvrez $title à $location ! 📍$description\nVoir sur Maps : $mapsUrl\n\nDécouvert avec SMARTUR — Altas Montañas, Veracruz';
+    return 'Découvrez $title à $location ! 📍$description\nVoir sur Maps : $mapsUrl\n\nDécouvert avec WELLTUR — Altas Montañas, Veracruz';
   }
 
   @override
@@ -1429,7 +1429,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get plannerOptimize => 'Améliorer mon itinéraire';
 
   @override
-  String get plannerOptimizeComingSoon => 'Bientôt disponible sur SMARTUR';
+  String get plannerOptimizeComingSoon => 'Bientôt disponible sur WELLTUR';
 
   @override
   String get plannerRouteName => 'Nom de l\'itinéraire';
@@ -1455,7 +1455,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get itineraryCertified => 'Certifié SMARTUR';
+  String get itineraryCertified => 'Certifié WELLTUR';
 
   @override
   String get itineraryCopy => 'Copier l\'itinéraire';

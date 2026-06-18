@@ -1,5 +1,5 @@
-# esto vendria a ser el package del node 
-name: smartur
+﻿# esto vendria a ser el package del node 
+name: welltur
 description: "A new Flutter project."
 publish_to: 'none'
 version: 3.1.5+30

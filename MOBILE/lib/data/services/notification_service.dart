@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +195,7 @@ class NotificationService {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              notification.title ?? 'SMARTUR',
+              notification.title ?? 'WELLTUR',
               style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
             ),
             if (notification.body != null)

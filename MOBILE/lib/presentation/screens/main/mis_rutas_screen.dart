@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
-import '../../../core/motion/smartur_routes.dart';
-import '../../../core/theme/smartur_theme_extensions.dart';
+import '../../../core/motion/welltur_routes.dart';
+import '../../../core/theme/welltur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/itinerary_service.dart';
-import '../../widgets/smartur_background.dart';
-import '../../widgets/smartur_ui_kit.dart';
+import '../../widgets/welltur_background.dart';
+import '../../widgets/welltur_ui_kit.dart';
 import '../itinerary/itinerary_detail_screen.dart';
 import '../itinerary/planner_screen.dart';
 import 'main_screen.dart' show routeStopCount;
@@ -82,7 +82,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
         final scheme = Theme.of(ctx).colorScheme;
         return AlertDialog(
         title: Text(l10n.plannerRouteName,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18)),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -121,13 +121,13 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
       if (mounted) {
         await Navigator.push(
           context,
-          smarturFadeRoute(PlannerScreen(itinerary: it)),
+          wellturFadeRoute(PlannerScreen(itinerary: it)),
         );
         _load();
       }
     } catch (e) {
       if (mounted) {
-        SmarturNotifications.showError(context, e.toString());
+        WellturNotifications.showError(context, e.toString());
       }
     }
   }
@@ -135,7 +135,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
   Future<void> _openItinerary(Itinerary it) async {
     await Navigator.push(
       context,
-      smarturFadeRoute(PlannerScreen(itinerary: it)),
+      wellturFadeRoute(PlannerScreen(itinerary: it)),
     );
     _load();
   }
@@ -149,7 +149,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
       backgroundColor: scheme.surface,
       appBar: AppBar(
         title: Text(l10n.misRutasTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -166,7 +166,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
               color: Colors.white),
         ),
       ),
-      body: SmarturBackgroundTop(
+      body: WellturBackgroundTop(
         child: _buildBody(l10n, scheme),
       ),
     );
@@ -213,7 +213,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
     }
 
     if (_itineraries.isEmpty) {
-      return SmarturEmptyState(
+      return WellturEmptyState(
         icon: Icons.route_rounded,
         title: l10n.misRutasEmptyTitle,
         subtitle: l10n.misRutasEmptySubtitle,
@@ -269,7 +269,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
                 itinerary: it,
                 onTap: () => Navigator.push(
                   context,
-                  smarturFadeRoute(
+                  wellturFadeRoute(
                       ItineraryDetailScreen(itinerary: it, isOwner: true)),
                 ),
               ),
@@ -294,7 +294,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
                 itinerary: it,
                 onTap: () => Navigator.push(
                   context,
-                  smarturFadeRoute(
+                  wellturFadeRoute(
                       ItineraryDetailScreen(itinerary: it, isOwner: true)),
                 ),
               ),
@@ -450,14 +450,14 @@ class _ItineraryCard extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: SmarturSemanticColors.of(context).leaf.withValues(alpha: 0.12),
+                  color: WellturSemanticColors.of(context).leaf.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.public_rounded,
-                        size: 12, color: SmarturSemanticColors.of(context).leaf),
+                        size: 12, color: WellturSemanticColors.of(context).leaf),
                     const SizedBox(width: 4),
                     Text(
                       'Pública',
@@ -465,7 +465,7 @@ class _ItineraryCard extends StatelessWidget {
                         fontFamily: 'Outfit',
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: SmarturSemanticColors.of(context).leaf,
+                        color: WellturSemanticColors.of(context).leaf,
                       ),
                     ),
                   ],

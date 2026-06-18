@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-/// Duraciones y curvas compartidas para que el motion sea coherente en SMARTUR.
-class SmarturMotion {
-  SmarturMotion._();
+/// Duraciones y curvas compartidas para que el motion sea coherente en WELLTUR.
+class WellturMotion {
+  WellturMotion._();
 
   static const Duration fast = Duration(milliseconds: 200);
   static const Duration tabFade = Duration(milliseconds: 150);

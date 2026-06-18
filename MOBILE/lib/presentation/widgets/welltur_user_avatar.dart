@@ -1,11 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/avatar_icon_map.dart';
-import '../../core/theme/smartur_theme_extensions.dart';
+import '../../core/theme/welltur_theme_extensions.dart';
 
 /// Avatar: foto de red, icono permitido o iniciales.
-class SmarturUserAvatar extends StatelessWidget {
+class WellturUserAvatar extends StatelessWidget {
   final String? photoUrl;
   final String? avatarIconKey;
   final String displayName;
@@ -13,7 +13,7 @@ class SmarturUserAvatar extends StatelessWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
-  const SmarturUserAvatar({
+  const WellturUserAvatar({
     super.key,
     required this.photoUrl,
     required this.avatarIconKey,

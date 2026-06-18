@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In es, this message translates to:
-  /// **'SMARTUR'**
+  /// **'WELLTUR'**
   String get appTitle;
 
   /// No description provided for @settingsTitle.
@@ -201,13 +201,13 @@ abstract class AppLocalizations {
   /// No description provided for @termsAndConditionsBody.
   ///
   /// In es, this message translates to:
-  /// **'Última actualización: marzo de 2025.\n\n1. Objeto\nSMARTUR es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar SMARTUR aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.'**
+  /// **'Última actualización: marzo de 2025.\n\n1. Objeto\nWELLTUR es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar WELLTUR aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.'**
   String get termsAndConditionsBody;
 
   /// No description provided for @privacyPolicyBody.
   ///
   /// In es, this message translates to:
-  /// **'Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nSMARTUR es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: smarturutcv@gmail.com'**
+  /// **'Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nWELLTUR es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: wellturutcv@gmail.com'**
   String get privacyPolicyBody;
 
   /// No description provided for @logout.
@@ -495,7 +495,7 @@ abstract class AppLocalizations {
   /// No description provided for @routesSectionCertified.
   ///
   /// In es, this message translates to:
-  /// **'Rutas certificadas SMARTUR'**
+  /// **'Rutas certificadas WELLTUR'**
   String get routesSectionCertified;
 
   /// No description provided for @routesSectionMostCopied.
@@ -765,7 +765,7 @@ abstract class AppLocalizations {
   /// No description provided for @recommendationSubtitle.
   ///
   /// In es, this message translates to:
-  /// **'Sugerido por la IA de SMARTUR para tu visita a {city}.'**
+  /// **'Sugerido por la IA de WELLTUR para tu visita a {city}.'**
   String recommendationSubtitle(Object city);
 
   /// No description provided for @mapDiscoverHint.
@@ -816,11 +816,11 @@ abstract class AppLocalizations {
   /// **'Solo ver Museos'**
   String get filterMuseumsOnly;
 
-  /// No description provided for @aiSmartur.
+  /// No description provided for @aiWelltur.
   ///
   /// In es, this message translates to:
-  /// **'IA Smartur'**
-  String get aiSmartur;
+  /// **'IA Welltur'**
+  String get aiWelltur;
 
   /// No description provided for @enableBiometricsHint.
   ///
@@ -843,7 +843,7 @@ abstract class AppLocalizations {
   /// No description provided for @biometricReason.
   ///
   /// In es, this message translates to:
-  /// **'Accede a tus rutas de SMARTUR'**
+  /// **'Accede a tus rutas de WELLTUR'**
   String get biometricReason;
 
   /// No description provided for @sessionExpired.
@@ -897,7 +897,7 @@ abstract class AppLocalizations {
   /// No description provided for @biometricActivateTitle.
   ///
   /// In es, this message translates to:
-  /// **'Activar huella — SMARTUR'**
+  /// **'Activar huella — WELLTUR'**
   String get biometricActivateTitle;
 
   /// No description provided for @biometricTouchSensor.
@@ -1479,7 +1479,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultUserName.
   ///
   /// In es, this message translates to:
-  /// **'Turista SMARTUR'**
+  /// **'Turista WELLTUR'**
   String get defaultUserName;
 
   /// No description provided for @myInterests.
@@ -2307,7 +2307,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppUpToDate.
   ///
   /// In es, this message translates to:
-  /// **'SMARTUR v{version} está al día.'**
+  /// **'WELLTUR v{version} está al día.'**
   String settingsAppUpToDate(Object version);
 
   /// No description provided for @languageSpanish.
@@ -2397,7 +2397,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateBody.
   ///
   /// In es, this message translates to:
-  /// **'La versión {version} de SMARTUR está disponible.\nSe descargará e instalará desde la app.'**
+  /// **'La versión {version} de WELLTUR está disponible.\nSe descargará e instalará desde la app.'**
   String updateBody(Object version);
 
   /// No description provided for @updateDownloading.
@@ -2469,13 +2469,13 @@ abstract class AppLocalizations {
   /// No description provided for @imageShareGeneratedBy.
   ///
   /// In es, this message translates to:
-  /// **'Generado por SMARTUR AI'**
+  /// **'Generado por WELLTUR AI'**
   String get imageShareGeneratedBy;
 
   /// No description provided for @imageShareMessage.
   ///
   /// In es, this message translates to:
-  /// **'¡Mira lo que me recomienda SMARTUR en {city}!'**
+  /// **'¡Mira lo que me recomienda WELLTUR en {city}!'**
   String imageShareMessage(Object city);
 
   /// No description provided for @commonPlaceFallback.
@@ -2583,13 +2583,13 @@ abstract class AppLocalizations {
   /// No description provided for @recoShareList.
   ///
   /// In es, this message translates to:
-  /// **'🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con SMARTUR'**
+  /// **'🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con WELLTUR'**
   String recoShareList(Object items);
 
   /// No description provided for @detailShareMessage.
   ///
   /// In es, this message translates to:
-  /// **'¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con SMARTUR — Altas Montañas, Veracruz'**
+  /// **'¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con WELLTUR — Altas Montañas, Veracruz'**
   String detailShareMessage(
     Object title,
     Object location,
@@ -2720,7 +2720,7 @@ abstract class AppLocalizations {
   /// No description provided for @plannerOptimizeComingSoon.
   ///
   /// In es, this message translates to:
-  /// **'Próximamente en SMARTUR'**
+  /// **'Próximamente en WELLTUR'**
   String get plannerOptimizeComingSoon;
 
   /// No description provided for @plannerRouteName.
@@ -2768,7 +2768,7 @@ abstract class AppLocalizations {
   /// No description provided for @itineraryCertified.
   ///
   /// In es, this message translates to:
-  /// **'Certificada SMARTUR'**
+  /// **'Certificada WELLTUR'**
   String get itineraryCertified;
 
   /// No description provided for @itineraryCopy.

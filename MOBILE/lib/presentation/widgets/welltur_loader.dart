@@ -1,8 +1,8 @@
-import 'dart:math';
+﻿import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../core/motion/smartur_motion.dart';
+import '../../core/motion/welltur_motion.dart';
 
 // ══════════════════════════════════════════════════════════════════════════════
 // DIMENSIONES DEL VIEWPORT SVG
@@ -106,7 +106,7 @@ enum _Phase { orbit, converge, pinReveal, zoomOut, done }
 // ══════════════════════════════════════════════════════════════════════════════
 // WIDGET PRINCIPAL
 // ══════════════════════════════════════════════════════════════════════════════
-class SmartURLoader extends StatefulWidget {
+class WellTURLoader extends StatefulWidget {
   final VoidCallback? onFinished;
   final bool isMini;
   /// Orbit loop for inline loading states (no pin/zoom sequence).
@@ -114,7 +114,7 @@ class SmartURLoader extends StatefulWidget {
   /// Opaque splash backdrop; transparent when overlaid on content.
   final bool showBackground;
 
-  const SmartURLoader({
+  const WellTURLoader({
     super.key,
     this.onFinished,
     this.isMini = false,
@@ -123,10 +123,10 @@ class SmartURLoader extends StatefulWidget {
   });
 
   @override
-  State<SmartURLoader> createState() => _SmartURLoaderState();
+  State<WellTURLoader> createState() => _WellTURLoaderState();
 }
 
-class _SmartURLoaderState extends State<SmartURLoader>
+class _WellTURLoaderState extends State<WellTURLoader>
     with TickerProviderStateMixin {
 
   static const double _zoomFrom = 2.04;  // 15% smaller
@@ -276,7 +276,7 @@ class _SmartURLoaderState extends State<SmartURLoader>
   }
 
   Future<void> _runSequence() async {
-    final fast = mounted && SmarturMotion.prefersReducedMotion(context);
+    final fast = mounted && WellturMotion.prefersReducedMotion(context);
 
     // ── 1. Orbit: planes enter staggered & begin spinning ────────────────
     for (int i = 0; i < 4; i++) {

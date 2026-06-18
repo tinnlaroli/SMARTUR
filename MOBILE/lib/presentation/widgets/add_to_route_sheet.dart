@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
-import '../../core/motion/smartur_routes.dart';
-import '../../core/theme/smartur_theme_extensions.dart';
+import '../../core/motion/welltur_routes.dart';
+import '../../core/theme/welltur_theme_extensions.dart';
 import '../../core/theme/style_guide.dart';
 import '../../core/utils/notifications.dart';
 import '../../data/local/itinerary_db.dart';
@@ -45,7 +45,7 @@ Future<void> showAddToRouteSheet(
   if (result != null && result.isNew && context.mounted) {
     await Navigator.push(
       context,
-      smarturFadeRoute(PlannerScreen(itinerary: result.it)),
+      wellturFadeRoute(PlannerScreen(itinerary: result.it)),
     );
   }
 }
@@ -101,12 +101,12 @@ class _AddToRouteSheetState extends State<_AddToRouteSheet> {
       await ItineraryDB.saveItinerary(updated);
       routeStopCount.value = updated.stops.length;
       if (mounted) {
-        SmarturNotifications.showSuccess(context, '${it.title}: +${widget.placeName}');
+        WellturNotifications.showSuccess(context, '${it.title}: +${widget.placeName}');
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        SmarturNotifications.showError(context, e.toString());
+        WellturNotifications.showError(context, e.toString());
         setState(() => _addingTo = null);
       }
     }
@@ -128,7 +128,7 @@ class _AddToRouteSheetState extends State<_AddToRouteSheet> {
         final scheme = Theme.of(ctx).colorScheme;
         return AlertDialog(
           title: Text(l10n.plannerRouteName,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
+              style: WellturStyle.calSansTitle.copyWith(fontSize: 18)),
           content: TextField(
             controller: ctrl,
             autofocus: true,
@@ -189,7 +189,7 @@ class _AddToRouteSheetState extends State<_AddToRouteSheet> {
       }
     } catch (e) {
       if (mounted) {
-        SmarturNotifications.showError(context, e.toString());
+        WellturNotifications.showError(context, e.toString());
         setState(() => _loading = false);
       }
     }
@@ -230,7 +230,7 @@ class _AddToRouteSheetState extends State<_AddToRouteSheet> {
 
           // Title
           Text(l10n.addToRoute,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
+              style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 4),
           Text(
             widget.placeName,

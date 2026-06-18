@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
-import '../../../core/motion/smartur_routes.dart';
-import '../../../core/theme/smartur_theme_extensions.dart';
+import '../../../core/motion/welltur_routes.dart';
+import '../../../core/theme/welltur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
-import '../../widgets/smartur_background.dart';
-import '../../widgets/smartur_ui_kit.dart';
+import '../../widgets/welltur_background.dart';
+import '../../widgets/welltur_ui_kit.dart';
 import '../main/main_screen.dart' show routeStopCount;
 import 'comparison_screen.dart';
 import 'itinerary_detail_screen.dart';
@@ -87,7 +87,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         setState(() => _it = updated.copyWith(stops: _stops));
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -109,7 +109,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.plannerRouteName,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18)),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -141,7 +141,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         setState(() => _it = updated.copyWith(stops: _stops));
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -157,7 +157,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       }
     } catch (e) {
       setState(() => _isPublic = !value);
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -177,7 +177,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.plannerStopDelete,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 16)),
         content: Text(
           stop.placeName.isNotEmpty ? stop.placeName : l10n.plannerStopDelete,
           style: const TextStyle(fontFamily: 'Outfit'),
@@ -205,7 +205,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
     try {
       await ItineraryService().deleteStop(_it.id, stop.id);
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -215,7 +215,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.plannerDelete,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 16)),
         content: Text(l10n.plannerDeleteConfirm,
             style: const TextStyle(fontFamily: 'Outfit')),
         actions: [
@@ -243,7 +243,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       setState(() => _loading = false);
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -263,7 +263,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               Flexible(
                 child: Text(
                   _it.title,
-                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+                  style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -285,7 +285,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ),
         ],
       ),
-      body: SmarturBackgroundTop(
+      body: WellturBackgroundTop(
         child: Column(
           children: [
             // Public toggle
@@ -395,7 +395,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           const SizedBox(height: 16),
           Text(
             l10n.plannerNoStops,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
           ),
           const SizedBox(height: 8),
           Text(
@@ -494,7 +494,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   Future<void> _optimizeRoute() async {
     final l10n = AppLocalizations.of(context)!;
     if (_stops.length < 2) {
-      SmarturNotifications.showInfo(context, l10n.compareMinStops);
+      WellturNotifications.showInfo(context, l10n.compareMinStops);
       return;
     }
     setState(() => _optimizing = true);
@@ -503,7 +503,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       if (!mounted) return;
       final reordered = await Navigator.push<List<ItineraryStop>>(
         context,
-        smarturFadeRoute(ComparisonScreen(
+        wellturFadeRoute(ComparisonScreen(
           originalStops: List.from(_stops),
           result: result,
         )),
@@ -516,11 +516,11 @@ class _PlannerScreenState extends State<PlannerScreen> {
         await ItineraryService()
             .reorderStops(_it.id, reordered.map((s) => s.id).toList());
         if (mounted) {
-          SmarturNotifications.showSuccess(context, l10n.compareApplied);
+          WellturNotifications.showSuccess(context, l10n.compareApplied);
         }
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _optimizing = false);
     }

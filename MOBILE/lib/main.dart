@@ -1,15 +1,15 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
-import 'package:smartur/l10n/app_localizations.dart';
-import 'core/motion/smartur_routes.dart';
+import 'package:welltur/l10n/app_localizations.dart';
+import 'core/motion/welltur_routes.dart';
 import 'core/navigation/notification_router.dart';
 import 'core/theme/style_guide.dart';
-import 'core/theme/smartur_theme_extensions.dart';
+import 'core/theme/welltur_theme_extensions.dart';
 import 'core/theme/welltur_theme.dart';
 import 'core/settings/app_settings.dart';
 import 'core/settings/app_settings_scope.dart';
@@ -20,7 +20,7 @@ import 'data/services/update_service.dart';
 import 'presentation/screens/auth/onboarding_screen.dart';
 import 'presentation/screens/auth/welcome_screen.dart';
 import 'presentation/screens/main/main_screen.dart';
-import 'presentation/widgets/smartur_loader.dart';
+import 'presentation/widgets/welltur_loader.dart';
 
 /// Indica si Firebase se inicializó correctamente.
 /// Usar para deshabilitar FCM graciosamente cuando no está disponible.
@@ -52,11 +52,11 @@ void main() async {
   bool seenOnboarding = prefs.getBool('onboarding_seen') ?? false;
 
   final settings = await AppSettingsNotifier.load();
-  runApp(SmarturApp(seenOnboarding: seenOnboarding, settings: settings));
+  runApp(WellturApp(seenOnboarding: seenOnboarding, settings: settings));
 
-  // Deep links — smartur://app/<screen>
+  // Deep links — welltur://app/<screen>
   void handleDeepLink(Uri uri) {
-    if (uri.scheme != 'smartur') return;
+    if (uri.scheme != 'welltur') return;
     final screen = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
     if (screen != null) pendingNotificationScreen.value = screen;
   }
@@ -69,10 +69,10 @@ void main() async {
   } catch (_) {}
 }
 
-class SmarturApp extends StatelessWidget {
+class WellturApp extends StatelessWidget {
   final bool seenOnboarding;
   final AppSettingsNotifier settings;
-  const SmarturApp({super.key, required this.seenOnboarding, required this.settings});
+  const WellturApp({super.key, required this.seenOnboarding, required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +90,7 @@ class SmarturApp extends StatelessWidget {
           return AppSettingsScope(
             notifier: settings,
             child: MaterialApp(
-              title: 'SMARTUR',
+              title: 'WELLTUR',
               debugShowCheckedModeBanner: false,
               themeMode: flutterThemeMode,
               theme: isWelltur ? buildWellturTheme() : _buildLightTheme(),
@@ -147,7 +147,7 @@ ThemeData _baseTheme(ColorScheme scheme) {
   final isDark = scheme.brightness == Brightness.dark;
   return ThemeData(
     extensions: <ThemeExtension<dynamic>>[
-      SmarturSemanticColors(
+      WellturSemanticColors(
         onImageText: Colors.white,
         onImageMuted: isDark ? Colors.white70 : Colors.white60,
         imageScrimSoft: isDark
@@ -157,16 +157,16 @@ ThemeData _baseTheme(ColorScheme scheme) {
             ? Colors.black.withValues(alpha: 0.72)
             : Colors.black.withValues(alpha: 0.55),
         overlayBorder: Colors.white.withValues(alpha: isDark ? 0.22 : 0.16),
-        success: SmarturStyle.green,
-        warning: SmarturStyle.orange,
-        danger: SmarturStyle.pink,
-        info: SmarturStyle.blue,
+        success: WellturStyle.green,
+        warning: WellturStyle.orange,
+        danger: WellturStyle.pink,
+        info: WellturStyle.blue,
         panelBackground: scheme.surfaceContainerHighest,
-        accent: SmarturStyle.purple,
-        altAccent: SmarturStyle.pink,
-        sea: SmarturStyle.blue,
-        leaf: SmarturStyle.green,
-        ember: SmarturStyle.orange,
+        accent: WellturStyle.purple,
+        altAccent: WellturStyle.pink,
+        sea: WellturStyle.blue,
+        leaf: WellturStyle.green,
+        ember: WellturStyle.orange,
       ),
     ],
     useMaterial3: true,
@@ -236,11 +236,11 @@ ThemeData _baseTheme(ColorScheme scheme) {
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: SmarturPageTransitionsBuilder(),
-        TargetPlatform.iOS: SmarturPageTransitionsBuilder(),
-        TargetPlatform.macOS: SmarturPageTransitionsBuilder(),
-        TargetPlatform.windows: SmarturPageTransitionsBuilder(),
-        TargetPlatform.linux: SmarturPageTransitionsBuilder(),
+        TargetPlatform.android: WellturPageTransitionsBuilder(),
+        TargetPlatform.iOS: WellturPageTransitionsBuilder(),
+        TargetPlatform.macOS: WellturPageTransitionsBuilder(),
+        TargetPlatform.windows: WellturPageTransitionsBuilder(),
+        TargetPlatform.linux: WellturPageTransitionsBuilder(),
       },
     ),
     cardTheme: CardThemeData(
@@ -305,9 +305,9 @@ ThemeData _baseTheme(ColorScheme scheme) {
 
 ThemeData _buildLightTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: SmarturStyle.purple,
-    primary: SmarturStyle.purple,
-    secondary: SmarturStyle.pink,
+    seedColor: WellturStyle.purple,
+    primary: WellturStyle.purple,
+    secondary: WellturStyle.pink,
     brightness: Brightness.light,
   );
   return _baseTheme(scheme);
@@ -315,9 +315,9 @@ ThemeData _buildLightTheme() {
 
 ThemeData _buildDarkTheme() {
   final scheme = ColorScheme.fromSeed(
-    seedColor: SmarturStyle.purple,
-    primary: SmarturStyle.purple,
-    secondary: SmarturStyle.pink,
+    seedColor: WellturStyle.purple,
+    primary: WellturStyle.purple,
+    secondary: WellturStyle.pink,
     brightness: Brightness.dark,
   );
   return _baseTheme(scheme);
@@ -385,7 +385,7 @@ class _SplashGateState extends State<_SplashGate> {
     });
     // Navegar a WelcomeScreen limpiando el stack
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      smarturFadeRoute(const WelcomeScreen()),
+      wellturFadeRoute(const WelcomeScreen()),
       (_) => false,
     );
   }
@@ -442,7 +442,7 @@ class _SplashGateState extends State<_SplashGate> {
               onEnd: () {
                 if (fadeOut && mounted) setState(() => _showLoader = false);
               },
-              child: SmartURLoader(
+              child: WellTURLoader(
                 showBackground: true,
                 onFinished: _onAnimationFinished,
               ),

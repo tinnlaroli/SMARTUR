@@ -1,4 +1,4 @@
-import 'dart:math';
+﻿import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +9,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/motion/smartur_routes.dart';
-import '../../../core/theme/smartur_theme_extensions.dart';
+import '../../../core/motion/welltur_routes.dart';
+import '../../../core/theme/welltur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -75,13 +75,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       final copy = await ItineraryService().copyItinerary(_it.id);
       await ItineraryDB.saveItinerary(copy);
       if (!mounted) return;
-      SmarturNotifications.showSuccess(context, l10n.routeCopied);
+      WellturNotifications.showSuccess(context, l10n.routeCopied);
       await Navigator.push(
         context,
-        smarturFadeRoute(PlannerScreen(itinerary: copy)),
+        wellturFadeRoute(PlannerScreen(itinerary: copy)),
       );
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _loadingCopy = false);
     }
@@ -146,7 +146,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
     if (_it.userId == 0) return;
     Navigator.push(
       context,
-      smarturFadeRoute(PublicProfileScreen(
+      wellturFadeRoute(PublicProfileScreen(
         userId: _it.userId,
         initialName: _it.ownerName,
       )),
@@ -202,7 +202,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
   Widget _gradientHeader() {
     final scheme = Theme.of(context).colorScheme;
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -222,7 +222,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _buildInfo(AppLocalizations l10n, ColorScheme scheme) {
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Column(
@@ -255,7 +255,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
           // Title
           Text(_it.title,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 22)),
+              style: WellturStyle.calSansTitle.copyWith(fontSize: 22)),
 
           // Description
           if (_it.description?.isNotEmpty == true) ...[
@@ -336,7 +336,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
     final center = _centroid(points);
     final isDark = scheme.brightness == Brightness.dark;
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
 
     return SliverToBoxAdapter(
       child: Container(
@@ -362,7 +362,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
                   : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               subdomains: isDark ? const ['a', 'b', 'c'] : const [],
-              userAgentPackageName: 'com.smartur.app',
+              userAgentPackageName: 'com.welltur.app',
             ),
             if (points.length > 1)
               PolylineLayer(
@@ -432,7 +432,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
         child: Text(
           l10n.itineraryStops,
-          style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+          style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
         ),
       ),
     );
@@ -828,7 +828,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
               child: FilledButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  smarturFadeRoute(PlannerScreen(itinerary: _it)),
+                  wellturFadeRoute(PlannerScreen(itinerary: _it)),
                 ),
                 style: FilledButton.styleFrom(
                   backgroundColor: scheme.primary,
@@ -1104,9 +1104,9 @@ class _BookingSheetState extends State<_BookingSheet> {
       if (!mounted) return;
       widget.onBooked?.call(booking);
       Navigator.pop(context);
-      SmarturNotifications.showSuccess(context, l10n.bookingSuccess);
+      WellturNotifications.showSuccess(context, l10n.bookingSuccess);
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1116,7 +1116,7 @@ class _BookingSheetState extends State<_BookingSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     final mq = MediaQuery.of(context);
 
     return Container(
@@ -1144,7 +1144,7 @@ class _BookingSheetState extends State<_BookingSheet> {
 
           Text(
             l10n.bookingTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
           ),
           Text(
             widget.serviceName,
@@ -1445,9 +1445,9 @@ class _ManageBookingSheetState extends State<_ManageBookingSheet> {
       if (!mounted) return;
       widget.onUpdated(updated);
       Navigator.pop(context);
-      SmarturNotifications.showSuccess(context, 'Reserva actualizada');
+      WellturNotifications.showSuccess(context, 'Reserva actualizada');
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1479,9 +1479,9 @@ class _ManageBookingSheetState extends State<_ManageBookingSheet> {
       if (!mounted) return;
       widget.onCancelled();
       Navigator.pop(context);
-      SmarturNotifications.showSuccess(context, 'Reserva cancelada');
+      WellturNotifications.showSuccess(context, 'Reserva cancelada');
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _cancelling = false);
     }
@@ -1531,7 +1531,7 @@ class _ManageBookingSheetState extends State<_ManageBookingSheet> {
                   children: [
                     Text(
                       'Mi reserva',
-                      style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+                      style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
                     ),
                     Text(
                       widget.serviceName,
@@ -1735,7 +1735,7 @@ class _ContactSheetState extends State<_ContactSheet> {
         MaterialPageRoute(builder: (_) => ChatScreen(conversation: conv)),
       );
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _loadingChat = false);
     }
@@ -1770,7 +1770,7 @@ class _ContactSheetState extends State<_ContactSheet> {
           const SizedBox(height: 18),
           Text(
             'Contactar servicio',
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
           ),
           const SizedBox(height: 2),
           Text(

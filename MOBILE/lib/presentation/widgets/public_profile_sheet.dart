@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
-import '../../core/theme/smartur_theme_extensions.dart';
+import '../../core/theme/welltur_theme_extensions.dart';
 import '../../core/theme/style_guide.dart';
-import 'smartur_user_avatar.dart';
+import 'welltur_user_avatar.dart';
 
 class PublicProfileSheet extends StatelessWidget {
   final Map<String, dynamic> author;
@@ -62,7 +62,7 @@ class PublicProfileSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: SmarturStyle.spacingLg),
+          const SizedBox(height: WellturStyle.spacingLg),
           
           // Avatar Centrado
           Center(
@@ -75,7 +75,7 @@ class PublicProfileSheet extends StatelessWidget {
                   width: 3,
                 ),
               ),
-              child: SmarturUserAvatar(
+              child: WellturUserAvatar(
                 radius: 44,
                 photoUrl: photoUrl,
                 avatarIconKey: iconKey,
@@ -85,13 +85,13 @@ class PublicProfileSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: SmarturStyle.spacingMd),
+          const SizedBox(height: WellturStyle.spacingMd),
           
           // Nombre
           Text(
             name,
             textAlign: TextAlign.center,
-            style: SmarturStyle.calSansTitle.copyWith(
+            style: WellturStyle.calSansTitle.copyWith(
               fontSize: 22,
               color: scheme.onSurface,
             ),
@@ -122,13 +122,13 @@ class PublicProfileSheet extends StatelessWidget {
           ],
           
           if (interests.isNotEmpty) ...[
-            const SizedBox(height: SmarturStyle.spacingLg),
+            const SizedBox(height: WellturStyle.spacingLg),
             Text(
               l10n.myInterests,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+              style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
               textAlign: TextAlign.left,
             ),
-            const SizedBox(height: SmarturStyle.spacingSm),
+            const SizedBox(height: WellturStyle.spacingSm),
             _buildInterestChips(context, interests),
           ],
         ],
@@ -138,7 +138,7 @@ class PublicProfileSheet extends StatelessWidget {
 
   Widget _buildInterestChips(BuildContext context, List<String> interests) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = SmarturSemanticColors.of(context);
+    final sem = WellturSemanticColors.of(context);
     final colors = [
       scheme.primary,
       sem.sea,

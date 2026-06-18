@@ -1,8 +1,8 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
@@ -10,12 +10,12 @@ import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
-import '../../widgets/smartur_background.dart';
-import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/welltur_background.dart';
+import '../../widgets/welltur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
-import '../../widgets/smartur_user_avatar.dart';
-import '../../widgets/smartur_ui_kit.dart';
-import '../../widgets/smartur_loader.dart';
+import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/welltur_ui_kit.dart';
+import '../../widgets/welltur_loader.dart';
 
 /// Devuelve kind API (`svc` / `poi`) e id numérico desde [Place.id] tipo `svc_12`.
 ({String kind, int id})? _parsePlaceRef(String placeId) {
@@ -88,11 +88,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
     try {
       await UserContentService().deleteCommunityPost(postId);
       if (mounted) {
-        SmarturNotifications.showSuccess(context, l10n.communityDeletePost);
+        WellturNotifications.showSuccess(context, l10n.communityDeletePost);
         _load();
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -100,11 +100,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       await UserContentService().reportCommunityPost(postId, reason);
-      if (mounted) SmarturNotifications.showSuccess(context, l10n.communityReportSent);
+      if (mounted) WellturNotifications.showSuccess(context, l10n.communityReportSent);
     } on UserContentException catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.message);
+      if (mounted) WellturNotifications.showError(context, e.message);
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -156,17 +156,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Text(l10n.communityTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
-      body: SmarturBackgroundTop(
+      body: WellturBackgroundTop(
         child: _error != null && !_loading
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                SmarturEmptyState(
+                WellturEmptyState(
                   icon: Icons.cloud_off_outlined,
                   title: l10n.connectionError,
                   subtitle: _error,
@@ -181,9 +181,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
           : RefreshIndicator(
               color: Theme.of(context).colorScheme.primary,
               onRefresh: _load,
-              child: SmarturLoadTransition(
+              child: WellturLoadTransition(
                 loading: _loading,
-                loadingChild: SmarturShimmer(
+                loadingChild: WellturShimmer(
                   enabled: true,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -195,7 +195,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     ],
                   ),
                 ),
-                child: SmarturFadeIn(
+                child: WellturFadeIn(
                   child: ListView.builder(
                     padding: const EdgeInsets.only(bottom: 80),
                     itemCount: _posts.length,
@@ -298,17 +298,17 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
     if (_selected == null) {
-      SmarturNotifications.showWarning(context, l10n.communityNeedPlace);
+      WellturNotifications.showWarning(context, l10n.communityNeedPlace);
       return;
     }
     final ref = _parsePlaceRef(_selected!.id);
     if (ref == null) {
-      SmarturNotifications.showWarning(context, l10n.communityNeedPlace);
+      WellturNotifications.showWarning(context, l10n.communityNeedPlace);
       return;
     }
     final text = _caption.text.trim();
     if (text.isEmpty && (_imageBytes == null || _imageBytes!.isEmpty)) {
-      SmarturNotifications.showWarning(context, l10n.communityNeedTextOrImage);
+      WellturNotifications.showWarning(context, l10n.communityNeedTextOrImage);
       return;
     }
 
@@ -323,15 +323,15 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
         imageMimeType: _imageMime,
       );
       if (!mounted) return;
-      SmarturNotifications.showSuccess(context, l10n.communityPostPublished);
+      WellturNotifications.showSuccess(context, l10n.communityPostPublished);
       widget.onPublished();
     } on UserContentException catch (e) {
       if (mounted) {
-        SmarturNotifications.showError(context, e.message);
+        WellturNotifications.showError(context, e.message);
       }
     } catch (e) {
       if (mounted) {
-        SmarturNotifications.showError(context, e.toString());
+        WellturNotifications.showError(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -361,13 +361,13 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(l10n.communityCreatePost, style: SmarturStyle.calSansTitle.copyWith(fontSize: 22)),
+            Text(l10n.communityCreatePost, style: WellturStyle.calSansTitle.copyWith(fontSize: 22)),
             const SizedBox(height: 16),
             if (_loadingPlaces)
               const Padding(
                 padding: EdgeInsets.all(24),
                 child: Center(
-                  child: SmartURLoader(isMini: true, continuous: true),
+                  child: WellTURLoader(isMini: true, continuous: true),
                 ),
               )
             else if (_placesError != null)
@@ -655,7 +655,7 @@ class _PostCard extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: openProfile,
-                        child: SmarturUserAvatar(
+                        child: WellturUserAvatar(
                           radius: 18,
                           photoUrl: photoUrl,
                           avatarIconKey: iconKey,

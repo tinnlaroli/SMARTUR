@@ -1,21 +1,21 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 /// A professional shimmer effect component for skeleton loading.
-class SmarturShimmer extends StatefulWidget {
+class WellturShimmer extends StatefulWidget {
   final Widget child;
   final bool enabled;
 
-  const SmarturShimmer({
+  const WellturShimmer({
     super.key,
     required this.child,
     this.enabled = true,
   });
 
   @override
-  State<SmarturShimmer> createState() => _SmarturShimmerState();
+  State<WellturShimmer> createState() => _WellturShimmerState();
 }
 
-class _SmarturShimmerState extends State<SmarturShimmer>
+class _WellturShimmerState extends State<WellturShimmer>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 

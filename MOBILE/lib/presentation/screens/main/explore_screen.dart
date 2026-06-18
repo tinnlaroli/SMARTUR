@@ -1,20 +1,20 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
-import '../../../core/theme/smartur_theme_extensions.dart';
+import '../../../core/theme/welltur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
-import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/welltur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
-import '../../widgets/smartur_user_avatar.dart';
-import '../../widgets/smartur_ui_kit.dart';
+import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/welltur_ui_kit.dart';
 import '../itinerary/itinerary_detail_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -50,11 +50,11 @@ class _ExploreScreenState extends State<ExploreScreen>
       backgroundColor: scheme.surface,
       appBar: AppBar(
         title: Text(l10n.exploreTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
+            style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        bottom: smarturTabBar(
+        bottom: wellturTabBar(
           context,
           controller: _tabCtrl,
           tabs: [
@@ -170,7 +170,7 @@ class _RoutesTabState extends State<_RoutesTab>
   void _openDetail(Itinerary it) {
     Navigator.push(
       context,
-      smarturFadeRoute(ItineraryDetailScreen(itinerary: it)),
+      wellturFadeRoute(ItineraryDetailScreen(itinerary: it)),
     );
   }
 
@@ -255,7 +255,7 @@ class _RoutesTabState extends State<_RoutesTab>
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: SmarturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
+                  borderSide: BorderSide(color: WellturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
                 ),
               ),
             ),
@@ -292,7 +292,7 @@ class _RoutesTabState extends State<_RoutesTab>
             // Más copiadas
             _RouteSectionHeader(
               icon: Icons.copy_rounded,
-              color: SmarturSemanticColors.of(context).sea,
+              color: WellturSemanticColors.of(context).sea,
               title: l10n.routesSectionMostCopied,
             ),
             const SizedBox(height: 12),
@@ -305,7 +305,7 @@ class _RoutesTabState extends State<_RoutesTab>
             // Siguiendo
             _RouteSectionHeader(
               icon: Icons.people_outline_rounded,
-              color: SmarturSemanticColors.of(context).altAccent,
+              color: WellturSemanticColors.of(context).altAccent,
               title: l10n.routesSectionFollowing,
             ),
             const SizedBox(height: 12),
@@ -345,7 +345,7 @@ class _RouteSectionHeader extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(title,
-                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
+                  style: WellturStyle.calSansTitle.copyWith(fontSize: 16)),
             ),
           ],
         ),
@@ -868,11 +868,11 @@ class _CommunityTabState extends State<_CommunityTab>
     try {
       await UserContentService().deleteCommunityPost(postId);
       if (mounted) {
-        SmarturNotifications.showSuccess(context, l10n.communityDeletePost);
+        WellturNotifications.showSuccess(context, l10n.communityDeletePost);
         _load();
       }
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -880,11 +880,11 @@ class _CommunityTabState extends State<_CommunityTab>
     final l10n = AppLocalizations.of(context)!;
     try {
       await UserContentService().reportCommunityPost(postId, reason);
-      if (mounted) SmarturNotifications.showSuccess(context, l10n.communityReportSent);
+      if (mounted) WellturNotifications.showSuccess(context, l10n.communityReportSent);
     } on UserContentException catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.message);
+      if (mounted) WellturNotifications.showError(context, e.message);
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.toString());
+      if (mounted) WellturNotifications.showError(context, e.toString());
     }
   }
 
@@ -929,7 +929,7 @@ class _CommunityTabState extends State<_CommunityTab>
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                SmarturEmptyState(
+                WellturEmptyState(
                   icon: Icons.cloud_off_outlined,
                   title: l10n.connectionError,
                   subtitle: _error,
@@ -944,9 +944,9 @@ class _CommunityTabState extends State<_CommunityTab>
           : RefreshIndicator(
               color: scheme.primary,
               onRefresh: _load,
-              child: SmarturLoadTransition(
+              child: WellturLoadTransition(
                 loading: _loading,
-                loadingChild: SmarturShimmer(
+                loadingChild: WellturShimmer(
                   enabled: true,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -962,7 +962,7 @@ class _CommunityTabState extends State<_CommunityTab>
                     ? ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
-                          SmarturEmptyState(
+                          WellturEmptyState(
                             icon: Icons.people_outline,
                             title: l10n.communityEmpty,
                             subtitle: l10n.communityEmptyHint,
@@ -1199,7 +1199,7 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
               children: [
                 GestureDetector(
                   onTap: () => _viewProfile(context),
-                  child: SmarturUserAvatar(
+                  child: WellturUserAvatar(
                     radius: 18,
                     photoUrl: authorPhoto,
                     avatarIconKey: authorIconKey,
@@ -1317,7 +1317,7 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
                 IconButton(
                   icon: Icon(
                     _liked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                    color: _liked ? SmarturSemanticColors.of(context).altAccent : scheme.onSurfaceVariant,
+                    color: _liked ? WellturSemanticColors.of(context).altAccent : scheme.onSurfaceVariant,
                     size: 20,
                   ),
                   onPressed: _toggleLike,
@@ -1388,9 +1388,9 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
       );
       if (mounted) widget.onPublished();
     } on UserContentException catch (e) {
-      if (mounted) SmarturNotifications.showError(context, e.message);
+      if (mounted) WellturNotifications.showError(context, e.message);
     } catch (e) {
-      if (mounted) SmarturNotifications.showError(context, l10n.connectionError);
+      if (mounted) WellturNotifications.showError(context, l10n.connectionError);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -1419,7 +1419,7 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
           ),
           const SizedBox(height: 16),
           Text(l10n.communityCreatePost,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
+              style: WellturStyle.calSansTitle.copyWith(fontSize: 18)),
           const SizedBox(height: 16),
           TextField(
             controller: _ctrl,

@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-import '../../core/motion/smartur_motion.dart';
-import 'smartur_loader.dart';
+import '../../core/motion/welltur_motion.dart';
+import 'welltur_loader.dart';
 
 /// Overlay de carga con fade — no bloquea el layout hasta que [visible] es true.
-class SmarturLoadingOverlay extends StatelessWidget {
+class WellturLoadingOverlay extends StatelessWidget {
   final bool visible;
   final Color? backgroundColor;
 
-  const SmarturLoadingOverlay({
+  const WellturLoadingOverlay({
     super.key,
     required this.visible,
     this.backgroundColor,
@@ -24,12 +24,12 @@ class SmarturLoadingOverlay extends StatelessWidget {
     return IgnorePointer(
       child: AnimatedOpacity(
         opacity: 1.0,
-        duration: SmarturMotion.fast,
-        curve: SmarturMotion.standard,
+        duration: WellturMotion.fast,
+        curve: WellturMotion.standard,
         child: ColoredBox(
           color: bg.withValues(alpha: 0.9),
           child: const Center(
-            child: SmartURLoader(isMini: true, continuous: true),
+            child: WellTURLoader(isMini: true, continuous: true),
           ),
         ),
       ),

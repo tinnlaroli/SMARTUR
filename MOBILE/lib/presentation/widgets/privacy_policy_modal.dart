@@ -1,7 +1,7 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:smartur/l10n/app_localizations.dart';
+import 'package:welltur/l10n/app_localizations.dart';
 
 import '../../core/theme/style_guide.dart';
 
@@ -35,7 +35,7 @@ Future<void> showPrivacyPolicyModal(BuildContext context) async {
                     Expanded(
                       child: Text(
                         l10n.privacyPolicy,
-                        style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
+                        style: WellturStyle.calSansTitle.copyWith(fontSize: 20),
                       ),
                     ),
                     IconButton(
