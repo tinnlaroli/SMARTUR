@@ -2,7 +2,7 @@
 import { useLanguage } from '../../../contexts/LanguageContext';
 
 export const APK_DOWNLOAD_URL =
-    'https://github.com/tinnlaroli/welltur-movil/releases/latest/download/app-release.apk';
+    'https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk';
 
 function GooglePlayIcon({ className }: { className?: string }) {
     return (

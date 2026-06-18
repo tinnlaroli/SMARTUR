@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
 
     useEffect(() => {
         const controller = new AbortController();
-        fetch('https://api.github.com/repos/tinnlaroli/welltur-movil/releases/latest', { signal: controller.signal })
+        fetch('https://api.github.com/repos/tinnlaroli/smartur-movil/releases/latest', { signal: controller.signal })
             .then((res) => { if (res.ok) return res.json(); })
             .then((data) => { if (data?.tag_name) setLatestVersion(data.tag_name); })
             .catch(() => {});
@@ -186,7 +186,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                     {t('footer.mobileApp.version')}: {latestVersion}
                                 </span>
                                 <a
-                                    href="https://github.com/tinnlaroli/welltur-movil/releases/latest/download/app-release.apk"
+                                    href="https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk"
                                     className="group inline-flex w-fit items-center gap-2.5 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5"
                                     style={{
                                         background: 'var(--color-cyan)',
