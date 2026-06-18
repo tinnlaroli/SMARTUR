@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/itinerary_model.dart';
@@ -65,7 +66,7 @@ class _ExploreScreenState extends State<ExploreScreen>
       floatingActionButton: _tabCtrl.index == 1
           ? FloatingActionButton(
               onPressed: () => _communityKey.currentState?._showCreateSheet(),
-              backgroundColor: SmarturStyle.purple,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               child: const Icon(Icons.add_rounded, color: Colors.white),
             )
           : null,
@@ -211,7 +212,7 @@ class _RoutesTabState extends State<_RoutesTab>
 
     return RefreshIndicator(
       onRefresh: _load,
-      color: SmarturStyle.purple,
+      color: scheme.primary,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
         children: [
@@ -254,7 +255,7 @@ class _RoutesTabState extends State<_RoutesTab>
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: SmarturStyle.green.withValues(alpha: 0.7), width: 1.5),
+                  borderSide: BorderSide(color: SmarturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
                 ),
               ),
             ),
@@ -278,7 +279,7 @@ class _RoutesTabState extends State<_RoutesTab>
             // Certificadas
             _RouteSectionHeader(
               icon: Icons.verified_rounded,
-              color: SmarturStyle.purple,
+              color: scheme.primary,
               title: l10n.routesSectionCertified,
             ),
             const SizedBox(height: 12),
@@ -291,7 +292,7 @@ class _RoutesTabState extends State<_RoutesTab>
             // Más copiadas
             _RouteSectionHeader(
               icon: Icons.copy_rounded,
-              color: SmarturStyle.blue,
+              color: SmarturSemanticColors.of(context).sea,
               title: l10n.routesSectionMostCopied,
             ),
             const SizedBox(height: 12),
@@ -304,7 +305,7 @@ class _RoutesTabState extends State<_RoutesTab>
             // Siguiendo
             _RouteSectionHeader(
               icon: Icons.people_outline_rounded,
-              color: SmarturStyle.pink,
+              color: SmarturSemanticColors.of(context).altAccent,
               title: l10n.routesSectionFollowing,
             ),
             const SizedBox(height: 12),
@@ -532,7 +533,7 @@ class _ItineraryHorizontalList extends StatelessWidget {
                             ),
                             if (it.isCertified)
                               Icon(Icons.verified_rounded,
-                                  size: 14, color: SmarturStyle.purple),
+                                  size: 14, color: scheme.primary),
                           ],
                         ),
                         if (it.description != null && it.description!.isNotEmpty) ...[
@@ -921,6 +922,7 @@ class _CommunityTabState extends State<_CommunityTab>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: _error != null && !_loading
@@ -940,7 +942,7 @@ class _CommunityTabState extends State<_CommunityTab>
               ],
             )
           : RefreshIndicator(
-              color: SmarturStyle.purple,
+              color: scheme.primary,
               onRefresh: _load,
               child: SmarturLoadTransition(
                 loading: _loading,
@@ -1278,24 +1280,24 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.purple.withValues(alpha: 0.08),
+                    color: scheme.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: SmarturStyle.purple.withValues(alpha: 0.2)),
+                        color: scheme.primary.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.place_outlined,
-                          size: 14, color: SmarturStyle.purple),
+                      Icon(Icons.place_outlined,
+                          size: 14, color: scheme.primary),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           placeTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 12,
-                            color: SmarturStyle.purple,
+                            color: scheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -1315,7 +1317,7 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
                 IconButton(
                   icon: Icon(
                     _liked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                    color: _liked ? SmarturStyle.pink : scheme.onSurfaceVariant,
+                    color: _liked ? SmarturSemanticColors.of(context).altAccent : scheme.onSurfaceVariant,
                     size: 20,
                   ),
                   onPressed: _toggleLike,
@@ -1457,13 +1459,13 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.image_outlined, color: SmarturStyle.purple),
+                icon: Icon(Icons.image_outlined, color: scheme.primary),
                 onPressed: _loading ? null : _pickImage,
               ),
               const Spacer(),
               FilledButton(
                 onPressed: _loading ? null : _publish,
-                style: FilledButton.styleFrom(backgroundColor: SmarturStyle.purple),
+                style: FilledButton.styleFrom(backgroundColor: scheme.primary),
                 child: _loading
                     ? const SizedBox(
                         width: 18, height: 18,

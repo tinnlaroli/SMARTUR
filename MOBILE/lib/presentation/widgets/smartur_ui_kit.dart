@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/motion/smartur_motion.dart';
 import '../../core/theme/style_guide.dart';
+import '../../core/theme/smartur_theme_extensions.dart';
 
 export '../../core/motion/smartur_routes.dart'
     show
@@ -205,7 +206,7 @@ class SmarturEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final tint = iconColor ?? SmarturStyle.purple;
+    final tint = iconColor ?? SmarturSemanticColors.of(context).accent;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: Column(
@@ -264,9 +265,9 @@ TabBar smarturTabBar(
         topLeft: Radius.circular(12),
         topRight: Radius.circular(12),
       ),
-      color: SmarturStyle.purple.withValues(alpha: 0.14),
+      color: scheme.primary.withValues(alpha: 0.14),
     ),
-    labelColor: SmarturStyle.purple,
+    labelColor: scheme.primary,
     unselectedLabelColor: scheme.onSurfaceVariant,
     labelStyle: const TextStyle(
       fontFamily: 'Outfit',

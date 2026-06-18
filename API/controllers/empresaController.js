@@ -100,6 +100,10 @@ class EmpresaController {
             sendRegistrationConfirmation(trimmedEmail, { name: name.trim(), otp: otpCode })
                 .catch(err => console.error('[registerEmpresa] fallo al enviar email:', err.message));
 
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`[local-dev] OTP for ${trimmedEmail}: ${otpCode}`);
+            }
+
             return res.status(201).json({
                 message: 'OTP enviado al correo. Verifica tu email para completar el registro.',
             });

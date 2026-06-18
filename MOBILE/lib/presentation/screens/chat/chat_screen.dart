@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/style_guide.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/auth_service.dart';
@@ -272,7 +272,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       IconButton(
                         onPressed: _sendBotMessage,
                         icon: const Icon(Icons.smart_toy_outlined),
-                        color: SmarturStyle.purple,
+                        color: scheme.primary,
                         tooltip: 'Preguntar al asistente',
                         iconSize: 22,
                       ),
@@ -319,6 +319,7 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
 
     if (message.isBot) {
       return Padding(
@@ -330,11 +331,11 @@ class _MessageBubble extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: SmarturStyle.purple.withValues(alpha: 0.15),
+                color: sem.accent.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.smart_toy_outlined,
-                  size: 16, color: SmarturStyle.purple),
+              child: Icon(Icons.smart_toy_outlined,
+                  size: 16, color: sem.accent),
             ),
             const SizedBox(width: 8),
             Flexible(
@@ -345,9 +346,9 @@ class _MessageBubble extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.purple.withValues(alpha: 0.10),
+                    color: sem.accent.withValues(alpha: 0.10),
                     border: Border.all(
-                        color: SmarturStyle.purple.withValues(alpha: 0.25)),
+                        color: sem.accent.withValues(alpha: 0.25)),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4),
                       topRight: Radius.circular(18),
@@ -364,7 +365,7 @@ class _MessageBubble extends StatelessWidget {
                           fontFamily: 'Outfit',
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: SmarturStyle.purple,
+                          color: sem.accent,
                         ),
                       ),
                       const SizedBox(height: 4),

@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/avatar_icon_map.dart';
-import '../../core/theme/style_guide.dart';
+import '../../core/theme/smartur_theme_extensions.dart';
 
 /// Avatar: foto de red, icono permitido o iniciales.
 class SmarturUserAvatar extends StatelessWidget {
@@ -33,8 +33,8 @@ class SmarturUserAvatar extends StatelessWidget {
   }
 
   Widget _fallback(BuildContext context) {
-    final bg = backgroundColor ?? SmarturStyle.purple.withValues(alpha: 0.15);
-    final fg = foregroundColor ?? SmarturStyle.purple;
+    final bg = backgroundColor ?? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15);
+    final fg = foregroundColor ?? Theme.of(context).colorScheme.primary;
     final icon = iconForAvatarKey(avatarIconKey);
     if (icon != null) {
       return CircleAvatar(

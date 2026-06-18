@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/style_guide.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../core/navigation/notification_router.dart';
 import '../chat/conversations_screen.dart';
@@ -187,7 +187,8 @@ class _NavBarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final color = isSelected ? SmarturStyle.purple : scheme.onSurfaceVariant;
+    final accent = scheme.primary;
+    final color = isSelected ? accent : scheme.onSurfaceVariant;
 
     return GestureDetector(
       onTap: onTap,
@@ -202,7 +203,7 @@ class _NavBarItem extends StatelessWidget {
           vertical: 10.0,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? SmarturStyle.purple.withValues(alpha: 0.12) : Colors.transparent,
+          color: isSelected ? accent.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -218,11 +219,11 @@ class _NavBarItem extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: SmarturStyle.purple,
+                          color: accent,
                         ),
                         maxLines: 1,
                       ),
@@ -293,7 +294,9 @@ class _NavBarItemRoutes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final color = isSelected ? SmarturStyle.purple : scheme.onSurfaceVariant;
+    final accent = scheme.primary;
+    final color = isSelected ? accent : scheme.onSurfaceVariant;
+    final badgeColor = SmarturSemanticColors.of(context).altAccent;
 
     return GestureDetector(
       onTap: onTap,
@@ -308,9 +311,7 @@ class _NavBarItemRoutes extends StatelessWidget {
           vertical: 10.0,
         ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? SmarturStyle.purple.withValues(alpha: 0.12)
-              : Colors.transparent,
+          color: isSelected ? accent.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -319,7 +320,6 @@ class _NavBarItemRoutes extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                // Animated icon: map with slight bounce
                 TweenAnimationBuilder<double>(
                   key: ValueKey(isSelected),
                   tween: Tween(begin: 0.8, end: 1.0),
@@ -334,7 +334,6 @@ class _NavBarItemRoutes extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Badge with stop count
                 ValueListenableBuilder<int>(
                   valueListenable: routeStopCount,
                   builder: (_, count, __) {
@@ -349,7 +348,7 @@ class _NavBarItemRoutes extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: SmarturStyle.pink,
+                            color: badgeColor,
                             shape: BoxShape.circle,
                             border: Border.all(color: scheme.surface, width: 1.5),
                           ),
@@ -381,11 +380,11 @@ class _NavBarItemRoutes extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: SmarturStyle.purple,
+                          color: accent,
                         ),
                         maxLines: 1,
                       ),

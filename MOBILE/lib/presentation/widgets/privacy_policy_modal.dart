@@ -68,7 +68,7 @@ Future<void> showPrivacyPolicyModal(BuildContext context) async {
                 child: FilledButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: FilledButton.styleFrom(
-                    backgroundColor: SmarturStyle.purple,
+                    backgroundColor: scheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),

@@ -13,6 +13,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -200,14 +201,16 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _gradientHeader() {
+    final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            SmarturStyle.purple.withValues(alpha: 0.7),
-            SmarturStyle.blue.withValues(alpha: 0.5),
+            scheme.primary.withValues(alpha: 0.7),
+            sem.sea.withValues(alpha: 0.5),
           ],
         ),
       ),
@@ -219,6 +222,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _buildInfo(AppLocalizations l10n, ColorScheme scheme) {
+    final sem = SmarturSemanticColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Column(
@@ -231,13 +235,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                 _Badge(
                   icon: Icons.verified_rounded,
                   label: l10n.itineraryCertified,
-                  color: SmarturStyle.purple,
+                  color: scheme.primary,
                 ),
               if (_it.isPublic && !_it.isCertified)
                 _Badge(
                   icon: Icons.public_rounded,
                   label: l10n.itineraryPublic,
-                  color: SmarturStyle.blue,
+                  color: sem.sea,
                 ),
               if (!_it.isPublic)
                 _Badge(
@@ -282,9 +286,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 13,
-                      color: SmarturStyle.purple,
+                      color: scheme.primary,
                       decoration: TextDecoration.underline,
-                      decorationColor: SmarturStyle.purple,
+                      decorationColor: scheme.primary,
                     ),
                   ),
                 ),
@@ -332,6 +336,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
 
     final center = _centroid(points);
     final isDark = scheme.brightness == Brightness.dark;
+    final sem = SmarturSemanticColors.of(context);
 
     return SliverToBoxAdapter(
       child: Container(
@@ -364,7 +369,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                 polylines: [
                   Polyline(
                     points: points,
-                    color: SmarturStyle.purple.withValues(alpha: 0.7),
+                    color: scheme.primary.withValues(alpha: 0.7),
                     strokeWidth: 3.5,
                   ),
                 ],
@@ -380,10 +385,10 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: i == 0
-                            ? SmarturStyle.green
+                            ? sem.leaf
                             : i == validStops.length - 1
-                                ? SmarturStyle.orange
-                                : SmarturStyle.purple,
+                                ? sem.ember
+                                : scheme.primary,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -500,7 +505,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                               fontFamily: 'Outfit',
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: SmarturStyle.purple,
+                              color: scheme.primary,
                             ),
                           ),
                         )
@@ -515,7 +520,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: SmarturStyle.purple,
+                        color: scheme.primary,
                         shape: BoxShape.circle,
                       ),
                       alignment: Alignment.center,
@@ -533,7 +538,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: SmarturStyle.purple.withValues(alpha: 0.2),
+                          color: scheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
                   ],
@@ -646,7 +651,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                                         style: const TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600),
                                       ),
                                       style: TextButton.styleFrom(
-                                        foregroundColor: SmarturStyle.purple,
+                                        foregroundColor: scheme.primary,
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         minimumSize: Size.zero,
                                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -701,6 +706,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
   }
 
   Widget _buildDayHeader(DateTime date) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
@@ -709,10 +715,10 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: SmarturStyle.purple.withValues(alpha: 0.1),
+              color: scheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: SmarturStyle.purple.withValues(alpha: 0.2)),
+                  color: scheme.primary.withValues(alpha: 0.2)),
             ),
             child: Text(
               DateFormat('EEEE, d MMM').format(date),
@@ -720,14 +726,14 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                 fontFamily: 'Outfit',
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: SmarturStyle.purple,
+                color: scheme.primary,
               ),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Divider(
-              color: SmarturStyle.purple.withValues(alpha: 0.15),
+              color: scheme.primary.withValues(alpha: 0.15),
               height: 1,
             ),
           ),
@@ -825,7 +831,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
                   smarturFadeRoute(PlannerScreen(itinerary: _it)),
                 ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: SmarturStyle.purple,
+                  backgroundColor: scheme.primary,
                   minimumSize: const Size(0, 50),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
@@ -877,7 +883,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
         child: FilledButton.icon(
           onPressed: _loadingCopy ? null : _copyItinerary,
           style: FilledButton.styleFrom(
-            backgroundColor: SmarturStyle.purple,
+            backgroundColor: scheme.primary,
             minimumSize: const Size(double.infinity, 52),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16)),
@@ -1110,6 +1116,7 @@ class _BookingSheetState extends State<_BookingSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final mq = MediaQuery.of(context);
 
     return Container(
@@ -1166,8 +1173,8 @@ class _BookingSheetState extends State<_BookingSheet> {
                       Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
-                          color: SmarturStyle.purple,
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
@@ -1222,9 +1229,9 @@ class _BookingSheetState extends State<_BookingSheet> {
                       spacing: 6,
                       children: [
                         if (_activityLevel != null)
-                          _PrefChip(label: _activityLevel!, color: SmarturStyle.pink),
+                          _PrefChip(label: _activityLevel!, color: sem.altAccent),
                         if (_travelType != null)
-                          _PrefChip(label: _travelType!, color: SmarturStyle.blue),
+                          _PrefChip(label: _travelType!, color: sem.sea),
                       ],
                     ),
                   ],
@@ -1321,7 +1328,7 @@ class _BookingSheetState extends State<_BookingSheet> {
           FilledButton(
             onPressed: _saving ? null : _submit,
             style: FilledButton.styleFrom(
-              backgroundColor: SmarturStyle.purple,
+              backgroundColor: scheme.primary,
               minimumSize: const Size(double.infinity, 52),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)),
@@ -1606,7 +1613,7 @@ class _ManageBookingSheetState extends State<_ManageBookingSheet> {
           FilledButton(
             onPressed: (_saving || _cancelling) ? null : _save,
             style: FilledButton.styleFrom(
-              backgroundColor: SmarturStyle.purple,
+              backgroundColor: scheme.primary,
               minimumSize: const Size(double.infinity, 52),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
@@ -1781,11 +1788,11 @@ class _ContactSheetState extends State<_ContactSheet> {
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: SmarturStyle.purple.withValues(alpha: 0.1),
+                  color: scheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.phone_rounded,
-                    color: SmarturStyle.purple, size: 20),
+                    color: scheme.primary, size: 20),
               ),
               title: const Text(
                 'Llamar',

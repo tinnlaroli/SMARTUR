@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/motion/smartur_routes.dart';
-import '../../core/theme/style_guide.dart';
+import '../../core/theme/smartur_theme_extensions.dart';
 import '../../data/services/user_content_service.dart';
 import '../screens/explore/detail_view_page.dart';
 import '../widgets/add_to_route_sheet.dart';
@@ -250,7 +250,7 @@ class _DiarySwipeViewState extends State<_DiarySwipeView> {
                   const SizedBox(width: 8),
                   _OverlayButton(
                     icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    iconColor: isFav ? SmarturStyle.pink : Colors.white,
+                    iconColor: isFav ? SmarturSemanticColors.of(context).altAccent : Colors.white,
                     onTap: _toggleFav,
                   ),
                 ],

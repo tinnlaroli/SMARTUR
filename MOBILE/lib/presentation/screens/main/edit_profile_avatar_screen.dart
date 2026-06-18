@@ -180,8 +180,8 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
                     avatarIconKey: _iconKey,
                     displayName: _name,
                     radius: 48,
-                    backgroundColor: SmarturStyle.purple.withValues(alpha: 0.12),
-                    foregroundColor: SmarturStyle.purple,
+                    backgroundColor: scheme.primary.withValues(alpha: 0.12),
+                    foregroundColor: scheme.primary,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -206,7 +206,7 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
                         onPressed: () => _pickAndUpload(ImageSource.gallery),
                         icon: const Icon(Icons.photo_library_outlined),
                         label: Text(l10n.profileOpenGallery, style: const TextStyle(fontFamily: 'Outfit')),
-                        style: FilledButton.styleFrom(backgroundColor: SmarturStyle.purple),
+                        style: FilledButton.styleFrom(backgroundColor: scheme.primary),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -258,16 +258,16 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
                         height: 64,
                         decoration: BoxDecoration(
                           color: selected
-                              ? SmarturStyle.purple.withValues(alpha: 0.2)
+                              ? scheme.primary.withValues(alpha: 0.2)
                               : scheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: selected ? SmarturStyle.purple : scheme.outlineVariant,
+                            color: selected ? scheme.primary : scheme.outlineVariant,
                             width: selected ? 2 : 1,
                           ),
                         ),
                         child: icon != null
-                            ? Icon(icon, color: SmarturStyle.purple, size: 32)
+                            ? Icon(icon, color: scheme.primary, size: 32)
                             : const SizedBox.shrink(),
                       ),
                     );

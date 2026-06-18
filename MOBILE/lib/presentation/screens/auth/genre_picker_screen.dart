@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../widgets/smartur_background.dart';
 import '../main/main_screen.dart';
@@ -159,7 +160,7 @@ class _GenrePickerScreenState extends State<GenrePickerScreen>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           color: filled
-                              ? SmarturStyle.purple
+                              ? scheme.primary
                               : scheme.outlineVariant.withValues(alpha: 0.4),
                         ),
                       );
@@ -172,9 +173,9 @@ class _GenrePickerScreenState extends State<GenrePickerScreen>
                   child: ElevatedButton(
                     onPressed: _selected.isNotEmpty ? _continue : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: SmarturStyle.purple,
+                      backgroundColor: scheme.primary,
                       disabledBackgroundColor:
-                          SmarturStyle.purple.withValues(alpha: 0.3),
+                          scheme.primary.withValues(alpha: 0.3),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
@@ -211,14 +212,18 @@ class _GenrePickerScreenState extends State<GenrePickerScreen>
     );
   }
 
-  List<_GenreData> _buildGenres(AppLocalizations l10n) => [
-        _GenreData('nature',     '🌿', l10n.genreNature,      SmarturStyle.green),
-        _GenreData('adventure',  '🏔️', l10n.genreAdventure,   SmarturStyle.blue),
-        _GenreData('gastronomy', '🍽️', l10n.genreGastronomy,  SmarturStyle.orange),
-        _GenreData('culture',    '🎭', l10n.genreCulture,     SmarturStyle.purple),
-        _GenreData('relax',      '🌅', l10n.genreRelax,       SmarturStyle.pink),
-        _GenreData('history',    '🏛️', l10n.genreHistory,     SmarturStyle.blue),
+  List<_GenreData> _buildGenres(AppLocalizations l10n) {
+    final sem = SmarturSemanticColors.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    return [
+        _GenreData('nature',     '🌿', l10n.genreNature,      sem.leaf),
+        _GenreData('adventure',  '🏔️', l10n.genreAdventure,   sem.sea),
+        _GenreData('gastronomy', '🍽️', l10n.genreGastronomy,  sem.ember),
+        _GenreData('culture',    '🎭', l10n.genreCulture,     scheme.primary),
+        _GenreData('relax',      '🌅', l10n.genreRelax,       sem.altAccent),
+        _GenreData('history',    '🏛️', l10n.genreHistory,     sem.sea),
       ];
+  }
 }
 
 class _GenreData {

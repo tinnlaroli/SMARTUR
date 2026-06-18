@@ -10,7 +10,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
-import '../../../core/theme/style_guide.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../widgets/add_to_route_sheet.dart';
@@ -378,7 +377,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                           _isFavorite
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
-                          color: _isFavorite ? SmarturStyle.pink : semantic.onImageText,
+                          color: _isFavorite ? semantic.altAccent : semantic.onImageText,
                           size: 22,
                         ),
                       ),
@@ -646,7 +645,7 @@ class _BottomContent extends StatelessWidget {
               // CTA button — add to route
               ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: SmarturStyle.purple,
+                        backgroundColor: scheme.primary,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 52),
                         shape: RoundedRectangleBorder(
@@ -687,6 +686,7 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final name = activity['name'] as String? ?? '';
     final description = activity['description'] as String? ?? '';
     final price = activity['price'];
@@ -714,9 +714,9 @@ class _ActivityCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: SmarturStyle.purple.withValues(alpha: 0.06),
+        color: sem.accent.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.18)),
+        border: Border.all(color: sem.accent.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,16 +738,16 @@ class _ActivityCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.green.withValues(alpha: 0.12),
+                    color: sem.leaf.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     priceLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Outfit',
                       fontWeight: FontWeight.w700,
                       fontSize: 11,
-                      color: SmarturStyle.green,
+                      color: sem.leaf,
                     ),
                   ),
                 ),
@@ -828,20 +828,22 @@ class _ServiceInfoBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sem = SmarturSemanticColors.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final chips = <_InfoChip>[];
 
     final price = _formatPrice();
     if (price.isNotEmpty) {
-      chips.add(_InfoChip(icon: Icons.attach_money_rounded, label: price, color: SmarturStyle.green));
+      chips.add(_InfoChip(icon: Icons.attach_money_rounded, label: price, color: sem.leaf));
     }
 
     final dur = _formatDuration();
     if (dur.isNotEmpty) {
-      chips.add(_InfoChip(icon: Icons.schedule_rounded, label: dur, color: SmarturStyle.blue));
+      chips.add(_InfoChip(icon: Icons.schedule_rounded, label: dur, color: sem.sea));
     }
 
     if (contactPhone != null) {
-      chips.add(_InfoChip(icon: Icons.phone_rounded, label: contactPhone!, color: SmarturStyle.purple));
+      chips.add(_InfoChip(icon: Icons.phone_rounded, label: contactPhone!, color: scheme.primary));
     }
 
     if (operatingHours != null && operatingHours!.isNotEmpty) {
@@ -849,7 +851,7 @@ class _ServiceInfoBand extends StatelessWidget {
       final today = dayOrder[DateTime.now().weekday - 1 < 7 ? DateTime.now().weekday - 1 : 6];
       final todayHours = operatingHours![today];
       if (todayHours != null) {
-        chips.add(_InfoChip(icon: Icons.door_front_door_rounded, label: 'Hoy: $todayHours', color: SmarturStyle.orange));
+        chips.add(_InfoChip(icon: Icons.door_front_door_rounded, label: 'Hoy: $todayHours', color: sem.ember));
       }
     }
 
@@ -909,6 +911,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 6),
       child: Row(
@@ -917,7 +920,7 @@ class _SectionLabel extends StatelessWidget {
             width: 3,
             height: 13,
             decoration: BoxDecoration(
-              color: SmarturStyle.orange,
+              color: sem.ember,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -945,17 +948,18 @@ class _RatingPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: SmarturStyle.orange.withValues(alpha: 0.15),
+        color: sem.ember.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: SmarturStyle.orange.withValues(alpha: 0.45)),
+        border: Border.all(color: sem.ember.withValues(alpha: 0.45)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star_rounded, size: 14, color: SmarturStyle.orange),
+          Icon(Icons.star_rounded, size: 14, color: sem.ember),
           const SizedBox(width: 4),
           Text(
             rating.toStringAsFixed(1),

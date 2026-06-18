@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/theme/style_guide.dart';
+import '../../core/theme/smartur_theme_extensions.dart';
 
 /// Inverted variant: animated color band at the TOP (~15 % of screen height),
 /// fading into [scheme.surface]. Ideal for Home / inner screens.
@@ -35,14 +35,19 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
       vsync: this,
       duration: const Duration(seconds: 25),
     )..repeat();
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sem = SmarturSemanticColors.of(context);
     _colorAnimation = TweenSequence<Color?>(
       [
-        _seq(SmarturStyle.purple, SmarturStyle.green),
-        _seq(SmarturStyle.green, SmarturStyle.orange),
-        _seq(SmarturStyle.orange, SmarturStyle.blue),
-        _seq(SmarturStyle.blue, SmarturStyle.pink),
-        _seq(SmarturStyle.pink, SmarturStyle.purple),
+        _seq(sem.accent, sem.leaf),
+        _seq(sem.leaf, sem.ember),
+        _seq(sem.ember, sem.sea),
+        _seq(sem.sea, sem.altAccent),
+        _seq(sem.altAccent, sem.accent),
       ],
     ).animate(_controller);
   }
@@ -68,9 +73,7 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
 
         return Stack(
           children: [
-            // Full surface base (claro u oscuro según tema) — evita franja negra bajo status bar
             Positioned.fill(child: ColoredBox(color: surface)),
-            // Animated color band at the top
             Positioned(
               top: 0,
               left: 0,
@@ -82,7 +85,7 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      (_colorAnimation.value ?? SmarturStyle.purple)
+                      (_colorAnimation.value ?? surface)
                           .withValues(alpha: 0.38),
                       surface,
                     ],
@@ -108,7 +111,7 @@ class _SmarturBackgroundTopState extends State<SmarturBackgroundTop>
 }
 
 /// A professional background component that subtly cycles through a palette
-/// of colors (Green, Purple, Orange, Blue, Pink) with a frosted glass effect.
+/// of brand colors with a frosted glass effect. Colors come from the active theme.
 class SmarturBackground extends StatefulWidget {
   final Widget child;
   final double blurSigma;
@@ -125,7 +128,8 @@ class SmarturBackground extends StatefulWidget {
   State<SmarturBackground> createState() => _SmarturBackgroundState();
 }
 
-class _SmarturBackgroundState extends State<SmarturBackground> with SingleTickerProviderStateMixin {
+class _SmarturBackgroundState extends State<SmarturBackground>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Color?> _colorAnimation;
 
@@ -134,27 +138,27 @@ class _SmarturBackgroundState extends State<SmarturBackground> with SingleTicker
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 25), // Ultra-slow for a subtle effect
+      duration: const Duration(seconds: 25),
     )..repeat();
+  }
 
-    // Define the color palette for cycling
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sem = SmarturSemanticColors.of(context);
     _colorAnimation = TweenSequence<Color?>(
       [
-        _buildSequenceItem(SmarturStyle.green, SmarturStyle.purple), // Green to Purple
-        _buildSequenceItem(SmarturStyle.purple, SmarturStyle.orange), // Purple to Orange
-        _buildSequenceItem(SmarturStyle.orange, SmarturStyle.blue),   // Orange to Blue
-        _buildSequenceItem(SmarturStyle.blue, SmarturStyle.pink),        // Blue to Pink
-        _buildSequenceItem(SmarturStyle.pink, SmarturStyle.green),  // Pink to Green
+        _seq(sem.leaf, sem.accent),
+        _seq(sem.accent, sem.ember),
+        _seq(sem.ember, sem.sea),
+        _seq(sem.sea, sem.altAccent),
+        _seq(sem.altAccent, sem.leaf),
       ],
     ).animate(_controller);
   }
 
-  TweenSequenceItem<Color?> _buildSequenceItem(Color begin, Color end) {
-    return TweenSequenceItem(
-      tween: ColorTween(begin: begin, end: end),
-      weight: 1.0,
-    );
-  }
+  TweenSequenceItem<Color?> _seq(Color a, Color b) =>
+      TweenSequenceItem(tween: ColorTween(begin: a, end: b), weight: 1.0);
 
   @override
   void dispose() {
@@ -168,12 +172,10 @@ class _SmarturBackgroundState extends State<SmarturBackground> with SingleTicker
     return AnimatedBuilder(
       animation: _colorAnimation,
       builder: (context, child) {
-        final accent = _colorAnimation.value ?? SmarturStyle.pink;
+        final accent = _colorAnimation.value ?? surface;
         return Stack(
           children: [
-            // Base del tema (blanco / gris oscuro) — nunca negro “del sistema”
             Positioned.fill(child: ColoredBox(color: surface)),
-            // Degradado desde el color de superficie hacia la paleta animada
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(

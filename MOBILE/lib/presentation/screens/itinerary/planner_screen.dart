@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -72,14 +73,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       lastDate: DateTime.now().add(const Duration(days: 730)),
       initialDateRange: _dateRange,
       locale: const Locale('es', 'MX'),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: SmarturStyle.purple,
-          ),
-        ),
-        child: child!,
-      ),
+      builder: (context, child) => child!,
     );
     if (picked == null || !mounted) return;
     setState(() => _dateRange = picked);
@@ -132,7 +126,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            style: FilledButton.styleFrom(backgroundColor: SmarturStyle.purple),
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.primary),
             child: Text(l10n.save,
                 style: const TextStyle(
                     fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
@@ -302,7 +296,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   Icon(
                     _isPublic ? Icons.public_rounded : Icons.lock_outline_rounded,
                     size: 16,
-                    color: _isPublic ? SmarturStyle.purple : scheme.onSurfaceVariant,
+                    color: _isPublic ? scheme.primary : scheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -316,7 +310,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                   const Spacer(),
                   Switch(
                     value: _isPublic,
-                    activeColor: SmarturStyle.purple,
+                    activeColor: scheme.primary,
                     onChanged: _togglePublic,
                   ),
                 ],
@@ -329,18 +323,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
               child: Row(
                 children: [
-                  Icon(Icons.date_range_rounded, size: 15, color: SmarturStyle.purple),
+                  Icon(Icons.date_range_rounded, size: 15, color: scheme.primary),
                   const SizedBox(width: 6),
                   _dateRange != null
                       ? GestureDetector(
                           onTap: _editDateRange,
                           child: Text(
                             '${_fmt(_dateRange!.start)} – ${_fmt(_dateRange!.end)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: SmarturStyle.purple,
+                              color: scheme.primary,
                             ),
                           ),
                         )
@@ -350,7 +344,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                           label: const Text('Agregar fechas',
                               style: TextStyle(fontFamily: 'Outfit', fontSize: 12)),
                           style: TextButton.styleFrom(
-                            foregroundColor: SmarturStyle.purple,
+                            foregroundColor: scheme.primary,
                             padding: EdgeInsets.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -452,6 +446,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   Widget _buildOptimizeButton(AppLocalizations l10n) {
+    final scheme = Theme.of(context).colorScheme;
     final canOptimize = _stops.length >= 2 && !_optimizing && !_loading;
     return Padding(
       padding: EdgeInsets.only(
@@ -463,12 +458,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
       child: FilledButton.icon(
         onPressed: canOptimize ? _optimizeRoute : null,
         style: FilledButton.styleFrom(
-          backgroundColor: SmarturStyle.purple.withValues(alpha: 0.15),
-          foregroundColor: SmarturStyle.purple,
+          backgroundColor: scheme.primary.withValues(alpha: 0.15),
+          foregroundColor: scheme.primary,
           disabledBackgroundColor:
-              SmarturStyle.purple.withValues(alpha: 0.07),
+              scheme.primary.withValues(alpha: 0.07),
           disabledForegroundColor:
-              SmarturStyle.purple.withValues(alpha: 0.4),
+              scheme.primary.withValues(alpha: 0.4),
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16)),
@@ -480,7 +475,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: SmarturStyle.purple,
+                  color: scheme.primary,
                 ),
               )
             : const Icon(Icons.auto_fix_high_rounded, size: 20),
@@ -611,7 +606,7 @@ class _StopCard extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: SmarturStyle.purple,
+              color: scheme.primary,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -654,7 +649,7 @@ class _StopCard extends StatelessWidget {
                         if (stop.visitDate != null) ...[
                           Icon(Icons.calendar_today_rounded,
                               size: 12,
-                              color: SmarturStyle.purple.withValues(alpha: 0.8)),
+                              color: scheme.primary.withValues(alpha: 0.8)),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(stop.visitDate!),
@@ -669,7 +664,7 @@ class _StopCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Icon(Icons.access_time_rounded,
                               size: 12,
-                              color: SmarturStyle.purple.withValues(alpha: 0.8)),
+                              color: scheme.primary.withValues(alpha: 0.8)),
                           const SizedBox(width: 4),
                           Text(
                             stop.visitTimeStart!,
@@ -753,14 +748,7 @@ class _StopCard extends StatelessWidget {
       initialDate: stop.visitDate ?? DateTime.now(),
       firstDate: first,
       lastDate: last,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: Theme.of(ctx).colorScheme.copyWith(
-                primary: SmarturStyle.purple,
-              ),
-        ),
-        child: child!,
-      ),
+      builder: (ctx, child) => child!,
     );
     onDateSet(picked);
   }
@@ -772,14 +760,7 @@ class _StopCard extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: Theme.of(ctx).colorScheme.copyWith(
-                primary: SmarturStyle.purple,
-              ),
-        ),
-        child: child!,
-      ),
+      builder: (ctx, child) => child!,
     );
     if (picked != null) {
       final formatted =

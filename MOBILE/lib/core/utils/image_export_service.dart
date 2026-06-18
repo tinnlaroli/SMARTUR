@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smartur/l10n/app_localizations.dart';
-import '../theme/style_guide.dart';
 
 class ImageExportService {
   static final ScreenshotController screenshotController = ScreenshotController();
@@ -75,8 +74,8 @@ class ImageExportService {
               child: Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: SmarturStyle.purple.withValues(alpha: 0.1),
-                    child: Text(score.toStringAsFixed(1), style: const TextStyle(color: SmarturStyle.purple, fontWeight: FontWeight.bold)),
+                    backgroundColor: scheme.primary.withValues(alpha: 0.1),
+                    child: Text(score.toStringAsFixed(1), style: TextStyle(color: scheme.primary, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 16),
                   Expanded(

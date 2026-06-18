@@ -4,6 +4,7 @@ import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
@@ -158,7 +159,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                           value: _progressController.value,
                           minHeight: 6,
                           backgroundColor: scheme.outlineVariant,
-                          valueColor: const AlwaysStoppedAnimation<Color>(SmarturStyle.purple),
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                         ),
                       ),
                     ),
@@ -177,15 +178,15 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: active
-                                ? SmarturStyle.purple
+                                ? Theme.of(context).colorScheme.primary
                                 : done
-                                    ? SmarturStyle.green
+                                    ? SmarturSemanticColors.of(context).leaf
                                     : Colors.transparent,
                             border: Border.all(
                               color: active
-                                  ? SmarturStyle.purple
+                                  ? Theme.of(context).colorScheme.primary
                                   : done
-                                      ? SmarturStyle.green
+                                      ? SmarturSemanticColors.of(context).leaf
                                       : scheme.outlineVariant,
                               width: 2,
                             ),
@@ -210,7 +211,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                                   duration: const Duration(milliseconds: 300),
                                   height: 2,
                                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                                  color: done ? SmarturStyle.green : scheme.outlineVariant,
+                                  color: done ? SmarturSemanticColors.of(context).leaf : scheme.outlineVariant,
                                 ),
                               ),
                             ],

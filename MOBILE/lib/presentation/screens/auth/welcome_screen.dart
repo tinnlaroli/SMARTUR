@@ -280,8 +280,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 }),
                                 child: Text(
                                   l10n.changeEmail,
-                                  style: const TextStyle(
-                                    color: SmarturStyle.purple,
+                                  style: TextStyle(
+                                    color: scheme.primary,
                                   ),
                                 ),
                               ),
@@ -407,8 +407,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 }),
                                 child: Text(
                                   l10n.forgotPassword,
-                                  style: const TextStyle(
-                                    color: SmarturStyle.purple,
+                                  style: TextStyle(
+                                    color: scheme.primary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -425,7 +425,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   visualDensity: VisualDensity.compact,
                                   value: acceptedTerms,
-                                  activeColor: SmarturStyle.purple,
+                                  activeColor: scheme.primary,
                                   onChanged: (v) => setModalState(
                                     () => acceptedTerms = v ?? false,
                                   ),
@@ -452,11 +452,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                               onTap: () => showTermsAndConditionsModal(context),
                                               child: Text(
                                                 l10n.termsAndConditions,
-                                                style: const TextStyle(
-                                                  color: SmarturStyle.purple,
+                                                style: TextStyle(
+                                                  color: scheme.primary,
                                                   fontWeight: FontWeight.w600,
                                                   decoration: TextDecoration.underline,
-                                                  decorationColor: SmarturStyle.purple,
+                                                  decorationColor: scheme.primary,
                                                   fontFamily: 'Outfit',
                                                   fontSize: 13,
                                                   height: 1.4,
@@ -653,7 +653,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               ? Text(
                                   '…',
                                   style: TextStyle(
-                                    color: SmarturStyle.purple.withValues(
+                                    color: scheme.primary.withValues(
                                       alpha: 0.85,
                                     ),
                                     fontSize: 18,
@@ -677,7 +677,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       child: Text(
                                         'G',
                                         style: TextStyle(
-                                          color: SmarturStyle.purple,
+                                          color: scheme.primary,
                                           fontWeight: FontWeight.w700,
                                           fontFamily: 'Outfit',
                                           fontSize: 16,
@@ -720,8 +720,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               ),
                               TextSpan(
                                 text: isLogin ? l10n.signUp : l10n.signInAction,
-                                style: const TextStyle(
-                                  color: SmarturStyle.purple,
+                                style: TextStyle(
+                                  color: scheme.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -769,9 +769,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             controller: nameCtrl,
             decoration: InputDecoration(
               labelText: l10n.fullName,
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.person_outline,
-                color: SmarturStyle.purple,
+                color: scheme.primary,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -790,9 +790,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
             labelText: l10n.emailAddress,
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.email_outlined,
-              color: SmarturStyle.purple,
+              color: scheme.primary,
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -811,9 +811,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           onChanged: (value) => setModalState(() {}),
           decoration: InputDecoration(
             labelText: l10n.password,
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.lock_outline,
-              color: SmarturStyle.purple,
+              color: scheme.primary,
             ),
             suffixIcon: onTogglePassword != null
                 ? IconButton(
@@ -1090,17 +1090,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: SmarturStyle.purple.withValues(alpha: 0.1),
+                              color: scheme.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: SmarturStyle.purple,
+                                color: scheme.primary,
                                 width: 2,
                               ),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.fingerprint,
                               size: 40,
-                              color: SmarturStyle.purple,
+                              color: scheme.primary,
                             ),
                           ),
                         ),

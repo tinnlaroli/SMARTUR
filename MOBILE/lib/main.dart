@@ -162,6 +162,11 @@ ThemeData _baseTheme(ColorScheme scheme) {
         danger: SmarturStyle.pink,
         info: SmarturStyle.blue,
         panelBackground: scheme.surfaceContainerHighest,
+        accent: SmarturStyle.purple,
+        altAccent: SmarturStyle.pink,
+        sea: SmarturStyle.blue,
+        leaf: SmarturStyle.green,
+        ember: SmarturStyle.orange,
       ),
     ],
     useMaterial3: true,
@@ -262,7 +267,7 @@ ThemeData _baseTheme(ColorScheme scheme) {
     ),
     tabBarTheme: TabBarThemeData(
       indicatorSize: TabBarIndicatorSize.tab,
-      labelColor: SmarturStyle.purple,
+      labelColor: scheme.primary,
       unselectedLabelColor: scheme.onSurfaceVariant,
       labelStyle: const TextStyle(
         fontFamily: 'Outfit',

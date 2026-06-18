@@ -510,6 +510,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   Widget _buildBody(ColorScheme scheme) {
     final l10n = AppLocalizations.of(context)!;
+    final sem = SmarturSemanticColors.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final mq = MediaQuery.of(context);
@@ -527,14 +528,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.purple.withValues(alpha: 0.10),
+                    color: scheme.primary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.20)),
+                    border: Border.all(color: scheme.primary.withValues(alpha: 0.20)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.auto_awesome_rounded,
-                          color: SmarturStyle.purple, size: 14),
+                      Icon(Icons.auto_awesome_rounded,
+                          color: scheme.primary, size: 14),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(l10n.recoPreloadedBannerDesc,
@@ -552,14 +553,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.green.withValues(alpha: 0.12),
+                    color: sem.leaf.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: SmarturStyle.green.withValues(alpha: 0.28)),
+                    border: Border.all(color: sem.leaf.withValues(alpha: 0.28)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.bookmark_rounded,
-                          color: SmarturStyle.green, size: 18),
+                      Icon(Icons.bookmark_rounded,
+                          color: sem.leaf, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(l10n.recoSavedInDiary,
@@ -707,12 +708,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                                 horizontal: 18, vertical: 10),
                             decoration: BoxDecoration(
                               color: sel
-                                  ? SmarturStyle.purple
+                                  ? scheme.primary
                                   : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: sel
-                                    ? SmarturStyle.purple
+                                    ? scheme.primary
                                     : scheme.outlineVariant.withValues(alpha: 0.5),
                               ),
                             ),
@@ -892,6 +893,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
@@ -944,13 +946,13 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          SmarturStyle.purple.withValues(alpha: 0.14),
-                          SmarturStyle.orange.withValues(alpha: 0.08),
+                          scheme.primary.withValues(alpha: 0.14),
+                          sem.ember.withValues(alpha: 0.08),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: SmarturStyle.purple.withValues(alpha: 0.18),
+                        color: scheme.primary.withValues(alpha: 0.18),
                       ),
                     ),
                     child: Row(
@@ -962,9 +964,9 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                             color: scheme.surface.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.auto_awesome_rounded,
-                            color: SmarturStyle.purple,
+                            color: scheme.primary,
                             size: 22,
                           ),
                         ),
@@ -1070,7 +1072,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                             Icon(
                               Icons.bookmark_added_rounded,
                               size: 18,
-                              color: SmarturStyle.green.withValues(alpha: 0.9),
+                              color: sem.leaf.withValues(alpha: 0.9),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -1099,7 +1101,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                             ),
                           ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: SmarturStyle.purple,
+                            backgroundColor: scheme.primary,
                             foregroundColor: scheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -1145,6 +1147,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final recs = widget.recommendations.take(6).toList();
 
     return Dialog(
@@ -1162,11 +1165,11 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: SmarturStyle.purple.withValues(alpha: 0.12),
+                    color: scheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.rate_review_outlined,
-                      color: SmarturStyle.purple, size: 20),
+                  child: Icon(Icons.rate_review_outlined,
+                      color: scheme.primary, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1204,14 +1207,14 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                       width: 24, height: 24,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: SmarturStyle.purple.withValues(alpha: 0.1),
+                        color: scheme.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Text('${i + 1}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 10,
                               fontWeight: FontWeight.w700,
-                              color: SmarturStyle.purple)),
+                              color: scheme.primary)),
                     ),
                     const SizedBox(width: 10),
                     // Name
@@ -1228,7 +1231,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                     _MiniVote(
                       icon: Icons.thumb_up_rounded,
                       active: vote == true,
-                      activeColor: SmarturStyle.green,
+                      activeColor: sem.leaf,
                       onTap: () => setState(() => _votes[itemId] = _votes[itemId] == true ? null : true),
                     ),
                     const SizedBox(width: 6),
@@ -1275,7 +1278,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                             Navigator.pop(context, true);
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: SmarturStyle.purple,
+                      backgroundColor: scheme.primary,
                       disabledBackgroundColor: scheme.surfaceContainerHighest,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1369,6 +1372,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final sem = semantic;
     final place = widget.place;
     final rec = widget.rec;
     final name = place?.name ?? rec['title'] ?? rec['name'] ?? AppLocalizations.of(context)!.recommendationNumber(widget.index + 1);
@@ -1404,16 +1408,16 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
-                        color: SmarturStyle.purple.withValues(alpha: 0.08),
+                        color: scheme.primary.withValues(alpha: 0.08),
                         child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: SmarturStyle.purple.withValues(alpha: 0.5),
+                            color: scheme.primary.withValues(alpha: 0.5),
                           ),
                         ),
                       ),
                       errorWidget: (_, __, ___) => Container(
-                        color: SmarturStyle.purple.withValues(alpha: 0.12),
+                        color: scheme.primary.withValues(alpha: 0.12),
                         child: Icon(
                           Icons.landscape_outlined,
                           color: semantic.onImageMuted,
@@ -1447,8 +1451,8 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      SmarturStyle.purple.withValues(alpha: 0.32),
-                      SmarturStyle.orange.withValues(alpha: 0.14),
+                      scheme.primary.withValues(alpha: 0.32),
+                      sem.ember.withValues(alpha: 0.14),
                     ],
                   ),
                 ),
@@ -1525,7 +1529,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                       _FeedbackBtn(
                         icon: Icons.thumb_up_rounded,
                         active: _liked,
-                        activeColor: SmarturStyle.green,
+                        activeColor: sem.leaf,
                         onTap: _handleLike,
                       ),
                       const SizedBox(width: 8),
@@ -1549,7 +1553,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                             ),
                           ),
                           style: TextButton.styleFrom(
-                            foregroundColor: SmarturStyle.purple,
+                            foregroundColor: scheme.primary,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           ),
                         ),
@@ -1630,6 +1634,7 @@ class _FormProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final steps = [
       (typeDone, l10n.recoTourismType),
       (budgetDone, l10n.recoBudget),
@@ -1644,12 +1649,12 @@ class _FormProgress extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: allDone
-            ? SmarturStyle.purple.withValues(alpha: 0.08)
+            ? scheme.primary.withValues(alpha: 0.08)
             : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: allDone
-              ? SmarturStyle.purple.withValues(alpha: 0.25)
+              ? scheme.primary.withValues(alpha: 0.25)
               : scheme.outlineVariant.withValues(alpha: 0.4),
         ),
       ),
@@ -1661,7 +1666,7 @@ class _FormProgress extends StatelessWidget {
               Icon(
                 allDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
                 size: 15,
-                color: allDone ? SmarturStyle.purple : scheme.onSurfaceVariant,
+                color: allDone ? scheme.primary : scheme.onSurfaceVariant,
               ),
               const SizedBox(width: 6),
               Text(
@@ -1670,7 +1675,7 @@ class _FormProgress extends StatelessWidget {
                   fontFamily: 'Outfit',
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: allDone ? SmarturStyle.purple : scheme.onSurfaceVariant,
+                  color: allDone ? scheme.primary : scheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -1683,7 +1688,7 @@ class _FormProgress extends StatelessWidget {
               minHeight: 5,
               backgroundColor: scheme.outlineVariant.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(
-                allDone ? SmarturStyle.purple : SmarturStyle.orange,
+                allDone ? scheme.primary : sem.ember,
               ),
             ),
           ),
@@ -1700,7 +1705,7 @@ class _FormProgress extends StatelessWidget {
                       s.$1 ? Icons.check_circle_outline : Icons.circle_outlined,
                       size: 13,
                       color: s.$1
-                          ? SmarturStyle.green
+                          ? sem.leaf
                           : scheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                     const SizedBox(width: 4),
@@ -1742,6 +1747,7 @@ class _InlineSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1752,7 +1758,7 @@ class _InlineSection extends StatelessWidget {
               width: 3,
               height: 14,
               decoration: BoxDecoration(
-                color: SmarturStyle.purple,
+                color: scheme.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1771,9 +1777,9 @@ class _InlineSection extends StatelessWidget {
               const SizedBox(width: 4),
               Container(
                 width: 5, height: 5,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: SmarturStyle.orange,
+                  color: sem.ember,
                 ),
               ),
             ],
@@ -1823,10 +1829,10 @@ class _BudgetButton extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
-          color: selected ? SmarturStyle.purple : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          color: selected ? scheme.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: selected ? SmarturStyle.purple : scheme.outline.withValues(alpha: 0.15)),
+              color: selected ? scheme.primary : scheme.outline.withValues(alpha: 0.15)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1866,10 +1872,10 @@ class _GroupButton extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
-          color: selected ? SmarturStyle.purple : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          color: selected ? scheme.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: selected ? SmarturStyle.purple : scheme.outline.withValues(alpha: 0.15)),
+              color: selected ? scheme.primary : scheme.outline.withValues(alpha: 0.15)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1898,28 +1904,29 @@ class _ToggleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: value ? SmarturStyle.orange.withValues(alpha: 0.15) : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color: value ? sem.ember.withValues(alpha: 0.15) : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: value ? SmarturStyle.orange.withValues(alpha: 0.6) : scheme.outline.withValues(alpha: 0.15)),
+              color: value ? sem.ember.withValues(alpha: 0.6) : scheme.outline.withValues(alpha: 0.15)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: value ? SmarturStyle.orange : scheme.onSurface.withValues(alpha: 0.5)),
+            Icon(icon, size: 14, color: value ? sem.ember : scheme.onSurface.withValues(alpha: 0.5)),
             const SizedBox(width: 6),
             Text(label,
               style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w600,
-                  color: value ? SmarturStyle.orange : scheme.onSurface)),
+                  color: value ? sem.ember : scheme.onSurface)),
             const SizedBox(width: 6),
             Icon(value ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-              size: 14, color: value ? SmarturStyle.orange : scheme.onSurface.withValues(alpha: 0.3)),
+              size: 14, color: value ? sem.ember : scheme.onSurface.withValues(alpha: 0.3)),
           ],
         ),
       ),
@@ -1977,8 +1984,8 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
       builder: (context, child) {
         final loading = widget.loading;
         final disabled = widget.disabled;
-        final ca = _colorA.evaluate(_gradCtrl) ?? SmarturStyle.purple;
-        final cb = _colorB.evaluate(_gradCtrl) ?? SmarturStyle.purple;
+        final ca = _colorA.evaluate(_gradCtrl) ?? scheme.primary;
+        final cb = _colorB.evaluate(_gradCtrl) ?? scheme.primary;
         Widget content;
         if (loading) {
           content = SizedBox(
@@ -2034,19 +2041,20 @@ class _RankBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            SmarturStyle.purple.withValues(alpha: 0.92),
-            SmarturStyle.pink.withValues(alpha: 0.85),
+            scheme.primary.withValues(alpha: 0.92),
+            semantic.altAccent.withValues(alpha: 0.85),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: SmarturStyle.purple.withValues(alpha: 0.25),
+            color: scheme.primary.withValues(alpha: 0.25),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2074,7 +2082,7 @@ class _ScoreBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: SmarturStyle.orange.withValues(alpha: 0.9),
+        color: Theme.of(context).extension<SmarturSemanticColors>()!.ember.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -2097,16 +2105,17 @@ class _TagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: SmarturStyle.purple.withValues(alpha: 0.12),
+        color: scheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.2)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.2)),
       ),
       child: Text(label,
-        style: const TextStyle(fontFamily: 'Outfit', fontSize: 10, fontWeight: FontWeight.w600,
-            color: SmarturStyle.purple)),
+        style: TextStyle(fontFamily: 'Outfit', fontSize: 10, fontWeight: FontWeight.w600,
+            color: scheme.primary)),
     );
   }
 }

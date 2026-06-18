@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
@@ -68,11 +69,11 @@ class _MapScreenState extends State<MapScreen> {
         _MapFilter.all         => null,
       };
 
-  Color _colorForCategory(PlaceCategory cat) => switch (cat) {
-        PlaceCategory.museums     => SmarturStyle.purple,
-        PlaceCategory.restaurants => SmarturStyle.orange,
-        PlaceCategory.adventures  => SmarturStyle.green,
-        PlaceCategory.hotels      => SmarturStyle.blue,
+  Color _colorForCategory(PlaceCategory cat, {SmarturSemanticColors? sem, ColorScheme? scheme}) => switch (cat) {
+        PlaceCategory.museums     => scheme?.primary ?? SmarturStyle.purple,
+        PlaceCategory.restaurants => sem?.ember ?? SmarturStyle.orange,
+        PlaceCategory.adventures  => sem?.leaf ?? SmarturStyle.green,
+        PlaceCategory.hotels      => sem?.sea ?? SmarturStyle.blue,
       };
 
   IconData _iconForCategory(PlaceCategory cat) => switch (cat) {
@@ -94,6 +95,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -109,9 +111,9 @@ class _MapScreenState extends State<MapScreen> {
                 : SmarturFadeIn(
                     child: Stack(
                       children: [
-                        _buildMap(),
-                        _buildTopFiltersBar(l10n, scheme),
-                        _buildBottomCard(l10n, scheme),
+                        _buildMap(sem: sem, scheme: scheme),
+                        _buildTopFiltersBar(l10n, scheme, sem: sem),
+                        _buildBottomCard(l10n, scheme, sem: sem),
                       ],
                     ),
                   ),
@@ -149,7 +151,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Map ──────────────────────────────────────────────────────────────────
 
-  Widget _buildMap() => Padding(
+  Widget _buildMap({required SmarturSemanticColors sem, required ColorScheme scheme}) => Padding(
         padding: const EdgeInsets.all(12),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
@@ -168,7 +170,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
               MarkerLayer(
                 markers: _visiblePlaces.map((place) {
-                  final color = _colorForCategory(place.category);
+                  final color = _colorForCategory(place.category, sem: sem, scheme: scheme);
                   final icon  = _iconForCategory(place.category);
                   final isSelected = _selectedPlace?.id == place.id;
                   return Marker(
@@ -210,7 +212,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Filters bar ──────────────────────────────────────────────────────────
 
-  Widget _buildTopFiltersBar(AppLocalizations l10n, ColorScheme scheme) => Positioned(
+  Widget _buildTopFiltersBar(AppLocalizations l10n, ColorScheme scheme, {required SmarturSemanticColors sem}) => Positioned(
         top: 8,
         left: 12,
         right: 12,
@@ -233,7 +235,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.explore_outlined, color: SmarturStyle.purple),
+                  Icon(Icons.explore_outlined, color: scheme.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -248,11 +250,11 @@ class _MapScreenState extends State<MapScreen> {
                   if (_allPlaces.isNotEmpty)
                     Text(
                       '${_visiblePlaces.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: SmarturStyle.purple,
+                        color: scheme.primary,
                       ),
                     ),
                 ],
@@ -277,11 +279,11 @@ class _MapScreenState extends State<MapScreen> {
                           color: isSelected ? Colors.white : scheme.onSurfaceVariant,
                         ),
                       ),
-                      backgroundColor: isSelected ? SmarturStyle.purple : Colors.white,
+                      backgroundColor: isSelected ? scheme.primary : Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                         side: BorderSide(
-                          color: isSelected ? SmarturStyle.purple : scheme.outlineVariant,
+                          color: isSelected ? scheme.primary : scheme.outlineVariant,
                         ),
                       ),
                       elevation: isSelected ? 2 : 0,
@@ -300,7 +302,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Bottom info card ──────────────────────────────────────────────────────
 
-  Widget _buildBottomCard(AppLocalizations l10n, ColorScheme scheme) {
+  Widget _buildBottomCard(AppLocalizations l10n, ColorScheme scheme, {required SmarturSemanticColors sem}) {
     final place = _selectedPlace;
 
     if (place == null) {
@@ -340,7 +342,7 @@ class _MapScreenState extends State<MapScreen> {
       );
     }
 
-    final color = _colorForCategory(place.category);
+    final color = _colorForCategory(place.category, sem: sem, scheme: scheme);
     final icon  = _iconForCategory(place.category);
 
     return Positioned(

@@ -316,7 +316,7 @@ class HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        icon: const Icon(Icons.fingerprint, size: 48, color: SmarturStyle.purple),
+        icon: Icon(Icons.fingerprint, size: 48, color: scheme.primary),
         title: Text(l10n.quickAccess, style: const TextStyle(fontFamily: 'CalSans')),
         content: Text(
           l10n.biometricPrompt,
@@ -332,7 +332,7 @@ class HomeScreenState extends State<HomeScreen> {
             children: [
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, 'activate'),
-                style: ElevatedButton.styleFrom(backgroundColor: SmarturStyle.purple),
+                style: ElevatedButton.styleFrom(backgroundColor: scheme.primary),
                 child: Text(l10n.activate),
               ),
               const SizedBox(height: 4),
@@ -620,7 +620,7 @@ class HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               const Divider(),
               ListTile(
-                leading: const Icon(Icons.tune_outlined, color: SmarturStyle.blue),
+                leading: Icon(Icons.tune_outlined, color: SmarturSemanticColors.of(context).sea),
                 title: Text(l10n.myPreferences, style: const TextStyle(fontFamily: 'Outfit')),
                 trailing:
                     Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
@@ -647,8 +647,8 @@ class HomeScreenState extends State<HomeScreen> {
                       actionsAlignment: MainAxisAlignment.center,
                       actionsOverflowAlignment: OverflowBarAlignment.center,
                       title: Text(l10n.yourPreferences,
-                          style: const TextStyle(
-                              fontFamily: 'CalSans', color: SmarturStyle.purple)),
+                          style: TextStyle(
+                              fontFamily: 'CalSans', color: scheme.primary)),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -660,11 +660,11 @@ class HomeScreenState extends State<HomeScreen> {
                               children: interests
                                   .map((i) => Chip(
                                         label: Text(i,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 fontSize: 12,
                                                 fontFamily: 'Outfit',
-                                                color: SmarturStyle.purple)),
-                                        backgroundColor: SmarturStyle.purple
+                                                color: scheme.primary)),
+                                        backgroundColor: scheme.primary
                                             .withValues(alpha: 0.1),
                                         side: BorderSide.none,
                                         shape: RoundedRectangleBorder(
@@ -700,7 +700,7 @@ class HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: SmarturStyle.purple),
+                              backgroundColor: scheme.primary),
                           child: Text(l10n.change),
                         ),
                       ],
@@ -716,9 +716,9 @@ class HomeScreenState extends State<HomeScreen> {
                   return StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
                     return SwitchListTile(
-                      activeThumbColor: SmarturStyle.purple,
+                      activeThumbColor: scheme.primary,
                       secondary:
-                          const Icon(Icons.fingerprint, color: SmarturStyle.purple),
+                          Icon(Icons.fingerprint, color: scheme.primary),
                       title: Text(l10n.fingerprintAccess,
                           style: const TextStyle(fontFamily: 'Outfit')),
                       value: enabled,
@@ -791,16 +791,16 @@ class HomeScreenState extends State<HomeScreen> {
                       );
                     }
                   },
-                  icon: const Icon(Icons.logout, color: SmarturStyle.pink),
+                  icon: Icon(Icons.logout, color: SmarturSemanticColors.of(context).altAccent),
                   label: Text(
                     l10n.logout,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontFamily: 'Outfit',
-                        color: SmarturStyle.pink,
+                        color: SmarturSemanticColors.of(context).altAccent,
                         fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: SmarturStyle.pink),
+                    side: BorderSide(color: SmarturSemanticColors.of(context).altAccent),
                     minimumSize:
                         const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                     shape: RoundedRectangleBorder(
@@ -834,7 +834,7 @@ class HomeScreenState extends State<HomeScreen> {
                 enabled: _isLoadingContent,
                 child: RefreshIndicator(
                   onRefresh: _onRefresh,
-                  color: SmarturStyle.purple,
+                  color: Theme.of(context).colorScheme.primary,
                   child: CustomScrollView(
                     controller: _homeScrollController,
                     physics: const BouncingScrollPhysics(
@@ -926,7 +926,7 @@ class HomeScreenState extends State<HomeScreen> {
                       photoUrl: _headerPhotoUrl,
                       avatarIconKey: _headerAvatarIconKey,
                       displayName: name ?? '',
-                      backgroundColor: SmarturStyle.purple.withValues(alpha: 0.12),
+                      backgroundColor: scheme.primary.withValues(alpha: 0.12),
                       foregroundColor: scheme.onSurface,
                     ),
                   ),
@@ -946,8 +946,8 @@ class HomeScreenState extends State<HomeScreen> {
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.wb_sunny_outlined,
-                                  color: SmarturStyle.purple),
+                              Icon(Icons.wb_sunny_outlined,
+                                  color: scheme.primary),
                               const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1039,7 +1039,7 @@ class HomeScreenState extends State<HomeScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: SmarturStyle.green.withValues(alpha: 0.7), width: 1.5),
+            borderSide: BorderSide(color: SmarturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
           ),
         ),
       ),
@@ -1150,7 +1150,7 @@ class HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.only(left: 20),
                       itemCount: 1 + _cities.length,
                       itemBuilder: (context, idx) {
-                        final accentColor = SmarturStyle.green;
+                        final accentColor = SmarturSemanticColors.of(context).leaf;
                         final isLast = idx == _cities.length;
 
                         if (idx == 0) {
@@ -1306,7 +1306,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final categories = PlaceCategory.values;
     final hasFilter = _selectedCategory != null;
-    final activeColor = hasFilter ? _selectedCategory!.color : SmarturStyle.purple;
+    final activeColor = hasFilter ? _selectedCategory!.color : scheme.primary;
     final activeLabel = hasFilter ? _selectedCategory!.label : l10n.allCategories;
     final activeIcon = hasFilter ? _selectedCategory!.icon : Icons.filter_list_rounded;
 
@@ -1348,7 +1348,7 @@ class HomeScreenState extends State<HomeScreen> {
           value: 0,
           icon: Icons.apps_rounded,
           label: l10n.allCategories,
-          color: SmarturStyle.purple,
+          color: scheme.primary,
           count: scope.length,
           isSelected: _selectedCategory == null,
           scheme: scheme,
@@ -1531,8 +1531,8 @@ class HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.auto_awesome_rounded,
-                        size: 16, color: SmarturStyle.purple),
+                    Icon(Icons.auto_awesome_rounded,
+                        size: 16, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -1938,7 +1938,7 @@ class _PlaceCardState extends State<_PlaceCard>
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: SmarturStyle.purple.withValues(alpha: 0.80),
+                        color: scheme.primary.withValues(alpha: 0.80),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -1960,7 +1960,7 @@ class _PlaceCardState extends State<_PlaceCard>
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: _liked
-                            ? SmarturStyle.pink.withValues(alpha: 0.92)
+                            ? semantic.altAccent.withValues(alpha: 0.92)
                             : Colors.black.withValues(alpha: 0.40),
                         shape: BoxShape.circle,
                       ),
@@ -2036,7 +2036,7 @@ class _PlaceCardState extends State<_PlaceCard>
                         ),
                       Row(
                         children: [
-                          Icon(Icons.star_rounded, size: isHero ? 15 : 13, color: SmarturStyle.orange),
+                          Icon(Icons.star_rounded, size: isHero ? 15 : 13, color: semantic.ember),
                           const SizedBox(width: 3),
                           Text(
                             place.rating.toStringAsFixed(1),
@@ -2050,7 +2050,7 @@ class _PlaceCardState extends State<_PlaceCard>
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                               decoration: BoxDecoration(
-                                color: SmarturStyle.orange,
+                                color: semantic.ember,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
@@ -2263,7 +2263,7 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
                     icon: isFav
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    iconColor: isFav ? SmarturStyle.pink : Colors.white,
+                    iconColor: isFav ? SmarturSemanticColors.of(context).altAccent : Colors.white,
                     onTap: _toggleFav,
                   ),
                 ],
@@ -2317,8 +2317,6 @@ class _WellnessBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(

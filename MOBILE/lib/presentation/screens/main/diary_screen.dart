@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
@@ -108,7 +109,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         body: SmarturBackgroundTop(
           child: _error != null && !_loading
               ? RefreshIndicator(
-                  color: SmarturStyle.purple,
+                  color: scheme.primary,
                   onRefresh: _load,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -163,7 +164,7 @@ class _FavoritesTab extends StatelessWidget {
     if (items.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(
-        color: SmarturStyle.purple,
+        color: scheme.primary,
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -172,14 +173,14 @@ class _FavoritesTab extends StatelessWidget {
               icon: Icons.favorite_border_rounded,
               title: l10n.favoritesTab,
               subtitle: l10n.noCategoryPlaces,
-              iconColor: SmarturStyle.pink,
+              iconColor: SmarturSemanticColors.of(context).altAccent,
             ),
           ],
         ),
       );
     }
     return RefreshIndicator(
-      color: SmarturStyle.purple,
+      color: scheme.primary,
       onRefresh: onRefresh,
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -272,7 +273,7 @@ class _HistoryTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     if (items.isEmpty) {
       return RefreshIndicator(
-        color: SmarturStyle.purple,
+        color: scheme.primary,
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -287,7 +288,7 @@ class _HistoryTab extends StatelessWidget {
       );
     }
     return RefreshIndicator(
-      color: SmarturStyle.purple,
+      color: scheme.primary,
       onRefresh: onRefresh,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -311,7 +312,7 @@ class _HistoryTab extends StatelessWidget {
                   Container(
                     width: 18, height: 18,
                     decoration: BoxDecoration(
-                      color: SmarturStyle.purple, shape: BoxShape.circle,
+                      color: scheme.primary, shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: const Icon(Icons.check, size: 12, color: Colors.white),
@@ -378,7 +379,7 @@ class _SessionsTab extends StatelessWidget {
     if (sessions.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(
-        color: SmarturStyle.purple,
+        color: scheme.primary,
         onRefresh: onRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -387,7 +388,7 @@ class _SessionsTab extends StatelessWidget {
               icon: Icons.auto_awesome_outlined,
               title: l10n.diaryAiSessionsEmptyTitle,
               subtitle: l10n.diaryAiSessionsEmptySubtitle,
-              iconColor: SmarturStyle.purple,
+              iconColor: scheme.primary,
             ),
           ],
         ),
@@ -395,7 +396,7 @@ class _SessionsTab extends StatelessWidget {
     }
 
     return RefreshIndicator(
-      color: SmarturStyle.purple,
+      color: scheme.primary,
       onRefresh: onRefresh,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -467,11 +468,11 @@ class _SessionCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: SmarturStyle.purple.withValues(alpha: 0.12),
+                      color: scheme.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.auto_awesome_rounded,
-                        color: SmarturStyle.purple, size: 16),
+                    child: Icon(Icons.auto_awesome_rounded,
+                        color: scheme.primary, size: 16),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -501,7 +502,7 @@ class _SessionCard extends StatelessWidget {
                   _InfoChip(
                     icon: Icons.psychology_outlined,
                     label: algorithm,
-                    color: SmarturStyle.purple,
+                    color: scheme.primary,
                   ),
                   if (latencyMs != null)
                     _InfoChip(
@@ -522,7 +523,7 @@ class _SessionCard extends StatelessWidget {
                       children: [
                         Container(width: 4, height: 4,
                           decoration: BoxDecoration(
-                            color: SmarturStyle.purple.withValues(alpha: 0.5),
+                            color: scheme.primary.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           )),
                         const SizedBox(width: 6),
@@ -542,7 +543,7 @@ class _SessionCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(AppLocalizations.of(context)!.diaryMoreCount((recs.length - 3).toString()),
                       style: TextStyle(fontFamily: 'Outfit', fontSize: 10,
-                          color: SmarturStyle.purple.withValues(alpha: 0.7))),
+                          color: scheme.primary.withValues(alpha: 0.7))),
                   ),
               ],
             ],
@@ -659,10 +660,10 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: SmarturStyle.purple.withValues(alpha: 0.15),
+                          color: scheme.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.history_rounded, color: SmarturStyle.purple, size: 18),
+                        child: Icon(Icons.history_rounded, color: scheme.primary, size: 18),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -749,18 +750,18 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                       width: 80, height: 80, fit: BoxFit.cover,
                                       errorWidget: (_, __, ___) => Container(
                                         width: 80, height: 80,
-                                        color: SmarturStyle.purple.withValues(alpha: 0.1),
+                                        color: scheme.primary.withValues(alpha: 0.1),
                                         child: const Icon(Icons.landscape_outlined, color: Colors.white38),
                                       ),
                                       placeholder: (_, __) => Container(width: 80, height: 80,
-                                        color: SmarturStyle.purple.withValues(alpha: 0.05)),
+                                        color: scheme.primary.withValues(alpha: 0.05)),
                                     ),
                                   )
                                 else
                                   Container(
                                     width: 80, height: 80,
                                     decoration: BoxDecoration(
-                                      color: SmarturStyle.purple.withValues(alpha: 0.1),
+                                      color: scheme.primary.withValues(alpha: 0.1),
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(18),
                                         bottomLeft: Radius.circular(18),
@@ -769,7 +770,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                     child: Center(
                                       child: Text('#${i + 1}',
                                         style: SmarturStyle.calSansTitle.copyWith(
-                                            fontSize: 18, color: SmarturStyle.purple.withValues(alpha: 0.5))),
+                                            fontSize: 18, color: scheme.primary.withValues(alpha: 0.5))),
                                     ),
                                   ),
                                 const SizedBox(width: 12),
@@ -789,12 +790,12 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: SmarturStyle.orange.withValues(alpha: 0.15),
+                                                color: SmarturSemanticColors.of(context).ember.withValues(alpha: 0.15),
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(score.toStringAsFixed(2),
-                                                style: const TextStyle(fontFamily: 'Outfit', fontSize: 10,
-                                                    fontWeight: FontWeight.w700, color: SmarturStyle.orange)),
+                                                style: TextStyle(fontFamily: 'Outfit', fontSize: 10,
+                                                    fontWeight: FontWeight.w700, color: SmarturSemanticColors.of(context).ember)),
                                             ),
                                           ],
                                         ),
@@ -811,12 +812,12 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                             children: tags.take(3).map((t) => Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: SmarturStyle.purple.withValues(alpha: 0.08),
+                                                color: scheme.primary.withValues(alpha: 0.08),
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(t,
-                                                style: const TextStyle(fontFamily: 'Outfit', fontSize: 9,
-                                                    color: SmarturStyle.purple)),
+                                                style: TextStyle(fontFamily: 'Outfit', fontSize: 9,
+                                                    color: scheme.primary)),
                                             )).toList(),
                                           ),
                                         ],
@@ -828,7 +829,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                   const Padding(
                                     padding: EdgeInsets.only(right: 8),
                                     child: Icon(Icons.chevron_right_rounded,
-                                        color: SmarturStyle.purple, size: 20),
+                                        color: scheme.primary, size: 20),
                                   ),
                               ],
                             ),

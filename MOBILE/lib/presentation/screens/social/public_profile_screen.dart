@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -146,8 +147,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         preferredSize: const Size.fromHeight(48),
         child: TabBar(
           controller: _tabs,
-          indicatorColor: SmarturStyle.purple,
-          labelColor: SmarturStyle.purple,
+          indicatorColor: scheme.primary,
+          labelColor: scheme.primary,
           unselectedLabelColor: scheme.onSurfaceVariant,
           labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, fontSize: 14),
           tabs: [Tab(text: l10n.publicRoutes)],
@@ -183,14 +184,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.35), width: 3),
+              border: Border.all(color: scheme.primary.withValues(alpha: 0.35), width: 3),
             ),
             child: SmarturUserAvatar(
               radius: 40,
               photoUrl: p?.photoUrl,
               avatarIconKey: p?.avatarIconKey,
               displayName: name,
-              backgroundColor: SmarturStyle.purple.withValues(alpha: 0.12),
+              backgroundColor: scheme.primary.withValues(alpha: 0.12),
               foregroundColor: scheme.onSurface,
             ),
           ),
@@ -312,7 +313,7 @@ class _FollowButton extends StatelessWidget {
     return FilledButton(
       onPressed: onTap,
       style: FilledButton.styleFrom(
-        backgroundColor: isFollowing ? scheme.surfaceContainerHighest : SmarturStyle.purple,
+        backgroundColor: isFollowing ? scheme.surfaceContainerHighest : scheme.primary,
         foregroundColor: isFollowing ? scheme.onSurface : Colors.white,
         minimumSize: const Size(120, 36),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -383,7 +384,7 @@ class _RouteCard extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(right: 4),
                             child: Icon(Icons.verified_rounded,
-                                size: 14, color: SmarturStyle.purple),
+                                size: 14, color: scheme.primary),
                           ),
                         Expanded(
                           child: Text(it.title,
@@ -413,7 +414,7 @@ class _RouteCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.add_circle_outline_rounded, color: SmarturStyle.purple),
+                icon: Icon(Icons.add_circle_outline_rounded, color: scheme.primary),
                 tooltip: l10n.copyToMyRoutes,
                 onPressed: onCopy,
               ),
@@ -426,8 +427,8 @@ class _RouteCard extends StatelessWidget {
 
   Widget _defaultCover() {
     return Container(
-      color: SmarturStyle.purple.withValues(alpha: 0.12),
-      child: const Icon(Icons.route_rounded, color: SmarturStyle.purple, size: 28),
+      color: scheme.primary.withValues(alpha: 0.12),
+      child: Icon(Icons.route_rounded, color: scheme.primary, size: 28),
     );
   }
 }

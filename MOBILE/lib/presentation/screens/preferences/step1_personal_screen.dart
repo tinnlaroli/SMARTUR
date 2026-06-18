@@ -177,7 +177,7 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
               child: InputDecorator(
                 decoration: InputDecoration(
                   labelText: l10n.birthYear,
-                  prefixIcon: const Icon(Icons.calendar_today_outlined, color: SmarturStyle.purple),
+                  prefixIcon: Icon(Icons.calendar_today_outlined, color: Theme.of(context).colorScheme.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   errorText: _selectedBirthDate != null && !_isValidBirthDate(_selectedBirthDate!)
                       ? l10n.invalidYear
@@ -208,15 +208,15 @@ class _PreferencesStep1State extends State<PreferencesStep1> {
             children: genders.map((g) {
               final selected = _selectedGender == g['key'];
               return ChoiceChip(
-                avatar: Icon(g['icon'] as IconData, size: 18, color: selected ? Colors.white : SmarturStyle.purple),
+                avatar: Icon(g['icon'] as IconData, size: 18, color: selected ? Colors.white : scheme.primary),
                 label: Text(g['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
                 selected: selected,
                 showCheckmark: false,
-                selectedColor: SmarturStyle.purple,
-                backgroundColor: SmarturStyle.purple.withValues(alpha: 0.1),
+                selectedColor: scheme.primary,
+                backgroundColor: scheme.primary.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: selected ? SmarturStyle.purple : SmarturStyle.purple.withValues(alpha: 0.2)),
+                  side: BorderSide(color: selected ? scheme.primary : scheme.primary.withValues(alpha: 0.2)),
                 ),
                 onSelected: (_) => setState(() => _selectedGender = g['key'] as String),
               );

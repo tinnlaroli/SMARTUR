@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
 import '../../../core/motion/smartur_motion.dart';
-import '../../../core/theme/style_guide.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import 'welcome_screen.dart';
 import '../../widgets/smartur_background.dart';
@@ -185,7 +184,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: active
-                                ? SmarturStyle.purple
+                                ? scheme.primary
                                 : scheme.onSurfaceVariant.withValues(alpha: 0.28),
                           ),
                         );

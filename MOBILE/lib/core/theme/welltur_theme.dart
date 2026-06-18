@@ -59,6 +59,12 @@ ThemeData buildWellturTheme() {
         danger: _vinoProf,
         info: _verdeSalvia,
         panelBackground: const Color(0xFFF5E0EA),
+        // Brand palette — WellTur overrides
+        accent: _rosaViejo,
+        altAccent: _vinoProf,
+        sea: _verdeSalvia,
+        leaf: _verdeMenta,
+        ember: _mostaza,
       ),
     ],
     useMaterial3: true,

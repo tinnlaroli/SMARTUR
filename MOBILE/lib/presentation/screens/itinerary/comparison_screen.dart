@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
@@ -64,6 +65,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final optimized = _optimizedStops;
     final improved = widget.result.savingsPct > 0;
 
@@ -87,10 +89,10 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                 margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: SmarturStyle.purple.withValues(alpha: 0.1),
+                  color: scheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: SmarturStyle.purple.withValues(alpha: 0.3)),
+                      color: scheme.primary.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -111,15 +113,15 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                 margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: SmarturStyle.green.withValues(alpha: 0.08),
+                  color: sem.leaf.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: SmarturStyle.green.withValues(alpha: 0.3)),
+                      color: sem.leaf.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.verified_outlined,
-                        color: SmarturStyle.green, size: 20),
+                        color: sem.leaf, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -131,7 +133,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                               fontFamily: 'Outfit',
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
-                              color: SmarturStyle.green,
+                              color: sem.leaf,
                             ),
                           ),
                           Text(
@@ -139,7 +141,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                             style: TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 11,
-                              color: SmarturStyle.green.withValues(alpha: 0.8),
+                              color: sem.leaf.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
@@ -172,7 +174,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                       child: _StopsColumn(
                         title: l10n.compareOptimized,
                         stops: optimized,
-                        accentColor: SmarturStyle.purple,
+                        accentColor: scheme.primary,
                         scheme: scheme,
                         highlight: improved,
                       ),
@@ -193,7 +195,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
                       FilledButton(
                         onPressed: () => Navigator.pop(context, optimized),
                         style: FilledButton.styleFrom(
-                          backgroundColor: SmarturStyle.purple,
+                          backgroundColor: scheme.primary,
                           minimumSize: const Size(double.infinity, 52),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16)),
@@ -289,7 +291,7 @@ class _MetricChip extends StatelessWidget {
             fontFamily: 'Outfit',
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: SmarturStyle.purple,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -320,7 +322,7 @@ class _SavingsBadge extends StatelessWidget {
             fontFamily: 'Outfit',
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: SmarturStyle.purple,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         Text(
@@ -328,7 +330,7 @@ class _SavingsBadge extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'Outfit',
             fontSize: 11,
-            color: SmarturStyle.purple,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -510,7 +512,7 @@ class _NearbySection extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
           child: Row(
             children: [
-              Icon(Icons.place_outlined, size: 16, color: SmarturStyle.purple),
+              Icon(Icons.place_outlined, size: 16, color: scheme.primary),
               const SizedBox(width: 6),
               Text(
                 'Lugares cercanos',
@@ -561,10 +563,10 @@ class _NearbySection extends StatelessWidget {
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
-                            color: SmarturStyle.purple.withValues(alpha: 0.08),
+                            color: scheme.primary.withValues(alpha: 0.08),
                             child: Center(
                               child: Icon(Icons.place_outlined,
-                                  color: SmarturStyle.purple.withValues(alpha: 0.4),
+                                  color: scheme.primary.withValues(alpha: 0.4),
                                   size: 28),
                             ),
                           ),
@@ -573,10 +575,10 @@ class _NearbySection extends StatelessWidget {
                     else
                       Expanded(
                         child: Container(
-                          color: SmarturStyle.purple.withValues(alpha: 0.08),
+                          color: scheme.primary.withValues(alpha: 0.08),
                           child: Center(
                             child: Icon(Icons.place_outlined,
-                                color: SmarturStyle.purple.withValues(alpha: 0.4),
+                                color: scheme.primary.withValues(alpha: 0.4),
                                 size: 28),
                           ),
                         ),

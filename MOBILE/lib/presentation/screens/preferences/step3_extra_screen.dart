@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 
 /// Paso 3: Accesibilidad, restricciones, preferencias sostenibles, visita previa
@@ -85,6 +86,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     final sustainableLabels = _sustainableLabels(l10n);
 
@@ -103,7 +105,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
         const SizedBox(height: SmarturStyle.spacingSm),
         _SwitchTile(
           icon: Icons.accessible_forward,
-          iconColor: SmarturStyle.blue,
+          iconColor: sem.sea,
           title: l10n.needAccessibility,
           subtitle: l10n.accessibilitySubtitle,
           value: _hasAccessibility,
@@ -117,7 +119,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             decoration: InputDecoration(
               labelText: l10n.describeNeedOptional,
               hintText: l10n.accessibilityHint,
-              prefixIcon: const Icon(Icons.edit_outlined, color: SmarturStyle.blue),
+              prefixIcon: Icon(Icons.edit_outlined, color: sem.sea),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
@@ -126,7 +128,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
 
         _SwitchTile(
           icon: Icons.history_outlined,
-          iconColor: SmarturStyle.orange,
+          iconColor: sem.ember,
           title: l10n.visitedHighMountains,
           subtitle: l10n.visitedSubtitle,
           value: _hasVisitedBefore,
@@ -140,7 +142,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
           decoration: InputDecoration(
             labelText: l10n.dietaryRestrictions,
             hintText: l10n.dietaryHint,
-            prefixIcon: const Icon(Icons.no_food_outlined, color: SmarturStyle.pink),
+            prefixIcon: Icon(Icons.no_food_outlined, color: sem.altAccent),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
@@ -148,7 +150,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
 
         Row(
           children: [
-            const Icon(Icons.eco_outlined, size: 18, color: SmarturStyle.green),
+            Icon(Icons.eco_outlined, size: 18, color: sem.leaf),
             const SizedBox(width: 8),
             Text(l10n.sustainablePreferences, style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.onSurface, fontSize: 15)),
           ],
@@ -164,10 +166,10 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
               label: Text(label, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface, fontSize: 13)),
               selected: selected,
               color: WidgetStateProperty.resolveWith((states) =>
-                  states.contains(WidgetState.selected) ? SmarturStyle.green : SmarturStyle.green.withValues(alpha: 0.1)),
+                  states.contains(WidgetState.selected) ? sem.leaf : sem.leaf.withValues(alpha: 0.1)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: selected ? SmarturStyle.green : SmarturStyle.green.withValues(alpha: 0.2)),
+                side: BorderSide(color: selected ? sem.leaf : sem.leaf.withValues(alpha: 0.2)),
               ),
               onSelected: (_) => setState(() => _sustainablePreference = key),
             );
@@ -181,11 +183,11 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
               child: OutlinedButton(
                 onPressed: widget.isLoading ? null : widget.onBack,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: SmarturStyle.purple),
+                  side: BorderSide(color: scheme.primary),
                   minimumSize: const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(l10n.back, style: const TextStyle(color: SmarturStyle.purple, fontFamily: 'Outfit')),
+                child: Text(l10n.back, style: TextStyle(color: scheme.primary, fontFamily: 'Outfit')),
               ),
             ),
             const SizedBox(width: 12),
@@ -193,8 +195,8 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
               child: ElevatedButton(
                 onPressed: widget.isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: SmarturStyle.purple,
-                  disabledBackgroundColor: SmarturStyle.purple.withValues(alpha: 0.6),
+                  backgroundColor: scheme.primary,
+                  disabledBackgroundColor: scheme.primary.withValues(alpha: 0.6),
                 ),
                 child: widget.isLoading
                     ? Text(

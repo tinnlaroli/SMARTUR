@@ -9,7 +9,7 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { UserPreferencesProvider } from './contexts/LanguageContext.tsx';
 import { AuthModalProvider } from './features/auth/context/AuthModalContext.tsx';
 import { ToastProvider } from './shared/context/ToastContext.tsx';
-import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshToken, clearStoredRefreshToken } from './shared/api/axiosClient.ts';
+import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshToken, clearStoredRefreshToken } from './shared/api/axiosClient';
 
 // Consume registration token from LANDING redirect (/empresa/dashboard#token=...&refresh=...&user=...)
 // Must run synchronously before React renders so ProtectedRoute sees the token.
@@ -22,10 +22,14 @@ import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshTok
         const token = params.get('token');
         const refreshToken = params.get('refresh');
         const userEncoded = params.get('user');
+        
         if (!token) return;
+
+        console.log('[auth] Token detected in URL hash, establishing session...');
 
         clearStoredRefreshToken();
         localStorage.removeItem('user');
+        
         setAccessToken(token);
         if (refreshToken) setStoredRefreshToken(refreshToken, false);
 
@@ -33,19 +37,34 @@ import { initSession, setAccessToken, getStoredRefreshToken, setStoredRefreshTok
         // JWT always has id/email/role_id/id_company — enough for ProtectedRoute.
         let userData: Record<string, unknown> | null = null;
         if (userEncoded) {
-            try { userData = JSON.parse(atob(decodeURIComponent(userEncoded))); } catch { /* fall through */ }
+            try { 
+                userData = JSON.parse(atob(decodeURIComponent(userEncoded))); 
+                console.log('[auth] User data recovered from URL');
+            } catch (err) { 
+                console.warn('[auth] Failed to parse user data from URL:', err);
+            }
         }
+        
         if (!userData) {
             try {
                 const [, payload] = token.split('.');
                 const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
                 userData = JSON.parse(atob(b64 + '='.repeat((4 - b64.length % 4) % 4)));
-            } catch { /* ignore */ }
+                console.log('[auth] User data recovered from JWT payload');
+            } catch (err) { 
+                console.error('[auth] Failed to decode JWT payload:', err);
+            }
         }
-        if (userData) localStorage.setItem('user', JSON.stringify(userData));
+        
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData));
+        }
 
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    } catch { /* invalid hash — ignore */ }
+        console.log('[auth] Session established, hash cleared');
+    } catch (err) { 
+        console.error('[auth] Critical error consuming hash token:', err);
+    }
 }());
 
 // Register service worker (PWA — empresa portal)

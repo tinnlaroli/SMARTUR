@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
+import '../../core/theme/smartur_theme_extensions.dart';
 import '../../core/theme/style_guide.dart';
 import 'smartur_user_avatar.dart';
 
@@ -70,7 +71,7 @@ class PublicProfileSheet extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: SmarturStyle.purple.withValues(alpha: 0.35),
+                  color: scheme.primary.withValues(alpha: 0.35),
                   width: 3,
                 ),
               ),
@@ -79,7 +80,7 @@ class PublicProfileSheet extends StatelessWidget {
                 photoUrl: photoUrl,
                 avatarIconKey: iconKey,
                 displayName: name,
-                backgroundColor: SmarturStyle.purple.withValues(alpha: 0.12),
+                backgroundColor: scheme.primary.withValues(alpha: 0.12),
                 foregroundColor: scheme.onSurface,
               ),
             ),
@@ -103,17 +104,17 @@ class PublicProfileSheet extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: SmarturStyle.purple.withValues(alpha: 0.1),
+                  color: scheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: SmarturStyle.purple.withValues(alpha: 0.25)),
+                  border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
                 ),
                 child: Text(
                   l10n.memberSince(memberSince),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: SmarturStyle.purple,
+                    color: scheme.primary,
                   ),
                 ),
               ),
@@ -128,20 +129,22 @@ class PublicProfileSheet extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const SizedBox(height: SmarturStyle.spacingSm),
-            _buildInterestChips(interests),
+            _buildInterestChips(context, interests),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildInterestChips(List<String> interests) {
+  Widget _buildInterestChips(BuildContext context, List<String> interests) {
+    final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final colors = [
-      SmarturStyle.purple,
-      SmarturStyle.blue,
-      SmarturStyle.pink,
-      SmarturStyle.green,
-      SmarturStyle.orange,
+      scheme.primary,
+      sem.sea,
+      sem.altAccent,
+      sem.leaf,
+      sem.ember,
     ];
     return Wrap(
       spacing: 8,

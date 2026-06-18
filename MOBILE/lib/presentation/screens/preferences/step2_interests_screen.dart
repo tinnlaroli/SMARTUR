@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 
@@ -118,7 +119,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 18, color: SmarturStyle.purple),
+        Icon(icon, size: 18, color: scheme.primary),
         const SizedBox(width: 8),
         Text(text, style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.onSurface, fontSize: 15)),
       ],
@@ -128,6 +129,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     final interests = _interestOptions(l10n);
     final activities = _activityOptions(l10n);
@@ -155,16 +157,16 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           children: interests.map((item) {
             final selected = _selectedInterests.contains(item['key']);
             return FilterChip(
-              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.purple),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : scheme.primary),
               label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
-              selectedColor: SmarturStyle.purple,
-              backgroundColor: SmarturStyle.purple.withValues(alpha: 0.1),
+              selectedColor: scheme.primary,
+              backgroundColor: scheme.primary.withValues(alpha: 0.1),
               checkmarkColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: selected ? SmarturStyle.purple : SmarturStyle.purple.withValues(alpha: 0.2)),
+                side: BorderSide(color: selected ? scheme.primary : scheme.primary.withValues(alpha: 0.2)),
               ),
               onSelected: (val) {
                 setState(() {
@@ -188,15 +190,15 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           children: activities.map((item) {
             final selected = _activityLevel == item['key'] as String;
             return ChoiceChip(
-              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.pink),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : sem.altAccent),
               label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
-              selectedColor: SmarturStyle.pink,
-              backgroundColor: SmarturStyle.pink.withValues(alpha: 0.1),
+              selectedColor: sem.altAccent,
+              backgroundColor: sem.altAccent.withValues(alpha: 0.1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: selected ? SmarturStyle.pink : SmarturStyle.pink.withValues(alpha: 0.2)),
+                side: BorderSide(color: selected ? sem.altAccent : sem.altAccent.withValues(alpha: 0.2)),
               ),
               onSelected: (_) => setState(() => _activityLevel = item['key'] as String),
             );
@@ -212,15 +214,15 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           children: travels.map((item) {
             final selected = _travelType == item['key'] as String;
             return ChoiceChip(
-              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.blue),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : sem.sea),
               label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
-              selectedColor: SmarturStyle.blue,
-              backgroundColor: SmarturStyle.blue.withValues(alpha: 0.1),
+              selectedColor: sem.sea,
+              backgroundColor: sem.sea.withValues(alpha: 0.1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: selected ? SmarturStyle.blue : SmarturStyle.blue.withValues(alpha: 0.2)),
+                side: BorderSide(color: selected ? sem.sea : sem.sea.withValues(alpha: 0.2)),
               ),
               onSelected: (_) => setState(() => _travelType = item['key'] as String),
             );
@@ -236,15 +238,15 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
           children: places.map((item) {
             final selected = _preferredPlace == item['key'] as String;
             return ChoiceChip(
-              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : SmarturStyle.green),
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : sem.leaf),
               label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
               selected: selected,
               showCheckmark: false,
-              selectedColor: SmarturStyle.green,
-              backgroundColor: SmarturStyle.green.withValues(alpha: 0.1),
+              selectedColor: sem.leaf,
+              backgroundColor: sem.leaf.withValues(alpha: 0.1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: selected ? SmarturStyle.green : SmarturStyle.green.withValues(alpha: 0.2)),
+                side: BorderSide(color: selected ? sem.leaf : sem.leaf.withValues(alpha: 0.2)),
               ),
               onSelected: (_) => setState(() => _preferredPlace = item['key'] as String),
             );
@@ -258,11 +260,11 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
               child: OutlinedButton(
                 onPressed: widget.onBack,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: SmarturStyle.purple),
+                  side: BorderSide(color: scheme.primary),
                   minimumSize: const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(l10n.back, style: const TextStyle(color: SmarturStyle.purple, fontFamily: 'Outfit')),
+                child: Text(l10n.back, style: TextStyle(color: scheme.primary, fontFamily: 'Outfit')),
               ),
             ),
             const SizedBox(width: 12),

@@ -179,7 +179,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ],
             )
           : RefreshIndicator(
-              color: SmarturStyle.purple,
+              color: Theme.of(context).colorScheme.primary,
               onRefresh: _load,
               child: SmarturLoadTransition(
                 loading: _loading,
@@ -214,7 +214,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: SmarturStyle.purple,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         onPressed: _showCreateSheet,
         tooltip: l10n.communityCreatePost,
@@ -376,7 +376,7 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
               InputDecorator(
                 decoration: InputDecoration(
                   labelText: l10n.communitySelectPlace,
-                  prefixIcon: const Icon(Icons.place_outlined, color: SmarturStyle.purple),
+                  prefixIcon: Icon(Icons.place_outlined, color: Theme.of(context).colorScheme.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -450,7 +450,7 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
             FilledButton(
               onPressed: _submitting ? null : _submit,
               style: FilledButton.styleFrom(
-                backgroundColor: SmarturStyle.purple,
+                backgroundColor: scheme.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: _submitting
@@ -660,8 +660,8 @@ class _PostCard extends StatelessWidget {
                           photoUrl: photoUrl,
                           avatarIconKey: iconKey,
                           displayName: name,
-                          backgroundColor: SmarturStyle.purple.withValues(alpha: 0.12),
-                          foregroundColor: SmarturStyle.purple,
+                          backgroundColor: scheme.primary.withValues(alpha: 0.12),
+                          foregroundColor: scheme.primary,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -677,7 +677,7 @@ class _PostCard extends StatelessWidget {
                               if (placeName.isNotEmpty)
                                 Row(children: [
                                   Icon(Icons.place_outlined,
-                                      size: 12, color: SmarturStyle.purple),
+                                      size: 12, color: scheme.primary),
                                   const SizedBox(width: 3),
                                   Flexible(
                                     child: Text(
@@ -687,7 +687,7 @@ class _PostCard extends StatelessWidget {
                                       style: TextStyle(
                                           fontFamily: 'Outfit',
                                           fontSize: 11,
-                                          color: SmarturStyle.purple),
+                                          color: scheme.primary),
                                     ),
                                   ),
                                 ]),
