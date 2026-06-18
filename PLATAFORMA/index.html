@@ -39,23 +39,6 @@
     <meta name="twitter:title" content="SMARTUR | Turismo con IA en Veracruz" />
     <meta name="twitter:description" content="Descubre qué hacer en Veracruz y las Altas Montañas con SMARTUR. Recomendaciones personalizadas con IA." />
     <meta name="twitter:image" content="https://smartur.online/image-1.jpg" />
-    <script>
-      (function() {
-        try {
-          var hash = window.location.hash.replace(/^#/, '');
-          if (hash && hash.includes('token=')) {
-            var params = new URLSearchParams(hash);
-            var token = params.get('token');
-            var userRaw = params.get('user');
-            if (token) { localStorage.setItem('token', token); }
-            if (userRaw) {
-              try { localStorage.setItem('user', atob(userRaw)); } catch(e) {}
-            }
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        } catch(e) { console.warn('hash init error', e); }
-      })();
-    </script>
     <!-- Fonts — non-blocking preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
