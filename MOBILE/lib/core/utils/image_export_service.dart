@@ -1,10 +1,10 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
 class ImageExportService {
   static final ScreenshotController screenshotController = ScreenshotController();
@@ -119,7 +119,7 @@ class ImageExportService {
 
       if (image != null) {
         final directory = await getTemporaryDirectory();
-        final imagePath = await File('${directory.path}/welltur_recomienda.png').create();
+        final imagePath = await File('${directory.path}/smartur_recomienda.png').create();
         await imagePath.writeAsBytes(image);
 
         await SharePlus.instance.share(ShareParams(files: [XFile(imagePath.path)], text: l10n.imageShareMessage(city)));

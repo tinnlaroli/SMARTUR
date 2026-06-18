@@ -1,12 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/welltur_routes.dart';
+import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
-import '../../widgets/welltur_background.dart';
+import '../../widgets/smartur_background.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
 import '../main/main_screen.dart';
 
@@ -181,8 +181,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
               ),
               padding: EdgeInsets.only(
-                left: WellturStyle.spacingLg,
-                right: WellturStyle.spacingLg,
+                left: SmarturStyle.spacingLg,
+                right: SmarturStyle.spacingLg,
                 top: 12,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
@@ -211,7 +211,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         isForgotPassword
                             ? l10n.changePasswordTitle
                             : (isLogin ? l10n.welcomeBack : l10n.startNow),
-                        style: WellturStyle.calSansTitle,
+                        style: SmarturStyle.calSansTitle,
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -481,7 +481,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   if (formKey.currentState!.validate()) {
                                     if (!isLogin && !acceptedTerms && !isForgotPassword) {
                                       if (context.mounted) {
-                                        WellturNotifications.showWarning(context, l10n.termsMustAccept);
+                                        SmarturNotifications.showWarning(context, l10n.termsMustAccept);
                                       }
                                       return;
                                     }
@@ -492,7 +492,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                           await _authService.forgotPassword(emailController.text.trim());
                                           setModalState(() => forgotStep = 1);
                                           if (context.mounted) {
-                                            WellturNotifications.showSuccess(context, l10n.codeSentToEmail(emailController.text));
+                                            SmarturNotifications.showSuccess(context, l10n.codeSentToEmail(emailController.text));
                                           }
                                         } else {
                                           await _authService.resetPassword(
@@ -508,7 +508,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                             passwordController.clear();
                                           });
                                           if (context.mounted) {
-                                            WellturNotifications.showSuccess(context, l10n.accountCreated);
+                                            SmarturNotifications.showSuccess(context, l10n.accountCreated);
                                           }
                                         }
                                       } else if (isLogin) {
@@ -521,7 +521,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                             setModalState(() => isWaitingOTP = true);
                                           } else {
                                             if (context.mounted) {
-                                              WellturNotifications.showError(context, l10n.invalidCredentials);
+                                              SmarturNotifications.showError(context, l10n.invalidCredentials);
                                             }
                                           }
                                         } else {
@@ -536,13 +536,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                             Navigator.pop(context);
                                             Navigator.pushReplacement(
                                               context,
-                                              wellturFadeRoute(
+                                              smarturFadeRoute(
                                                 MainScreen(userName: savedName, isNewLogin: true),
                                               ),
                                             );
                                           } else {
                                             if (context.mounted) {
-                                              WellturNotifications.showError(context, l10n.invalidCode);
+                                              SmarturNotifications.showError(context, l10n.invalidCode);
                                             }
                                           }
                                         }
@@ -554,20 +554,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                         );
                                         if (success && context.mounted) {
                                           setModalState(() => isLogin = true);
-                                          WellturNotifications.showSuccess(context, l10n.accountCreated);
+                                          SmarturNotifications.showSuccess(context, l10n.accountCreated);
                                         }
                                       }
                                     } on AuthRateLimitException {
                                       if (context.mounted) {
-                                        WellturNotifications.showError(context, l10n.tooManyAttempts);
+                                        SmarturNotifications.showError(context, l10n.tooManyAttempts);
                                       }
                                     } on AuthException catch (e) {
                                       if (context.mounted) {
-                                        WellturNotifications.showError(context, e.message);
+                                        SmarturNotifications.showError(context, e.message);
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
-                                        WellturNotifications.showError(context, l10n.connectionError);
+                                        SmarturNotifications.showError(context, l10n.connectionError);
                                       }
                                     } finally {
                                       setModalState(() => isLoadingEmail = false);
@@ -610,7 +610,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       Navigator.pop(context);
                                       Navigator.pushReplacement(
                                         context,
-                                        wellturFadeRoute(
+                                        smarturFadeRoute(
                                           MainScreen(
                                             userName: savedName,
                                             isNewLogin: true,
@@ -620,7 +620,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                     }
                                   } on AuthRateLimitException {
                                     if (context.mounted) {
-                                      WellturNotifications.showError(
+                                      SmarturNotifications.showError(
                                         context,
                                         l10n.tooManyAttempts,
                                       );
@@ -630,11 +630,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                       final msg = e.code == 'auth.google_release_config'
                                           ? l10n.googleSignInReleaseConfig
                                           : e.message;
-                                      WellturNotifications.showError(context, msg);
+                                      SmarturNotifications.showError(context, msg);
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
-                                      WellturNotifications.showError(
+                                      SmarturNotifications.showError(
                                         context,
                                         l10n.connectionError,
                                       );
@@ -960,7 +960,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       final bool biometricOn = await _authService.isBiometricEnabled();
       if (!biometricOn) {
         if (context.mounted) {
-          WellturNotifications.showWarning(context, l10n.enableBiometricsHint);
+          SmarturNotifications.showWarning(context, l10n.enableBiometricsHint);
         }
         return;
       }
@@ -969,7 +969,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
       if (!canAuth) {
         if (context.mounted) {
-          WellturNotifications.showWarning(context, l10n.deviceNotSupported);
+          SmarturNotifications.showWarning(context, l10n.deviceNotSupported);
         }
         return;
       }
@@ -978,7 +978,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           .getAvailableBiometrics();
       if (available.isEmpty) {
         if (context.mounted) {
-          WellturNotifications.showInfo(context, l10n.noBiometricsEnrolled);
+          SmarturNotifications.showInfo(context, l10n.noBiometricsEnrolled);
         }
         return;
       }
@@ -997,7 +997,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       if (token != null && context.mounted) {
         Navigator.pushReplacement(
           context,
-          wellturFadeRoute(
+          smarturFadeRoute(
             const MainScreen(userName: null, isNewLogin: false),
           ),
         );
@@ -1005,12 +1005,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         // Si no hay token guardado (token == null), informamos
         await _authService.clearSession();
         if (context.mounted) {
-          WellturNotifications.showInfo(context, l10n.sessionExpired);
+          SmarturNotifications.showInfo(context, l10n.sessionExpired);
         }
       }
     } catch (e) {
       if (context.mounted) {
-        WellturNotifications.showError(context, l10n.biometricReadError);
+        SmarturNotifications.showError(context, l10n.biometricReadError);
       }
     }
   }
@@ -1021,7 +1021,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: WellturBackground(
+      body: SmarturBackground(
         child: Stack(
           children: [
             // Logo principal EXACTAMENTE centrado (mismas dimensiones que el SVG del loader)
@@ -1052,8 +1052,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
             // Tagline: posición FIJA alta
             Positioned(
-              left: WellturStyle.spacingLg,
-              right: WellturStyle.spacingLg,
+              left: SmarturStyle.spacingLg,
+              right: SmarturStyle.spacingLg,
               bottom: 280,
               child: SlideTransition(
                 position: _textSlide,
@@ -1075,8 +1075,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             // Huella: solo si está activa, posicionada arriba del botón Comenzar
             if (_isBiometricActive)
               Positioned(
-                left: WellturStyle.spacingLg,
-                right: WellturStyle.spacingLg,
+                left: SmarturStyle.spacingLg,
+                right: SmarturStyle.spacingLg,
                 bottom: 155,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1123,8 +1123,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               ),
             Positioned(
               bottom: 50,
-              left: WellturStyle.spacingLg,
-              right: WellturStyle.spacingLg,
+              left: SmarturStyle.spacingLg,
+              right: SmarturStyle.spacingLg,
               child: FadeTransition(
                 opacity: _buttonFade,
                 child: SlideTransition(

@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-class WellturStyle {
+class SmarturStyle {
   // --- COLORES ---
   static const Color pink = Color(0xFFFC478E);
   static const Color purple = Color(0xFF984EFD);

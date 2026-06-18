@@ -1,19 +1,19 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../utils/diary_place_detail.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_ui_kit.dart';
-import '../../widgets/welltur_skeleton.dart';
-import '../../widgets/welltur_loader.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_ui_kit.dart';
+import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_loader.dart';
 import '../explore/detail_view_page.dart';
 
 class DiaryScreen extends StatefulWidget {
@@ -81,11 +81,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
         backgroundColor: scheme.surface,
         appBar: AppBar(
           title: Text(l10n.diaryTitle,
-              style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
+              style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
           elevation: 0,
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
-          bottom: wellturTabBar(
+          bottom: smarturTabBar(
             context,
             tabs: [
               Tab(text: l10n.favoritesTab),
@@ -106,7 +106,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ],
           ),
         ),
-        body: WellturBackgroundTop(
+        body: SmarturBackgroundTop(
           child: _error != null && !_loading
               ? RefreshIndicator(
                   color: scheme.primary,
@@ -122,9 +122,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     ],
                   ),
                 )
-              : WellturLoadTransition(
+              : SmarturLoadTransition(
                   loading: _loading,
-                  loadingChild: WellturShimmer(
+                  loadingChild: SmarturShimmer(
                     enabled: true,
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -132,7 +132,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                       children: List.generate(8, (_) => const SkeletonListRow()),
                     ),
                   ),
-                  child: WellturFadeIn(
+                  child: SmarturFadeIn(
                     child: TabBarView(
                       children: [
                         _FavoritesTab(items: _favorites, onRefresh: _load),
@@ -169,11 +169,11 @@ class _FavoritesTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            WellturEmptyState(
+            SmarturEmptyState(
               icon: Icons.favorite_border_rounded,
               title: l10n.favoritesTab,
               subtitle: l10n.noCategoryPlaces,
-              iconColor: WellturSemanticColors.of(context).altAccent,
+              iconColor: SmarturSemanticColors.of(context).altAccent,
             ),
           ],
         ),
@@ -278,7 +278,7 @@ class _HistoryTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            WellturEmptyState(
+            SmarturEmptyState(
               icon: Icons.history_rounded,
               title: l10n.historyTab,
               subtitle: l10n.noCategoryPlaces,
@@ -342,7 +342,7 @@ class _HistoryTab extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(name,
-                              style: WellturStyle.calSansTitle.copyWith(fontSize: 16)),
+                              style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
                             if (dateStr.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Text(dateStr,
@@ -384,7 +384,7 @@ class _SessionsTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            WellturEmptyState(
+            SmarturEmptyState(
               icon: Icons.auto_awesome_outlined,
               title: l10n.diaryAiSessionsEmptyTitle,
               subtitle: l10n.diaryAiSessionsEmptySubtitle,
@@ -481,7 +481,7 @@ class _SessionCard extends StatelessWidget {
                       children: [
                         Text(
                           '$recCount destinos recomendados',
-                          style: WellturStyle.calSansTitle.copyWith(fontSize: 14),
+                          style: SmarturStyle.calSansTitle.copyWith(fontSize: 14),
                         ),
                         if (dateStr.isNotEmpty)
                           Text(dateStr,
@@ -671,7 +671,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(AppLocalizations.of(context)!.diarySessionDestinationsCount(widget.recs.length.toString()),
-                              style: WellturStyle.calSansTitle.copyWith(fontSize: 18)),
+                              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
                             Text(AppLocalizations.of(context)!.diaryTapDestinationHint,
                               style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
                                   color: scheme.onSurface.withValues(alpha: 0.5))),
@@ -690,7 +690,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                 if (_loading)
                   const Expanded(
                     child: Center(
-                      child: WellTURLoader(isMini: true, continuous: true),
+                      child: SmartURLoader(isMini: true, continuous: true),
                     ),
                   )
                 else
@@ -722,7 +722,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                               Navigator.pop(ctx);
                               Navigator.push(
                                 navContext,
-                                wellturDetailRoute(
+                                smarturDetailRoute(
                                   DetailViewPage(
                                     title: place.name,
                                     heroTag: 'session_replay_$itemId',
@@ -769,7 +769,7 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                     ),
                                     child: Center(
                                       child: Text('#${i + 1}',
-                                        style: WellturStyle.calSansTitle.copyWith(
+                                        style: SmarturStyle.calSansTitle.copyWith(
                                             fontSize: 18, color: scheme.primary.withValues(alpha: 0.5))),
                                     ),
                                   ),
@@ -784,18 +784,18 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                           children: [
                                             Expanded(
                                               child: Text(name,
-                                                style: WellturStyle.calSansTitle.copyWith(fontSize: 13),
+                                                style: SmarturStyle.calSansTitle.copyWith(fontSize: 13),
                                                 maxLines: 1, overflow: TextOverflow.ellipsis),
                                             ),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: WellturSemanticColors.of(context).ember.withValues(alpha: 0.15),
+                                                color: SmarturSemanticColors.of(context).ember.withValues(alpha: 0.15),
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(score.toStringAsFixed(2),
                                                 style: TextStyle(fontFamily: 'Outfit', fontSize: 10,
-                                                    fontWeight: FontWeight.w700, color: WellturSemanticColors.of(context).ember)),
+                                                    fontWeight: FontWeight.w700, color: SmarturSemanticColors.of(context).ember)),
                                             ),
                                           ],
                                         ),

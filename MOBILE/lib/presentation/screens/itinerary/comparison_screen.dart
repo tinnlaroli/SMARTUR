@@ -1,11 +1,11 @@
-﻿import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
-import '../../widgets/welltur_background.dart';
+import '../../widgets/smartur_background.dart';
 
 class ComparisonScreen extends StatefulWidget {
   final List<ItineraryStop> originalStops;
@@ -65,7 +65,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final optimized = _optimizedStops;
     final improved = widget.result.savingsPct > 0;
 
@@ -74,13 +74,13 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
       appBar: AppBar(
         title: Text(
           l10n.compareTitle,
-          style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
+          style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
         ),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
-      body: WellturBackgroundTop(
+      body: SmarturBackgroundTop(
         child: ListView(
           children: [
             // ── Metrics banner ────────────────────────────────────────────────

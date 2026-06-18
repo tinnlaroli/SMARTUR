@@ -1,15 +1,15 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/chat_service.dart';
-import '../../widgets/welltur_background.dart';
+import '../../widgets/smartur_background.dart';
 
 const _pollInterval = Duration(seconds: 10);
 
@@ -70,7 +70,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        if (!silent) WellturNotifications.showError(context, e.toString());
+        if (!silent) SmarturNotifications.showError(context, e.toString());
       }
     }
   }
@@ -102,7 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await _service.sendMessage(widget.conversation.id, text);
       await _load(silent: true);
     } catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.toString());
+      if (mounted) SmarturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -122,13 +122,13 @@ class _ChatScreenState extends State<ChatScreen> {
         _scrollToBottom();
       } else {
         // No match — provider will answer; notify user quietly
-        WellturNotifications.showInfo(
+        SmarturNotifications.showInfo(
           context,
           'Sin coincidencia en las FAQs. El prestador te responderá.',
         );
       }
     } catch (e) {
-      if (mounted) WellturNotifications.showError(context, 'Asistente no disponible');
+      if (mounted) SmarturNotifications.showError(context, 'Asistente no disponible');
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -141,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: WellturBackground(
+      body: SmarturBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -319,7 +319,7 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
 
     if (message.isBot) {
       return Padding(

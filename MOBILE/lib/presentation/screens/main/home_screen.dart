@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:http/http.dart' as http;
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/welltur_motion.dart';
-import '../../../core/motion/welltur_routes.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/motion/smartur_motion.dart';
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/constants/env_config.dart';
 import '../../../core/constants/api_constants.dart';
@@ -22,9 +22,9 @@ import '../../../data/services/explore_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/models/place_model.dart';
-import '../../widgets/welltur_skeleton.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_user_avatar.dart';
 import '../../widgets/offline_banner.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
@@ -230,8 +230,8 @@ class HomeScreenState extends State<HomeScreen> {
     if (!_homeScrollController.hasClients) return;
     _homeScrollController.animateTo(
       0,
-      duration: WellturMotion.normal,
-      curve: WellturMotion.standard,
+      duration: SmarturMotion.normal,
+      curve: SmarturMotion.standard,
     );
   }
 
@@ -256,7 +256,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (!saved && mounted) {
       Navigator.push(
         context,
-        wellturFadeRoute(PreferencesScreen(userName: widget.userName)),
+        smarturFadeRoute(PreferencesScreen(userName: widget.userName)),
       );
     }
   }
@@ -274,7 +274,7 @@ class HomeScreenState extends State<HomeScreen> {
     final message = (name != null && name.isNotEmpty)
         ? '$greeting, $name 👋'
         : '$greeting 👋';
-    WellturNotifications.showSuccess(context, message);
+    SmarturNotifications.showSuccess(context, message);
   }
 
   Future<void> _offerBiometricSetup() async {
@@ -378,12 +378,12 @@ class HomeScreenState extends State<HomeScreen> {
       if (didAuth) {
         await _authService.setBiometricEnabled(true);
         if (mounted) {
-          WellturNotifications.showSuccess(context, l10n.biometricActivated);
+          SmarturNotifications.showSuccess(context, l10n.biometricActivated);
         }
       }
     } catch (e) {
       if (mounted) {
-        WellturNotifications.showError(context, l10n.biometricActivateError(e));
+        SmarturNotifications.showError(context, l10n.biometricActivateError(e));
       }
     }
   }
@@ -611,7 +611,7 @@ class HomeScreenState extends State<HomeScreen> {
                     color: scheme.outlineVariant, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 24),
-              Text(l10n.myProfile, style: WellturStyle.calSansTitle.copyWith(fontSize: 22)),
+              Text(l10n.myProfile, style: SmarturStyle.calSansTitle.copyWith(fontSize: 22)),
               const SizedBox(height: 4),
               Text(
                 l10n.manageAccount,
@@ -620,7 +620,7 @@ class HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               const Divider(),
               ListTile(
-                leading: Icon(Icons.tune_outlined, color: WellturSemanticColors.of(context).sea),
+                leading: Icon(Icons.tune_outlined, color: SmarturSemanticColors.of(context).sea),
                 title: Text(l10n.myPreferences, style: const TextStyle(fontFamily: 'Outfit')),
                 trailing:
                     Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
@@ -632,7 +632,7 @@ class HomeScreenState extends State<HomeScreen> {
                     Navigator.pop(ctx);
                     Navigator.push(
                       ctx,
-                      wellturFadeRoute(
+                      smarturFadeRoute(
                         PreferencesScreen(userName: widget.userName),
                       ),
                     );
@@ -694,7 +694,7 @@ class HomeScreenState extends State<HomeScreen> {
                             Navigator.pop(ctx);
                             Navigator.push(
                               context,
-                              wellturFadeRoute(
+                              smarturFadeRoute(
                                 PreferencesScreen(userName: widget.userName),
                               ),
                             );
@@ -733,7 +733,7 @@ class HomeScreenState extends State<HomeScreen> {
                             if (didAuth) {
                               await _authService.setBiometricEnabled(true);
                               if (ctx.mounted) {
-                                WellturNotifications.showSuccess(
+                                SmarturNotifications.showSuccess(
                                     ctx, l10n.biometricActivated);
                                 Navigator.pop(ctx);
                                 _showProfile();
@@ -741,14 +741,14 @@ class HomeScreenState extends State<HomeScreen> {
                             }
                           } catch (_) {
                             if (ctx.mounted) {
-                              WellturNotifications.showError(
+                              SmarturNotifications.showError(
                                   ctx, l10n.biometricCouldNotActivate);
                             }
                           }
                         } else {
                           await _authService.setBiometricEnabled(false);
                           if (ctx.mounted) {
-                            WellturNotifications.showSuccess(
+                            SmarturNotifications.showSuccess(
                                 ctx, l10n.biometricDeactivated);
                             Navigator.pop(ctx);
                             _showProfile();
@@ -771,7 +771,7 @@ class HomeScreenState extends State<HomeScreen> {
                   Navigator.pop(ctx);
                   await Navigator.push<void>(
                     context,
-                    wellturFadeRoute(const SettingsScreen()),
+                    smarturFadeRoute(const SettingsScreen()),
                   );
                   if (mounted) await refreshUserIdentity();
                 },
@@ -786,23 +786,23 @@ class HomeScreenState extends State<HomeScreen> {
                     if (mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
-                        wellturFadeRoute(const WelcomeScreen()),
+                        smarturFadeRoute(const WelcomeScreen()),
                         (_) => false,
                       );
                     }
                   },
-                  icon: Icon(Icons.logout, color: WellturSemanticColors.of(context).altAccent),
+                  icon: Icon(Icons.logout, color: SmarturSemanticColors.of(context).altAccent),
                   label: Text(
                     l10n.logout,
                     style: TextStyle(
                         fontFamily: 'Outfit',
-                        color: WellturSemanticColors.of(context).altAccent,
+                        color: SmarturSemanticColors.of(context).altAccent,
                         fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: WellturSemanticColors.of(context).altAccent),
+                    side: BorderSide(color: SmarturSemanticColors.of(context).altAccent),
                     minimumSize:
-                        const Size(double.infinity, WellturStyle.touchTargetComfortable),
+                        const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -829,8 +829,8 @@ class HomeScreenState extends State<HomeScreen> {
               onRetry: _loadCitiesFromApi,
             ),
           Expanded(
-            child: WellturBackgroundTop(
-              child: WellturShimmer(
+            child: SmarturBackgroundTop(
+              child: SmarturShimmer(
                 enabled: _isLoadingContent,
                 child: RefreshIndicator(
                   onRefresh: _onRefresh,
@@ -900,7 +900,7 @@ class HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(
                           l10n.exploreGreeting(greetingName),
-                          style: WellturStyle.calSansTitle.copyWith(fontSize: 20),
+                          style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -921,7 +921,7 @@ class HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     padding: EdgeInsets.zero,
                     onPressed: _showProfile,
-                    icon: WellturUserAvatar(
+                    icon: SmarturUserAvatar(
                       radius: 18,
                       photoUrl: _headerPhotoUrl,
                       avatarIconKey: _headerAvatarIconKey,
@@ -1039,7 +1039,7 @@ class HomeScreenState extends State<HomeScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: WellturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
+            borderSide: BorderSide(color: SmarturSemanticColors.of(context).leaf.withValues(alpha: 0.7), width: 1.5),
           ),
         ),
       ),
@@ -1150,7 +1150,7 @@ class HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.only(left: 20),
                       itemCount: 1 + _cities.length,
                       itemBuilder: (context, idx) {
-                        final accentColor = WellturSemanticColors.of(context).leaf;
+                        final accentColor = SmarturSemanticColors.of(context).leaf;
                         final isLast = idx == _cities.length;
 
                         if (idx == 0) {
@@ -1537,7 +1537,7 @@ class HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         label,
-                        style: WellturStyle.calSansTitle.copyWith(fontSize: 15),
+                        style: SmarturStyle.calSansTitle.copyWith(fontSize: 15),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1684,7 +1684,7 @@ class HomeScreenState extends State<HomeScreen> {
     }
     Navigator.push(
       context,
-      wellturDetailRoute(
+      smarturDetailRoute(
         _HomePlaceSwipeView(places: allPlaces, initialIndex: initialIndex),
       ),
     );
@@ -1797,7 +1797,7 @@ class _PlaceCardState extends State<_PlaceCard>
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final place = widget.place;
     final isHero = widget.isHero;
 
@@ -2263,7 +2263,7 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
                     icon: isFav
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    iconColor: isFav ? WellturSemanticColors.of(context).altAccent : Colors.white,
+                    iconColor: isFav ? SmarturSemanticColors.of(context).altAccent : Colors.white,
                     onTap: _toggleFav,
                   ),
                 ],

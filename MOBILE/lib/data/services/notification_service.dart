@@ -195,7 +195,7 @@ class NotificationService {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              notification.title ?? 'WELLTUR',
+              notification.title ?? 'Welltur',
               style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
             ),
             if (notification.body != null)

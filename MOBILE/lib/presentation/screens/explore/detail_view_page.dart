@@ -1,15 +1,15 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/api_constants.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../data/services/api_client.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../widgets/add_to_route_sheet.dart';
@@ -245,7 +245,7 @@ class _DetailViewPageState extends State<DetailViewPage>
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -534,7 +534,7 @@ class _BottomContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
@@ -686,7 +686,7 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final name = activity['name'] as String? ?? '';
     final description = activity['description'] as String? ?? '';
     final price = activity['price'];
@@ -828,7 +828,7 @@ class _ServiceInfoBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final scheme = Theme.of(context).colorScheme;
     final chips = <_InfoChip>[];
 
@@ -911,7 +911,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 14, bottom: 6),
       child: Row(
@@ -948,7 +948,7 @@ class _RatingPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -982,7 +982,7 @@ class _RightMosaic extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final items = galleryUrls.skip(1).take(3).toList();
     final remaining = (galleryUrls.length - 1 - items.length).clamp(0, 999);
 
@@ -1025,7 +1025,7 @@ class _MiniThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Container(
       width: size,
       height: size,
@@ -1094,7 +1094,7 @@ class _DirectionsChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: _openDirections,
       child: Container(
@@ -1142,7 +1142,7 @@ class _RatingTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final hasRated = userRating != null;
 
     return Column(

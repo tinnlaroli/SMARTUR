@@ -1,6 +1,6 @@
-{
+﻿{
   "@@locale": "en",
-  "appTitle": "SMARTUR",
+  "appTitle": "Welltur",
   "settingsTitle": "Settings",
   "appearanceSection": "Appearance",
   "accountSection": "Account",
@@ -16,8 +16,8 @@
   "registerAcceptTermsPrefix": "I accept the ",
   "termsMustAccept": "You must accept the terms and conditions to sign up.",
   "termsCloseButton": "Got it",
-  "termsAndConditionsBody": "Last updated: March 2025.\n\n1. Purpose\nSMARTUR is a mobile app to explore tourist destinations, recommendations, and community features.\n\n2. Registration and account\nBy creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.\n\n3. Permitted use\nYou agree to use the service lawfully, without infringing third-party rights or disrupting the platform.\n\n4. Content and intellectual property\nApp content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.\n\n5. Personal data\nProcessing of your personal data complies with applicable law. By using SMARTUR you accept the practices described in the service privacy policy.\n\n6. Changes\nWe may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.\n\n7. Contact\nFor questions about these terms, use the support channels provided in the app or on the official website.",
-  "privacyPolicyBody": "Last updated: March 2025.\n\n1. Data controller\nSMARTUR is the controller of your personal data.\n\n2. Data we collect\nWe collect the data you provide when registering (name, email, optional profile photo) and data generated through app use (travel preferences, recommendation history, place ratings).\n\n3. Purpose of processing\nYour data is used to personalize travel recommendations, improve the app, and communicate with you about the service.\n\n4. Legal basis\nProcessing is based on your explicit consent when accepting these terms and on the performance of the service contract.\n\n5. Data retention\nWe retain your data while your account is active. You may request deletion at any time via Settings → Delete account.\n\n6. User rights\nYou have the right to access, rectify, delete, and port your personal data. To exercise these rights, contact us through the support channels.\n\n7. Security\nWe apply technical and organizational measures to protect your data against unauthorized access or accidental loss.\n\n8. Contact\nFor privacy inquiries: smarturutcv@gmail.com",
+  "termsAndConditionsBody": "Last updated: March 2025.\n\n1. Purpose\nWelltur is a mobile app to explore tourist destinations, recommendations, and community features.\n\n2. Registration and account\nBy creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.\n\n3. Permitted use\nYou agree to use the service lawfully, without infringing third-party rights or disrupting the platform.\n\n4. Content and intellectual property\nApp content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.\n\n5. Personal data\nProcessing of your personal data complies with applicable law. By using Welltur you accept the practices described in the service privacy policy.\n\n6. Changes\nWe may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.\n\n7. Contact\nFor questions about these terms, use the support channels provided in the app or on the official website.",
+  "privacyPolicyBody": "Last updated: March 2025.\n\n1. Data controller\nWelltur is the controller of your personal data.\n\n2. Data we collect\nWe collect the data you provide when registering (name, email, optional profile photo) and data generated through app use (travel preferences, recommendation history, place ratings).\n\n3. Purpose of processing\nYour data is used to personalize travel recommendations, improve the app, and communicate with you about the service.\n\n4. Legal basis\nProcessing is based on your explicit consent when accepting these terms and on the performance of the service contract.\n\n5. Data retention\nWe retain your data while your account is active. You may request deletion at any time via Settings → Delete account.\n\n6. User rights\nYou have the right to access, rectify, delete, and port your personal data. To exercise these rights, contact us through the support channels.\n\n7. Security\nWe apply technical and organizational measures to protect your data against unauthorized access or accidental loss.\n\n8. Contact\nFor privacy inquiries: smarturutcv@gmail.com",
   "logout": "Log out",
   "selectLanguage": "Select Language",
   "systemLanguage": "System language",
@@ -66,7 +66,7 @@
   "navUser": "User",
   "exploreTitle": "Explore",
   "routesSectionLabel": "Routes",
-  "routesSectionCertified": "SMARTUR Certified Routes",
+  "routesSectionCertified": "Welltur Certified Routes",
   "routesSectionMostCopied": "Most Copied",
   "routesSectionFollowing": "From people you follow",
   "routesSectionNoItems": "Nothing here yet — check back soon",
@@ -113,7 +113,7 @@
   "@recommendationsInCity": { "placeholders": { "city": {} } },
   "recommendationNumber": "Recommendation #{number}",
   "@recommendationNumber": { "placeholders": { "number": {} } },
-  "recommendationSubtitle": "Suggested by SMARTUR AI for your visit to {city}.",
+  "recommendationSubtitle": "Suggested by Welltur AI for your visit to {city}.",
   "@recommendationSubtitle": { "placeholders": { "city": {} } },
   "mapDiscoverHint": "Discover key points without tracking your location in real time.",
   "mapTapPinHint": "Tap a pin to see AI-generated details",
@@ -123,11 +123,11 @@
   "filterViewpoints": "Adventures",
   "filterHotels": "Hotels",
   "filterMuseumsOnly": "Museums only",
-  "aiSmartur": "SMARTUR AI",
+  "aiWelltur": "Welltur AI",
   "enableBiometricsHint": "Sign in and enable fingerprint in your profile",
   "deviceNotSupported": "Device not supported",
   "noBiometricsEnrolled": "No fingerprints enrolled",
-  "biometricReason": "Access your SMARTUR routes",
+  "biometricReason": "Access your Welltur routes",
   "sessionExpired": "Session expired. Please sign in again.",
   "biometricReadError": "Error reading fingerprint.",
 
@@ -137,7 +137,7 @@
   "dontRemindMe": "Don't remind me",
   "biometricPrompt": "Do you want to use your fingerprint to sign in faster next time?",
   "biometricActivateReason": "Confirm your fingerprint to enable quick access",
-  "biometricActivateTitle": "Activate fingerprint — SMARTUR",
+  "biometricActivateTitle": "Activate fingerprint — Welltur",
   "biometricTouchSensor": "Touch the sensor",
   "biometricActivated": "Fingerprint access activated",
   "biometricActivateError": "Could not activate: {error}",
@@ -246,7 +246,7 @@
   "strengthStrong": "Strong",
   "strengthVeryStrong": "Very strong",
 
-  "defaultUserName": "SMARTUR Tourist",
+  "defaultUserName": "Welltur Tourist",
   "myInterests": "My Interests",
   "quickSettings": "Quick Settings",
   "memberSince": "Member since {date}",
@@ -399,7 +399,7 @@
   "onboardingDesc3": "Connect with local guides and support regional tourism while creating unforgettable memories.",
   "errorTitle": "Error",
   "settingsCheckUpdate": "Check for updates",
-  "settingsAppUpToDate": "SMARTUR v{version} is up to date.",
+  "settingsAppUpToDate": "Welltur v{version} is up to date.",
   "@settingsAppUpToDate": { "placeholders": { "version": {} } },
   "languageSpanish": "Spanish",
   "languageEnglish": "English",
@@ -417,7 +417,7 @@
   "diaryTapDestinationHint": "Tap a destination to view more",
   "mapRetry": "Retry",
   "updateTitle": "New version available",
-  "updateBody": "SMARTUR version {version} is available.\nIt will be downloaded and installed from the app.",
+  "updateBody": "Welltur version {version} is available.\nIt will be downloaded and installed from the app.",
   "@updateBody": { "placeholders": { "version": {} } },
   "updateDownloading": "Downloading... {progress}%",
   "@updateDownloading": { "placeholders": { "progress": {} } },
@@ -432,8 +432,8 @@
   "imageShareTitle": "My Recommendations in {city}",
   "@imageShareTitle": { "placeholders": { "city": {} } },
   "imageShareSubtitle": "Based on my smart traveler profile",
-  "imageShareGeneratedBy": "Generated by SMARTUR AI",
-  "imageShareMessage": "Look what SMARTUR recommends for me in {city}!",
+  "imageShareGeneratedBy": "Generated by Welltur AI",
+  "imageShareMessage": "Look what Welltur recommends for me in {city}!",
   "@imageShareMessage": { "placeholders": { "city": {} } },
   "commonPlaceFallback": "Place",
   "recoTypeCultural":"Cultural",
@@ -452,9 +452,9 @@
   "recoGroupCouple":"Couple",
   "recoGroupFamily":"Family",
   "recoGroupFriends":"Friends",
-  "recoShareList":"🌿 My recommended destinations in Altas Montañas, Veracruz:\n\n• {items}\n\n📱 Discover them with SMARTUR",
+  "recoShareList":"🌿 My recommended destinations in Altas Montañas, Veracruz:\n\n• {items}\n\n📱 Discover them with Welltur",
   "@recoShareList":{"placeholders":{"items":{}}},
-  "detailShareMessage":"Discover {title} in {location}! 📍{description}\nView on Maps: {mapsUrl}\n\nDiscovered with SMARTUR — Altas Montañas, Veracruz",
+  "detailShareMessage":"Discover {title} in {location}! 📍{description}\nView on Maps: {mapsUrl}\n\nDiscovered with Welltur — Altas Montañas, Veracruz",
   "@detailShareMessage":{"placeholders":{"title":{},"location":{},"description":{},"mapsUrl":{}}},
   "mapsLabel":"Maps",
   "youAreHere":"← You are here",
@@ -476,7 +476,7 @@
   ,"plannerNoStops":"No stops"
   ,"plannerNoStopsSubtitle":"Tap + anywhere to add stops"
   ,"plannerOptimize":"Improve My Route"
-  ,"plannerOptimizeComingSoon":"Coming soon in SMARTUR"
+  ,"plannerOptimizeComingSoon":"Coming soon in Welltur"
   ,"plannerRouteName":"Route name"
   ,"plannerRouteNameHint":"E.g.: My Xalapa route"
   ,"plannerMakePublic":"Make route public"
@@ -485,7 +485,7 @@
   ,"plannerStopDelete":"Remove stop"
   ,"itineraryNStops":"{n} stops"
   ,"@itineraryNStops":{"placeholders":{"n":{"type":"int"}}}
-  ,"itineraryCertified":"SMARTUR Certified"
+  ,"itineraryCertified":"Welltur Certified"
   ,"itineraryCopy":"Copy route"
   ,"itineraryCopied":"Route copied"
   ,"itineraryDetail":"Route detail"

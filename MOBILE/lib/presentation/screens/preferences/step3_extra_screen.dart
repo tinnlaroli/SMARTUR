@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import 'package:flutter/material.dart';
+import 'package:smartur/l10n/app_localizations.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 
 /// Paso 3: Accesibilidad, restricciones, preferencias sostenibles, visita previa
@@ -86,7 +86,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     final sustainableLabels = _sustainableLabels(l10n);
 
@@ -102,7 +102,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             fontStyle: FontStyle.italic,
           ),
         ),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         _SwitchTile(
           icon: Icons.accessible_forward,
           iconColor: sem.sea,
@@ -112,7 +112,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
           onChanged: (v) => setState(() => _hasAccessibility = v),
         ),
         if (_hasAccessibility) ...[
-          const SizedBox(height: WellturStyle.spacingSm),
+          const SizedBox(height: SmarturStyle.spacingSm),
           TextFormField(
             controller: _accessibilityDetailController,
             maxLines: 2,
@@ -124,7 +124,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             ),
           ),
         ],
-        const SizedBox(height: WellturStyle.spacingMd),
+        const SizedBox(height: SmarturStyle.spacingMd),
 
         _SwitchTile(
           icon: Icons.history_outlined,
@@ -134,7 +134,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
           value: _hasVisitedBefore,
           onChanged: (v) => setState(() => _hasVisitedBefore = v),
         ),
-        const SizedBox(height: WellturStyle.spacingMd),
+        const SizedBox(height: SmarturStyle.spacingMd),
 
         TextFormField(
           controller: _restrictionsController,
@@ -146,7 +146,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
-        const SizedBox(height: WellturStyle.spacingLg),
+        const SizedBox(height: SmarturStyle.spacingLg),
 
         Row(
           children: [
@@ -155,7 +155,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             Text(l10n.sustainablePreferences, style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.onSurface, fontSize: 15)),
           ],
         ),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -175,7 +175,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
             );
           }).toList(),
         ),
-        const SizedBox(height: WellturStyle.spacingXl),
+        const SizedBox(height: SmarturStyle.spacingXl),
 
         Row(
           children: [
@@ -184,7 +184,7 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
                 onPressed: widget.isLoading ? null : widget.onBack,
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: scheme.primary),
-                  minimumSize: const Size(double.infinity, WellturStyle.touchTargetComfortable),
+                  minimumSize: const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(l10n.back, style: TextStyle(color: scheme.primary, fontFamily: 'Outfit')),

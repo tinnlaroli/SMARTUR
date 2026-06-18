@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../core/motion/welltur_routes.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/constants/api_constants.dart';
@@ -20,9 +20,9 @@ import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../../core/utils/notifications.dart';
-import '../../widgets/welltur_loader.dart';
-import '../../widgets/welltur_loading_overlay.dart';
-import '../../widgets/welltur_ui_kit.dart';
+import '../../widgets/smartur_loader.dart';
+import '../../widgets/smartur_loading_overlay.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import 'detail_view_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -59,9 +59,9 @@ const _tourTypes = [
 // Tuple: (id, icon, color, label, subtitle)
 
 const _budgets = [
-  ('bajo',  Icons.savings_outlined,                WellturStyle.green),
-  ('medio', Icons.account_balance_wallet_outlined, WellturStyle.orange),
-  ('alto',  Icons.diamond_outlined,                WellturStyle.purple),
+  ('bajo',  Icons.savings_outlined,                SmarturStyle.green),
+  ('medio', Icons.account_balance_wallet_outlined, SmarturStyle.orange),
+  ('alto',  Icons.diamond_outlined,                SmarturStyle.purple),
 ];
 
 // ── Group model ──────────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   Future<void> _fetchRecommendations() async {
     if (!_isFormReady) {
-      WellturNotifications.showError(
+      SmarturNotifications.showError(
         context,
         AppLocalizations.of(context)!.recoSelectAtLeastOneToContinue,
       );
@@ -339,7 +339,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     try {
       final userId = await AuthService().getUserId();
       if (userId == null) {
-        if (mounted) WellturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
+        if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
         return;
       }
 
@@ -383,13 +383,13 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           }
         }
       } else if (response.statusCode == 401) {
-        if (mounted) WellturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
+        if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.sessionExpired);
       } else {
         final msg = ApiClient.extractApiMessage(response, fallback: AppLocalizations.of(context)!.recoServiceUnavailable);
-        if (mounted) WellturNotifications.showError(context, msg);
+        if (mounted) SmarturNotifications.showError(context, msg);
       }
     } catch (e) {
-      if (mounted) WellturNotifications.showError(context, AppLocalizations.of(context)!.recoConnectionError);
+      if (mounted) SmarturNotifications.showError(context, AppLocalizations.of(context)!.recoConnectionError);
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -433,7 +433,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         onNavigateToPlace: (place, itemId) {
           Navigator.push(
             navContext,
-            wellturDetailRoute(
+            smarturDetailRoute(
               DetailViewPage(
                 title: place.name,
                 heroTag: 'reco_$itemId',
@@ -460,7 +460,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     });
     if (hadSavedSession) {
       setState(() => _showSavedDiaryHint = true);
-      WellturNotifications.showSuccess(
+      SmarturNotifications.showSuccess(
         navContext,
         AppLocalizations.of(navContext)!.recoSavedInDiary,
       );
@@ -494,14 +494,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            WellturLoadTransition(
+            SmarturLoadTransition(
               loading: _isLoadingProfile,
               loadingChild: const Center(
-                child: WellTURLoader(isMini: true, continuous: true),
+                child: SmartURLoader(isMini: true, continuous: true),
               ),
-              child: WellturFadeIn(child: _buildBody(scheme)),
+              child: SmarturFadeIn(child: _buildBody(scheme)),
             ),
-            WellturLoadingOverlay(visible: _isFetching),
+            SmarturLoadingOverlay(visible: _isFetching),
           ],
         ),
       ),
@@ -510,7 +510,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   Widget _buildBody(ColorScheme scheme) {
     final l10n = AppLocalizations.of(context)!;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final mq = MediaQuery.of(context);
@@ -893,7 +893,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
@@ -977,7 +977,7 @@ class _ResultsSheetState extends State<_ResultsSheet> {
                             children: [
                               Text(
                                 l10n.recoNDestinations(widget.recommendations.length),
-                                style: WellturStyle.calSansTitle.copyWith(fontSize: 22),
+                                style: SmarturStyle.calSansTitle.copyWith(fontSize: 22),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -1147,7 +1147,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final recs = widget.recommendations.take(6).toList();
 
     return Dialog(
@@ -1177,7 +1177,7 @@ class _RatingBeforeCloseDialogState extends State<_RatingBeforeCloseDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(AppLocalizations.of(context)!.recoHelpImprove,
-                          style: WellturStyle.calSansTitle.copyWith(fontSize: 16)),
+                          style: SmarturStyle.calSansTitle.copyWith(fontSize: 16)),
                       Text(AppLocalizations.of(context)!.recoHowLiked,
                           style: TextStyle(
                               fontFamily: 'Outfit', fontSize: 11,
@@ -1371,7 +1371,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final sem = semantic;
     final place = widget.place;
     final rec = widget.rec;
@@ -1472,7 +1472,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                 children: [
                   Text(
                     name,
-                    style: WellturStyle.calSansTitle.copyWith(fontSize: 16),
+                    style: SmarturStyle.calSansTitle.copyWith(fontSize: 16),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1634,7 +1634,7 @@ class _FormProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final steps = [
       (typeDone, l10n.recoTourismType),
       (budgetDone, l10n.recoBudget),
@@ -1747,7 +1747,7 @@ class _InlineSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1822,7 +1822,7 @@ class _BudgetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1865,7 +1865,7 @@ class _GroupButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1904,7 +1904,7 @@ class _ToggleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
@@ -1950,14 +1950,14 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
 
   // Brand-palette gradient cycle: purple → pink → blue / orange → purple → green
   static final _colorA = TweenSequence<Color?>([
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.purple, end: WellturStyle.pink),   weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.pink,   end: WellturStyle.blue),   weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.blue,   end: WellturStyle.purple), weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple, end: SmarturStyle.pink),   weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.pink,   end: SmarturStyle.blue),   weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.blue,   end: SmarturStyle.purple), weight: 1),
   ]);
   static final _colorB = TweenSequence<Color?>([
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.orange, end: WellturStyle.purple), weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.purple, end: WellturStyle.green),  weight: 1),
-    TweenSequenceItem(tween: ColorTween(begin: WellturStyle.green,  end: WellturStyle.orange), weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.orange, end: SmarturStyle.purple), weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.purple, end: SmarturStyle.green),  weight: 1),
+    TweenSequenceItem(tween: ColorTween(begin: SmarturStyle.green,  end: SmarturStyle.orange), weight: 1),
   ]);
 
   @override
@@ -1978,7 +1978,7 @@ class _CTAButtonState extends State<_CTAButton> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return AnimatedBuilder(
       animation: _gradCtrl,
       builder: (context, child) {
@@ -2040,7 +2040,7 @@ class _RankBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
@@ -2078,11 +2078,11 @@ class _ScoreBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<WellturSemanticColors>()!;
+    final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<WellturSemanticColors>()!.ember.withValues(alpha: 0.9),
+        color: Theme.of(context).extension<SmarturSemanticColors>()!.ember.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

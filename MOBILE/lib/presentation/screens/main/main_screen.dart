@@ -1,19 +1,19 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../core/navigation/notification_router.dart';
 import '../chat/conversations_screen.dart';
-import '../../../core/motion/welltur_routes.dart';
+import '../../../core/motion/smartur_routes.dart';
 import 'home_screen.dart';
 import 'explore_screen.dart';
 import 'mis_rutas_screen.dart';
 import 'profile_screen.dart';
 import 'main_tab_scope.dart';
-import '../../widgets/welltur_tab_fade_stack.dart';
+import '../../widgets/smartur_tab_fade_stack.dart';
 
 /// Contador global de paradas en la ruta activa.
 /// Sprint 3 lo actualizará con datos reales; por ahora siempre 0.
@@ -60,7 +60,7 @@ class _MainScreenState extends State<MainScreen> {
       case 'profile':  _onTabTapped(MainTabIndex.profile);  break;
       case 'home':     _onTabTapped(MainTabIndex.home);     break;
       case 'messages':
-        context.pushWelltur(const ConversationsScreen());
+        context.pushSmartur(const ConversationsScreen());
         break;
       case 'bookings':
         _onTabTapped(MainTabIndex.profile);
@@ -93,7 +93,7 @@ class _MainScreenState extends State<MainScreen> {
       selectTab: _onTabTapped,
       child: Scaffold(
         backgroundColor: scheme.surface,
-        body: WellturTabFadeStack(
+        body: SmarturTabFadeStack(
           index: _currentIndex,
           children: [
             HomeScreen(
@@ -296,7 +296,7 @@ class _NavBarItemRoutes extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accent = scheme.primary;
     final color = isSelected ? accent : scheme.onSurfaceVariant;
-    final badgeColor = WellturSemanticColors.of(context).altAccent;
+    final badgeColor = SmarturSemanticColors.of(context).altAccent;
 
     return GestureDetector(
       onTap: onTap,

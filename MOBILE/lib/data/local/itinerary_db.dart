@@ -1,4 +1,4 @@
-﻿import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -14,7 +14,7 @@ class ItineraryDB {
 
   static Future<Database> _open() async {
     final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, 'welltur_itineraries.db');
+    final path = p.join(dir.path, 'smartur_itineraries.db');
     return openDatabase(
       path,
       version: 2,

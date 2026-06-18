@@ -1,9 +1,9 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/welltur_routes.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -11,8 +11,8 @@ import '../../../data/models/itinerary_model.dart';
 import '../../../data/models/user_profile_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/social_service.dart';
-import '../../widgets/welltur_skeleton.dart';
-import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_user_avatar.dart';
 import '../itinerary/itinerary_detail_screen.dart';
 import '../itinerary/planner_screen.dart';
 
@@ -88,7 +88,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       final updated = await _social.getPublicProfile(_profile!.id);
       if (mounted && updated != null) setState(() => _profile = updated);
     } catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.toString());
+      if (mounted) SmarturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _followLoading = false);
     }
@@ -100,13 +100,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       final copy = await ItineraryService().copyItinerary(it.id);
       await ItineraryDB.saveItinerary(copy);
       if (!mounted) return;
-      WellturNotifications.showSuccess(context, l10n.routeCopied);
+      SmarturNotifications.showSuccess(context, l10n.routeCopied);
       await Navigator.push(
         context,
-        wellturFadeRoute(PlannerScreen(itinerary: copy)),
+        smarturFadeRoute(PlannerScreen(itinerary: copy)),
       );
     } catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.toString());
+      if (mounted) SmarturNotifications.showError(context, e.toString());
     }
   }
 
@@ -158,7 +158,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
   }
 
   Widget _headerSkeleton(ColorScheme scheme) {
-    return WellturShimmer(
+    return SmarturShimmer(
       enabled: true,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -186,7 +186,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               shape: BoxShape.circle,
               border: Border.all(color: scheme.primary.withValues(alpha: 0.35), width: 3),
             ),
-            child: WellturUserAvatar(
+            child: SmarturUserAvatar(
               radius: 40,
               photoUrl: p?.photoUrl,
               avatarIconKey: p?.avatarIconKey,
@@ -197,7 +197,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           ),
           const SizedBox(height: 10),
           Text(name,
-              style: WellturStyle.calSansTitle.copyWith(fontSize: 20, color: scheme.onSurface)),
+              style: SmarturStyle.calSansTitle.copyWith(fontSize: 20, color: scheme.onSurface)),
           if (p != null) ...[
             const SizedBox(height: 8),
             Row(
@@ -223,7 +223,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
   Widget _buildRoutesList(AppLocalizations l10n, ColorScheme scheme) {
     if (_loadingRoutes) {
-      return WellturShimmer(
+      return SmarturShimmer(
         enabled: true,
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -257,7 +257,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         onCopy: () => _copyRoute(_routes[i]),
         onTap: () => Navigator.push(
           context,
-          wellturFadeRoute(ItineraryDetailScreen(itinerary: _routes[i])),
+          smarturFadeRoute(ItineraryDetailScreen(itinerary: _routes[i])),
         ),
       ),
     );
@@ -278,7 +278,7 @@ class _CountChip extends StatelessWidget {
     return Column(
       children: [
         Text('$value',
-            style: WellturStyle.calSansTitle.copyWith(fontSize: 18, color: scheme.onSurface)),
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18, color: scheme.onSurface)),
         Text(label,
             style: TextStyle(
               fontFamily: 'Outfit', fontSize: 12, color: scheme.onSurfaceVariant)),
@@ -390,7 +390,7 @@ class _RouteCard extends StatelessWidget {
                           child: Text(it.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: WellturStyle.calSansTitle.copyWith(fontSize: 15)),
+                              style: SmarturStyle.calSansTitle.copyWith(fontSize: 15)),
                         ),
                       ],
                     ),

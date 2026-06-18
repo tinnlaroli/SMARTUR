@@ -1,4 +1,4 @@
-﻿import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
 class OnboardingContent {
   final String title;

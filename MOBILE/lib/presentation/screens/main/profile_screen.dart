@@ -1,20 +1,20 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/wellness_service.dart';
 import 'wellness_assessment_screen.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_skeleton.dart';
-import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_user_avatar.dart';
 import '../../utils/diary_place_detail.dart';
 import 'edit_profile_avatar_screen.dart';
-import '../../widgets/welltur_ui_kit.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import '../preferences/preferences_screen.dart';
 import '../settings/settings_screen.dart';
 import 'main_tab_scope.dart';
@@ -211,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: WellturBackgroundTop(
+      body: SmarturBackgroundTop(
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
@@ -224,13 +224,13 @@ class _ProfileScreenState extends State<ProfileScreen>
               forceElevated: innerBoxIsScrolled,
               title: Text(
                 l10n.myProfile,
-                style: WellturStyle.calSansTitle.copyWith(fontSize: 20),
+                style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
               ),
               actions: [
                 IconButton(
                   icon: Icon(Icons.settings_outlined, color: scheme.onSurface),
                   onPressed: () async {
-                    await Navigator.push(context, wellturFadeRoute(const SettingsScreen()));
+                    await Navigator.push(context, smarturFadeRoute(const SettingsScreen()));
                     _loadProfile(); _loadWellnessHistory();
                   },
                 ),
@@ -241,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   children: [
                     // Avatar + name block
                     if (_loading)
-                      WellturShimmer(
+                      SmarturShimmer(
                         enabled: true,
                         child: Column(
                           children: const [
@@ -266,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             Text(
                               _name,
                               textAlign: TextAlign.center,
-                              style: WellturStyle.calSansTitle.copyWith(
+                              style: SmarturStyle.calSansTitle.copyWith(
                                   fontSize: 20, color: scheme.onSurface),
                             ),
                             const SizedBox(height: 4),
@@ -284,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                       ),
                     // Tab bar
-                    wellturTabBar(
+                    smarturTabBar(
                       context,
                       tabs: [
                         Tab(text: l10n.profileTabProfile),
@@ -360,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 width: 3,
               ),
             ),
-            child: WellturUserAvatar(
+            child: SmarturUserAvatar(
               radius: 44,
               photoUrl: _photoUrl,
               avatarIconKey: _avatarIconKey,
@@ -382,7 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    wellturFadeRoute(const EditProfileAvatarScreen()),
+                    smarturFadeRoute(const EditProfileAvatarScreen()),
                   );
                   _loadProfile();
                 },
@@ -443,7 +443,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     ColorScheme scheme,
     AppLocalizations l10n,
   ) {
-    return WellturPanel(
+    return SmarturPanel(
       padding: EdgeInsets.zero,
       child: Column(
         children: [
@@ -463,7 +463,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onTap: () async {
               await Navigator.push(
                 context,
-                wellturFadeRoute(PreferencesScreen(userName: _name)),
+                smarturFadeRoute(PreferencesScreen(userName: _name)),
               );
               _loadProfile();
             },
@@ -476,7 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onTap: () async {
               await Navigator.push(
                 context,
-                wellturFadeRoute(const EditProfileAvatarScreen()),
+                smarturFadeRoute(const EditProfileAvatarScreen()),
               );
               _loadProfile();
             },
@@ -489,7 +489,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             onTap: () async {
               await Navigator.push(
                 context,
-                wellturFadeRoute(const SettingsScreen()),
+                smarturFadeRoute(const SettingsScreen()),
               );
               _loadProfile();
             },
@@ -528,7 +528,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildWellnessSection(BuildContext context, ColorScheme scheme) {
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final last = _wellnessHistory.isNotEmpty ? _wellnessHistory.first : null;
     final modo = last?['modo_viaje'] as String?;
     final modoLabel = modo != null ? (_modoLabels[modo] ?? modo) : null;
@@ -549,14 +549,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Header: título + chip de modo ──
+          // ── Header: título + chip de modo actual ──
           Row(
             children: [
               const Icon(Icons.eco_outlined, size: 14, color: Color(0xFF254117)),
               const SizedBox(width: 5),
               Text(
                 'WellTur',
-                style: WellturStyle.calSansTitle.copyWith(
+                style: SmarturStyle.calSansTitle.copyWith(
                     fontSize: 14, color: const Color(0xFF254117)),
               ),
               const Spacer(),
@@ -587,7 +587,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             ],
           ),
           const SizedBox(height: 7),
-          // ── Descripción (1 línea fija) ──
+          // ── Descripción: 1 línea fija ──
           Text(
             modoDesc,
             maxLines: 1,
@@ -608,7 +608,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await Navigator.push(context,
-                          wellturFadeRoute(const WellnessAssessmentScreen()));
+                          smarturFadeRoute(const WellnessAssessmentScreen()));
                       _loadWellnessHistory();
                     },
                     icon: const Icon(Icons.refresh_rounded, size: 14),
@@ -689,7 +689,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
+        style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
       ),
     );
   }
@@ -720,7 +720,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildInterestChips() {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final colors = [
       scheme.primary,
       sem.sea,
@@ -786,7 +786,7 @@ class _StatTile extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: WellturStyle.calSansTitle.copyWith(fontSize: 16),
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 4),
           Text(
@@ -881,7 +881,7 @@ class _DiaryFavoritesTab extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     if (loading) {
-      return WellturShimmer(
+      return SmarturShimmer(
         enabled: true,
         child: GridView.builder(
           padding: const EdgeInsets.all(16),
@@ -902,11 +902,11 @@ class _DiaryFavoritesTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            WellturEmptyState(
+            SmarturEmptyState(
               icon: Icons.favorite_border_rounded,
               title: l10n.favoritesTab,
               subtitle: l10n.noCategoryPlaces,
-              iconColor: WellturSemanticColors.of(context).altAccent,
+              iconColor: SmarturSemanticColors.of(context).altAccent,
             ),
           ],
         ),

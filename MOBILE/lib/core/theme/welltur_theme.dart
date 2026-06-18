@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import '../motion/welltur_routes.dart';
-import 'welltur_theme_extensions.dart';
+import 'package:flutter/material.dart';
+import '../motion/smartur_routes.dart';
+import 'smartur_theme_extensions.dart';
 
 // ── Paleta WellTur ──────────────────────────────────────────────────────────
 const Color _rosaViejo    = Color(0xFFCD6184); // primary
@@ -48,7 +48,7 @@ const _scheme = ColorScheme(
 ThemeData buildWellturTheme() {
   return ThemeData(
     extensions: <ThemeExtension<dynamic>>[
-      WellturSemanticColors(
+      SmarturSemanticColors(
         onImageText: Colors.white,
         onImageMuted: Colors.white70,
         imageScrimSoft: Colors.black.withValues(alpha: 0.22),
@@ -122,11 +122,11 @@ ThemeData buildWellturTheme() {
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: WellturPageTransitionsBuilder(),
-        TargetPlatform.iOS: WellturPageTransitionsBuilder(),
-        TargetPlatform.macOS: WellturPageTransitionsBuilder(),
-        TargetPlatform.windows: WellturPageTransitionsBuilder(),
-        TargetPlatform.linux: WellturPageTransitionsBuilder(),
+        TargetPlatform.android: SmarturPageTransitionsBuilder(),
+        TargetPlatform.iOS: SmarturPageTransitionsBuilder(),
+        TargetPlatform.macOS: SmarturPageTransitionsBuilder(),
+        TargetPlatform.windows: SmarturPageTransitionsBuilder(),
+        TargetPlatform.linux: SmarturPageTransitionsBuilder(),
       },
     ),
     cardTheme: CardThemeData(

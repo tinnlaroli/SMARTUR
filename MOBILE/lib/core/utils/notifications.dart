@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-class WellturNotifications {
+class SmarturNotifications {
   static final Map<String, DateTime> _lastShown = {};
 
   static bool _canShow(String message) {

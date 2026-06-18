@@ -1,15 +1,15 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/constants/avatar_icon_map.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../core/utils/profile_photo_validation.dart';
 import '../../../data/services/auth_service.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_skeleton.dart';
-import '../../widgets/welltur_user_avatar.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_user_avatar.dart';
 
 /// Cambiar icono de perfil o subir foto (API).
 class EditProfileAvatarScreen extends StatefulWidget {
@@ -64,9 +64,9 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
     if (issue != ProfilePhotoIssue.none) {
       if (!mounted) return;
       if (issue == ProfilePhotoIssue.tooLarge) {
-        WellturNotifications.showError(context, l10n.profilePhotoTooLarge);
+        SmarturNotifications.showError(context, l10n.profilePhotoTooLarge);
       } else {
-        WellturNotifications.showError(context, l10n.profilePhotoInvalidFormat);
+        SmarturNotifications.showError(context, l10n.profilePhotoInvalidFormat);
       }
       return;
     }
@@ -78,13 +78,13 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
         x.name,
         platformMime: x.mimeType,
       );
-      if (mounted) WellturNotifications.showSuccess(context, l10n.profileReady);
+      if (mounted) SmarturNotifications.showSuccess(context, l10n.profileReady);
       await _load();
     } on AuthException catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.message);
+      if (mounted) SmarturNotifications.showError(context, e.message);
     } catch (e) {
       if (!mounted) return;
-      WellturNotifications.showError(context, e.toString());
+      SmarturNotifications.showError(context, e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -95,10 +95,10 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
     setState(() => _busy = true);
     try {
       await _auth.updateUser({'avatar_icon_key': key, 'photo_url': null});
-      if (mounted) WellturNotifications.showSuccess(context, l10n.profileReady);
+      if (mounted) SmarturNotifications.showSuccess(context, l10n.profileReady);
       await _load();
     } on AuthException catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.message);
+      if (mounted) SmarturNotifications.showError(context, e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -109,10 +109,10 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
     setState(() => _busy = true);
     try {
       await _auth.updateUser({'photo_url': null});
-      if (mounted) WellturNotifications.showSuccess(context, l10n.profileReady);
+      if (mounted) SmarturNotifications.showSuccess(context, l10n.profileReady);
       await _load();
     } on AuthException catch (e) {
-      if (mounted) WellturNotifications.showError(context, e.message);
+      if (mounted) SmarturNotifications.showError(context, e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -125,13 +125,13 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
-        title: Text(l10n.editProfile, style: WellturStyle.calSansTitle.copyWith(fontSize: 20)),
+        title: Text(l10n.editProfile, style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
-      body: WellturBackgroundTop(
-        child: WellturShimmer(
+      body: SmarturBackgroundTop(
+        child: SmarturShimmer(
         enabled: _busy,
         child: _busy
             ? ListView(
@@ -175,7 +175,7 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 Center(
-                  child: WellturUserAvatar(
+                  child: SmarturUserAvatar(
                     photoUrl: _photoUrl,
                     avatarIconKey: _iconKey,
                     displayName: _name,
@@ -236,7 +236,7 @@ class _EditProfileAvatarScreenState extends State<EditProfileAvatarScreen> {
                 const SizedBox(height: 28),
                 Text(
                   l10n.accountSection,
-                  style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
+                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 Text(

@@ -1,13 +1,13 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/welltur_routes.dart';
+import '../../../core/motion/smartur_routes.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/chat_service.dart';
-import '../../widgets/welltur_background.dart';
+import '../../widgets/smartur_background.dart';
 import 'chat_screen.dart';
 
 const _pollInterval = Duration(seconds: 10);
@@ -46,7 +46,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        if (!silent) WellturNotifications.showError(context, e.toString());
+        if (!silent) SmarturNotifications.showError(context, e.toString());
       }
     }
   }
@@ -67,7 +67,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: WellturBackground(
+      body: SmarturBackground(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,7 +112,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                   timeLabel: _relativeTime(c.lastMessageAt),
                                   onTap: () => Navigator.push(
                                     context,
-                                    wellturFadeRoute(
+                                    smarturFadeRoute(
                                       ChatScreen(conversation: c),
                                     ),
                                   ).then((_) => _load(silent: true)),

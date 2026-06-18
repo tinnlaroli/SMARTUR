@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import 'package:flutter/material.dart';
+import 'package:smartur/l10n/app_localizations.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 
@@ -90,11 +90,11 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
   void _submit() {
     final l10n = AppLocalizations.of(context)!;
     if (_selectedInterests.isEmpty) {
-      WellturNotifications.showError(context, l10n.selectAtLeastOneInterest);
+      SmarturNotifications.showError(context, l10n.selectAtLeastOneInterest);
       return;
     }
     if (_activityLevel == null || _travelType == null || _preferredPlace == null) {
-      WellturNotifications.showError(context, l10n.completeAllFields);
+      SmarturNotifications.showError(context, l10n.completeAllFields);
       return;
     }
     int activityValue = 3;
@@ -129,7 +129,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     final interests = _interestOptions(l10n);
     final activities = _activityOptions(l10n);
@@ -148,9 +148,9 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
             fontStyle: FontStyle.italic,
           ),
         ),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         _sectionLabel(l10n.yourInterests, Icons.favorite_outline),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -180,10 +180,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
             );
           }).toList(),
         ),
-        const SizedBox(height: WellturStyle.spacingLg),
+        const SizedBox(height: SmarturStyle.spacingLg),
 
         _sectionLabel(l10n.activityLevel, Icons.bolt_outlined),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -204,10 +204,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
             );
           }).toList(),
         ),
-        const SizedBox(height: WellturStyle.spacingLg),
+        const SizedBox(height: SmarturStyle.spacingLg),
 
         _sectionLabel(l10n.travelType, Icons.luggage_outlined),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -228,10 +228,10 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
             );
           }).toList(),
         ),
-        const SizedBox(height: WellturStyle.spacingLg),
+        const SizedBox(height: SmarturStyle.spacingLg),
 
         _sectionLabel(l10n.preferredPlace, Icons.place_outlined),
-        const SizedBox(height: WellturStyle.spacingSm),
+        const SizedBox(height: SmarturStyle.spacingSm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -252,7 +252,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
             );
           }).toList(),
         ),
-        const SizedBox(height: WellturStyle.spacingXl),
+        const SizedBox(height: SmarturStyle.spacingXl),
 
         Row(
           children: [
@@ -261,7 +261,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
                 onPressed: widget.onBack,
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: scheme.primary),
-                  minimumSize: const Size(double.infinity, WellturStyle.touchTargetComfortable),
+                  minimumSize: const Size(double.infinity, SmarturStyle.touchTargetComfortable),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(l10n.back, style: TextStyle(color: scheme.primary, fontFamily: 'Outfit')),

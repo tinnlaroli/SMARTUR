@@ -1,16 +1,16 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:welltur/l10n/app_localizations.dart';
+import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/welltur_routes.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_loader.dart';
-import '../../widgets/welltur_ui_kit.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_loader.dart';
+import '../../widgets/smartur_ui_kit.dart';
 import 'detail_view_page.dart';
 
 /// Filtro activo en el mapa.
@@ -69,11 +69,11 @@ class _MapScreenState extends State<MapScreen> {
         _MapFilter.all         => null,
       };
 
-  Color _colorForCategory(PlaceCategory cat, {WellturSemanticColors? sem, ColorScheme? scheme}) => switch (cat) {
-        PlaceCategory.museums     => scheme?.primary ?? WellturStyle.purple,
-        PlaceCategory.restaurants => sem?.ember ?? WellturStyle.orange,
-        PlaceCategory.adventures  => sem?.leaf ?? WellturStyle.green,
-        PlaceCategory.hotels      => sem?.sea ?? WellturStyle.blue,
+  Color _colorForCategory(PlaceCategory cat, {SmarturSemanticColors? sem, ColorScheme? scheme}) => switch (cat) {
+        PlaceCategory.museums     => scheme?.primary ?? SmarturStyle.purple,
+        PlaceCategory.restaurants => sem?.ember ?? SmarturStyle.orange,
+        PlaceCategory.adventures  => sem?.leaf ?? SmarturStyle.green,
+        PlaceCategory.hotels      => sem?.sea ?? SmarturStyle.blue,
       };
 
   IconData _iconForCategory(PlaceCategory cat) => switch (cat) {
@@ -95,20 +95,20 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final sem = WellturSemanticColors.of(context);
+    final sem = SmarturSemanticColors.of(context);
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: WellturBackgroundTop(
+      body: SmarturBackgroundTop(
         child: SafeArea(
-          child: WellturLoadTransition(
+          child: SmarturLoadTransition(
             loading: _isLoading,
             loadingChild: const Center(
-              child: WellTURLoader(isMini: true, continuous: true),
+              child: SmartURLoader(isMini: true, continuous: true),
             ),
             child: _error != null
                 ? _buildError(l10n, scheme)
-                : WellturFadeIn(
+                : SmarturFadeIn(
                     child: Stack(
                       children: [
                         _buildMap(sem: sem, scheme: scheme),
@@ -151,7 +151,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Map ──────────────────────────────────────────────────────────────────
 
-  Widget _buildMap({required WellturSemanticColors sem, required ColorScheme scheme}) => Padding(
+  Widget _buildMap({required SmarturSemanticColors sem, required ColorScheme scheme}) => Padding(
         padding: const EdgeInsets.all(12),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
@@ -166,7 +166,7 @@ class _MapScreenState extends State<MapScreen> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app_welltur',
+                userAgentPackageName: 'com.example.app_smartur',
               ),
               MarkerLayer(
                 markers: _visiblePlaces.map((place) {
@@ -212,7 +212,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Filters bar ──────────────────────────────────────────────────────────
 
-  Widget _buildTopFiltersBar(AppLocalizations l10n, ColorScheme scheme, {required WellturSemanticColors sem}) => Positioned(
+  Widget _buildTopFiltersBar(AppLocalizations l10n, ColorScheme scheme, {required SmarturSemanticColors sem}) => Positioned(
         top: 8,
         left: 12,
         right: 12,
@@ -302,7 +302,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // ── Bottom info card ──────────────────────────────────────────────────────
 
-  Widget _buildBottomCard(AppLocalizations l10n, ColorScheme scheme, {required WellturSemanticColors sem}) {
+  Widget _buildBottomCard(AppLocalizations l10n, ColorScheme scheme, {required SmarturSemanticColors sem}) {
     final place = _selectedPlace;
 
     if (place == null) {
@@ -352,7 +352,7 @@ class _MapScreenState extends State<MapScreen> {
       child: GestureDetector(
         onTap: () => Navigator.push(
           context,
-          wellturDetailRoute(
+          smarturDetailRoute(
             DetailViewPage(
               title: place.name,
               heroTag: 'map_${place.id}',

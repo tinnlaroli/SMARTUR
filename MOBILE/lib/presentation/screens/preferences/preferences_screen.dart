@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
-import 'package:welltur/l10n/app_localizations.dart';
-import '../../widgets/welltur_background.dart';
-import '../../widgets/welltur_skeleton.dart';
+import 'package:flutter/material.dart';
+import 'package:smartur/l10n/app_localizations.dart';
+import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_skeleton.dart';
 
-import '../../../core/motion/welltur_routes.dart';
-import '../../../core/theme/welltur_theme_extensions.dart';
+import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
@@ -84,7 +84,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
       final authService = AuthService();
       final token = await authService.getToken();
       if (token == null) {
-        if (mounted) WellturNotifications.showError(context, l10n.sessionExpiredPreferences);
+        if (mounted) SmarturNotifications.showError(context, l10n.sessionExpiredPreferences);
         return;
       }
 
@@ -94,16 +94,16 @@ class _PreferencesScreenState extends State<PreferencesScreen>
       if (!mounted) return;
 
       if (success) {
-        WellturNotifications.showSuccess(context, l10n.profileReady);
+        SmarturNotifications.showSuccess(context, l10n.profileReady);
         await Future.delayed(const Duration(milliseconds: 600));
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,
-          wellturFadeRoute(MainScreen(userName: widget.userName, isNewLogin: true)),
+          smarturFadeRoute(MainScreen(userName: widget.userName, isNewLogin: true)),
           (_) => false,
         );
       } else {
-        WellturNotifications.showError(context, l10n.couldNotSavePreferences);
+        SmarturNotifications.showError(context, l10n.couldNotSavePreferences);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -117,16 +117,16 @@ class _PreferencesScreenState extends State<PreferencesScreen>
     final steps = _getSteps(l10n);
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: WellturBackgroundTop(
+      body: SmarturBackgroundTop(
         child: SafeArea(
           child: Column(
             children: [
               // ── Header con progreso ────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  WellturStyle.spacingLg,
-                  WellturStyle.spacingMd,
-                  WellturStyle.spacingLg,
+                  SmarturStyle.spacingLg,
+                  SmarturStyle.spacingMd,
+                  SmarturStyle.spacingLg,
                   0,
                 ),
                 child: Column(
@@ -149,7 +149,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: WellturStyle.spacingMd),
+                    const SizedBox(height: SmarturStyle.spacingMd),
 
                     AnimatedBuilder(
                       animation: _progressController,
@@ -163,7 +163,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: WellturStyle.spacingMd),
+                    const SizedBox(height: SmarturStyle.spacingMd),
 
                     Row(
                       children: List.generate(_totalSteps, (i) {
@@ -180,13 +180,13 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                             color: active
                                 ? Theme.of(context).colorScheme.primary
                                 : done
-                                    ? WellturSemanticColors.of(context).leaf
+                                    ? SmarturSemanticColors.of(context).leaf
                                     : Colors.transparent,
                             border: Border.all(
                               color: active
                                   ? Theme.of(context).colorScheme.primary
                                   : done
-                                      ? WellturSemanticColors.of(context).leaf
+                                      ? SmarturSemanticColors.of(context).leaf
                                       : scheme.outlineVariant,
                               width: 2,
                             ),
@@ -211,7 +211,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                                   duration: const Duration(milliseconds: 300),
                                   height: 2,
                                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                                  color: done ? WellturSemanticColors.of(context).leaf : scheme.outlineVariant,
+                                  color: done ? SmarturSemanticColors.of(context).leaf : scheme.outlineVariant,
                                 ),
                               ),
                             ],
@@ -219,11 +219,11 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                         );
                       }),
                     ),
-                    const SizedBox(height: WellturStyle.spacingLg),
+                    const SizedBox(height: SmarturStyle.spacingLg),
 
                     Text(
                       steps[_currentStep].title,
-                      style: WellturStyle.calSansTitle.copyWith(fontSize: 26),
+                      style: SmarturStyle.calSansTitle.copyWith(fontSize: 26),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -234,18 +234,18 @@ class _PreferencesScreenState extends State<PreferencesScreen>
                 ),
               ),
 
-              const SizedBox(height: WellturStyle.spacingMd),
+              const SizedBox(height: SmarturStyle.spacingMd),
 
               // ── Contenido del paso activo ──────────────────────────────
               Expanded(
-                child: WellturShimmer(
+                child: SmarturShimmer(
                   enabled: _isLoading,
                   child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(
-                    WellturStyle.spacingLg,
+                    SmarturStyle.spacingLg,
                     0,
-                    WellturStyle.spacingLg,
-                    WellturStyle.spacingXl,
+                    SmarturStyle.spacingLg,
+                    SmarturStyle.spacingXl,
                   ),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 400),
