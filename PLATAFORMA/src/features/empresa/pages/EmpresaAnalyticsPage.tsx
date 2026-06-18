@@ -82,7 +82,7 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
                             ? 'Analytics se activa una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@welltur.online para más información.'}
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
                     </p>
                 </div>
             </div>

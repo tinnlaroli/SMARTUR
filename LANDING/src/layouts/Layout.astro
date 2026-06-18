@@ -113,7 +113,7 @@ const seoMetadata = {
 };
 
 const seo = seoMetadata[currentLang];
-const baseUrl = import.meta.env.PUBLIC_SITE_URL || "https://welltur.online";
+const baseUrl = import.meta.env.PUBLIC_SITE_URL || "https://smartur.online";
 const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
 ---
 
@@ -210,12 +210,12 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
           },
           "contactPoint": {
             "@type": "ContactPoint",
-            "email": "contacto@welltur.online",
+            "email": "contacto@smartur.online",
             "contactType": "customer service",
             "availableLanguage": ["Spanish", "English"]
           },
           "sameAs": [
-            "https://welltur.online",
+            "https://smartur.online",
             "https://instagram.com/welltur"
           ]
         },
@@ -262,7 +262,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
       logoUrl="/"
       logoAlt={t("header.logo.alt")}
       links={links}
-      link1={{ title: t("button.login"), url: import.meta.env.PUBLIC_TOURIST_APP_URL || "https://app.welltur.online/" }}
+      link1={{ title: t("button.login"), url: import.meta.env.PUBLIC_TOURIST_APP_URL || "https://app.smartur.online/" }}
       link2={{ title: t("button.get-started"), url: `${isHomePage ? '' : homePath}${linksMap[currentLang as keyof typeof linksMap]?.at(-1)?.url ?? '#contacto'}` }}
       mobileMenuLabel={t("accessibility.toggleMenu")}
     />

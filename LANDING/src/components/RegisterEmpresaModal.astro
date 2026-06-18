@@ -523,7 +523,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   const plataformaUrl = isLocal
     ? `${window.location.protocol}//${window.location.hostname}:5173`
     : (() => {
-        const raw = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.welltur.online';
+        const raw = document.querySelector('[data-plataforma-url]')?.dataset?.plataformaUrl || 'https://app.smartur.online';
         try { return new URL(raw).origin; } catch { return raw.replace(/\/+$/, ''); }
       })();
 

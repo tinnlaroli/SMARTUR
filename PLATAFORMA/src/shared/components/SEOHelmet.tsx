@@ -11,7 +11,7 @@ interface SEOHelmetProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const SITE_URL = 'https://app.welltur.online';
+const SITE_URL = 'https://app.smartur.online';
 const SITE_NAME = 'WELLTUR';
 
 function setMeta(name: string, content: string, property = false) {
@@ -64,7 +64,7 @@ export const SEOHelmet = ({
     setMeta('og:title', ogTitleFinal, true);
     setMeta('og:description', ogDescriptionFinal, true);
     setMeta('og:url', canonical, true);
-    setMeta('og:image', 'https://welltur.online/image-1.jpg', true);
+    setMeta('og:image', 'https://smartur.online/image-1.jpg', true);
     setMeta('og:image:width', '1200', true);
     setMeta('og:image:height', '630', true);
     setMeta('og:image:type', 'image/jpeg', true);
@@ -72,7 +72,7 @@ export const SEOHelmet = ({
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', ogTitleFinal);
     setMeta('twitter:description', ogDescriptionFinal);
-    setMeta('twitter:image', 'https://welltur.online/image-1.jpg');
+    setMeta('twitter:image', 'https://smartur.online/image-1.jpg');
 
     if (jsonLd) {
       let script = document.querySelector<HTMLScriptElement>('script[type="application/ld+json"][data-seo]');
