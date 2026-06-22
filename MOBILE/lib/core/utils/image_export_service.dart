@@ -5,6 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:smartur/core/settings/app_settings.dart';
 
 class ImageExportService {
   static final ScreenshotController screenshotController = ScreenshotController();
@@ -31,7 +33,12 @@ class ImageExportService {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Image.asset('assets/imgs/logo_costado.png', height: 40),
+              Consumer<AppSettings>(
+                builder: (context, appSettings, _) {
+                  final isWelltur = appSettings.themeMode == AppThemeMode.welltur;
+                  return Image.asset(isWelltur ? 'assets/imgs/wellturLogo.png' : 'assets/imgs/logo_costado.png', height: 40);
+                },
+              ),
               Text(
                 DateTime.now().toString().split(' ')[0],
                 style: TextStyle(color: scheme.onSurfaceVariant),

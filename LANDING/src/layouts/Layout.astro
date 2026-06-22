@@ -1,4 +1,4 @@
-﻿---
+---
 import { Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import PageLoader from "../components/PageLoader.astro";
@@ -26,7 +26,7 @@ const linksMap = {
     { title: t("nav.destination"), url: "#region" },
     { title: t("nav.technology"), url: "#tecnologia" },
     { title: t("nav.about"), url: "#nosotros" },
-    { title: t("nav.pricing"), url: "#pricing" },
+    { title: t("nav.business"), url: "#empresa" },
     { title: t("nav.contact"), url: "#contacto" },
   ],
   en: [
@@ -34,6 +34,7 @@ const linksMap = {
     { title: t("nav.destination"), url: "#region" },
     { title: t("nav.technology"), url: "#technology" },
     { title: t("nav.about"), url: "#about" },
+    { title: t("nav.business"), url: "#empresa" },
     { title: t("nav.pricing"), url: "#pricing" },
     { title: t("nav.contact"), url: "#contact" },
   ],
@@ -42,6 +43,7 @@ const linksMap = {
     { title: t("nav.destination"), url: "#region" },
     { title: t("nav.technology"), url: "#technology" },
     { title: t("nav.about"), url: "#about" },
+    { title: t("nav.business"), url: "#empresa" },
     { title: t("nav.pricing"), url: "#pricing" },
     { title: t("nav.contact"), url: "#contact" },
   ],
@@ -50,6 +52,7 @@ const linksMap = {
     { title: t("nav.destination"), url: "#region" },
     { title: t("nav.technology"), url: "#tecnologia" },
     { title: t("nav.about"), url: "#nosso" },
+    { title: t("nav.business"), url: "#empresa" },
     { title: t("nav.pricing"), url: "#pricing" },
     { title: t("nav.contact"), url: "#contato" },
   ],
@@ -67,47 +70,47 @@ const links = isHomePage
 // Localized SEO metadata
 const seoMetadata = {
   es: {
-    title: "WELLTUR | Turismo Inteligente en Veracruz — Altas Montañas",
+    title: "SMARTUR | Turismo Inteligente en Veracruz — Altas Montañas",
     description:
-      "Descubre qué hacer en Veracruz con WELLTUR. IA que recomienda hoteles, restaurantes y tours en Córdoba, Orizaba y las Altas Montañas. Turismo inteligente.",
+      "Descubre qué hacer en Veracruz con SMARTUR. IA que recomienda hoteles, restaurantes y tours en Córdoba, Orizaba y las Altas Montañas. Turismo inteligente.",
     keywords:
-      "qué hacer en Veracruz, turismo Veracruz, Altas Montañas Veracruz, turismo Córdoba Veracruz, recomendación turística, WELLTUR, rutas personalizadas Veracruz, inteligencia artificial turismo, hoteles Altas Montañas, restaurantes Córdoba, Orizaba turismo, MiPyMEs turísticas",
-    ogTitle: "WELLTUR — Turismo Inteligente en las Altas Montañas de Veracruz",
+      "qué hacer en Veracruz, turismo Veracruz, Altas Montañas Veracruz, turismo Córdoba Veracruz, recomendación turística, SMARTUR, rutas personalizadas Veracruz, inteligencia artificial turismo, hoteles Altas Montañas, restaurantes Córdoba, Orizaba turismo, MiPyMEs turísticas",
+    ogTitle: "SMARTUR — Turismo Inteligente en las Altas Montañas de Veracruz",
     ogDescription:
-      "Descubre qué hacer en Veracruz con WELLTUR. Recomendaciones con IA de hoteles, restaurantes y tours en Córdoba, Orizaba y la región.",
+      "Descubre qué hacer en Veracruz con SMARTUR. Recomendaciones con IA de hoteles, restaurantes y tours en Córdoba, Orizaba y la región.",
     locale: "es_MX",
   },
   en: {
-    title: "WELLTUR | Smart Tourism in Veracruz — High Mountains",
+    title: "SMARTUR | Smart Tourism in Veracruz — High Mountains",
     description:
-      "Discover things to do in Veracruz with WELLTUR. AI-powered recommendations for hotels, restaurants, and tours in Córdoba, Orizaba and the Altas Montañas.",
+      "Discover things to do in Veracruz with SMARTUR. AI-powered recommendations for hotels, restaurants, and tours in Córdoba, Orizaba and the Altas Montañas.",
     keywords:
-      "things to do in Veracruz, Veracruz tourism, High Mountains Veracruz, Altas Montañas, Cordoba Veracruz tourism, WELLTUR, personalized travel recommendations, AI tourism Mexico, Orizaba tourism",
-    ogTitle: "WELLTUR — Smart Tourism for the High Mountains of Veracruz",
+      "things to do in Veracruz, Veracruz tourism, High Mountains Veracruz, Altas Montañas, Cordoba Veracruz tourism, SMARTUR, personalized travel recommendations, AI tourism Mexico, Orizaba tourism",
+    ogTitle: "SMARTUR — Smart Tourism for the High Mountains of Veracruz",
     ogDescription:
-      "Discover things to do in Veracruz with WELLTUR. AI-powered recommendations for hotels, restaurants, and tours in the High Mountains region.",
+      "Discover things to do in Veracruz with SMARTUR. AI-powered recommendations for hotels, restaurants, and tours in the High Mountains region.",
     locale: "en_US",
   },
   fr: {
-    title: "WELLTUR | Tourisme Intelligent au Veracruz — Hautes Montagnes",
+    title: "SMARTUR | Tourisme Intelligent au Veracruz — Hautes Montagnes",
     description:
-      "Découvrez quoi faire à Veracruz avec WELLTUR. Recommandations IA d'hôtels, restaurants et circuits dans les Hautes Montagnes, Córdoba et Orizaba.",
+      "Découvrez quoi faire à Veracruz avec SMARTUR. Recommandations IA d'hôtels, restaurants et circuits dans les Hautes Montagnes, Córdoba et Orizaba.",
     keywords:
-      "tourisme Veracruz, WELLTUR, IA touristique, Hautes Montagnes, recommandations personnalisées, PME touristiques, Veracruz Mexique",
-    ogTitle: "WELLTUR — Tourisme Intelligent dans les Hautes Montagnes de Veracruz",
+      "tourisme Veracruz, SMARTUR, IA touristique, Hautes Montagnes, recommandations personnalisées, PME touristiques, Veracruz Mexique",
+    ogTitle: "SMARTUR — Tourisme Intelligent dans les Hautes Montagnes de Veracruz",
     ogDescription:
-      "Découvrez quoi faire à Veracruz avec WELLTUR. Recommandations IA personnalisées dans les Hautes Montagnes.",
+      "Découvrez quoi faire à Veracruz avec SMARTUR. Recommandations IA personnalisées dans les Hautes Montagnes.",
     locale: "fr_FR",
   },
   pt: {
-    title: "WELLTUR | Turismo Inteligente no Veracruz — Altas Montanhas",
+    title: "SMARTUR | Turismo Inteligente no Veracruz — Altas Montanhas",
     description:
-      "Descubra o que fazer em Veracruz com WELLTUR. IA que recomenda hotéis, restaurantes e tours em Córdoba, Orizaba e as Altas Montanhas do México.",
+      "Descubra o que fazer em Veracruz com SMARTUR. IA que recomenda hotéis, restaurantes e tours em Córdoba, Orizaba e as Altas Montanhas do México.",
     keywords:
-      "turismo Veracruz, WELLTUR, IA turística, Altas Montanhas, recomendações personalizadas, turismo Córdoba, Orizaba turismo, México",
-    ogTitle: "WELLTUR — Turismo Inteligente nas Altas Montanhas de Veracruz",
+      "turismo Veracruz, SMARTUR, IA turística, Altas Montanhas, recomendações personalizadas, turismo Córdoba, Orizaba turismo, México",
+    ogTitle: "SMARTUR — Turismo Inteligente nas Altas Montanhas de Veracruz",
     ogDescription:
-      "Descubra o que fazer em Veracruz com WELLTUR. Recomendações IA personalizadas de hotéis, restaurantes e tours.",
+      "Descubra o que fazer em Veracruz com SMARTUR. Recomendações IA personalizadas de hotéis, restaurantes e tours.",
     locale: "pt_BR",
   },
 };
@@ -374,5 +377,56 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
       c('#984EFD'),
       `color:#aaa;font-weight:400;font-size:11px`
     );
+  })();
+
+  // Dynamic branding replacement
+  (() => {
+    function walkAndReplace(node: Node, isWelltur: boolean) {
+      if (node.nodeType === 3 && node.nodeValue) {
+        if (isWelltur) {
+          node.nodeValue = node.nodeValue.replace(/SMARTUR/g, 'WELLTUR').replace(/Smartur/g, 'Welltur');
+        } else {
+          node.nodeValue = node.nodeValue.replace(/WELLTUR/g, 'SMARTUR').replace(/Welltur/g, 'Smartur');
+        }
+      } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          walkAndReplace(node.childNodes[i], isWelltur);
+        }
+      }
+    }
+
+    function updateBranding(theme: string) {
+      const isWelltur = theme === 'welltur';
+      walkAndReplace(document.body, isWelltur);
+
+      // Update logos
+      document.querySelectorAll('img.brand-logo').forEach((img: any) => {
+        // Find if we have the assets in public. Usually we can just point to /logo.png or /wellturLogo.png
+        img.src = isWelltur ? '/wellturLogo.png' : '/logo.png';
+        if (img.srcset) img.srcset = '';
+        img.alt = isWelltur ? 'WELLTUR' : 'SMARTUR';
+      });
+
+      // Update document title and favicon
+      if (isWelltur) {
+        document.title = document.title.replace(/SMARTUR/g, 'WELLTUR').replace(/Smartur/g, 'Welltur');
+      } else {
+        document.title = document.title.replace(/WELLTUR/g, 'SMARTUR').replace(/Welltur/g, 'Smartur');
+      }
+
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        favicon.href = isWelltur ? '/wellturLogo.png' : '/favicon.svg?v=2';
+        favicon.type = isWelltur ? 'image/png' : 'image/svg+xml';
+      }
+    }
+
+    window.addEventListener('theme-changed', (e: any) => updateBranding(e.detail.theme));
+    
+    // Initial run
+    document.addEventListener("DOMContentLoaded", () => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'light';
+      updateBranding(theme);
+    });
   })();
 </script>

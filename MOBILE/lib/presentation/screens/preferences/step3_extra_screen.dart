@@ -79,7 +79,9 @@ class _PreferencesStep3State extends State<PreferencesStep3> {
     widget.data['has_visited_before'] = _hasVisitedBefore;
     final restrictionsText = _restrictionsController.text.trim();
     widget.data['restrictions'] = restrictionsText;
-    widget.data['sustainable_preferences'] = _sustainablePreference ?? '';
+    // La BD espera boolean: cualquier opción distinta de "Sin preferencia" = true
+    widget.data['sustainable_preferences'] =
+        _sustainablePreference != null && _sustainablePreference != 'Sin preferencia';
     await widget.onSubmit();
   }
 

@@ -3,7 +3,7 @@ import { SEOHelmet } from '../../../shared/components/SEOHelmet';
 import { clearAccessToken } from '../../../shared/api/axiosClient';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-    Menu, Bell, HelpCircle, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2,
+    Menu, Bell, HelpCircle, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, Leaf,
 } from 'lucide-react';
 import { useUserPreferences } from '../../../contexts/LanguageContext';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -235,10 +235,12 @@ export function EmpresaLayout() {
 
                         <button
                             onClick={toggleTheme}
+                            title={theme === 'welltur' ? 'Tema Welltur' : theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
                             className="rounded-xl p-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            title={theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
                         >
-                            {theme === 'dark'
+                            {theme === 'welltur'
+                                ? <Leaf className="size-[18px] text-green-500" />
+                                : theme === 'dark'
                                 ? <Sun className="size-[18px] text-amber-400" />
                                 : <Moon className="size-[18px] text-violet-400" />}
                         </button>

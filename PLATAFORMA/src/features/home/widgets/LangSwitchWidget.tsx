@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Globe2, Moon, Sun } from 'lucide-react';
+import { Globe2, Moon, Sun, Leaf } from 'lucide-react';
 import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { DASHBOARD_COLORS } from '../utils/dashboard';
 import type { LanguageCode } from '../../../contexts/LanguageContext';
@@ -55,7 +55,9 @@ const LangSwitchWidget: React.FC = () => {
                         color: theme === 'dark' ? DASHBOARD_COLORS.warning : DASHBOARD_COLORS.purple,
                     }}
                 >
-                    {theme === 'dark' ? (
+                    {theme === 'welltur' ? (
+                        <Leaf className="size-3.5" />
+                    ) : theme === 'dark' ? (
                         <Sun className="size-3.5" />
                     ) : (
                         <Moon className="size-3.5" />

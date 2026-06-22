@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Instagram, Mail, Phone, MapPin, Download } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface NavLink {
     label: string;
@@ -14,6 +15,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
     const { t } = useLanguage();
+    const { theme } = useTheme();
     const [latestVersion, setLatestVersion] = useState('…');
 
     useEffect(() => {
@@ -56,8 +58,8 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                     <div className="flex flex-col gap-6">
                         <span className="block w-44">
                             <img
-                                src="/welltur.png"
-                                alt="WELLTUR"
+                                src={theme === 'welltur' ? '/wellturLogo.png' : '/smartur.png'}
+                                alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'}
                                 className="h-auto w-full object-contain"
                                 style={{ filter: 'var(--logo-filter, none)' }}
                             />

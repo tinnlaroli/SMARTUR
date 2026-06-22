@@ -208,7 +208,7 @@ function POIPreviewModal({ poi, onClose, onReviewed }: POIPreviewModalProps) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function AdminPOIsApprovalPage() {
+export default function AdminPOIsApprovalPage({ onBadgeRefresh }: { onBadgeRefresh?: () => void } = {}) {
     const [pois, setPois]             = useState<PendingPOI[]>([]);
     const [loading, setLoading]       = useState(true);
     const [selected, setSelected]     = useState<PendingPOI | null>(null);
@@ -221,7 +221,10 @@ export default function AdminPOIsApprovalPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleReviewed = (id: number) => setPois((prev) => prev.filter((p) => p.id !== id));
+    const handleReviewed = (id: number) => {
+        setPois((prev) => prev.filter((p) => p.id !== id));
+        onBadgeRefresh?.();
+    };
 
     const filtered = pois.filter((p) =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||

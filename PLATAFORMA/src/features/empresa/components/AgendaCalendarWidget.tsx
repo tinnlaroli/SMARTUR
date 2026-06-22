@@ -8,14 +8,16 @@ interface Props {
     selectedDate: string | null;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-    pending: '#F59E0B',
-    confirmed: '#10B981',
-    cancelled: '#6B7280',
-};
+const ACCENT = '#a855f7';
 
 function isoDate(y: number, m: number, d: number) {
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+function dayBadgeColor(dayBookings: EmpresaBooking[]): string {
+    if (dayBookings.some(b => b.status === 'pending')) return '#F59E0B';
+    if (dayBookings.some(b => b.status === 'confirmed')) return '#10B981';
+    return '#6B7280';
 }
 
 export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Props) {
@@ -32,7 +34,8 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
         return map;
     }, [bookings]);
 
-    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    // Monday-first: (getDay() + 6) % 7 → Mon=0 … Sun=6
+    const firstDay = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const cells: (number | null)[] = [
         ...Array(firstDay).fill(null),
@@ -49,85 +52,125 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
         else setViewMonth(m => m + 1);
     };
 
+    const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
     const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="rounded-2xl border p-4" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
-            {/* Header */}
-            <div className="mb-3 flex items-center justify-between">
-                <button onClick={prevMonth} className="rounded-lg p-1.5 transition-colors" style={{ color: 'var(--color-text-alt)' }}>
+        <div className="overflow-hidden rounded-2xl border" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+
+            {/* Month navigation */}
+            <div className="flex items-center justify-between border-b px-4 py-3.5" style={{ borderColor: 'var(--color-border)' }}>
+                <button
+                    onClick={prevMonth}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                    style={{ color: 'var(--color-text-alt)' }}
+                >
                     <ChevronLeft className="size-4" />
                 </button>
-                <span className="text-sm font-semibold capitalize" style={{ color: 'var(--color-text)' }}>
-                    {monthLabel}
-                </span>
-                <button onClick={nextMonth} className="rounded-lg p-1.5 transition-colors" style={{ color: 'var(--color-text-alt)' }}>
+
+                <div className="flex items-center gap-2.5">
+                    <span className="text-sm font-semibold capitalize" style={{ color: 'var(--color-text)' }}>
+                        {monthLabel}
+                    </span>
+                    {!isCurrentMonth && (
+                        <button
+                            onClick={() => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); }}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors hover:opacity-80"
+                            style={{ borderColor: ACCENT + '40', color: ACCENT }}
+                        >
+                            Hoy
+                        </button>
+                    )}
+                </div>
+
+                <button
+                    onClick={nextMonth}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                    style={{ color: 'var(--color-text-alt)' }}
+                >
                     <ChevronRight className="size-4" />
                 </button>
             </div>
 
-            {/* Weekday labels */}
-            <div className="mb-1 grid grid-cols-7 text-center">
-                {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
-                    <div key={d} className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
-                        {d}
-                    </div>
-                ))}
-            </div>
-
-            {/* Day grid */}
-            <div className="grid grid-cols-7 gap-0.5">
-                {cells.map((day, idx) => {
-                    if (!day) return <div key={`empty-${idx}`} />;
-                    const dateStr = isoDate(viewYear, viewMonth, day);
-                    const dayBookings = bookingsByDay[dateStr] ?? [];
-                    const isToday =
-                        day === today.getDate() &&
-                        viewMonth === today.getMonth() &&
-                        viewYear === today.getFullYear();
-                    const isSelected = dateStr === selectedDate;
-
-                    return (
-                        <button
-                            key={dateStr}
-                            onClick={() => onDaySelect(isSelected ? null : dateStr)}
-                            className="flex flex-col items-center rounded-lg p-1 transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                            style={isSelected ? { background: 'var(--color-purple)', color: 'white' } : {}}
+            <div className="px-3 pb-2 pt-3">
+                {/* Weekday labels — Monday first */}
+                <div className="mb-1.5 grid grid-cols-7">
+                    {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+                        <div
+                            key={d}
+                            className="text-center text-[10px] font-bold uppercase tracking-wider"
+                            style={{ color: 'var(--color-text-alt)' }}
                         >
-                            <span
-                                className={`text-xs font-medium leading-5 ${isToday && !isSelected ? 'rounded-full px-1 font-bold' : ''}`}
+                            {d}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Day grid */}
+                <div className="grid grid-cols-7 gap-0.5">
+                    {cells.map((day, idx) => {
+                        if (!day) return <div key={`e-${idx}`} className="h-[50px]" />;
+
+                        const dateStr = isoDate(viewYear, viewMonth, day);
+                        const dayBookings = bookingsByDay[dateStr] ?? [];
+                        const isToday = day === today.getDate() && isCurrentMonth;
+                        const isSelected = dateStr === selectedDate;
+                        const color = dayBadgeColor(dayBookings);
+
+                        return (
+                            <button
+                                key={dateStr}
+                                onClick={() => onDaySelect(isSelected ? null : dateStr)}
+                                className={[
+                                    'flex h-[50px] flex-col items-center justify-center rounded-xl transition-colors',
+                                    !isSelected ? 'hover:bg-purple-50 dark:hover:bg-purple-900/20' : '',
+                                ].join(' ')}
                                 style={
-                                    isToday && !isSelected
-                                        ? { background: 'var(--color-purple)', color: 'white' }
-                                        : isSelected
-                                        ? { color: 'white' }
-                                        : { color: 'var(--color-text)' }
+                                    isSelected
+                                        ? { background: ACCENT }
+                                        : isToday
+                                        ? { background: ACCENT + '14' }
+                                        : {}
                                 }
                             >
-                                {day}
-                            </span>
-                            {/* Booking dots */}
-                            {dayBookings.length > 0 && (
-                                <div className="mt-0.5 flex gap-0.5">
-                                    {dayBookings.slice(0, 3).map((b, i) => (
-                                        <span
-                                            key={i}
-                                            className="h-1 w-1 rounded-full"
-                                            style={{ background: isSelected ? 'white' : STATUS_COLOR[b.status] ?? '#6B7280' }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </button>
-                    );
-                })}
+                                <span
+                                    className="text-xs font-medium leading-none"
+                                    style={{
+                                        color: isSelected ? 'white' : isToday ? ACCENT : 'var(--color-text)',
+                                        fontWeight: isToday || isSelected ? 700 : 500,
+                                    }}
+                                >
+                                    {day}
+                                </span>
+
+                                {dayBookings.length > 0 ? (
+                                    <span
+                                        className="mt-1.5 flex h-4 min-w-[18px] items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none"
+                                        style={{
+                                            background: isSelected ? 'rgba(255,255,255,0.22)' : color + '20',
+                                            color: isSelected ? 'white' : color,
+                                        }}
+                                    >
+                                        {dayBookings.length}
+                                    </span>
+                                ) : (
+                                    <span className="mt-1.5 h-4" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Legend */}
-            <div className="mt-3 flex flex-wrap gap-3">
-                {[['pending', 'Pendiente'], ['confirmed', 'Confirmada'], ['cancelled', 'Cancelada']].map(([s, l]) => (
-                    <div key={s} className="flex items-center gap-1">
-                        <span className="h-2 w-2 rounded-full" style={{ background: STATUS_COLOR[s] }} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
+                {[
+                    ['#F59E0B', 'Pendiente'],
+                    ['#10B981', 'Confirmada'],
+                    ['#6B7280', 'Cancelada'],
+                ].map(([c, l]) => (
+                    <div key={l} className="flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: c }} />
                         <span className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{l}</span>
                     </div>
                 ))}

@@ -1,4 +1,4 @@
-﻿---
+---
 import { Image } from "astro:assets";
 import logoImage from "../assets/imgs/logo_costado.png";
 import type { Link } from "../types";
@@ -54,6 +54,7 @@ const t = useTranslations(lang);
         <div class="footer-brand">
           <a class="logo" href={logoUrl}>
             <Image
+              class="brand-logo"
               src={logoImage}
               alt={logoAlt}
               loading="lazy"

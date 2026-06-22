@@ -29,12 +29,14 @@ import { ui, defaultLang } from "../i18n/ui";
     />
   </section>
 
-  <VideoSection
-    id="region"
-    title={ui.es["video.title"]}
-    description={ui.es["video.description"]}
-    lang="es"
-  />
+  <div data-sy-reveal="fade">
+    <VideoSection
+      id="region"
+      title={ui.es["video.title"]}
+      description={ui.es["video.description"]}
+      lang="es"
+    />
+  </div>
 
   <section id="tecnologia">
     <TechnologySection
@@ -77,8 +79,9 @@ import { ui, defaultLang } from "../i18n/ui";
     ]}
   />
 
-  <About client:visible
-    id="nosotros"
+  <div data-sy-reveal="fade">
+    <About client:visible
+      id="nosotros"
     title={ui.es["about.title"]}
     subtitle={ui.es["about.subtitle"]}
     sectionLabel={ui.es["about.sectionLabel"]}
@@ -123,6 +126,7 @@ import { ui, defaultLang } from "../i18n/ui";
       },
     ]}
   />
+  </div>
 
   {/* StepsTimeline moved to About */}
 
@@ -188,13 +192,4 @@ import { ui, defaultLang } from "../i18n/ui";
   </section>
 
   <RegisterEmpresaModal />
-
-  <script>
-    document.querySelectorAll('a[href="#empresa"]').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        document.getElementById('empresa')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-  </script>
 </Layout>

@@ -67,10 +67,10 @@ class ProfileService {
         return true;
       }
 
-      debugPrint('[ProfileService] savePreferences failed: ${response.statusCode} ${response.body}');
+      debugPrint('[ProfileService] savePreferences HTTP ${response.statusCode}: ${response.body}');
       return false;
     } catch (e) {
-      debugPrint('[ProfileService] savePreferences error: $e');
+      debugPrint('[ProfileService] savePreferences exception (${e.runtimeType}): $e');
       return false;
     }
   }

@@ -1,6 +1,6 @@
 ﻿{
   "@@locale": "es",
-  "appTitle": "Welltur",
+  "appTitle": "Smartur",
   "settingsTitle": "Configuración",
   "appearanceSection": "Apariencia",
   "accountSection": "Cuenta",
@@ -16,8 +16,8 @@
   "registerAcceptTermsPrefix": "Acepto los ",
   "termsMustAccept": "Debes aceptar los términos y condiciones para registrarte.",
   "termsCloseButton": "Entendido",
-  "termsAndConditionsBody": "Última actualización: marzo de 2025.\n\n1. Objeto\nWelltur es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar Welltur aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.",
-  "privacyPolicyBody": "Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nWelltur es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: smarturutcv@gmail.com",
+  "termsAndConditionsBody": "Última actualización: marzo de 2025.\n\n1. Objeto\nSmartur es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar Smartur aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.",
+  "privacyPolicyBody": "Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nSmartur es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: smarturutcv@gmail.com",
   "logout": "Cerrar sesión",
   "selectLanguage": "Seleccionar Idioma",
   "systemLanguage": "Idioma del sistema",
@@ -66,7 +66,7 @@
   "navUser": "Usuario",
   "exploreTitle": "Explorar",
   "routesSectionLabel": "Rutas",
-  "routesSectionCertified": "Rutas certificadas Welltur",
+  "routesSectionCertified": "Rutas certificadas Smartur",
   "routesSectionMostCopied": "Más copiadas",
   "routesSectionFollowing": "De personas que sigues",
   "routesSectionNoItems": "Próximamente disponibles por aquí",
@@ -113,7 +113,7 @@
   "@recommendationsInCity": { "placeholders": { "city": {} } },
   "recommendationNumber": "Recomendación #{number}",
   "@recommendationNumber": { "placeholders": { "number": {} } },
-  "recommendationSubtitle": "Sugerido por la IA de Welltur para tu visita a {city}.",
+  "recommendationSubtitle": "Sugerido por la IA de Smartur para tu visita a {city}.",
   "@recommendationSubtitle": { "placeholders": { "city": {} } },
   "mapDiscoverHint": "Descubre puntos clave sin rastrear tu ubicación en tiempo real.",
   "mapTapPinHint": "Toca un pin para ver detalles generados por IA",
@@ -123,11 +123,11 @@
   "filterViewpoints": "Aventuras",
   "filterHotels": "Hotelería",
   "filterMuseumsOnly": "Solo ver Museos",
-  "aiWelltur": "IA Welltur",
+  "aiSmartur": "IA Smartur",
   "enableBiometricsHint": "Inicia sesión y activa la huella en tu perfil",
   "deviceNotSupported": "Dispositivo no compatible",
   "noBiometricsEnrolled": "No hay huellas registradas",
-  "biometricReason": "Accede a tus rutas de Welltur",
+  "biometricReason": "Accede a tus rutas de Smartur",
   "sessionExpired": "Sesión expirada. Inicia sesión de nuevo.",
   "biometricReadError": "Error al leer huella.",
 
@@ -137,7 +137,7 @@
   "dontRemindMe": "No me lo recuerdes",
   "biometricPrompt": "¿Quieres usar tu huella para iniciar sesión más rápido la próxima vez?",
   "biometricActivateReason": "Confirma tu huella para activar el acceso rápido",
-  "biometricActivateTitle": "Activar huella — Welltur",
+  "biometricActivateTitle": "Activar huella — Smartur",
   "biometricTouchSensor": "Toca el sensor",
   "biometricActivated": "Acceso con huella activado",
   "biometricActivateError": "No se pudo activar: {error}",
@@ -246,7 +246,7 @@
   "strengthStrong": "Fuerte",
   "strengthVeryStrong": "Muy fuerte",
 
-  "defaultUserName": "Turista Welltur",
+  "defaultUserName": "Turista Smartur",
   "myInterests": "Mis Intereses",
   "quickSettings": "Configuración rápida",
   "memberSince": "Miembro desde {date}",
@@ -399,7 +399,7 @@
   "onboardingDesc3": "Conecta con guías locales y apoya el turismo de nuestra región mientras creas recuerdos inolvidables.",
   "errorTitle": "Error",
   "settingsCheckUpdate": "Buscar actualización",
-  "settingsAppUpToDate": "Welltur v{version} está al día.",
+  "settingsAppUpToDate": "Smartur v{version} está al día.",
   "@settingsAppUpToDate": { "placeholders": { "version": {} } },
   "languageSpanish": "Español",
   "languageEnglish": "English",
@@ -417,7 +417,7 @@
   "diaryTapDestinationHint": "Toca un destino para ver más",
   "mapRetry": "Reintentar",
   "updateTitle": "Nueva versión disponible",
-  "updateBody": "La versión {version} de Welltur está disponible.\nSe descargará e instalará desde la app.",
+  "updateBody": "La versión {version} de Smartur está disponible.\nSe descargará e instalará desde la app.",
   "@updateBody": { "placeholders": { "version": {} } },
   "updateDownloading": "Descargando... {progress}%",
   "@updateDownloading": { "placeholders": { "progress": {} } },
@@ -432,8 +432,8 @@
   "imageShareTitle": "Mis Recomendaciones en {city}",
   "@imageShareTitle": { "placeholders": { "city": {} } },
   "imageShareSubtitle": "Basado en mi perfil de viajero inteligente",
-  "imageShareGeneratedBy": "Generado por Welltur AI",
-  "imageShareMessage": "¡Mira lo que me recomienda Welltur en {city}!",
+  "imageShareGeneratedBy": "Generado por Smartur AI",
+  "imageShareMessage": "¡Mira lo que me recomienda Smartur en {city}!",
   "@imageShareMessage": { "placeholders": { "city": {} } },
   "commonPlaceFallback": "Lugar"
   ,"recoTypeCultural":"Cultural"
@@ -452,9 +452,9 @@
   ,"recoGroupCouple":"Pareja"
   ,"recoGroupFamily":"Familia"
   ,"recoGroupFriends":"Amigos"
-  ,"recoShareList":"🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con Welltur"
+  ,"recoShareList":"🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• {items}\n\n📱 Descúbrelos con Smartur"
   ,"@recoShareList":{"placeholders":{"items":{}}}
-  ,"detailShareMessage":"¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con Welltur — Altas Montañas, Veracruz"
+  ,"detailShareMessage":"¡Descubre {title} en {location}! 📍{description}\nVer en Maps: {mapsUrl}\n\nDescubierto con Smartur — Altas Montañas, Veracruz"
   ,"@detailShareMessage":{"placeholders":{"title":{},"location":{},"description":{},"mapsUrl":{}}}
   ,"mapsLabel":"Maps"
   ,"youAreHere":"← Estás aquí"
@@ -476,7 +476,7 @@
   ,"plannerNoStops":"Sin paradas"
   ,"plannerNoStopsSubtitle":"Toca + en cualquier lugar para agregar paradas"
   ,"plannerOptimize":"Mejorar mi ruta"
-  ,"plannerOptimizeComingSoon":"Próximamente en Welltur"
+  ,"plannerOptimizeComingSoon":"Próximamente en Smartur"
   ,"plannerRouteName":"Nombre de la ruta"
   ,"plannerRouteNameHint":"Ej: Mi ruta en Xalapa"
   ,"plannerMakePublic":"Hacer ruta pública"
@@ -485,7 +485,7 @@
   ,"plannerStopDelete":"Quitar parada"
   ,"itineraryNStops":"{n} paradas"
   ,"@itineraryNStops":{"placeholders":{"n":{"type":"int"}}}
-  ,"itineraryCertified":"Certificada Welltur"
+  ,"itineraryCertified":"Certificada Smartur"
   ,"itineraryCopy":"Copiar ruta"
   ,"itineraryCopied":"Ruta copiada"
   ,"itineraryDetail":"Detalle de ruta"

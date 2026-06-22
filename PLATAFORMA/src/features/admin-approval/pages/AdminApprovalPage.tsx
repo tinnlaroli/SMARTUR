@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ClipboardCheck, Wrench, MapPin, Leaf } from 'lucide-react';
 import { AdminServicesApprovalPage } from '../../tourist-services/pages/AdminServicesApprovalPage';
 import AdminPOIsApprovalPage from '../../points-of-interest/pages/AdminPOIsApprovalPage';
@@ -17,10 +17,13 @@ export function AdminApprovalPage() {
     const [activeTab, setActiveTab] = useState<TabId>('services');
     const badges = useAdminBadges();
 
+    // Refresca el conteo al entrar al módulo para que el badge refleje el estado real
+    useEffect(() => { badges.refresh(); }, []);
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 items-center gap-3">
                 <div
                     className="flex size-10 items-center justify-center rounded-xl"
                     style={{ background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}
@@ -39,7 +42,7 @@ export function AdminApprovalPage() {
 
             {/* Tabs */}
             <div
-                className="flex gap-1 rounded-xl border p-1 w-fit"
+                className="flex shrink-0 gap-1 rounded-xl border p-1 w-fit"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
             >
                 {TABS.map(({ id, label, icon: Icon }) => {
@@ -73,9 +76,9 @@ export function AdminApprovalPage() {
             </div>
 
             {/* Content */}
-            <div>
-                {activeTab === 'services' && <AdminServicesApprovalPage />}
-                {activeTab === 'pois' && <AdminPOIsApprovalPage />}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+                {activeTab === 'services' && <AdminServicesApprovalPage onBadgeRefresh={badges.refresh} />}
+                {activeTab === 'pois' && <AdminPOIsApprovalPage onBadgeRefresh={badges.refresh} />}
                 {activeTab === 'wellness' && <AdminWellnessApprovalPage />}
             </div>
         </div>

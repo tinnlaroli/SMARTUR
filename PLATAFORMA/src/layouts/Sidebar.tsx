@@ -12,6 +12,8 @@ import { useAuthModal } from '../features/auth/context/AuthModalContext';
 import { clearAccessToken } from '../shared/api/axiosClient';
 import { TermsModal } from '../features/auth/components/TermsModal';
 import { useAdminBadges } from '../features/dashboard/context/AdminBadgesContext';
+import logoCostado from '../assets/landing/logo_costado.png';
+import logoSmall from '../assets/landing/logo.png';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
@@ -42,7 +44,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
     const location = useLocation();
     const { openModal } = useAuthModal();
     const { t } = useLanguage();
-    const { user, clearUser } = useUserPreferences();
+    const { user, clearUser, theme } = useUserPreferences();
     const userRole = user?.role_id || 2;
     const adminBadges = useAdminBadges();
 
@@ -59,20 +61,20 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'poi',                  label: 'Puntos de Interés',      icon: MapPin,           path: '/dashboard/poi',                              roles: [1] },
         { id: 'services',             label: 'Actividades',            icon: Wrench,           path: '/dashboard/servicios',                        roles: [1, 4] },
         { id: 'locations',            label: 'Ubicaciones',            icon: Map,              path: '/dashboard/ubicaciones',                      roles: [1] },
-        { id: 'company-verification', label: 'Registro de Socios',     icon: ShieldCheck,      path: '/dashboard/verificacion-empresas',            roles: [1] },
-        { id: 'approval',             label: 'Filtro de Aprobación',   icon: ClipboardCheck,   path: '/dashboard/aprobacion',                       roles: [1, 4] },
-        { id: 'disputes',             label: 'Aclaraciones',           icon: MessageSquareDiff, path: '/dashboard/disputas',                        roles: [1] },
+        { id: 'company-verification', label: 'Cédulas de Empresa',     icon: ShieldCheck,      path: '/dashboard/verificaciones-empresa',           roles: [1], badge: adminBadges.pendingCompanyVerifications },
+        { id: 'approval',             label: 'Aprobación de Contenido',icon: ClipboardCheck,   path: '/dashboard/aprobacion',                       roles: [1], badge: adminBadges.pendingContentApprovals },
+        { id: 'disputes',             label: 'Aclaraciones',           icon: MessageSquareDiff,path: '/dashboard/aclaraciones',                     roles: [1], badge: adminBadges.pendingDisputes },
         { id: 'community',            label: 'Comunidad',              icon: MessageSquare,    path: '/dashboard/comunidad',                        roles: [1] },
-        { id: 'itineraries',          label: 'Rutas',                  icon: Route,            path: '/dashboard/itinerarios',                      roles: [1] },
-        { id: 'contacts',             label: 'Contactos',              icon: Mail,             path: '/dashboard/contactos',                        roles: [1] },
-        { id: 'profiles',             label: 'Perfiles',               icon: UserCircle,       path: '/dashboard/perfiles',                         roles: [1] },
-        { id: 'certifications',       label: 'Sellos de Calidad',      icon: Award,            path: '/dashboard/certificaciones',                  roles: [1, 4] },
-        { id: 'instruments',          label: 'Instrumentos',           icon: FileText,         path: '/dashboard/instrumentos',                     roles: [1, 4] },
-        { id: 'stats',                label: 'Estadísticas',           icon: BarChart3,        path: '/dashboard/estadisticas',                     roles: [1, 4] },
-        { id: 'ml',                   label: 'Modelo IA',              icon: BrainCircuit,     path: '/dashboard/ml',                               roles: [1] },
+        { id: 'itineraries',          label: 'Itinerarios Compartidos',icon: Route,            path: '/dashboard/itinerarios',                      roles: [1] },
+        { id: 'contacts',             label: 'Correos de Contacto',    icon: Mail,             path: '/dashboard/contactos',                        roles: [1], badge: adminBadges.pendingContacts },
+        { id: 'profiles',             label: 'Perfiles de Viajero',    icon: UserCircle,       path: '/dashboard/perfiles',                         roles: [1] },
+        { id: 'certifications',       label: 'Modelos Operativos',     icon: Award,            path: '/dashboard/certificaciones',                  roles: [1] },
+        { id: 'instruments',          label: 'Métricas Cuali/Cuanti',  icon: FileText,         path: '/dashboard/instrumentos',                     roles: [1] },
+        { id: 'stats',                label: 'Estadísticas',           icon: BarChart3,        path: '/dashboard/estadisticas',                     roles: [1] },
+        { id: 'ml',                   label: 'Modelo Predictivo',      icon: BrainCircuit,     path: '/dashboard/modelo',                           roles: [1] },
         { id: 'notifications',        label: 'Notificaciones',         icon: Bell,             path: '/dashboard/notificaciones',                   roles: [1] },
-        { id: 'settings',             label: 'Configuración',          icon: Settings,         path: '/dashboard/configuracion',                    roles: [1, 4] },
-    ], []);
+        { id: 'settings',             label: 'Configuración',          icon: Settings,         path: '/dashboard/configuracion',                    roles: [1] },
+    ], [adminBadges]);
 
     const itemMap = useMemo(() => Object.fromEntries(allItems.map((i) => [i.id, i])), [allItems]);
     const filteredGroups = useMemo(() =>
@@ -107,11 +109,16 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                 )}
             </AnimatePresence>
 
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r transition-all duration-300 ease-in-out md:static md:translate-x-0 ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full'
-                } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
-                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+            <motion.aside
+                initial={false}
+                animate={{ width: isCollapsed ? 80 : 256 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className={`
+                    fixed inset-y-0 left-0 z-40 flex flex-col border-r shadow-sm transition-transform duration-300
+                    md:relative md:translate-x-0
+                    border-[var(--color-border)] bg-[var(--color-bg)]
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}
             >
                 {/* ── Logo area ── */}
                 <div
@@ -124,8 +131,8 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                         {isCollapsed ? (
                             <a key="icon-link" href="/" className="shrink-0">
                                 <motion.img
-                                    src="/wellturLogo.png"
-                                    alt="Welltur"
+                                    src={theme === 'welltur' ? '/wellturLogo.png' : logoSmall}
+                                    alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'}
                                     initial={{ opacity: 0, scale: 0.7 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.7 }}
@@ -135,15 +142,15 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                             </a>
                         ) : (
                             <a key="logo-link" href="/" className="shrink-0">
-                                <motion.img
-                                    src="/wellturLogo.png"
-                                    alt="Welltur"
+                                <motion.div
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-20 w-auto object-contain"
-                                />
+                                    className="flex items-center gap-2"
+                                >
+                                    <img src={theme === 'welltur' ? '/wellturLogo.png' : logoCostado} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-20 w-auto object-contain" />
+                                </motion.div>
                             </a>
                         )}
                     </AnimatePresence>
@@ -215,13 +222,18 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                                                             )}
                                                         </div>
 
-                                                        <span
-                                                            className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                                                                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                                                            }`}
+                                                        <motion.span
+                                                            initial={false}
+                                                            animate={{
+                                                                width: isCollapsed ? 0 : 'auto',
+                                                                opacity: isCollapsed ? 0 : 1,
+                                                                marginLeft: isCollapsed ? 0 : 12,
+                                                            }}
+                                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                                            className="overflow-hidden whitespace-nowrap"
                                                         >
                                                             {item.label}
-                                                        </span>
+                                                        </motion.span>
 
                                                         {!isCollapsed && badgeCount > 0 && (
                                                             <span className="ml-auto flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white leading-none">
@@ -332,7 +344,7 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </div>
                     )}
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* collapse button — desktop (outside aside to avoid stacking-context confinement) */}
             <button

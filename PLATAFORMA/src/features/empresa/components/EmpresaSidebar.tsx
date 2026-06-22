@@ -1,4 +1,4 @@
-﻿import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
     Calendar, MessageSquare, MessageSquareDiff, ShieldCheck, HelpCircle,
@@ -10,6 +10,8 @@ import { useAuthModal } from '../../auth/context/AuthModalContext';
 import { useBadges } from '../context/EmpresaBadgesContext';
 import { TermsModal } from '../../auth/components/TermsModal';
 import { clearAccessToken } from '../../../shared/api/axiosClient';
+import logoCostado from '../../../assets/landing/logo_costado.png';
+import logoSmall from '../../../assets/landing/logo.png';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
 
@@ -38,7 +40,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
     const navigate = useNavigate();
     const { openModal } = useAuthModal();
     const { t } = useLanguage();
-    const { user, clearUser } = useUserPreferences();
+    const { user, clearUser, theme } = useUserPreferences();
     const badges = useBadges();
 
     const allItems = useMemo<MenuItem[]>(() => [
@@ -86,11 +88,16 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                 )}
             </AnimatePresence>
 
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r transition-all duration-300 ease-in-out md:static md:translate-x-0 ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full'
-                } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
-                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+            <motion.aside
+                initial={false}
+                animate={{ width: isCollapsed ? 80 : 256 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className={`
+                    fixed inset-y-0 left-0 z-40 flex flex-col border-r shadow-sm transition-transform duration-300
+                    md:relative md:translate-x-0
+                    border-[var(--color-border)] bg-[var(--color-bg)]
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}
             >
                 <div
                     className={`relative flex h-16 shrink-0 items-center border-b transition-all duration-300 ${
@@ -102,8 +109,8 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                         {isCollapsed ? (
                             <a key="icon-link" href="/" className="shrink-0">
                                 <motion.img
-                                    src="/wellturLogo.png"
-                                    alt="Welltur"
+                                    src={theme === 'welltur' ? '/wellturLogo.png' : logoSmall}
+                                    alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'}
                                     initial={{ opacity: 0, scale: 0.7 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.7 }}
@@ -120,7 +127,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                     transition={{ duration: 0.2 }}
                                     className="flex items-center gap-2"
                                 >
-                                    <img src="/wellturLogo.png" alt="Welltur" className="h-20 w-auto object-contain" />
+                                    <img src={theme === 'welltur' ? '/wellturLogo.png' : logoCostado} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-20 w-auto object-contain" />
                                     <span className="text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
                                         {t('empresa.sidebar.badge')}
                                     </span>
@@ -192,13 +199,18 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <span
-                                                            className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-                                                                isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
-                                                            }`}
+                                                        <motion.span
+                                                            initial={false}
+                                                            animate={{
+                                                                width: isCollapsed ? 0 : 'auto',
+                                                                opacity: isCollapsed ? 0 : 1,
+                                                                marginLeft: isCollapsed ? 0 : 12,
+                                                            }}
+                                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                                            className="overflow-hidden whitespace-nowrap"
                                                         >
                                                             {item.label}
-                                                        </span>
+                                                        </motion.span>
                                                         {!isCollapsed && badgeCount > 0 && (
                                                             <span className="ml-auto flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white leading-none">
                                                                 {Math.min(badgeCount, 99)}
@@ -303,7 +315,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
                         </div>
                     )}
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* collapse button — desktop (outside aside to avoid stacking-context confinement) */}
             <button

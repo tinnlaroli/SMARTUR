@@ -73,11 +73,16 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
             </button>
           </div>
           <!-- Reglas de contraseña -->
-          <div class="rem-pass-rules" id="rem-pass-rules" aria-live="polite">
-            <span id="rule-len"  class="rem-rule rem-rule--fail">✕ {t["register.passRuleLength"]}</span>
-            <span id="rule-upper" class="rem-rule rem-rule--fail">✕ {t["register.passRuleUpper"]}</span>
-            <span id="rule-lower" class="rem-rule rem-rule--fail">✕ {t["register.passRuleLower"]}</span>
-            <span id="rule-num"  class="rem-rule rem-rule--fail">✕ {t["register.passRuleNumber"]}</span>
+          <div class="rem-pass-rules" id="rem-pass-rules">
+            <div class="rem-pass-strength" id="pass-strength-bar" aria-hidden="true">
+              <div class="rem-pass-strength-fill" id="pass-strength-fill"></div>
+            </div>
+            <div class="rem-pass-grid" aria-live="polite">
+              <span id="rule-len"  class="rem-rule rem-rule--fail"><span class="rem-rule-icon">✕</span><span class="rem-rule-text">{t["register.passRuleLength"]}</span></span>
+              <span id="rule-upper" class="rem-rule rem-rule--fail"><span class="rem-rule-icon">✕</span><span class="rem-rule-text">{t["register.passRuleUpper"]}</span></span>
+              <span id="rule-lower" class="rem-rule rem-rule--fail"><span class="rem-rule-icon">✕</span><span class="rem-rule-text">{t["register.passRuleLower"]}</span></span>
+              <span id="rule-num"  class="rem-rule rem-rule--fail"><span class="rem-rule-icon">✕</span><span class="rem-rule-text">{t["register.passRuleNumber"]}</span></span>
+            </div>
           </div>
           <span class="rem-field-error" id="err-password" hidden></span>
         </div>
@@ -352,15 +357,65 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
 
   /* ── Password rules ──────────────────────────── */
   .rem-pass-rules {
-    display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem;
     margin-top: 0.25rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
   }
+
+  /* Strength bar */
+  .rem-pass-strength {
+    height: 3px; border-radius: 99px;
+    background: rgba(var(--rgb-text), 0.08);
+    overflow: hidden; position: relative;
+    transition: opacity 0.3s;
+  }
+  .rem-pass-strength-fill {
+    height: 100%; width: 0%; border-radius: 99px;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s;
+    background: #dc2626;
+  }
+
+  /* Rule grid */
+  .rem-pass-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.65rem;
+  }
+
   .rem-rule {
-    font-size: 0.7rem; font-weight: 500; transition: color 0.2s;
-    display: flex; align-items: center; gap: 0.25rem;
+    font-size: 0.7rem; font-weight: 500;
+    display: flex; align-items: center; gap: 0.35rem;
+    transition: color 0.3s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 0.2rem 0.35rem; border-radius: 0.375rem;
+    transform-origin: left center;
+    will-change: transform;
   }
-  .rem-rule--fail { color: #dc2626; }
-  .rem-rule--ok   { color: #16a34a; }
+  .rem-rule--fail {
+    color: rgba(var(--rgb-text), 0.55);
+  }
+  .rem-rule--ok {
+    color: #16a34a;
+    transform: translateX(0.15rem);
+  }
+
+  .rem-rule-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.05rem; height: 1.05rem; border-radius: 50%;
+    font-size: 0.55rem; line-height: 1; flex-shrink: 0;
+    transition: background 0.3s, color 0.3s, box-shadow 0.3s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(0.85);
+  }
+  .rem-rule--fail .rem-rule-icon {
+    background: rgba(var(--rgb-text), 0.07);
+    color: rgba(var(--rgb-text), 0.3);
+  }
+  .rem-rule--ok .rem-rule-icon {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+    transform: scale(1);
+  }
+
+  .rem-rule-text {
+    transition: opacity 0.3s;
+  }
 
   /* ── Terms row ───────────────────────────────── */
   .rem-terms-row {
@@ -550,7 +605,19 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       if (!el) continue;
       const ok = s[key];
       el.className = `rem-rule ${ok ? 'rem-rule--ok' : 'rem-rule--fail'}`;
-      el.textContent = (ok ? '✓ ' : '✕ ') + labels[key];
+      const icon = el.querySelector('.rem-rule-icon');
+      const text = el.querySelector('.rem-rule-text');
+      if (icon) icon.textContent = ok ? '✓' : '✕';
+      if (text) text.textContent = labels[key];
+    }
+    // Strength bar
+    const fill = document.getElementById('pass-strength-fill');
+    if (fill) {
+      const score = Object.values(s).filter(Boolean).length;
+      const pct = (score / 4) * 100;
+      fill.style.width = pct + '%';
+      const colors = ['#dc2626', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+      fill.style.background = colors[score];
     }
     return s.len && s.upper && s.lower && s.num;
   }
@@ -729,7 +796,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     });
     inp.addEventListener('keydown', function (e) {
       if (e.key === 'Backspace' && !this.value && idx > 0) arr[idx - 1].focus();
-      if (e.key === 'Enter') otpBtn.click();
+      if (e.key === 'Enter') { e.preventDefault(); otpBtn.click(); }
     });
     inp.addEventListener('paste', function (e) {
       e.preventDefault();
@@ -758,12 +825,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
 
   /* ─────────── Reset modal ─────────── */
   // Texto inicial de cada regla (leído del DOM antes de cualquier interacción)
-  const ruleInitial = {
-    'rule-len':   document.getElementById('rule-len')?.textContent  || '',
-    'rule-upper': document.getElementById('rule-upper')?.textContent || '',
-    'rule-lower': document.getElementById('rule-lower')?.textContent || '',
-    'rule-num':   document.getElementById('rule-num')?.textContent  || '',
-  };
+  const ruleInitial = {};
+  document.querySelectorAll('#rem-pass-rules .rem-rule').forEach(el => {
+    const txtEl = el.querySelector('.rem-rule-text');
+    if (txtEl) ruleInitial[el.id] = txtEl.textContent || '';
+  });
 
   function resetModal() {
     form.reset();
@@ -779,8 +845,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
       const el = document.getElementById(id);
       if (!el) continue;
       el.className = 'rem-rule rem-rule--fail';
-      el.textContent = text;
+      const icon = el.querySelector('.rem-rule-icon');
+      const txtEl = el.querySelector('.rem-rule-text');
+      if (icon) icon.textContent = '✕';
+      if (txtEl) txtEl.textContent = text;
     }
+    // Reset strength bar
+    const fill = document.getElementById('pass-strength-fill');
+    if (fill) { fill.style.width = '0%'; fill.style.background = '#dc2626'; }
   }
 
   dialog?.addEventListener('close', resetModal);
@@ -848,7 +920,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
     } catch (_) {
       showGlobalError(errConnection);
     } finally {
-      setLoading(false);
+      if (!form.hidden) setLoading(false);
     }
   });
 
@@ -893,8 +965,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || '/api/v2';
   });
 
   // Labels para updatePassRules (extraídos del texto inicial ya capturado en ruleInitial)
-  const t_passLen   = ruleInitial['rule-len'].slice(2);
-  const t_passUpper = ruleInitial['rule-upper'].slice(2);
-  const t_passLower = ruleInitial['rule-lower'].slice(2);
-  const t_passNum   = ruleInitial['rule-num'].slice(2);
+  const t_passLen   = ruleInitial['rule-len'] || '';
+  const t_passUpper = ruleInitial['rule-upper'] || '';
+  const t_passLower = ruleInitial['rule-lower'] || '';
+  const t_passNum   = ruleInitial['rule-num'] || '';
 </script>

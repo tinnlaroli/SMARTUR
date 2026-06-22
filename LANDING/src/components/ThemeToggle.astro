@@ -1,4 +1,4 @@
-﻿---
+---
 // ThemeToggle component for dark/light mode switching
 ---
 
@@ -42,6 +42,21 @@
     stroke-linejoin="round"
   >
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+  <svg
+    class="leaf-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
   </svg>
 </button>
 
@@ -97,13 +112,13 @@
       transform: rotate(0deg) scale(1);
     }
 
-    .moon-icon {
+    .moon-icon, .leaf-icon {
       opacity: 0;
       transform: rotate(90deg) scale(0.5);
     }
 
     :global([data-theme="dark"]) & {
-      .sun-icon {
+      .sun-icon, .leaf-icon {
         opacity: 0;
         transform: rotate(-90deg) scale(0.5);
       }
@@ -113,6 +128,19 @@
         transform: rotate(0deg) scale(1);
       }
     }
+
+    :global([data-theme="welltur"]) & {
+      .sun-icon, .moon-icon {
+        opacity: 0;
+        transform: rotate(-90deg) scale(0.5);
+      }
+
+      .leaf-icon {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+        color: #22c55e;
+      }
+    }
   }
 </style>
 
@@ -120,10 +148,10 @@
   // Theme management
   const STORAGE_KEY = "welltur-theme";
 
-  function getPreferredTheme(): "light" | "dark" {
+  function getPreferredTheme(): "light" | "dark" | "welltur" {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "light" || stored === "dark") {
-      return stored;
+    if (stored === "light" || stored === "dark" || stored === "welltur") {
+      return stored as "light" | "dark" | "welltur";
     }
 
     // Check system preference
@@ -137,14 +165,15 @@
     return "light";
   }
 
-  function setTheme(theme: "light" | "dark") {
+  function setTheme(theme: "light" | "dark" | "welltur") {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(STORAGE_KEY, theme);
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme } }));
   }
 
   function toggleTheme() {
     const current = document.documentElement.getAttribute("data-theme");
-    const newTheme = current === "dark" ? "light" : "dark";
+    const newTheme = current === "dark" ? "welltur" : current === "welltur" ? "light" : "dark";
     setTheme(newTheme);
   }
 

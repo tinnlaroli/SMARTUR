@@ -1,8 +1,8 @@
-﻿import React, { useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import * as flubber from "flubber";
-import wellturLogo from "../assets/logo.png";
+import wellturLogo from "../assets/imgs/logo.png";
 import "./SmartURLoader.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -612,8 +612,8 @@ export default function SmartURLoader({ label, onFinished } = {}) {
         <img
           ref={logoRef}
           src={wellturLogo}
-          alt="WELLTUR"
-          className="loader-full-logo"
+          alt="SMARTUR"
+          className="loader-full-logo brand-logo"
           style={{
             position: "absolute",
             width: "clamp(160px, 35vw, 320px)", // Responsivo: mín 160px, máx 320px

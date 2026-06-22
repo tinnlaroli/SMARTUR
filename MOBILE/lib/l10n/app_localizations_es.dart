@@ -1,4 +1,4 @@
-﻿// ignore: unused_import
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'Welltur';
+  String get appTitle => 'Smartur';
 
   @override
   String get settingsTitle => 'Configuración';
@@ -59,11 +59,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get termsAndConditionsBody =>
-      'Última actualización: marzo de 2025.\n\n1. Objeto\nWelltur es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar Welltur aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.';
+      'Última actualización: marzo de 2025.\n\n1. Objeto\nSmartur es una aplicación móvil para explorar destinos turísticos, recomendaciones y funciones de comunidad.\n\n2. Registro y cuenta\nAl crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.\n\n3. Uso permitido\nTe comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.\n\n4. Contenido y propiedad intelectual\nLos contenidos de la app (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.\n\n5. Datos personales\nEl tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar Smartur aceptas las prácticas descritas en la política de privacidad del servicio.\n\n6. Modificaciones\nPodemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la aplicación tras la actualización implica la aceptación de los nuevos términos.\n\n7. Contacto\nPara consultas sobre estos términos, utiliza los canales de soporte indicados en la aplicación o en el sitio web oficial.';
 
   @override
   String get privacyPolicyBody =>
-      'Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nWelltur es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: smarturutcv@gmail.com';
+      'Última actualización: marzo de 2025.\n\n1. Responsable del tratamiento\nSmartur es el responsable del tratamiento de tus datos personales.\n\n2. Datos que recopilamos\nRecopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la app (preferencias de viaje, historial de recomendaciones, calificaciones de lugares).\n\n3. Finalidad del tratamiento\nTus datos se utilizan para personalizar recomendaciones turísticas, mejorar la aplicación y comunicarnos contigo sobre el servicio.\n\n4. Base legal\nEl tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.\n\n5. Conservación de datos\nConservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento desde Configuración → Eliminar cuenta.\n\n6. Derechos del usuario\nTienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.\n\n7. Seguridad\nAplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.\n\n8. Contacto\nPara consultas sobre privacidad: smarturutcv@gmail.com';
 
   @override
   String get logout => 'Cerrar sesión';
@@ -213,7 +213,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routesSectionLabel => 'Rutas';
 
   @override
-  String get routesSectionCertified => 'Rutas certificadas Welltur';
+  String get routesSectionCertified => 'Rutas certificadas Smartur';
 
   @override
   String get routesSectionMostCopied => 'Más copiadas';
@@ -357,7 +357,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String recommendationSubtitle(Object city) {
-    return 'Sugerido por la IA de Welltur para tu visita a $city.';
+    return 'Sugerido por la IA de Smartur para tu visita a $city.';
   }
 
   @override
@@ -386,7 +386,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterMuseumsOnly => 'Solo ver Museos';
 
   @override
-  String get aiWelltur => 'IA Welltur';
+  String get aiSmartur => 'IA Smartur';
 
   @override
   String get enableBiometricsHint =>
@@ -399,7 +399,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noBiometricsEnrolled => 'No hay huellas registradas';
 
   @override
-  String get biometricReason => 'Accede a tus rutas de Welltur';
+  String get biometricReason => 'Accede a tus rutas de Smartur';
 
   @override
   String get sessionExpired => 'Sesión expirada. Inicia sesión de nuevo.';
@@ -428,7 +428,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Confirma tu huella para activar el acceso rápido';
 
   @override
-  String get biometricActivateTitle => 'Activar huella — Welltur';
+  String get biometricActivateTitle => 'Activar huella — Smartur';
 
   @override
   String get biometricTouchSensor => 'Toca el sensor';
@@ -738,7 +738,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get strengthVeryStrong => 'Muy fuerte';
 
   @override
-  String get defaultUserName => 'Turista Welltur';
+  String get defaultUserName => 'Turista Smartur';
 
   @override
   String get myInterests => 'Mis Intereses';
@@ -1177,7 +1177,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String settingsAppUpToDate(Object version) {
-    return 'Welltur v$version está al día.';
+    return 'Smartur v$version está al día.';
   }
 
   @override
@@ -1229,7 +1229,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String updateBody(Object version) {
-    return 'La versión $version de Welltur está disponible.\nSe descargará e instalará desde la app.';
+    return 'La versión $version de Smartur está disponible.\nSe descargará e instalará desde la app.';
   }
 
   @override
@@ -1273,11 +1273,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get imageShareSubtitle => 'Basado en mi perfil de viajero inteligente';
 
   @override
-  String get imageShareGeneratedBy => 'Generado por Welltur AI';
+  String get imageShareGeneratedBy => 'Generado por Smartur AI';
 
   @override
   String imageShareMessage(Object city) {
-    return '¡Mira lo que me recomienda Welltur en $city!';
+    return '¡Mira lo que me recomienda Smartur en $city!';
   }
 
   @override
@@ -1333,7 +1333,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String recoShareList(Object items) {
-    return '🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• $items\n\n📱 Descúbrelos con Welltur';
+    return '🌿 Mis destinos recomendados en Altas Montañas de Veracruz:\n\n• $items\n\n📱 Descúbrelos con Smartur';
   }
 
   @override
@@ -1343,7 +1343,7 @@ class AppLocalizationsEs extends AppLocalizations {
     Object description,
     Object mapsUrl,
   ) {
-    return '¡Descubre $title en $location! 📍$description\nVer en Maps: $mapsUrl\n\nDescubierto con Welltur — Altas Montañas, Veracruz';
+    return '¡Descubre $title en $location! 📍$description\nVer en Maps: $mapsUrl\n\nDescubierto con Smartur — Altas Montañas, Veracruz';
   }
 
   @override
@@ -1411,7 +1411,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get plannerOptimize => 'Mejorar mi ruta';
 
   @override
-  String get plannerOptimizeComingSoon => 'Próximamente en Welltur';
+  String get plannerOptimizeComingSoon => 'Próximamente en Smartur';
 
   @override
   String get plannerRouteName => 'Nombre de la ruta';
@@ -1437,7 +1437,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get itineraryCertified => 'Certificada Welltur';
+  String get itineraryCertified => 'Certificada Smartur';
 
   @override
   String get itineraryCopy => 'Copiar ruta';

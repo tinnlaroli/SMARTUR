@@ -1,4 +1,4 @@
-﻿import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { setAccessToken, setStoredRefreshToken } from '../../../shared/api/axiosClient';
@@ -103,7 +103,7 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 />
             )}
             <div className="mb-6 flex justify-center">
-                <img src="/wellturLogo.png" alt="Welltur" className="h-12 w-auto object-contain" />
+                <img src={theme === 'welltur' ? '/wellturLogo.png' : '/smartur.png'} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-12 w-auto object-contain" />
             </div>
 
             <div className="mb-8 text-center">

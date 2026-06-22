@@ -1,8 +1,8 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage, languages } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Globe, Sun, Moon, LogOut, Menu, X } from 'lucide-react';
+import { Globe, Sun, Moon, Leaf, LogOut, Menu, X } from 'lucide-react';
 import logoSrc from '../../assets/landing/logo.png';
 import gsap from 'gsap';
 
@@ -213,7 +213,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                 }}
                                 className="flex-shrink-0"
                                 >
-                                    <img src={logoSrc} alt="WELLTUR" className="h-7 sm:h-9 w-auto transition-all duration-300" />
+                                    <img src={theme === 'welltur' ? '/wellturLogo.png' : logoSrc} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-7 sm:h-9 w-auto transition-all duration-300" />
                                 </a>
 
                             {/* Desktop Menu */}
@@ -270,7 +270,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({ navLinks, handle
                                                 style={{ borderLeft: '1px solid rgba(var(--rgb-text), 0.1)' }}
                                             >
                                                 <button onClick={toggleTheme} className="control-btn p-2">
-                                                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                                                    {theme === 'welltur' ? <Leaf size={18} /> : theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                                                 </button>
                                                 <div className="language-switcher relative">
                                                     <button

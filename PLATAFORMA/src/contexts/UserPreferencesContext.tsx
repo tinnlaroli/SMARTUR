@@ -1,4 +1,4 @@
-﻿import React, { createContext, use, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { createContext, use, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { defaultLang, languages, ui, type LanguageCode } from './languageCatalog';
 import { USER_STORAGE_SYNC_EVENT, emitUserStorageSync } from '../shared/userStorageSync';
 
@@ -119,6 +119,14 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.lang = lang;
         writePrefs(theme, lang);
+        
+        // Update document title and favicon dynamically
+        document.title = theme === 'welltur' ? 'WELLTUR | Turismo de Bienestar' : 'SMARTUR | Turismo con IA en las Altas Montañas, Veracruz';
+        const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement | null;
+        if (favicon) {
+            favicon.href = theme === 'welltur' ? '/wellturLogo.png' : '/favicon.svg?v=2';
+            favicon.type = theme === 'welltur' ? 'image/png' : 'image/svg+xml';
+        }
     }, [theme, lang]);
 
     const setUser = useCallback((next: SessionUser | null) => {
@@ -135,7 +143,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     }, []);
 
     const toggleTheme = useCallback(() => {
-        setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+        setThemeState((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'welltur' : 'light'));
     }, []);
 
     const changeLanguage = useCallback((code: string) => {
@@ -144,13 +152,21 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
 
     const t = useCallback((key: string, params?: Record<string, string | number | null | undefined>) => {
         let value = ui[lang]?.[key] ?? key;
+        
+        // Dynamic branding injection
+        const brandName = theme === 'welltur' ? 'WELLTUR' : 'SMARTUR';
+        if (value.includes('SMARTUR') || value.includes('Smartur')) {
+            value = value.replace(/SMARTUR/g, brandName);
+            value = value.replace(/Smartur/g, brandName === 'WELLTUR' ? 'Welltur' : 'Smartur');
+        }
+
         if (params) {
             for (const [k, v] of Object.entries(params)) {
                 value = value.replace(`{${k}}`, String(v ?? ''));
             }
         }
         return value;
-    }, [lang]);
+    }, [lang, theme]);
 
     const value = useMemo<UserPreferencesContextValue>(
         () => ({

@@ -1,4 +1,4 @@
-﻿// ignore: unused_import
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Welltur';
+  String get appTitle => 'Smartur';
 
   @override
   String get settingsTitle => 'Settings';
@@ -59,11 +59,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get termsAndConditionsBody =>
-      'Last updated: March 2025.\n\n1. Purpose\nWelltur is a mobile app to explore tourist destinations, recommendations, and community features.\n\n2. Registration and account\nBy creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.\n\n3. Permitted use\nYou agree to use the service lawfully, without infringing third-party rights or disrupting the platform.\n\n4. Content and intellectual property\nApp content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.\n\n5. Personal data\nProcessing of your personal data complies with applicable law. By using Welltur you accept the practices described in the service privacy policy.\n\n6. Changes\nWe may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.\n\n7. Contact\nFor questions about these terms, use the support channels provided in the app or on the official website.';
+      'Last updated: March 2025.\n\n1. Purpose\nSmartur is a mobile app to explore tourist destinations, recommendations, and community features.\n\n2. Registration and account\nBy creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.\n\n3. Permitted use\nYou agree to use the service lawfully, without infringing third-party rights or disrupting the platform.\n\n4. Content and intellectual property\nApp content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.\n\n5. Personal data\nProcessing of your personal data complies with applicable law. By using Smartur you accept the practices described in the service privacy policy.\n\n6. Changes\nWe may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.\n\n7. Contact\nFor questions about these terms, use the support channels provided in the app or on the official website.';
 
   @override
   String get privacyPolicyBody =>
-      'Last updated: March 2025.\n\n1. Data controller\nWelltur is the controller of your personal data.\n\n2. Data we collect\nWe collect the data you provide when registering (name, email, optional profile photo) and data generated through app use (travel preferences, recommendation history, place ratings).\n\n3. Purpose of processing\nYour data is used to personalize travel recommendations, improve the app, and communicate with you about the service.\n\n4. Legal basis\nProcessing is based on your explicit consent when accepting these terms and on the performance of the service contract.\n\n5. Data retention\nWe retain your data while your account is active. You may request deletion at any time via Settings → Delete account.\n\n6. User rights\nYou have the right to access, rectify, delete, and port your personal data. To exercise these rights, contact us through the support channels.\n\n7. Security\nWe apply technical and organizational measures to protect your data against unauthorized access or accidental loss.\n\n8. Contact\nFor privacy inquiries: smarturutcv@gmail.com';
+      'Last updated: March 2025.\n\n1. Data controller\nSmartur is the controller of your personal data.\n\n2. Data we collect\nWe collect the data you provide when registering (name, email, optional profile photo) and data generated through app use (travel preferences, recommendation history, place ratings).\n\n3. Purpose of processing\nYour data is used to personalize travel recommendations, improve the app, and communicate with you about the service.\n\n4. Legal basis\nProcessing is based on your explicit consent when accepting these terms and on the performance of the service contract.\n\n5. Data retention\nWe retain your data while your account is active. You may request deletion at any time via Settings → Delete account.\n\n6. User rights\nYou have the right to access, rectify, delete, and port your personal data. To exercise these rights, contact us through the support channels.\n\n7. Security\nWe apply technical and organizational measures to protect your data against unauthorized access or accidental loss.\n\n8. Contact\nFor privacy inquiries: smarturutcv@gmail.com';
 
   @override
   String get logout => 'Log out';
@@ -211,7 +211,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get routesSectionLabel => 'Routes';
 
   @override
-  String get routesSectionCertified => 'Welltur Certified Routes';
+  String get routesSectionCertified => 'Smartur Certified Routes';
 
   @override
   String get routesSectionMostCopied => 'Most Copied';
@@ -357,7 +357,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recommendationSubtitle(Object city) {
-    return 'Suggested by Welltur AI for your visit to $city.';
+    return 'Suggested by Smartur AI for your visit to $city.';
   }
 
   @override
@@ -386,7 +386,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterMuseumsOnly => 'Museums only';
 
   @override
-  String get aiWelltur => 'Welltur AI';
+  String get aiSmartur => 'Smartur AI';
 
   @override
   String get enableBiometricsHint =>
@@ -399,7 +399,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noBiometricsEnrolled => 'No fingerprints enrolled';
 
   @override
-  String get biometricReason => 'Access your Welltur routes';
+  String get biometricReason => 'Access your Smartur routes';
 
   @override
   String get sessionExpired => 'Session expired. Please sign in again.';
@@ -428,7 +428,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Confirm your fingerprint to enable quick access';
 
   @override
-  String get biometricActivateTitle => 'Activate fingerprint — Welltur';
+  String get biometricActivateTitle => 'Activate fingerprint — Smartur';
 
   @override
   String get biometricTouchSensor => 'Touch the sensor';
@@ -736,7 +736,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get strengthVeryStrong => 'Very strong';
 
   @override
-  String get defaultUserName => 'Welltur Tourist';
+  String get defaultUserName => 'Smartur Tourist';
 
   @override
   String get myInterests => 'My Interests';
@@ -1175,7 +1175,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String settingsAppUpToDate(Object version) {
-    return 'Welltur v$version is up to date.';
+    return 'Smartur v$version is up to date.';
   }
 
   @override
@@ -1227,7 +1227,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String updateBody(Object version) {
-    return 'Welltur version $version is available.\nIt will be downloaded and installed from the app.';
+    return 'Smartur version $version is available.\nIt will be downloaded and installed from the app.';
   }
 
   @override
@@ -1271,11 +1271,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageShareSubtitle => 'Based on my smart traveler profile';
 
   @override
-  String get imageShareGeneratedBy => 'Generated by Welltur AI';
+  String get imageShareGeneratedBy => 'Generated by Smartur AI';
 
   @override
   String imageShareMessage(Object city) {
-    return 'Look what Welltur recommends for me in $city!';
+    return 'Look what Smartur recommends for me in $city!';
   }
 
   @override
@@ -1331,7 +1331,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recoShareList(Object items) {
-    return '🌿 My recommended destinations in Altas Montañas, Veracruz:\n\n• $items\n\n📱 Discover them with Welltur';
+    return '🌿 My recommended destinations in Altas Montañas, Veracruz:\n\n• $items\n\n📱 Discover them with Smartur';
   }
 
   @override
@@ -1341,7 +1341,7 @@ class AppLocalizationsEn extends AppLocalizations {
     Object description,
     Object mapsUrl,
   ) {
-    return 'Discover $title in $location! 📍$description\nView on Maps: $mapsUrl\n\nDiscovered with Welltur — Altas Montañas, Veracruz';
+    return 'Discover $title in $location! 📍$description\nView on Maps: $mapsUrl\n\nDiscovered with Smartur — Altas Montañas, Veracruz';
   }
 
   @override
@@ -1407,7 +1407,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plannerOptimize => 'Improve My Route';
 
   @override
-  String get plannerOptimizeComingSoon => 'Coming soon in Welltur';
+  String get plannerOptimizeComingSoon => 'Coming soon in Smartur';
 
   @override
   String get plannerRouteName => 'Route name';
@@ -1433,7 +1433,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get itineraryCertified => 'Welltur Certified';
+  String get itineraryCertified => 'Smartur Certified';
 
   @override
   String get itineraryCopy => 'Copy route';

@@ -311,7 +311,7 @@ const SERVICE_STATUS_CONFIG: Record<string, { label: string; color: string }> = 
     rejected:       { label: 'Rechazado',   color: TABLE_BADGE_COLORS.rose    },
 };
 
-export function AdminServicesApprovalPage() {
+export function AdminServicesApprovalPage({ onBadgeRefresh }: { onBadgeRefresh?: () => void } = {}) {
     const [services, setServices]         = useState<PendingService[]>([]);
     const [, setTotal]                    = useState(0);
     const [loading, setLoading]           = useState(true);
@@ -372,6 +372,7 @@ export function AdminServicesApprovalPage() {
         setServices(prev => prev.filter(s => s.id_service !== id));
         setTotal(prev => prev - 1);
         setSelected(prev => prev.filter(x => x !== id));
+        onBadgeRefresh?.();
     };
 
     const handleBulkAction = async (action: 'approve' | 'reject') => {
@@ -426,7 +427,7 @@ export function AdminServicesApprovalPage() {
     };
 
     return (
-        <div className="relative flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
+        <div className="relative flex h-full flex-col gap-4 overflow-hidden">
             {actionError && (
                 <p className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600 dark:border-rose-800 dark:bg-rose-900/20 dark:text-rose-400">
                     {actionError}

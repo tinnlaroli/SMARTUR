@@ -1,9 +1,9 @@
-﻿import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEOHelmet } from '../shared/components/SEOHelmet';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import Sidebar from './Sidebar';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
+import { Menu, Bell, LogOut, ChevronRight, Sun, Moon, Leaf, CheckCircle, XCircle, AlertCircle, Info, Trash2, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; // AnimatePresence used for notification panel
 import { useAuthModal } from '../features/auth/context/AuthModalContext';
 import { clearAccessToken } from '../shared/api/axiosClient';
@@ -214,10 +214,12 @@ const DashboardHeader = memo(function DashboardHeader({
 
                     <button
                         onClick={toggleTheme}
-                        title={theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
+                        title={theme === 'welltur' ? 'Tema Welltur' : theme === 'dark' ? copy.layout.clearToLight : copy.layout.clearToDark}
                         className="rounded-xl p-2 transition-colors nav-item-idle hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     >
-                        {theme === 'dark'
+                        {theme === 'welltur'
+                            ? <Leaf className="size-[18px] text-green-500" />
+                            : theme === 'dark'
                             ? <Sun className="size-[18px] text-amber-400" />
                             : <Moon className="size-[18px] text-violet-400" />}
                     </button>

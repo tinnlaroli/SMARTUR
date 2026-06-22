@@ -33,12 +33,14 @@ const t = ui[lang];
   </section>
 
 
-  <VideoSection
-    id="region"
-    title={t["video.title"]}
-    description={t["video.description"]}
-    lang={lang}
-  />
+  <div data-sy-reveal="fade">
+    <VideoSection
+      id="region"
+      title={t["video.title"]}
+      description={t["video.description"]}
+      lang={lang}
+    />
+  </div>
 
   <section id="technology">
     <TechnologySection
@@ -81,8 +83,9 @@ const t = ui[lang];
     ]}
   />
 
-  <About client:visible
-    id="about"
+  <div data-sy-reveal="fade">
+    <About client:visible
+      id="about"
     title={t["about.title"]}
     subtitle={t["about.subtitle"]}
     sectionLabel={t["about.sectionLabel"]}
@@ -127,6 +130,7 @@ const t = ui[lang];
       },
     ]}
   />
+  </div>
 
   {/* StepsTimeline moved to About */}
 
@@ -158,8 +162,9 @@ const t = ui[lang];
     <EmpresaCTA lang="fr" />
   </section>
 
-  <PlansNew
-    id="pricing"
+  <div data-sy-reveal="fade">
+    <PlansNew
+      id="pricing"
     title={t["pricing.new.title"]}
     subtitle={t["pricing.new.subtitle"]}
     showToggle={true}
@@ -211,6 +216,7 @@ const t = ui[lang];
       },
     ]}
   />
+  </div>
 
   <section id="contact">
     <ContactForm lang={lang} />

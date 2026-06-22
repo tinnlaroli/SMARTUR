@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../../../core/settings/app_settings.dart';
 
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
@@ -1041,10 +1043,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         child: child,
                       );
                     },
-                    child: Image.asset(
-                      'assets/imgs/logo_arriba.png',
-                      width: 280.42,
-                      height: 330.53,
+                    child: Consumer<AppSettings>(
+                      builder: (context, appSettings, _) {
+                        final isWelltur = appSettings.themeMode == AppThemeMode.welltur;
+                        return Image.asset(
+                          isWelltur ? 'assets/imgs/wellturLogo.png' : 'assets/imgs/logo_arriba.png',
+                          width: 280.42,
+                          height: 330.53,
+                        );
+                      },
                     ),
                   ),
                 ),
