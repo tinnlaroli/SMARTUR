@@ -122,7 +122,7 @@ export class BookingController {
             const { id_company } = req.user;
             // Verify booking belongs to a service owned by this company
             const r = await pool.query(
-                `SELECT u.name, u.email, u.photo_url, u.registration_date,
+                `SELECT u.name, u.email, u.photo_url, u.created_at AS registration_date,
                         tp.interests, tp.dietary_restrictions, tp.has_accessibility,
                         tp.has_visited, tp.accessibility_description,
                         b.visit_date, b.visit_time, b.guests, b.notes, b.is_walkin,

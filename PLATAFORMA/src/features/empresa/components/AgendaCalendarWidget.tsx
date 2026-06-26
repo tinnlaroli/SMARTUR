@@ -92,13 +92,13 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
                 </button>
             </div>
 
-            <div className="px-3 pb-2 pt-3">
+            <div className="px-4 pb-3 pt-4">
                 {/* Weekday labels — Monday first */}
-                <div className="mb-1.5 grid grid-cols-7">
+                <div className="mb-2 grid grid-cols-7">
                     {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
                         <div
                             key={d}
-                            className="text-center text-[10px] font-bold uppercase tracking-wider"
+                            className="text-center text-[11px] font-bold uppercase tracking-wider"
                             style={{ color: 'var(--color-text-alt)' }}
                         >
                             {d}
@@ -107,9 +107,9 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
                 </div>
 
                 {/* Day grid */}
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7 gap-1">
                     {cells.map((day, idx) => {
-                        if (!day) return <div key={`e-${idx}`} className="h-[50px]" />;
+                        if (!day) return <div key={`e-${idx}`} className="h-[70px]" />;
 
                         const dateStr = isoDate(viewYear, viewMonth, day);
                         const dayBookings = bookingsByDay[dateStr] ?? [];
@@ -122,19 +122,19 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
                                 key={dateStr}
                                 onClick={() => onDaySelect(isSelected ? null : dateStr)}
                                 className={[
-                                    'flex h-[50px] flex-col items-center justify-center rounded-xl transition-colors',
+                                    'flex h-[70px] flex-col items-center justify-center rounded-2xl transition-all duration-150',
                                     !isSelected ? 'hover:bg-purple-50 dark:hover:bg-purple-900/20' : '',
                                 ].join(' ')}
                                 style={
                                     isSelected
-                                        ? { background: ACCENT }
+                                        ? { background: ACCENT, boxShadow: `0 4px 14px ${ACCENT}50` }
                                         : isToday
-                                        ? { background: ACCENT + '14' }
+                                        ? { background: ACCENT + '14', border: `2px solid ${ACCENT}40` }
                                         : {}
                                 }
                             >
                                 <span
-                                    className="text-xs font-medium leading-none"
+                                    className="text-sm leading-none"
                                     style={{
                                         color: isSelected ? 'white' : isToday ? ACCENT : 'var(--color-text)',
                                         fontWeight: isToday || isSelected ? 700 : 500,
@@ -145,16 +145,16 @@ export function AgendaCalendarWidget({ bookings, onDaySelect, selectedDate }: Pr
 
                                 {dayBookings.length > 0 ? (
                                     <span
-                                        className="mt-1.5 flex h-4 min-w-[18px] items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none"
+                                        className="mt-2 flex h-5 min-w-[22px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none"
                                         style={{
-                                            background: isSelected ? 'rgba(255,255,255,0.22)' : color + '20',
+                                            background: isSelected ? 'rgba(255,255,255,0.25)' : color + '22',
                                             color: isSelected ? 'white' : color,
                                         }}
                                     >
                                         {dayBookings.length}
                                     </span>
                                 ) : (
-                                    <span className="mt-1.5 h-4" />
+                                    <span className="mt-2 h-5" />
                                 )}
                             </button>
                         );
