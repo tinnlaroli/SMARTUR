@@ -119,7 +119,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                                         onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-cyan)')}
                                         onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-alt)')}
                                     >
-                                        wellturutcv@gmail.com
+                                        soporte@smartur.online
                                     </a>
                                 </li>
                                 <li className="flex items-start gap-3">
@@ -217,7 +217,7 @@ export const Footer: React.FC<FooterProps> = ({ navLinks = [] }) => {
                     style={{ borderColor: 'var(--color-border)' }}
                 >
                     <p className="text-xs font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> WELLTUR. {t('footer.copyright')}
+                        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> SMARTUR. {t('footer.copyright')}
                     </p>
                 </div>
             </div>

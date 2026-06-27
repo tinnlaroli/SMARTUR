@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageSquare, Send, RefreshCw, Lock } from 'lucide-react';
 import { chatEmpresaApi, type EmpresaConversation, type ChatMessage } from '../api/chatApi';
 import { empresaApi } from '../api/empresaApi';
@@ -22,12 +22,12 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                 </div>
                 <div>
                     <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                        {isPending ? 'Empresa en revisión' : 'Empresa suspendida'}
+                        {isPending ? 'Empresa en revisi�n' : 'Empresa suspendida'}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Los mensajes se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Los mensajes se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24�48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para m�s informaci�n.'}
                     </p>
                 </div>
             </div>
@@ -86,7 +86,7 @@ function ConversationItem({ conv, isActive, onClick }: ConversationItemProps) {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        {conv.last_message ?? conv.service_name ?? 'Nueva conversación'}
+                        {conv.last_message ?? conv.service_name ?? 'Nueva conversaci�n'}
                     </span>
                     {conv.unread_count > 0 && (
                         <span
@@ -226,7 +226,7 @@ export function EmpresaMensajesPage() {
 
     return (
         <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--color-border)' }}>
-            {/* ── Conversations list ─────────────────────────────────────────── */}
+            {/* -- Conversations list ------------------------------------------- */}
             <div
                 className="flex w-72 shrink-0 flex-col border-r"
                 style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
@@ -247,7 +247,7 @@ export function EmpresaMensajesPage() {
                     ) : conversations.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-12 text-center px-4">
                             <MessageSquare size={32} className="opacity-20" style={{ color: 'var(--color-text)' }} />
-                            <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Sin conversaciones aún</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>Sin conversaciones a�n</p>
                         </div>
                     ) : (
                         conversations.map((conv) => (
@@ -262,13 +262,13 @@ export function EmpresaMensajesPage() {
                 </div>
             </div>
 
-            {/* ── Chat panel ────────────────────────────────────────────────── */}
+            {/* -- Chat panel -------------------------------------------------- */}
             <div className="flex min-w-0 flex-1 flex-col" style={{ background: 'var(--color-bg-alt)' }}>
                 {!activeId ? (
                     <div className="flex flex-1 flex-col items-center justify-center gap-3">
                         <MessageSquare size={48} className="opacity-20" style={{ color: 'var(--color-text)' }} />
                         <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                            Selecciona una conversación para ver los mensajes
+                            Selecciona una conversaci�n para ver los mensajes
                         </p>
                     </div>
                 ) : (
@@ -304,7 +304,7 @@ export function EmpresaMensajesPage() {
                                 </div>
                             ) : messages.length === 0 ? (
                                 <p className="text-center text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                                    Sé el primero en escribir
+                                    S� el primero en escribir
                                 </p>
                             ) : (
                                 messages.map((msg) => (

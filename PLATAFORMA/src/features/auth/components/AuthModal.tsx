@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { LoginView } from '../views/LoginView';
 import { SignUpView } from '../views/SignUpView';
@@ -92,7 +92,7 @@ export const AuthModal: React.FC = () => {
                             </div>
 
                             <p className={`mt-8 text-center text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
-                                © {new Date().getFullYear()} Welltur. Todos los derechos reservados.
+                                � {new Date().getFullYear()} SMARTUR. Todos los derechos reservados.
                             </p>
                         </motion.div>
                     </div>

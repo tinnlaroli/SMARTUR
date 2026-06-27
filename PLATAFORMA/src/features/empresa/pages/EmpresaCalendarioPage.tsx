@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, RefreshCw, Plus, Check, X as XIcon, Clock, Users, Lock, UserCircle2, CalendarCheck2 } from 'lucide-react';
+import { Calendar, RefreshCw, Plus, Check, X as XIcon, Clock, Users, Lock, UserCircle2 } from 'lucide-react';
 import { bookingEmpresaApi, type EmpresaBooking, type BookingStatus, type WalkinPayload } from '../api/bookingApi';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
@@ -67,7 +67,7 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Las reservas se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24-48 horas.'
+                            ? 'Las reservas se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24-48 horas.'
                             : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
                     </p>
                 </div>
@@ -353,64 +353,16 @@ export function EmpresaCalendarioPage() {
                 />
             )}
 
-            {/* ── Top bar: module info + actions ── */}
-            <div className="mb-4 shrink-0 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-
-                {/* Left: title + info card */}
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-xl p-2" style={{ backgroundColor: ACCENT + '18' }}>
-                            <CalendarCheck2 size={20} style={{ color: ACCENT }} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold leading-none" style={{ color: 'var(--color-text)' }}>
-                                Agenda
-                            </h1>
-                            <p className="mt-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                Reservas y visitas de tus turistas
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Module info card (always visible) */}
-                    <div
-                        className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5"
-                        style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
-                    >
-                        <Calendar size={14} className="mt-0.5 shrink-0" style={{ color: ACCENT }} />
-                        <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                            <span className="font-semibold" style={{ color: 'var(--color-text)' }}>Agenda de reservas — </span>
-                            Visualiza, confirma y cancela reservas. Haz clic en un día del calendario para filtrar. Selecciona una reserva para ver el perfil del turista e iniciar un chat.
-                        </p>
-                    </div>
-
-                    {/* Status chips */}
-                    {!loading && (
-                        <div className="flex flex-wrap items-center gap-2">
-                            {pendingCount > 0 && (
-                                <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: '#F59E0B18', color: '#D97706' }}>
-                                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                                    {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''}
-                                </span>
-                            )}
-                            {confirmedCount > 0 && (
-                                <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: '#10B98118', color: '#059669' }}>
-                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                    {confirmedCount} confirmada{confirmedCount !== 1 ? 's' : ''}
-                                </span>
-                            )}
-                            {selectedDate && (
-                                <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: ACCENT + '40', color: ACCENT }}>
-                                    <Calendar size={10} />
-                                    {formatDateShort(selectedDate)}
-                                    <button onClick={() => setSelectedDate(null)} className="ml-0.5 opacity-60 hover:opacity-100">✕</button>
-                                </span>
-                            )}
-                        </div>
-                    )}
+            {/* ── Header row: title + actions ── */}
+            <div className="mb-3 shrink-0 flex items-center justify-between gap-3">
+                <div>
+                    <h1 className="text-xl font-bold leading-none" style={{ color: 'var(--color-text)' }}>
+                        Agenda
+                    </h1>
+                    <p className="mt-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                        Reservas y visitas de tus turistas
+                    </p>
                 </div>
-
-                {/* Right: action buttons */}
                 <div className="flex shrink-0 gap-2">
                     <button
                         onClick={() => setShowWalkin(true)}
@@ -430,11 +382,23 @@ export function EmpresaCalendarioPage() {
                 </div>
             </div>
 
+            {/* ── Module info card ── */}
+            <div
+                className="mb-3 flex shrink-0 items-start gap-3 rounded-xl border px-5 py-4"
+                style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+            >
+                <Calendar size={16} className="mt-0.5 shrink-0" style={{ color: ACCENT }} />
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--color-text)' }}>Agenda de reservas — </span>
+                    Visualiza, confirma y cancela reservas. Haz clic en un día del calendario para filtrar. Selecciona una reserva para ver el perfil del turista e iniciar un chat.
+                </p>
+            </div>
+
             {/* ── Main 2-col grid: fills remaining height, no reflow ── */}
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
 
                 {/* ── LEFT col: Calendar (fixed) + Filters (fixed) + Table (scrolls) ── */}
-                <div className="flex min-h-0 flex-col gap-3">
+                <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
 
                     {/* Calendar — never moves */}
                     <div className="shrink-0">
@@ -445,17 +409,24 @@ export function EmpresaCalendarioPage() {
                         />
                     </div>
 
-                    {/* Filter tabs */}
-                    <div className="shrink-0 flex flex-wrap gap-2">
+                    {/* Filter tabs + status chips in one row */}
+                    <div className="shrink-0 flex flex-wrap items-center gap-2">
                         {filterBtn('all',       'Todas')}
                         {filterBtn('pending',   'Pendientes', bookings.filter(b => b.status === 'pending').length)}
                         {filterBtn('confirmed', 'Confirmadas', bookings.filter(b => b.status === 'confirmed').length)}
                         {filterBtn('cancelled', 'Canceladas')}
+                        {selectedDate && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: ACCENT + '40', color: ACCENT }}>
+                                <Calendar size={10} />
+                                {formatDateShort(selectedDate)}
+                                <button onClick={() => setSelectedDate(null)} className="ml-0.5 opacity-60 hover:opacity-100">✕</button>
+                            </span>
+                        )}
                     </div>
 
                     {/* Booking table — scrolls inside its own container */}
-                    <div className="min-h-0 flex-1">
-                        <div className={DATA_TABLE_SHELL_CLASS}>
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <div className={DATA_TABLE_SHELL_CLASS + ' flex-1'}>
                             {loading ? (
                                 <div className={DATA_TABLE_SCROLL_CLASS}>
                                     <TableSkeleton rows={5} colWidths={['w-48', 'flex-1', 'w-28', 'w-14', 'w-24', 'w-28']} />

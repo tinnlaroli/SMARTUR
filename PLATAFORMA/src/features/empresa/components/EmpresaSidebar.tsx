@@ -50,7 +50,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
         { id: 'messages',     label: 'Mensajes',             icon: MessageSquare,    path: '/empresa/mensajes' },
         { id: 'analytics',    label: 'Estadísticas',         icon: BarChart3,        path: '/empresa/analytics' },
         { id: 'faqs',         label: 'Preguntas Frecuentes', icon: HelpCircle,       path: '/empresa/faqs' },
-        { id: 'verificacion', label: 'Oficio WELLTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
+        { id: 'verificacion', label: 'Oficio SMARTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
         { id: 'changes',      label: 'Aclaraciones',         icon: MessageSquareDiff,path: '/empresa/cambios' },
         { id: 'profile',      label: 'Perfil',               icon: UserCircle,       path: '/empresa/perfil' },
         { id: 'settings',     label: 'Configuración',        icon: Settings,         path: '/empresa/configuracion' },

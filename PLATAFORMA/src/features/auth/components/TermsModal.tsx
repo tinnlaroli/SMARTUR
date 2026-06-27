@@ -1,36 +1,36 @@
-ï»¿import { X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 
 type ModalType = 'terms' | 'privacy';
 
 const TERMS_TEXT: Record<string, string> = {
-    es: `Ãšltima actualizaciÃ³n: marzo de 2025.
+    es: `Última actualización: marzo de 2025.
 
 1. Objeto
-WELLTUR es una plataforma para explorar destinos turÃ­sticos, recomendaciones y funciones de comunidad en la regiÃ³n de Las Altas MontaÃ±as, Veracruz.
+SMARTUR es una plataforma para explorar destinos turísticos, recomendaciones y funciones de comunidad en la región de Las Altas Montañas, Veracruz.
 
 2. Registro y cuenta
-Al crear una cuenta confirmas que la informaciÃ³n proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseÃ±a y de las actividades realizadas con tu cuenta.
+Al crear una cuenta confirmas que la información proporcionada es veraz. Eres responsable de mantener la confidencialidad de tu contraseña y de las actividades realizadas con tu cuenta.
 
 3. Uso permitido
-Te comprometes a utilizar el servicio de forma lÃ­cita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.
+Te comprometes a utilizar el servicio de forma lícita, sin vulnerar derechos de terceros ni el funcionamiento de la plataforma.
 
 4. Contenido y propiedad intelectual
-Los contenidos de la plataforma (textos, diseÃ±o, marcas) estÃ¡n protegidos. No estÃ¡ permitida su reproducciÃ³n no autorizada.
+Los contenidos de la plataforma (textos, diseño, marcas) están protegidos. No está permitida su reproducción no autorizada.
 
 5. Datos personales
-El tratamiento de tus datos personales se realiza conforme a la legislaciÃ³n aplicable. Al usar WELLTUR aceptas las prÃ¡cticas descritas en la polÃ­tica de privacidad del servicio.
+El tratamiento de tus datos personales se realiza conforme a la legislación aplicable. Al usar SMARTUR aceptas las prácticas descritas en la política de privacidad del servicio.
 
 6. Modificaciones
-Podemos actualizar estos tÃ©rminos. Los cambios relevantes se comunicarÃ¡n por medios razonables; el uso continuado de la plataforma tras la actualizaciÃ³n implica la aceptaciÃ³n de los nuevos tÃ©rminos.
+Podemos actualizar estos términos. Los cambios relevantes se comunicarán por medios razonables; el uso continuado de la plataforma tras la actualización implica la aceptación de los nuevos términos.
 
 7. Contacto
-Para consultas sobre estos tÃ©rminos, utiliza los canales de soporte indicados en la plataforma o en el sitio web oficial.`,
+Para consultas sobre estos términos, utiliza los canales de soporte indicados en la plataforma o en el sitio web oficial.`,
     en: `Last updated: March 2025.
 
 1. Purpose
-WELLTUR is a platform to explore tourist destinations, recommendations, and community features in the Las Altas MontaÃ±as region, Veracruz.
+SMARTUR is a platform to explore tourist destinations, recommendations, and community features in the Las Altas Montañas region, Veracruz.
 
 2. Registration and account
 By creating an account you confirm your information is accurate. You are responsible for keeping your password confidential and for activity under your account.
@@ -42,67 +42,67 @@ You agree to use the service lawfully, without infringing third-party rights or 
 Platform content (text, design, trademarks) is protected. Unauthorized reproduction is not allowed.
 
 5. Personal data
-Processing of your personal data complies with applicable law. By using WELLTUR you accept the practices described in the service privacy policy.
+Processing of your personal data complies with applicable law. By using SMARTUR you accept the practices described in the service privacy policy.
 
 6. Changes
 We may update these terms. Material changes will be communicated by reasonable means; continued use after updates means you accept the new terms.
 
 7. Contact
 For questions about these terms, use the support channels provided in the platform or on the official website.`,
-    fr: `DerniÃ¨re mise Ã  jour : mars 2025.
+    fr: `Dernière mise à jour : mars 2025.
 
 1. Objet
-WELLTUR est une plateforme pour explorer des destinations touristiques, des recommandations et des fonctions communautaires dans la rÃ©gion de Las Altas MontaÃ±as, Veracruz.
+SMARTUR est une plateforme pour explorer des destinations touristiques, des recommandations et des fonctions communautaires dans la région de Las Altas Montañas, Veracruz.
 
 2. Inscription et compte
-En crÃ©ant un compte, vous confirmez que vos informations sont exactes. Vous Ãªtes responsable de la confidentialitÃ© de votre mot de passe et des activitÃ©s sous votre compte.
+En créant un compte, vous confirmez que vos informations sont exactes. Vous êtes responsable de la confidentialité de votre mot de passe et des activités sous votre compte.
 
-3. Utilisation autorisÃ©e
-Vous vous engagez Ã  utiliser le service de maniÃ¨re licite, sans porter atteinte aux droits de tiers ni au fonctionnement de la plateforme.
+3. Utilisation autorisée
+Vous vous engagez à utiliser le service de manière licite, sans porter atteinte aux droits de tiers ni au fonctionnement de la plateforme.
 
-4. Contenu et propriÃ©tÃ© intellectuelle
-Les contenus de la plateforme (textes, design, marques) sont protÃ©gÃ©s. Toute reproduction non autorisÃ©e est interdite.
+4. Contenu et propriété intellectuelle
+Les contenus de la plateforme (textes, design, marques) sont protégés. Toute reproduction non autorisée est interdite.
 
-5. DonnÃ©es personnelles
-Le traitement de vos donnÃ©es personnelles est conforme Ã  la lÃ©gislation applicable. En utilisant WELLTUR, vous acceptez les pratiques dÃ©crites dans la politique de confidentialitÃ© du service.
+5. Données personnelles
+Le traitement de vos données personnelles est conforme à la législation applicable. En utilisant SMARTUR, vous acceptez les pratiques décrites dans la politique de confidentialité du service.
 
 6. Modifications
-Nous pouvons mettre Ã  jour ces conditions. Les changements importants seront communiquÃ©s par des moyens raisonnables ; l'utilisation continue aprÃ¨s mise Ã  jour vaut acceptation des nouvelles conditions.
+Nous pouvons mettre à jour ces conditions. Les changements importants seront communiqués par des moyens raisonnables ; l'utilisation continue après mise à jour vaut acceptation des nouvelles conditions.
 
 7. Contact
-Pour toute question sur ces conditions, utilisez les canaux d'assistance indiquÃ©s dans la plateforme ou sur le site officiel.`,
+Pour toute question sur ces conditions, utilisez les canaux d'assistance indiqués dans la plateforme ou sur le site officiel.`,
 };
 
 const PRIVACY_TEXT: Record<string, string> = {
-    es: `Ãšltima actualizaciÃ³n: marzo de 2025.
+    es: `Última actualización: marzo de 2025.
 
 1. Responsable del tratamiento
-WELLTUR es el responsable del tratamiento de tus datos personales.
+SMARTUR es el responsable del tratamiento de tus datos personales.
 
 2. Datos que recopilamos
-Recopilamos los datos que proporcionas al registrarte (nombre, correo electrÃ³nico, foto de perfil opcional) y los datos generados al usar la plataforma (preferencias de viaje, historial de recomendaciones).
+Recopilamos los datos que proporcionas al registrarte (nombre, correo electrónico, foto de perfil opcional) y los datos generados al usar la plataforma (preferencias de viaje, historial de recomendaciones).
 
 3. Finalidad del tratamiento
-Tus datos se utilizan para personalizar recomendaciones turÃ­sticas, mejorar la plataforma y comunicarnos contigo sobre el servicio.
+Tus datos se utilizan para personalizar recomendaciones turísticas, mejorar la plataforma y comunicarnos contigo sobre el servicio.
 
 4. Base legal
-El tratamiento se basa en tu consentimiento explÃ­cito al aceptar estos tÃ©rminos y en la ejecuciÃ³n del contrato de servicio.
+El tratamiento se basa en tu consentimiento explícito al aceptar estos términos y en la ejecución del contrato de servicio.
 
-5. ConservaciÃ³n de datos
-Conservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminaciÃ³n en cualquier momento.
+5. Conservación de datos
+Conservamos tus datos mientras mantengas tu cuenta activa. Puedes solicitar su eliminación en cualquier momento.
 
 6. Derechos del usuario
-Tienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contÃ¡ctanos a travÃ©s de los canales de soporte.
+Tienes derecho a acceder, rectificar, suprimir y portar tus datos personales. Para ejercerlos, contáctanos a través de los canales de soporte.
 
 7. Seguridad
-Aplicamos medidas tÃ©cnicas y organizativas para proteger tus datos contra accesos no autorizados o pÃ©rdidas accidentales.
+Aplicamos medidas técnicas y organizativas para proteger tus datos contra accesos no autorizados o pérdidas accidentales.
 
 8. Contacto
 Para consultas sobre privacidad, utiliza los canales de soporte indicados en la plataforma.`,
     en: `Last updated: March 2025.
 
 1. Data controller
-WELLTUR is the controller of your personal data.
+SMARTUR is the controller of your personal data.
 
 2. Data we collect
 We collect the data you provide when registering (name, email, optional profile photo) and data generated through platform use (travel preferences, recommendation history).
@@ -124,37 +124,37 @@ We apply technical and organizational measures to protect your data against unau
 
 8. Contact
 For privacy inquiries, use the support channels provided in the platform.`,
-    fr: `DerniÃ¨re mise Ã  jour : mars 2025.
+    fr: `Dernière mise à jour : mars 2025.
 
 1. Responsable du traitement
-WELLTUR est le responsable du traitement de vos donnÃ©es personnelles.
+SMARTUR est le responsable du traitement de vos données personnelles.
 
-2. DonnÃ©es collectÃ©es
-Nous collectons les donnÃ©es que vous fournissez lors de l'inscription (nom, e-mail, photo de profil optionnelle) et les donnÃ©es gÃ©nÃ©rÃ©es par l'utilisation de la plateforme (prÃ©fÃ©rences de voyage, historique des recommandations).
+2. Données collectées
+Nous collectons les données que vous fournissez lors de l'inscription (nom, e-mail, photo de profil optionnelle) et les données générées par l'utilisation de la plateforme (préférences de voyage, historique des recommandations).
 
-3. FinalitÃ© du traitement
-Vos donnÃ©es sont utilisÃ©es pour personnaliser les recommandations touristiques, amÃ©liorer la plateforme et communiquer avec vous sur le service.
+3. Finalité du traitement
+Vos données sont utilisées pour personnaliser les recommandations touristiques, améliorer la plateforme et communiquer avec vous sur le service.
 
-4. Base lÃ©gale
-Le traitement est basÃ© sur votre consentement explicite lors de l'acceptation de ces conditions et sur l'exÃ©cution du contrat de service.
+4. Base légale
+Le traitement est basé sur votre consentement explicite lors de l'acceptation de ces conditions et sur l'exécution du contrat de service.
 
-5. Conservation des donnÃ©es
-Nous conservons vos donnÃ©es tant que votre compte est actif. Vous pouvez demander leur suppression Ã  tout moment.
+5. Conservation des données
+Nous conservons vos données tant que votre compte est actif. Vous pouvez demander leur suppression à tout moment.
 
 6. Droits des utilisateurs
-Vous avez le droit d'accÃ©der, de rectifier, de supprimer et de porter vos donnÃ©es personnelles. Pour exercer ces droits, contactez-nous via les canaux d'assistance.
+Vous avez le droit d'accéder, de rectifier, de supprimer et de porter vos données personnelles. Pour exercer ces droits, contactez-nous via les canaux d'assistance.
 
-7. SÃ©curitÃ©
-Nous appliquons des mesures techniques et organisationnelles pour protÃ©ger vos donnÃ©es contre les accÃ¨s non autorisÃ©s ou les pertes accidentelles.
+7. Sécurité
+Nous appliquons des mesures techniques et organisationnelles pour protéger vos données contre les accès non autorisés ou les pertes accidentelles.
 
 8. Contact
-Pour toute question sur la confidentialitÃ©, utilisez les canaux d'assistance indiquÃ©s sur la plateforme.`,
+Pour toute question sur la confidentialité, utilisez les canaux d'assistance indiqués sur la plateforme.`,
 };
 
 const TITLES: Record<string, Record<ModalType, string>> = {
-    es: { terms: 'TÃ©rminos y Condiciones', privacy: 'PolÃ­tica de Privacidad' },
+    es: { terms: 'Términos y Condiciones', privacy: 'Política de Privacidad' },
     en: { terms: 'Terms and Conditions', privacy: 'Privacy Policy' },
-    fr: { terms: 'Conditions d\'utilisation', privacy: 'Politique de confidentialitÃ©' },
+    fr: { terms: 'Conditions d\'utilisation', privacy: 'Politique de confidentialité' },
 };
 
 const CLOSE_LABELS: Record<string, string> = {

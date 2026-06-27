@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useMemo, useState, type CSSProperties, type ComponentType } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ComponentType } from 'react';
 import {
     TrendingUp,
     Star,
@@ -52,7 +52,7 @@ function KpiCard({
             </div>
             <div>
                 <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                    {value === null || value === undefined ? 'â€”' : String(value)}
+                    {value === null || value === undefined ? '—' : String(value)}
                 </p>
                 <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
                 </div>
@@ -77,12 +77,12 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                 </div>
                 <div>
                     <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                        {isPending ? 'Empresa en revisiÃ³n' : 'Empresa suspendida'}
+                        {isPending ? 'Empresa en revisión' : 'Empresa suspendida'}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Analytics se activa una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24â€“48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para mÃ¡s informaciÃ³n.'}
+                            ? 'Analytics se activa una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
                     </p>
                 </div>
             </div>
@@ -118,7 +118,7 @@ export function EmpresaAnalyticsPage() {
     const topServicios = data?.top_servicios ?? [];
     const timeline30d = data?.timeline_30d ?? [];
     const evalScore = summary?.evaluacion_score != null ? Number(summary.evaluacion_score) : null;
-    const avgRating = summary?.avg_rating != null ? Number(summary.avg_rating).toFixed(1) : 'â€”';
+    const avgRating = summary?.avg_rating != null ? Number(summary.avg_rating).toFixed(1) : '—';
     const hasData = timeline30d.length > 0 || topServicios.length > 0;
 
     const hasServices = (summary?.total_servicios_activos ?? 0) > 0;
@@ -190,8 +190,8 @@ export function EmpresaAnalyticsPage() {
                     <KpiCard label={t('empresa.analytics.visitas')} value={summary.total_visitas} icon={BarChart3} color="#4DB9CA" />
                     <KpiCard label={t('empresa.analytics.ratingPromedio')} value={avgRating} icon={Award} color="var(--color-purple)" />
                     <KpiCard
-                        label="Ãšltima evaluaciÃ³n"
-                        value={lastEvalDate ?? 'â€”'}
+                        label="Última evaluación"
+                        value={lastEvalDate ?? '—'}
                         icon={Clock}
                         color="#984EFD"
                     />
@@ -227,12 +227,12 @@ export function EmpresaAnalyticsPage() {
                     {/* Onboarding checklist */}
                     <div className="flex flex-col gap-2 rounded-xl p-4" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
                         <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
-                            PrÃ³ximos pasos
+                            Próximos pasos
                         </p>
                         {[
                             { done: hasProfile, label: 'Completa tu perfil de empresa', href: '/empresa/perfil' },
                             { done: hasServices, label: 'Agrega al menos un servicio', href: '/empresa/servicios' },
-                            { done: false, label: 'Los turistas descubrirÃ¡n tu empresa en la app WELLTUR (puede tomar unos dÃ­as)', href: null },
+                            { done: false, label: 'Los turistas descubrirán tu empresa en la app SMARTUR (puede tomar unos días)', href: null },
                         ].map((step, i) => (
                             <div key={i} className="flex items-start gap-3">
                                 {step.done
@@ -346,7 +346,7 @@ export function EmpresaAnalyticsPage() {
                                                                 color={TABLE_BADGE_COLORS.amber}
                                                             />
                                                         ) : (
-                                                            'â€”'
+                                                            '—'
                                                         )}
                                                     </DataTableCell>
                                                     <DataTableCell className="w-36">{svc.recomendaciones}</DataTableCell>
@@ -416,7 +416,7 @@ export function EmpresaAnalyticsPage() {
                             </div>
                         )}
 
-                        {/* â”€â”€ Criterios a mejorar â”€â”€ */}
+                        {/* -- Criterios a mejorar -- */}
                         {evals && evals.weak_criteria.length > 0 && (
                             <div
                                 className="rounded-2xl border p-5"
@@ -449,14 +449,14 @@ export function EmpresaAnalyticsPage() {
                             </div>
                         )}
 
-                        {/* â”€â”€ Ãšltimas evaluaciones â”€â”€ */}
+                        {/* -- Últimas evaluaciones -- */}
                         {evals && evals.recent_evaluations.length > 0 && (
                             <div
                                 className="min-h-0 flex-1 overflow-y-auto rounded-2xl border p-5"
                                 style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
                             >
                                 <p className="mb-3 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    Ãšltimas evaluaciones
+                                    Últimas evaluaciones
                                 </p>
                                 <div className="space-y-2">
                                     {evals.recent_evaluations.slice(0, 5).map((ev) => {
@@ -475,7 +475,7 @@ export function EmpresaAnalyticsPage() {
                                                     </p>
                                                 </div>
                                                 <span className="shrink-0 text-sm font-bold" style={{ color }}>
-                                                    {score.toFixed(1)}â˜…
+                                                    {score.toFixed(1)}?
                                                 </span>
                                             </div>
                                         );

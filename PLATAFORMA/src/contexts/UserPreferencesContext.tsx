@@ -121,7 +121,7 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
         writePrefs(theme, lang);
         
         // Update document title and favicon dynamically
-        document.title = theme === 'welltur' ? 'WELLTUR | Turismo de Bienestar' : 'SMARTUR | Turismo con IA en las Altas Montañas, Veracruz';
+        document.title = theme === 'welltur' ? 'SMARTUR | Turismo de Bienestar' : 'SMARTUR | Turismo con IA en las Altas Montañas, Veracruz';
         const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement | null;
         if (favicon) {
             favicon.href = theme === 'welltur' ? '/wellturLogo.png' : '/favicon.svg?v=2';

@@ -1,4 +1,4 @@
-ï»¿import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
+import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
 import { X, Award, BarChart3, Clock, User, ClipboardCheck, Info, Printer, FileText, ExternalLink, Download } from 'lucide-react';
 import { evaluationsApi } from '../api/evaluationsApi';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -83,7 +83,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
 <html lang="${lang}">
 <head>
   <meta charset="UTF-8">
-  <title>${t('evaluation.totalScore')} #${evaluationId} â€” WELLTUR</title>
+  <title>${t('evaluation.totalScore')} #${evaluationId} — SMARTUR</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; color: #18181b; padding: 2.5rem; max-width: 680px; margin: 0 auto; }
@@ -109,8 +109,8 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
 <body>
   <div class="header">
     <div>
-      <div class="logo">WELLTUR</div>
-      <div class="meta">Resultado de EvaluaciÃ³n Â· ID #${evaluationId}</div>
+      <div class="logo">SMARTUR</div>
+      <div class="meta">Resultado de Evaluación · ID #${evaluationId}</div>
     </div>
   </div>
 
@@ -140,7 +140,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
   <div class="general-obs">"${evaluation.generalObservations || noGeneralObs}"</div>
 
   <div class="footer">
-    ${generatedBy} Â· ${dateStr}
+    ${generatedBy} · ${dateStr}
   </div>
 </body>
 </html>`;
@@ -266,7 +266,7 @@ const EvaluationResultModal: React.FC<Props> = ({ isOpen, onClose, evaluationId 
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Formulario escaneado</p>
-                                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Esta evaluaciÃ³n fue registrada a partir de un formulario en papel.</p>
+                                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Esta evaluación fue registrada a partir de un formulario en papel.</p>
                                             <div className="mt-3 flex items-center gap-2">
                                                 <a
                                                     href={evaluation.pdfUrl}

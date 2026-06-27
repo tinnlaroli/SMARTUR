@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import axios from 'axios';
 import { Wrench, Plus, Loader2, X, AlertCircle, Lock, Upload, Image as ImageIcon, Clock, DollarSign, Phone, CheckCircle, Leaf } from 'lucide-react';
 import MapPicker from '../../../components/ui/MapPicker';
@@ -30,7 +30,7 @@ interface ServiceModalProps {
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-    pending_review: { label: 'En revisión',  color: '#F59E0B', bg: '#F59E0B18' },
+    pending_review: { label: 'En revisi�n',  color: '#F59E0B', bg: '#F59E0B18' },
     active:         { label: 'Aprobado',     color: '#10B981', bg: '#10B98118' },
     rejected:       { label: 'Rechazado',    color: '#EF4444', bg: '#EF444418' },
 };
@@ -87,13 +87,13 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
         if (!form.name.trim()) e.name = 'El nombre es requerido';
         if (!form.service_type) e.service_type = 'Selecciona un tipo';
         if (form.contact_phone && !/^\d{1,10}$/.test(form.contact_phone.replace(/[\s\-]/g, '')))
-            e.contact_phone = 'Solo dígitos, máximo 10';
+            e.contact_phone = 'Solo d�gitos, m�ximo 10';
         if (form.price_from !== '' && isNaN(parseFloat(form.price_from)))
-            e.price_from = 'Solo números';
+            e.price_from = 'Solo n�meros';
         if (form.price_to !== '' && isNaN(parseFloat(form.price_to)))
-            e.price_to = 'Solo números';
+            e.price_to = 'Solo n�meros';
         if (!isEdit && lat === 0 && lng === 0)
-            e.location = 'Marca la ubicación en el mapa';
+            e.location = 'Marca la ubicaci�n en el mapa';
         return e;
     };
 
@@ -196,7 +196,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                         </h2>
                         {!isEdit && (
                             <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                El servicio será revisado por el equipo WELLTUR antes de publicarse.
+                                El servicio ser� revisado por el equipo SMARTUR antes de publicarse.
                             </p>
                         )}
                     </div>
@@ -216,7 +216,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                     </div>
                 </div>
 
-                {/* Body — scrollable */}
+                {/* Body � scrollable */}
                 <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
                     <div className="px-6 py-5 space-y-5">
 
@@ -238,7 +238,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 </label>
                                 <select name="service_type" value={form.service_type} onChange={handleChange}
                                     className={`${inputCls} appearance-none`} style={{ ...inputStyle, ...borderStyle('service_type') }}>
-                                    <option value="">Seleccionar…</option>
+                                    <option value="">Seleccionar�</option>
                                     {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
                                 {errors.service_type && <p className="text-xs text-rose-400 mt-1 flex items-center gap-1"><AlertCircle className="size-3" />{errors.service_type}</p>}
@@ -249,15 +249,15 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                     <label className={labelCls} style={labelStyle}>Visibilidad</label>
                                     <select name="active" value={form.active ? 'true' : 'false'} onChange={handleChange}
                                         className={`${inputCls} appearance-none`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }}>
-                                        <option value="true">Activo — visible en la app</option>
-                                        <option value="false">Inactivo — oculto</option>
+                                        <option value="true">Activo � visible en la app</option>
+                                        <option value="false">Inactivo � oculto</option>
                                     </select>
                                 </div>
                             )}
 
                             <div className={isEdit ? '' : 'sm:col-span-2'}>
                                 <label className={labelCls} style={labelStyle}>
-                                    <span className="flex items-center gap-1.5"><Phone className="size-3" /> Teléfono de contacto</span>
+                                    <span className="flex items-center gap-1.5"><Phone className="size-3" /> Tel�fono de contacto</span>
                                 </label>
                                 <input name="contact_phone" value={form.contact_phone} onChange={handleChange}
                                     placeholder="2281234567" inputMode="numeric" maxLength={10}
@@ -268,9 +268,9 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
 
                         {/* Description */}
                         <div>
-                            <label className={labelCls} style={labelStyle}>Descripción</label>
+                            <label className={labelCls} style={labelStyle}>Descripci�n</label>
                             <textarea name="description" value={form.description ?? ''} onChange={handleChange}
-                                rows={3} maxLength={500} placeholder="Describe brevemente tu servicio…"
+                                rows={3} maxLength={500} placeholder="Describe brevemente tu servicio�"
                                 className={`${inputCls} resize-none`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }} />
                         </div>
 
@@ -310,7 +310,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                         {/* Duration */}
                         <div>
                             <label className={`${labelCls} flex items-center gap-1.5`} style={labelStyle}>
-                                <Clock className="size-3" /> Duración (minutos)
+                                <Clock className="size-3" /> Duraci�n (minutos)
                             </label>
                             <input name="duration_minutes" inputMode="numeric" min="0" step="5"
                                 value={form.duration_minutes} onChange={handleChange}
@@ -318,11 +318,11 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 className={`${inputCls} max-w-xs`} style={{ ...inputStyle, borderColor: 'var(--color-border)' }} />
                         </div>
 
-                        {/* Map — only for new services, mandatory */}
+                        {/* Map � only for new services, mandatory */}
                         {!isEdit && (
                             <div>
                                 <label className={labelCls} style={labelStyle}>
-                                    Ubicación en mapa <span className="text-rose-400">*</span>
+                                    Ubicaci�n en mapa <span className="text-rose-400">*</span>
                                 </label>
                                 <MapPicker lat={lat} lng={lng} onChange={(la, lo) => {
                                     setLat(la); setLng(lo);
@@ -337,7 +337,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                             </div>
                         )}
 
-                        {/* Image upload — at the end */}
+                        {/* Image upload � at the end */}
                         <div>
                             <label className={labelCls} style={labelStyle}>
                                 <span className="flex items-center gap-1.5"><ImageIcon className="size-3" /> Foto del servicio</span>
@@ -377,7 +377,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                             Seleccionar o arrastrar imagen
                                         </p>
                                         <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                            JPG, PNG, WebP · máx. 10 MB · recomendado 16:9
+                                            JPG, PNG, WebP � m�x. 10 MB � recomendado 16:9
                                         </p>
                                     </div>
                                 </button>
@@ -386,7 +386,7 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
                         </div>
 
-                        {/* ── Wellness Section ──────────────────────────────────── */}
+                        {/* -- Wellness Section ------------------------------------ */}
                         <div className="border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
                             {/* Toggle */}
                             <button
@@ -413,22 +413,22 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                     <div className="rounded-xl border px-4 py-3"
                                         style={{ background: 'rgba(34,197,94,0.04)', borderColor: '#22c55e30' }}>
                                         <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                                            Al marcar este servicio como de bienestar, quedará en revisión por el equipo WELLTUR
+                                            Al marcar este servicio como de bienestar, quedar� en revisi�n por el equipo SMARTUR
                                             antes de aparecer en las recomendaciones wellness de la app. No afecta tu listado regular.
                                         </p>
                                     </div>
 
                                     {/* Category */}
                                     <div>
-                                        <label className={labelCls} style={labelStyle}>Categoría wellness</label>
+                                        <label className={labelCls} style={labelStyle}>Categor�a wellness</label>
                                         <select
                                             value={wellnessCategoria}
                                             onChange={e => setWellnessCategoria(e.target.value)}
                                             className={`${inputCls} appearance-none`}
                                             style={{ ...inputStyle, borderColor: 'var(--color-border)' }}
                                         >
-                                            <option value="">Seleccionar categoría…</option>
-                                            {['Termal', 'Spa', 'Bosque', 'Montaña', 'Lago', 'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque'].map(c => (
+                                            <option value="">Seleccionar categor�a�</option>
+                                            {['Termal', 'Spa', 'Bosque', 'Monta�a', 'Lago', 'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque'].map(c => (
                                                 <option key={c} value={c}>{c.replace('_', ' ')}</option>
                                             ))}
                                         </select>
@@ -436,12 +436,12 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
 
                                     {/* Description */}
                                     <div>
-                                        <label className={labelCls} style={labelStyle}>¿Qué experiencia de bienestar ofrece?</label>
+                                        <label className={labelCls} style={labelStyle}>�Qu� experiencia de bienestar ofrece?</label>
                                         <textarea
                                             rows={2} maxLength={300}
                                             value={wellnessDesc}
                                             onChange={e => setWellnessDesc(e.target.value)}
-                                            placeholder="Ej. Aguas termales con propiedades relajantes en entorno natural…"
+                                            placeholder="Ej. Aguas termales con propiedades relajantes en entorno natural�"
                                             className={`${inputCls} resize-none`}
                                             style={{ ...inputStyle, borderColor: 'var(--color-border)' }}
                                         />
@@ -451,15 +451,15 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                     <div className="space-y-3">
                                         {[
                                             {
-                                                label: 'Nivel de aislamiento', hint: '0 = centro urbano · 10 = muy aislado',
+                                                label: 'Nivel de aislamiento', hint: '0 = centro urbano � 10 = muy aislado',
                                                 value: wellnessAisl, onChange: setWellnessAisl,
                                             },
                                             {
-                                                label: 'Relajación / Restauración', hint: '0 = activo · 10 = muy relajante',
+                                                label: 'Relajaci�n / Restauraci�n', hint: '0 = activo � 10 = muy relajante',
                                                 value: wellnessRest, onChange: setWellnessRest,
                                             },
                                             {
-                                                label: 'Demanda física', hint: '0 = sin esfuerzo · 10 = alta exigencia física',
+                                                label: 'Demanda f�sica', hint: '0 = sin esfuerzo � 10 = alta exigencia f�sica',
                                                 value: wellnessDemanda, onChange: setWellnessDemanda,
                                             },
                                         ].map(({ label, hint, value, onChange }) => (
@@ -490,8 +490,8 @@ function ServiceModal({ initial, defaultLocationId, onClose, onSaved }: ServiceM
                                 style={{ background: '#F59E0B0D', borderColor: '#F59E0B30' }}>
                                 <AlertCircle className="size-4 shrink-0 mt-0.5" style={{ color: '#F59E0B' }} />
                                 <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                                    Tu servicio iniciará como <strong style={{ color: 'var(--color-text)' }}>En revisión</strong> y
-                                    será publicado en la app una vez que el equipo WELLTUR lo apruebe (1–2 días hábiles).
+                                    Tu servicio iniciar� como <strong style={{ color: 'var(--color-text)' }}>En revisi�n</strong> y
+                                    ser� publicado en la app una vez que el equipo SMARTUR lo apruebe (1�2 d�as h�biles).
                                 </p>
                             </div>
                         )}
@@ -545,12 +545,12 @@ function StatusBlocker({ status }: { status: 'pending' | 'suspended' }) {
                 </div>
                 <div>
                     <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                        {isPending ? 'Empresa en revisión' : 'Empresa suspendida'}
+                        {isPending ? 'Empresa en revisi�n' : 'Empresa suspendida'}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
                         {isPending
-                            ? 'Los servicios se activan una vez que el equipo WELLTUR apruebe tu empresa. Normalmente tarda 24–48 horas.'
-                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para más información.'}
+                            ? 'Los servicios se activan una vez que el equipo SMARTUR apruebe tu empresa. Normalmente tarda 24�48 horas.'
+                            : 'Tu cuenta ha sido suspendida. Contacta a soporte en soporte@smartur.online para m�s informaci�n.'}
                     </p>
                 </div>
             </div>
@@ -580,7 +580,7 @@ const modalReducer = (state: ModalState, action: ModalAction): ModalState => {
     }
 };
 
-// ── Página principal ────────────────────────────────────────────────────────
+// -- P�gina principal --------------------------------------------------------
 export function EmpresaServiciosPage() {
     const toast = useToast();
     const { t } = useLanguage();
@@ -755,7 +755,7 @@ export function EmpresaServiciosPage() {
                             type="button"
                             onClick={() => dispatchModal({ type: 'OPEN_CREATE' })}
                             disabled={companyStatus !== null && companyStatus !== 'active'}
-                            title={companyStatus === 'pending' ? 'Tu empresa está en revisión' : companyStatus === 'suspended' ? 'Tu empresa está suspendida' : undefined}
+                            title={companyStatus === 'pending' ? 'Tu empresa est� en revisi�n' : companyStatus === 'suspended' ? 'Tu empresa est� suspendida' : undefined}
                             className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                             style={{ background: MODULE_COLORS.services }}
                         >
