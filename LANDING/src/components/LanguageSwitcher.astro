@@ -209,13 +209,13 @@ const validLang = currentLang in languages ? currentLang : "es";
     link.addEventListener("click", (e) => {
       const lang = (e.currentTarget as HTMLElement).dataset.lang;
       if (lang) {
-        localStorage.setItem("welltur-lang", lang);
+        localStorage.setItem("smartur-lang", lang);
       }
     });
   });
 
   // Apply stored language preference on load
-  const storedLang = localStorage.getItem("welltur-lang");
+  const storedLang = localStorage.getItem("smartur-lang");
   if (storedLang && storedLang !== "es") {
     const currentPath = window.location.pathname;
     const pathLang = currentPath.split("/")[1];

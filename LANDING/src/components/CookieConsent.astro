@@ -17,12 +17,12 @@
 <script>
   const banner = document.getElementById('cookie-banner') as HTMLElement;
   if (!banner) { /* noop */ }
-  else if (localStorage.getItem('welltur_consent')) {
+  else if (localStorage.getItem('smartur_consent')) {
     banner.remove();
   } else {
     banner.style.display = 'flex';
     document.getElementById('cookie-accept')?.addEventListener('click', () => {
-      localStorage.setItem('welltur_consent', '1');
+      localStorage.setItem('smartur_consent', '1');
       banner.style.opacity = '0';
       banner.style.transform = 'translateY(8px)';
       setTimeout(() => banner.remove(), 300);

@@ -1,9 +1,9 @@
-﻿/* ═══════════════════════════════════════════════════════════════════════════
- * SmartURLoader.css — Estilos del componente de carga animado WELLTUR
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SmartURLoader.css — Estilos del componente de carga animado smartur
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Overlay: fondo blanco pantalla completa ────────────────────────── */
-.welltur-loader-overlay {
+.smartur-loader-overlay {
   position: fixed;
   inset: 0; /* Cubre toda la ventana (top/right/bottom/left = 0) */
   z-index: 9999; /* Por encima de todo el contenido de la página */
@@ -15,7 +15,7 @@
 }
 
 /* ── Contenedor del contenido del loader ────────────────────────────── */
-.welltur-loader-content {
+.smartur-loader-content {
   position: relative;
   width: clamp(
     140px,
@@ -30,7 +30,7 @@
 }
 
 /* ── SVG principal del loader ───────────────────────────────────────── */
-.welltur-loader-svg {
+.smartur-loader-svg {
   width: 100%;
   height: auto;
   overflow: visible; /* Permite que elementos animados se muestren fuera del viewBox */

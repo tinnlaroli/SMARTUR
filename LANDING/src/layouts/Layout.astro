@@ -126,7 +126,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
       (function() {
-        var theme = localStorage.getItem("welltur-theme");
+        var theme = localStorage.getItem("smartur-theme");
         if (!theme) {
           theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         }
@@ -135,11 +135,11 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
     </script>
     <meta name="google-site-verification" content="XkhhFJUQntUbRcnxirHrfxc9bwGFdOLx71tjWAHtwPk" />
 
-    <!-- WELLTUR SEO Metadata -->
+    <!-- SMARTUR SEO Metadata -->
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     <meta name="keywords" content={seo.keywords} />
-    <meta name="author" content="WELLTUR" />
+    <meta name="author" content="SMARTUR" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <!-- Hreflang / International SEO -->
@@ -151,7 +151,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="WELLTUR" />
+    <meta property="og:site_name" content="SMARTUR" />
     <meta property="og:title" content={seo.ogTitle} />
     <meta property="og:description" content={seo.ogDescription} />
     <meta property="og:locale" content={seo.locale} />
@@ -197,7 +197,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
       "@graph": [
         {
           "@type": "Organization",
-          "name": "WELLTUR",
+          "name": "SMARTUR",
           "description": seo.description,
           "url": baseUrl,
           "logo": {
@@ -219,7 +219,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
           },
           "sameAs": [
             "https://smartur.online",
-            "https://instagram.com/welltur"
+            "https://instagram.com/smar_tur"
           ]
         },
         {
@@ -277,7 +277,7 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
         <Footer
           lang={currentLang}
           logoUrl="/"
-          logoAlt="WELLTUR"
+          logoAlt="SMARTUR"
           links={links}
           slogan={t("footer.slogan")}
           description={t("footer.description")}
@@ -372,61 +372,21 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
   (() => {
     const c = (color: string) => `color:${color};font-weight:700;font-size:13px`;
     console.log(
-      "%cWELLTUR%c  Turismo Inteligente · Altas Montañas de Veracruz\n%c¿Te gusta lo que ves? Hablemos: martinlaraolivares@gmail.com",
+      "%cSMARTUR%c  Turismo Inteligente · Altas Montañas de Veracruz\n%c¿Te gusta lo que ves? Hablemos: martinlaraolivares@gmail.com",
       `${c('#4DB9CA')};font-size:20px`,
       c('#984EFD'),
       `color:#aaa;font-weight:400;font-size:11px`
     );
   })();
 
-  // Dynamic branding replacement
+  // Ensure brand-logo images point to the correct logo
   (() => {
-    function walkAndReplace(node: Node, isWelltur: boolean) {
-      if (node.nodeType === 3 && node.nodeValue) {
-        if (isWelltur) {
-          node.nodeValue = node.nodeValue.replace(/SMARTUR/g, 'WELLTUR').replace(/Smartur/g, 'Welltur');
-        } else {
-          node.nodeValue = node.nodeValue.replace(/WELLTUR/g, 'SMARTUR').replace(/Welltur/g, 'Smartur');
-        }
-      } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
-        for (let i = 0; i < node.childNodes.length; i++) {
-          walkAndReplace(node.childNodes[i], isWelltur);
-        }
-      }
-    }
-
-    function updateBranding(theme: string) {
-      const isWelltur = theme === 'welltur';
-      walkAndReplace(document.body, isWelltur);
-
-      // Update logos
-      document.querySelectorAll('img.brand-logo').forEach((img: any) => {
-        // Find if we have the assets in public. Usually we can just point to /logo.png or /wellturLogo.png
-        img.src = isWelltur ? '/wellturLogo.png' : '/logo.png';
-        if (img.srcset) img.srcset = '';
-        img.alt = isWelltur ? 'WELLTUR' : 'SMARTUR';
-      });
-
-      // Update document title and favicon
-      if (isWelltur) {
-        document.title = document.title.replace(/SMARTUR/g, 'WELLTUR').replace(/Smartur/g, 'Welltur');
-      } else {
-        document.title = document.title.replace(/WELLTUR/g, 'SMARTUR').replace(/Welltur/g, 'Smartur');
-      }
-
-      const favicon = document.querySelector('link[rel="icon"]');
-      if (favicon) {
-        favicon.href = isWelltur ? '/wellturLogo.png' : '/favicon.svg?v=2';
-        favicon.type = isWelltur ? 'image/png' : 'image/svg+xml';
-      }
-    }
-
-    window.addEventListener('theme-changed', (e: any) => updateBranding(e.detail.theme));
-    
-    // Initial run
     document.addEventListener("DOMContentLoaded", () => {
-      const theme = document.documentElement.getAttribute('data-theme') || 'light';
-      updateBranding(theme);
+      document.querySelectorAll('img.brand-logo').forEach((img: any) => {
+        img.src = '/logo.png';
+        if (img.srcset) img.srcset = '';
+        img.alt = 'SMARTUR';
+      });
     });
   })();
 </script>

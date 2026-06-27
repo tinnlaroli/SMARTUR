@@ -3,7 +3,7 @@
 //   - API calls          → network-first
 //   - Hashed assets      → cache-first  (safe: hash changes with content)
 //   - HTML routes        → network-first (prevents stale shell after deploy)
-const CACHE_NAME = 'smartur-empresa-v2';
+const CACHE_NAME = 'smartur-empresa-v3';
 
 self.addEventListener('install', (event) => {
     // Do not pre-cache HTML — network-first strategy handles freshness
@@ -38,7 +38,8 @@ self.addEventListener('fetch', (event) => {
     if (url.pathname.startsWith('/assets/')) {
         event.respondWith(
             caches.match(request).then((cached) => {
-                if (cached) return cached;
+                if (cached && cached.ok) return cached;
+                if (cached) caches.open(CACHE_NAME).then((c) => c.delete(request));
                 return fetch(request)
                     .then((response) => {
                         if (response.ok) {

@@ -191,9 +191,7 @@ export function About({
                       style={{ color: accent }}
                       dangerouslySetInnerHTML={{ __html: slide.label }}
                     />
-                    <p className="leading-relaxed font-medium" style={{ color: 'var(--color-text-alt)' }}>
-                      {slide.text}
-                    </p>
+                    <p className="leading-relaxed font-medium" style={{ color: 'var(--color-text-alt)' }} dangerouslySetInnerHTML={{ __html: slide.text }} />
                   </div>
                 );
               })}
@@ -227,7 +225,7 @@ export function About({
                         style={{ color: 'var(--color-text)' }}
                         dangerouslySetInnerHTML={{ __html: item.title }}
                       />
-                      <p className="leading-relaxed text-sm" style={{ color: 'var(--color-text-alt)' }}>{item.text}</p>
+                      <p className="leading-relaxed text-sm" style={{ color: 'var(--color-text-alt)' }} dangerouslySetInnerHTML={{ __html: item.text }} />
                     </div>
                   </div>
                 ))}

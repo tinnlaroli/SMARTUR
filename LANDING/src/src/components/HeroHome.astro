@@ -1,4 +1,4 @@
-﻿---
+---
 import type { Link } from "../types";
 import Button from "./Button.astro";
 
@@ -31,7 +31,7 @@ const { title, subtitle, cta } = Astro.props;
                 {...cta}
                 arrow
                 class="cta"
-                ariaLabel="Descubrir más sobre WELLTUR"
+                ariaLabel="Descubrir más sobre smartur"
               />
               <div class="cta-shimmer" />
             </div>
@@ -471,7 +471,7 @@ const { title, subtitle, cta } = Astro.props;
   }
 
   // Listen for loader completion event
-  window.addEventListener("welltur:loaded", animateHero, { once: true });
+  window.addEventListener("smartur:loaded", animateHero, { once: true });
 
   // Fallback: if no loader (instant navigation), reveal after small delay
   if (!document.body.classList.contains("is-loading")) {

@@ -1,8 +1,8 @@
-﻿import React, { useRef } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import * as flubber from "flubber";
-import wellturLogo from "../assets/logo.png";
+import smarturLogo from "../assets/logo.png";
 import "./SmartURLoader.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -114,7 +114,7 @@ const ALL_ICON_PATHS = [
 /* ═══════════════════════════════════════════════════════════════════════════
  * PATHS DEL PIN / MARCADOR (carcasa del logo)
  * ═══════════════════════════════════════════════════════════════════════════
- * Estos definen las piezas del marcador de mapa de WELLTUR.
+ * Estos definen las piezas del marcador de mapa de smartur.
  * Se dibujan con un efecto "stroke-draw" (trazo progresivo) y después
  * se rellenan con su color final.
  *
@@ -235,7 +235,7 @@ const PRECALCULATED_PLANES = [
  * COMPONENTE PRINCIPAL: SmartURLoader
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Loader animado de la marca WELLTUR. Secuencia de animación:
+ * Loader animado de la marca smartur. Secuencia de animación:
  *
  *   1. ENTRADA (0s–1.2s):
  *      Cuatro aviones de papel aparecen desde el centro, cada uno en su
@@ -524,7 +524,7 @@ export default function SmartURLoader({ onFinished } = {}) {
 
         // Desvanecer el fondo blanco para revelar la página debajo
         tl.to(
-          ".welltur-loader-overlay",
+          ".smartur-loader-overlay",
           {
             backgroundColor: "rgba(255, 255, 255, 0)",
             duration: 0.8,
@@ -554,7 +554,7 @@ export default function SmartURLoader({ onFinished } = {}) {
               // 1) disparar evento global para el Hero
               // 2) quitar la clase is-loading del body
               try {
-                window.dispatchEvent(new CustomEvent("welltur:loaded"));
+                window.dispatchEvent(new CustomEvent("smartur:loaded"));
               } catch {
                 // ignore
               }
@@ -580,9 +580,9 @@ export default function SmartURLoader({ onFinished } = {}) {
    * ═══════════════════════════════════════════════════════════════════════
    * Estructura del DOM:
    *
-   *  .welltur-loader-overlay  (overlay a pantalla completa, z-index 9999)
-   *   └─ .welltur-loader-content  (contenedor centrado del loader)
-   *       ├─ <svg> .welltur-loader-svg  (viewBox: 169.42 × 218.53)
+   *  .smartur-loader-overlay  (overlay a pantalla completa, z-index 9999)
+   *   └─ .smartur-loader-content  (contenedor centrado del loader)
+   *       ├─ <svg> .smartur-loader-svg  (viewBox: 169.42 × 218.53)
    *       │   ├─ .pin-path × 7    (piezas del marcador de mapa)
    *       │   └─ .arc-spinner × 4 (grupos giratorios)
    *       │       └─ .morph-path  (avión → ícono)
@@ -590,14 +590,14 @@ export default function SmartURLoader({ onFinished } = {}) {
    *       └─ .loader-percentage       (texto "0%"..."100%")
    * ═══════════════════════════════════════════════════════════════════════ */
   return (
-    <div ref={containerRef} className="welltur-loader-overlay">
-      <div className="welltur-loader-content">
+    <div ref={containerRef} className="smartur-loader-overlay">
+      <div className="smartur-loader-content">
         {/* SVG principal con el viewBox que contiene pin + arcos */}
         <svg
           ref={svgRef}
           viewBox="0 0 169.42 218.53"
-          className="welltur-loader-svg"
-          aria-label="Cargando WELLTUR"
+          className="smartur-loader-svg"
+          aria-label="Cargando smartur"
         >
           <g>
             {/* Capa inferior: 7 piezas del marcador de mapa (pin shell) */}
@@ -631,8 +631,8 @@ export default function SmartURLoader({ onFinished } = {}) {
         {/* Logo oficial: aparece al final con efecto flash-bang */}
         <img
           ref={logoRef}
-          src={wellturLogo}
-          alt="WELLTUR"
+          src={smarturLogo}
+          alt="smartur"
           className="loader-full-logo"
           style={{
             position: "absolute",
