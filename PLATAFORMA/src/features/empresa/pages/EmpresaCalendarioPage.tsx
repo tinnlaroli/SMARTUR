@@ -389,7 +389,7 @@ export function EmpresaCalendarioPage() {
             </div>
 
             {/* ── Main 2-col grid ── */}
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
+            <div className="grid min-h-0 flex-1 grid-rows-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
 
                 {/* LEFT col
                     - Cuando el calendario está cerrado: columna con overflow-hidden,
