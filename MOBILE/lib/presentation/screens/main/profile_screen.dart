@@ -555,7 +555,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               const Icon(Icons.eco_outlined, size: 14, color: Color(0xFF254117)),
               const SizedBox(width: 5),
               Text(
-                'WellTur',
+                'SMARTUR Wellness',
                 style: SmarturStyle.calSansTitle.copyWith(
                     fontSize: 14, color: const Color(0xFF254117)),
               ),

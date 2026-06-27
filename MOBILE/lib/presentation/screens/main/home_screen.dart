@@ -2353,7 +2353,7 @@ class _WellnessBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'WellTur · Descubre tu modo de viaje',
+                    'SMARTUR · Descubre tu modo de viaje',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

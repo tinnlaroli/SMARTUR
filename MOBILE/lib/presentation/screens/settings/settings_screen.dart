@@ -68,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _themeLabelFromMode(AppThemeMode mode) => switch (mode) {
     AppThemeMode.light   => AppLocalizations.of(context)!.themeLight,
     AppThemeMode.dark    => AppLocalizations.of(context)!.themeDark,
-    AppThemeMode.welltur => 'WellTur',
+    AppThemeMode.welltur => 'Bienestar',
     AppThemeMode.system  => AppLocalizations.of(context)!.systemTheme,
   };
 
@@ -397,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       (AppThemeMode.system,  l10n.systemTheme, Icons.brightness_auto_outlined),
       (AppThemeMode.light,   l10n.themeLight,  Icons.light_mode_outlined),
       (AppThemeMode.dark,    l10n.themeDark,   Icons.dark_mode_outlined),
-      (AppThemeMode.welltur, 'WellTur',        Icons.spa_outlined),
+      (AppThemeMode.welltur, 'Bienestar',      Icons.spa_outlined),
     ];
 
     showModalBottomSheet(

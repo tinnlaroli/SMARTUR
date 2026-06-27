@@ -332,10 +332,10 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
         ),
         title: Text(
           _step == 0
-              ? 'WellTur'
+              ? 'SMARTUR'
               : _step <= 8
                   ? 'Cuéntanos cómo te sientes'
-                  : 'WellTur · Tu recomendación',
+                  : 'SMARTUR · Tu recomendación',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
@@ -374,7 +374,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
             child: const Icon(Icons.eco_outlined, size: 36, color: Color(0xFF10B981)),
           ),
           const SizedBox(height: 24),
-          const Text('WellTur',
+          const Text('SMARTUR',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
                   letterSpacing: 1.5, color: Color(0xFF254117))),
           const SizedBox(height: 8),
@@ -386,7 +386,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Responde 8 preguntas rápidas sobre tu energía y WellTur te recomienda lugares de bienestar personalizados.',
+            'Responde 8 preguntas rápidas sobre tu energía y SMARTUR te recomienda lugares de bienestar personalizados.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, height: 1.5,
                 color: scheme.onSurface.withValues(alpha: 0.6)),
@@ -452,7 +452,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
                 )),
               const SizedBox(width: 10),
               Expanded(child: Text(
-                'Acepto que WellTur use mis respuestas para personalizar mis recomendaciones de bienestar. '
+                'Acepto que SMARTUR use mis respuestas para personalizar mis recomendaciones de bienestar. '
                 'Puedo borrar este historial en cualquier momento desde mi perfil.',
                 style: TextStyle(fontSize: 12, height: 1.5,
                     color: scheme.onSurface.withValues(alpha: 0.65)),
