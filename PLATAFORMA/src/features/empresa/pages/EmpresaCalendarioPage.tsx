@@ -336,7 +336,7 @@ export function EmpresaCalendarioPage() {
     }
 
     return (
-        <div className="flex h-full flex-col gap-3 overflow-hidden">
+        <div className="flex flex-col gap-4">
 
             {showWalkin && (
                 <WalkinModal
@@ -347,7 +347,7 @@ export function EmpresaCalendarioPage() {
             )}
 
             {/* ── Header ── */}
-            <div className="shrink-0 flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
                 <div>
                     <h1 className="text-xl font-bold leading-none" style={{ color: 'var(--color-text)' }}>Agenda</h1>
                     <p className="mt-0.5 text-xs" style={{ color: 'var(--color-text-alt)' }}>
@@ -374,7 +374,7 @@ export function EmpresaCalendarioPage() {
 
             {/* ── Module info card (Mis Servicios style) ── */}
             <div
-                className="flex shrink-0 items-start gap-3 rounded-xl border px-5 py-4"
+                className="flex items-start gap-3 rounded-xl border px-5 py-4"
                 style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
             >
                 <Calendar className="mt-0.5 size-5 shrink-0" style={{ color: ACCENT }} />
@@ -389,21 +389,14 @@ export function EmpresaCalendarioPage() {
             </div>
 
             {/* ── Main 2-col grid ── */}
-            <div className="grid min-h-0 flex-1 grid-rows-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
 
-                {/* LEFT col
-                    - Cuando el calendario está cerrado: columna con overflow-hidden,
-                      tabla toma flex-1 con scroll interno en el tbody.
-                    - Cuando está abierto: columna con overflow-y-auto, el usuario
-                      hace scroll para bajar del calendario a la tabla. */}
-                <div className={calendarOpen
-                    ? 'min-h-0 flex-1 overflow-y-auto flex flex-col gap-2'
-                    : 'min-h-0 flex-1 flex flex-col gap-2 overflow-hidden'
-                }>
+                {/* LEFT col */}
+                <div className="flex flex-col gap-3">
 
                     {/* Calendar — collapsible */}
                     <div
-                        className="shrink-0 overflow-hidden rounded-xl border"
+                        className="overflow-hidden rounded-xl border"
                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
                     >
                         <button
@@ -444,12 +437,9 @@ export function EmpresaCalendarioPage() {
                     </div>
 
                     {/* Booking table */}
-                    <div className={calendarOpen
-                        ? 'overflow-hidden rounded-xl border'
-                        : 'flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'
-                    } style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                    <div className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
                         {loading ? (
-                            <div className="overflow-y-auto">
+                            <div>
                                 <TableSkeleton rows={8} colWidths={['w-44', 'flex-1', 'w-28', 'w-12', 'w-28', 'w-28']} />
                             </div>
                         ) : visibleBookings.length === 0 ? (
@@ -512,8 +502,8 @@ export function EmpresaCalendarioPage() {
                                     </thead>
                                 </table>
 
-                                {/* tbody: scroll interno cuando calendario cerrado; sin scroll cuando abierto */}
-                                <div className={calendarOpen ? '' : 'min-h-0 flex-1 overflow-y-auto'}>
+                                {/* tbody: fluye naturalmente, la página hace scroll */}
+                                <div>
                                     <table className="w-full text-sm">
                                         <tbody>
                                             {paginatedBookings.map(b => {
@@ -620,8 +610,8 @@ export function EmpresaCalendarioPage() {
                     </div>
                 </div>
 
-                {/* RIGHT col: scrollable panel */}
-                <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+                {/* RIGHT col */}
+                <div className="flex flex-col gap-3">
                     <BusinessHoursPanel
                         services={services}
                         onUpdate={(id, hours) => {
