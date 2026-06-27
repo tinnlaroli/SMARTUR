@@ -1,9 +1,10 @@
-import { User, Calendar, Users, Leaf, AlertCircle, Accessibility, Mail, Copy, Check as CheckIcon, Tag, Repeat2 } from 'lucide-react';
+import { User, Calendar, Users, Leaf, AlertCircle, Accessibility, Mail, Copy, Check as CheckIcon, Tag, Repeat2, MessageCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { bookingEmpresaApi, type EmpresaBooking, type TouristProfileResponse, type BookingStatus } from '../api/bookingApi';
 
 interface Props {
     booking: EmpresaBooking | null;
+    onStartChat?: (touristId: number) => void;
 }
 
 const STATUS_CHIP: Record<BookingStatus, { label: string; className: string }> = {
@@ -12,7 +13,7 @@ const STATUS_CHIP: Record<BookingStatus, { label: string; className: string }> =
     cancelled: { label: 'Cancelada',  className: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' },
 };
 
-export function TouristProfileCard({ booking }: Props) {
+export function TouristProfileCard({ booking, onStartChat }: Props) {
     const [profile, setProfile] = useState<TouristProfileResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -242,6 +243,18 @@ export function TouristProfileCard({ booking }: Props) {
                 <p className="mt-3 rounded-lg p-2 text-[11px] italic" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}>
                     "{bookingInfo.notes}"
                 </p>
+            )}
+
+            {/* Start chat CTA */}
+            {onStartChat && tourist && booking.user_id && !booking.is_walkin && (
+                <button
+                    onClick={() => onStartChat(booking.user_id!)}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                    style={{ background: 'var(--color-purple)' }}
+                >
+                    <MessageCircle className="size-4" />
+                    Iniciar chat con {tourist.name.split(' ')[0]}
+                </button>
             )}
         </div>
     );

@@ -5,6 +5,7 @@ export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
 export interface EmpresaBooking {
     id_booking: number;
     id_service: number;
+    user_id: number | null;
     service_name: string;
     tourist_name: string;
     visit_date: string;
