@@ -9,7 +9,6 @@ import { useToast } from '../../../shared/context/ToastContext';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { empresaApi, type EmpresaService } from '../api/empresaApi';
 import {
-    DATA_TABLE_SCROLL_CLASS,
     SortableHeadCell,
     DataTableHeaderSelect,
     DataTableHeadCell,
@@ -17,6 +16,7 @@ import {
     sortRows,
     type SortState,
 } from '../../../components/ui/DataTable';
+import { SharedPagination } from '../../../components/ui/SharedPagination';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { AgendaCalendarWidget } from '../components/AgendaCalendarWidget';
 import { TouristProfileCard } from '../components/TouristProfileCard';
@@ -252,6 +252,8 @@ export function EmpresaCalendarioPage() {
     const [selectedDate, setSelectedDate]   = useState<string | null>(null);
     const [selectedBooking, setSelectedBooking] = useState<EmpresaBooking | null>(null);
     const [calendarOpen, setCalendarOpen]   = useState(false);
+    const [page, setPage]                   = useState(1);
+    const [pageSize, setPageSize]           = useState(15);
 
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
 
@@ -313,6 +315,12 @@ export function EmpresaCalendarioPage() {
         if (filter !== 'all') result = result.filter(b => b.status === (filter as BookingStatus));
         return sortRows(result, sort);
     }, [bookings, selectedDate, filter, sort]);
+
+    const totalPages       = Math.max(1, Math.ceil(visibleBookings.length / pageSize));
+    const paginatedBookings = visibleBookings.slice((page - 1) * pageSize, page * pageSize);
+
+    // Reset to page 1 on any filter/sort change
+    useEffect(() => { setPage(1); }, [filter, selectedDate, sort, pageSize]);
 
     // Blocked state
     if (!loading && companyStatus && companyStatus !== 'active') {
@@ -383,15 +391,21 @@ export function EmpresaCalendarioPage() {
             {/* ── Main 2-col grid ── */}
             <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
 
-                {/* LEFT col */}
-                <div className="flex min-h-0 flex-col gap-2">
+                {/* LEFT col
+                    - Cuando el calendario está cerrado: columna con overflow-hidden,
+                      tabla toma flex-1 con scroll interno en el tbody.
+                    - Cuando está abierto: columna con overflow-y-auto, el usuario
+                      hace scroll para bajar del calendario a la tabla. */}
+                <div className={calendarOpen
+                    ? 'min-h-0 flex-1 overflow-y-auto flex flex-col gap-2'
+                    : 'min-h-0 flex-1 flex flex-col gap-2 overflow-hidden'
+                }>
 
                     {/* Calendar — collapsible */}
                     <div
-                        className="shrink-0 overflow-hidden rounded-xl border transition-all"
+                        className="shrink-0 overflow-hidden rounded-xl border"
                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
                     >
-                        {/* Toggle bar */}
                         <button
                             onClick={() => setCalendarOpen(o => !o)}
                             className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
@@ -418,8 +432,6 @@ export function EmpresaCalendarioPage() {
                                 : <ChevronDown size={15} style={{ color: 'var(--color-text-alt)' }} />
                             }
                         </button>
-
-                        {/* Calendar widget — only rendered when open */}
                         {calendarOpen && (
                             <div className="border-t" style={{ borderColor: 'var(--color-border)' }}>
                                 <AgendaCalendarWidget
@@ -431,14 +443,17 @@ export function EmpresaCalendarioPage() {
                         )}
                     </div>
 
-                    {/* Booking table — takes all remaining space */}
-                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                    {/* Booking table */}
+                    <div className={calendarOpen
+                        ? 'overflow-hidden rounded-xl border'
+                        : 'flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'
+                    } style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
                         {loading ? (
-                            <div className={DATA_TABLE_SCROLL_CLASS}>
+                            <div className="overflow-y-auto">
                                 <TableSkeleton rows={8} colWidths={['w-44', 'flex-1', 'w-28', 'w-12', 'w-28', 'w-28']} />
                             </div>
                         ) : visibleBookings.length === 0 ? (
-                            <div className="flex flex-1 flex-col items-center justify-center gap-3 py-10" style={{ color: 'var(--color-text-alt)' }}>
+                            <div className="flex flex-col items-center justify-center gap-3 py-10" style={{ color: 'var(--color-text-alt)' }}>
                                 <UserCircle2 size={38} className="opacity-15" />
                                 <div className="text-center">
                                     <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
@@ -497,11 +512,11 @@ export function EmpresaCalendarioPage() {
                                     </thead>
                                 </table>
 
-                                {/* Scrollable tbody */}
-                                <div className="min-h-0 flex-1 overflow-y-auto">
+                                {/* tbody: scroll interno cuando calendario cerrado; sin scroll cuando abierto */}
+                                <div className={calendarOpen ? '' : 'min-h-0 flex-1 overflow-y-auto'}>
                                     <table className="w-full text-sm">
                                         <tbody>
-                                            {visibleBookings.map(b => {
+                                            {paginatedBookings.map(b => {
                                                 const isSelected = selectedBooking?.id_booking === b.id_booking;
                                                 return (
                                                     <tr
@@ -587,6 +602,18 @@ export function EmpresaCalendarioPage() {
                                             })}
                                         </tbody>
                                     </table>
+                                </div>
+
+                                {/* Pagination — siempre visible fuera del scroll */}
+                                <div className="shrink-0 px-4">
+                                    <SharedPagination
+                                        page={page}
+                                        totalPages={totalPages}
+                                        total={visibleBookings.length}
+                                        pageSize={pageSize}
+                                        onPageChange={setPage}
+                                        onPageSizeChange={size => { setPageSize(size); setPage(1); }}
+                                    />
                                 </div>
                             </>
                         )}
