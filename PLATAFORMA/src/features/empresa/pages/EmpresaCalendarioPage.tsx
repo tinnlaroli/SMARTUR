@@ -502,8 +502,8 @@ export function EmpresaCalendarioPage() {
                                     </thead>
                                 </table>
 
-                                {/* tbody: fluye naturalmente, la página hace scroll */}
-                                <div>
+                                {/* tbody: altura fija para que la tabla no cambie de tamaño al cambiar pageSize */}
+                                <div className="overflow-y-auto" style={{ height: '530px' }}>
                                     <table className="w-full text-sm">
                                         <tbody>
                                             {paginatedBookings.map(b => {
