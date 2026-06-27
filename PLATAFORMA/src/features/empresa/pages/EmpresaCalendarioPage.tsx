@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, RefreshCw, Plus, Check, X as XIcon, Clock, Users, Lock, UserCircle2 } from 'lucide-react';
 import { bookingEmpresaApi, type EmpresaBooking, type BookingStatus, type WalkinPayload } from '../api/bookingApi';
@@ -244,9 +244,6 @@ export function EmpresaCalendarioPage() {
     const [companyStatus, setCompanyStatus] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedBooking, setSelectedBooking] = useState<EmpresaBooking | null>(null);
-
-    const pendingCount   = useMemo(() => bookings.filter(b => b.status === 'pending').length, [bookings]);
-    const confirmedCount = useMemo(() => bookings.filter(b => b.status === 'confirmed').length, [bookings]);
 
     const load = useCallback(async () => {
         setLoading(true);
