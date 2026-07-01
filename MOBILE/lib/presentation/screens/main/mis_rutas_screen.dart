@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
-import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
@@ -11,6 +10,7 @@ import '../../../data/services/auth_service.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
+import '../itinerary/ai_route_config_sheet.dart';
 import '../itinerary/itinerary_detail_screen.dart';
 import '../itinerary/planner_screen.dart';
 import 'main_screen.dart' show routeStopCount;
@@ -26,6 +26,7 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
   List<Itinerary> _itineraries = [];
   bool _loading = true;
   String? _error;
+  bool _fabExpanded = false;
 
   @override
   void initState() {
@@ -132,12 +133,21 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
     }
   }
 
-  Future<void> _openItinerary(Itinerary it) async {
-    await Navigator.push(
-      context,
-      smarturFadeRoute(PlannerScreen(itinerary: it)),
-    );
-    _load();
+  Future<void> _generateAiRoute() async {
+    setState(() => _fabExpanded = false);
+    final result = await showAiRouteConfigSheet(context);
+    if (result != null && mounted) {
+      // Show immediately in list before server refresh
+      setState(() {
+        _itineraries.insert(0, result.itinerary);
+      });
+      await Navigator.of(context).push(
+        smarturDetailRoute(
+          ItineraryDetailScreen(itinerary: result.itinerary, isOwner: true),
+        ),
+      );
+      _load();
+    }
   }
 
   @override
@@ -154,21 +164,89 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createItinerary,
-        backgroundColor: scheme.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(
-          l10n.misRutasCreate,
-          style: const TextStyle(
-              fontFamily: 'Outfit',
-              fontWeight: FontWeight.w700,
-              color: Colors.white),
-        ),
-      ),
+      floatingActionButton: _buildFab(scheme),
       body: SmarturBackgroundTop(
         child: _buildBody(l10n, scheme),
       ),
+    );
+  }
+
+  Widget _buildFab(ColorScheme scheme) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // Sub-FABs (visible when expanded)
+        AnimatedSlide(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          offset: _fabExpanded ? Offset.zero : const Offset(0, 0.4),
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 180),
+            opacity: _fabExpanded ? 1.0 : 0.0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // AI route option
+                FloatingActionButton.extended(
+                  heroTag: 'fab_ai',
+                  onPressed: _fabExpanded ? _generateAiRoute : null,
+                  backgroundColor: SmarturStyle.purple,
+                  elevation: 3,
+                  icon: const Icon(Icons.auto_awesome_rounded,
+                      color: Colors.white, size: 18),
+                  label: const Text(
+                    'Generar con IA',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Manual option
+                FloatingActionButton.extended(
+                  heroTag: 'fab_manual',
+                  onPressed: _fabExpanded
+                      ? () {
+                          setState(() => _fabExpanded = false);
+                          _createItinerary();
+                        }
+                      : null,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  elevation: 3,
+                  icon: Icon(Icons.edit_rounded,
+                      color: scheme.onSurface, size: 18),
+                  label: Text(
+                    'Crear manualmente',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+        // Main FAB
+        FloatingActionButton(
+          heroTag: 'fab_main',
+          onPressed: () => setState(() => _fabExpanded = !_fabExpanded),
+          backgroundColor: scheme.primary,
+          child: AnimatedRotation(
+            turns: _fabExpanded ? 0.125 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: const Icon(Icons.add_rounded, color: Colors.white),
+          ),
+        ),
+      ],
     );
   }
 
