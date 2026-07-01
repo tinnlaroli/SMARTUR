@@ -5,8 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smartur/l10n/app_localizations.dart';
-import 'package:provider/provider.dart';
 import 'package:smartur/core/settings/app_settings.dart';
+import 'package:smartur/core/settings/app_settings_scope.dart';
 
 class ImageExportService {
   static final ScreenshotController screenshotController = ScreenshotController();
@@ -14,6 +14,9 @@ class ImageExportService {
   static Future<void> shareRecommendationsImage(BuildContext context, List<dynamic> recommendations, String city) async {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    // El widget se captura fuera del árbol, así que el tema se resuelve aquí
+    final isWelltur =
+        AppSettingsScope.of(context).value.themeMode == AppThemeMode.welltur;
     // Generar el widget que se capturará
     final widget = Container(
       width: 400,
@@ -33,11 +36,11 @@ class ImageExportService {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Consumer<AppSettings>(
-                builder: (context, appSettings, _) {
-                  final isWelltur = appSettings.themeMode == AppThemeMode.welltur;
-                  return Image.asset(isWelltur ? 'assets/imgs/wellturLogo.png' : 'assets/imgs/logo_costado.png', height: 40);
-                },
+              Image.asset(
+                isWelltur
+                    ? 'assets/imgs/wellturLogo.png'
+                    : 'assets/imgs/logo_costado.png',
+                height: 40,
               ),
               Text(
                 DateTime.now().toString().split(' ')[0],

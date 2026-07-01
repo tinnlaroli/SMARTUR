@@ -45,26 +45,41 @@ import { runMigrations } from './config/migrations.js';
 import db from './config/db.js';
 import { validateEnv } from './config/env.js';
 import { initSentry, setupSentryErrorHandler } from './config/sentry.js';
+import { multerErrorHandler } from './middleware/multer.js';
 dotenv.config();
 validateEnv();
 initSentry();
 
 const app = express();
 app.set('trust proxy', 1);
+
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// CSP estricta global — sin 'unsafe-inline'. Swagger UI (que sí necesita
+// scripts inline) recibe una política relajada SOLO en /api-docs y
+// /security-docs, más abajo. Así un XSS reflejado en la API no puede
+// ejecutar scripts inline.
 app.use(
     helmet({
         contentSecurityPolicy: {
             useDefaults: true,
             directives: {
-                // Swagger UI usa scripts inline para inicialización.
-                'script-src': ["'self'", "'unsafe-inline'"],
-                'script-src-attr': ["'unsafe-inline'"],
                 // En entorno local por IP (http://192.168.x.x) bloquear upgrade a https evita fallos de carga.
                 'upgrade-insecure-requests': null,
             },
         },
     })
 );
+
+// CSP relajada exclusiva para Swagger UI (scripts inline de inicialización)
+const swaggerCsp = helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+        'script-src': ["'self'", "'unsafe-inline'"],
+        'script-src-attr': ["'unsafe-inline'"],
+        'upgrade-insecure-requests': null,
+    },
+});
 app.disable('x-powered-by');
 
 const allowedOrigins = process.env.FRONTEND_URL
@@ -78,11 +93,14 @@ const normalizeOrigin = (value) => String(value || '').trim().replace(/\/$/, '')
 const corsOptions = {
     origin: (origin, callback) => {
         const requestOrigin = normalizeOrigin(origin);
+        // Orígenes de red local solo se aceptan FUERA de producción
+        // (desarrollo con Vite/Flutter apuntando a la IP de la máquina).
         const isLocalNetworkOrigin =
-            /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin) ||
-            /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(requestOrigin) ||
-            /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(requestOrigin) ||
-            /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/.test(requestOrigin);
+            !IS_PRODUCTION &&
+            (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin) ||
+                /^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(requestOrigin) ||
+                /^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(requestOrigin) ||
+                /^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/.test(requestOrigin));
 
         // Permitir requests sin Origin (como Flutter)
         if (!origin) return callback(null, true);
@@ -200,34 +218,51 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api-docs.json', (_req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-});
+// ── Documentación Swagger ────────────────────────────────────────────────────
+// En producción la documentación queda deshabilitada (info-disclosure: expone
+// el mapa completo de rutas y esquemas). Para habilitarla temporalmente en un
+// despliegue, definir ENABLE_API_DOCS=true en el entorno.
+const docsEnabled = !IS_PRODUCTION || process.env.ENABLE_API_DOCS === 'true';
 
-app.use(
-    '/api-docs',
-    swaggerUi.serveFiles(swaggerSpec),
-    swaggerUi.setup(swaggerSpec, {
-        swaggerOptions: {
-            url: '/api-docs.json',
-        },
-        customSiteTitle: 'SMARTUR API Docs',
-    })
-);
+if (docsEnabled) {
+    app.get('/api-docs.json', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+    });
 
-app.use(
-    '/security-docs',
-    swaggerUi.serveFiles(securitySwaggerSpec),
-    swaggerUi.setup(securitySwaggerSpec, {
-        swaggerOptions: {
-            defaultModelsExpandDepth: -1,
-            docExpansion: 'list',
-            filter: true,
-        },
-        customSiteTitle: ' SMARTUR Security Audit',
-    })
-);
+    app.use(
+        '/api-docs',
+        swaggerCsp,
+        swaggerUi.serveFiles(swaggerSpec),
+        swaggerUi.setup(swaggerSpec, {
+            swaggerOptions: {
+                url: '/api-docs.json',
+            },
+            customSiteTitle: 'SMARTUR API Docs',
+        })
+    );
+
+    app.use(
+        '/security-docs',
+        swaggerCsp,
+        swaggerUi.serveFiles(securitySwaggerSpec),
+        swaggerUi.setup(securitySwaggerSpec, {
+            swaggerOptions: {
+                defaultModelsExpandDepth: -1,
+                docExpansion: 'list',
+                filter: true,
+            },
+            customSiteTitle: ' SMARTUR Security Audit',
+        })
+    );
+} else {
+    app.use(['/api-docs', '/api-docs.json', '/security-docs'], (_req, res) => {
+        res.status(404).json({
+            error: 'Documentación no disponible en producción.',
+            hint: 'Define ENABLE_API_DOCS=true en el entorno si necesitas habilitarla temporalmente.',
+        });
+    });
+}
 
 app.use('/api/v2', servicesRoutes);
 app.use('/api/v2', companyRoutes);
@@ -267,6 +302,9 @@ app.use('/api/v2', AdminChangeLogRouter);
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 // Debe ir DESPUÉS de todas las rutas y ANTES del Sentry error handler
+// Errores de subida de archivos (tamaño/tipo) → respuesta 413 clara al cliente
+app.use(multerErrorHandler);
+
 app.use((req, res) => {
     res.status(404).json({
         error: 'Ruta no encontrada',

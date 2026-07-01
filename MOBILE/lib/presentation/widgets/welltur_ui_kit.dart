@@ -224,7 +224,7 @@ class WellturEmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: WellturStyle.calSansTitle.copyWith(fontSize: 18),
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 8),

@@ -1835,8 +1835,11 @@ class _PlaceCardState extends State<_PlaceCard>
                     : CachedNetworkImage(
                         imageUrl: place.imageUrl,
                         fit: BoxFit.cover,
-                        filterQuality: FilterQuality.medium,
-                        fadeInDuration: const Duration(milliseconds: 400),
+                        filterQuality: isHero
+                            ? FilterQuality.high
+                            : FilterQuality.medium,
+                        memCacheWidth: isHero ? 800 : 500,
+                        fadeInDuration: const Duration(milliseconds: 200),
                         placeholder: (_, __) => Container(
                           color: scheme.outlineVariant.withValues(alpha: 0.3),
                         ),

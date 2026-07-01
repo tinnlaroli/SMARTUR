@@ -11,6 +11,7 @@ import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
+import '../../widgets/smartur_image.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
 import '../../widgets/smartur_user_avatar.dart';
@@ -485,11 +486,10 @@ class _ItineraryHorizontalList extends StatelessWidget {
                         ? Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.network(
-                                it.coverImageUrl!,
+                              SmarturImage(
+                                url: it.coverImageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _buildCoverFallback(it, color, scheme),
+                                errorWidget: _buildCoverFallback(it, color, scheme),
                               ),
                               // Gradient overlay for readability
                               Positioned.fill(
@@ -678,10 +678,12 @@ class _RouteListCard extends StatelessWidget {
                 color: scheme.surfaceContainerHighest,
               ),
               child: hasCover
-                  ? Image.network(it.coverImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          _buildInitial(it, scheme))
+                  ? SmarturImage.thumb(
+                      url: it.coverImageUrl,
+                      width: 80,
+                      height: 80,
+                      errorWidget: _buildInitial(it, scheme),
+                    )
                   : _buildInitial(it, scheme),
             ),
             const SizedBox(width: 12),
@@ -1256,17 +1258,13 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
           // Image
           if (imageUrl != null) ...[
             const SizedBox(height: 10),
-            ClipRRect(
+            SmarturImage(
+              url: imageUrl,
+              height: 200,
+              errorWidget: const SizedBox.shrink(),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
-              ),
-              child: Image.network(
-                imageUrl,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           ],

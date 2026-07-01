@@ -81,9 +81,30 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
+      # La versión del APK se deriva del tag (v3.2.6 → 3.2.6) para que
+      # PackageInfo dentro de la app reporte la versión real del release.
+      # Sin esto, el APK sale con la versión de pubspec.yaml y el update
+      # checker pide actualizar eternamente (bug: versión nunca sube).
+      # build-number = MAJOR*10000 + MINOR*100 + PATCH → monotónico (3.2.6 = 30206).
+      - name: Derive version from tag
+        id: version
+        run: |
+          if [[ "$GITHUB_REF_NAME" == v* ]]; then
+            NAME="${GITHUB_REF_NAME#v}"
+          else
+            NAME=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          fi
+          IFS='.' read -r MAJ MIN PAT <<< "$NAME"
+          NUMBER=$(( ${MAJ:-0} * 10000 + ${MIN:-0} * 100 + ${PAT:-0} ))
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Versión del build: $NAME ($NUMBER)"
+
       - name: Build APK (Release)
         run: |
           flutter build apk --release \
+            --build-name=${{ steps.version.outputs.name }} \
+            --build-number=${{ steps.version.outputs.number }} \
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
             --dart-define=AI_ENGINE_URL=${{ secrets.AI_ENGINE_URL }} \
             --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }} \
@@ -97,6 +118,8 @@ jobs:
       - name: Build App Bundle (AAB)
         run: |
           flutter build appbundle --release \
+            --build-name=${{ steps.version.outputs.name }} \
+            --build-number=${{ steps.version.outputs.number }} \
             --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
             --dart-define=AI_ENGINE_URL=${{ secrets.AI_ENGINE_URL }} \
             --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }} \

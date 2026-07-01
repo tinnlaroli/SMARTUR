@@ -1407,6 +1407,9 @@ class _RecommendationCardState extends State<_RecommendationCard> {
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
+                      filterQuality: FilterQuality.medium,
+                      memCacheWidth: 600,
+                      fadeInDuration: const Duration(milliseconds: 200),
                       placeholder: (_, __) => Container(
                         color: scheme.primary.withValues(alpha: 0.08),
                         child: Center(

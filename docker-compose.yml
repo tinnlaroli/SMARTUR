@@ -13,7 +13,9 @@ services:
           memory: 512M
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-12345678}
+      # Sin fallback: si DB_PASSWORD falta en .env, compose falla ruidosamente
+      # en vez de arrancar la BD con una contraseña débil por defecto.
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD es requerido en .env}
       POSTGRES_DB: ${DB_NAME:-smartur}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -46,7 +48,7 @@ services:
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-smartur}
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-12345678}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD es requerido en .env}
       JWT_SECRET: ${JWT_SECRET}
       EMAIL_USER: ${EMAIL_USER:-smarturutcv@gmail.com}
       EMAIL_PASS: ${EMAIL_PASS}
@@ -97,7 +99,7 @@ services:
       POI_DB_PORT: 5432
       POI_DB_NAME: ${DB_NAME:-smartur}
       POI_DB_USER: ${DB_USER:-postgres}
-      POI_DB_PASSWORD: ${DB_PASSWORD:-12345678}
+      POI_DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD es requerido en .env}
       SKIP_MODEL_BOOT: ${SKIP_MODEL_BOOT:-0}
       AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
       KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
@@ -190,7 +192,6 @@ services:
       - '80:80'
       - '4321:4321'
       - '4000:4000'
-      - '8000:8000'
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:

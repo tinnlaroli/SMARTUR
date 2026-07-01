@@ -6,12 +6,11 @@ import 'package:smartur/l10n/app_localizations.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../core/navigation/notification_router.dart';
-import '../chat/conversations_screen.dart';
-import '../../../core/motion/smartur_routes.dart';
 import 'home_screen.dart';
 import 'explore_screen.dart';
 import 'mis_rutas_screen.dart';
 import 'profile_screen.dart';
+import '../chat/conversations_screen.dart';
 import 'main_tab_scope.dart';
 import '../../widgets/smartur_tab_fade_stack.dart';
 
@@ -60,7 +59,7 @@ class _MainScreenState extends State<MainScreen> {
       case 'profile':  _onTabTapped(MainTabIndex.profile);  break;
       case 'home':     _onTabTapped(MainTabIndex.home);     break;
       case 'messages':
-        context.pushSmartur(const ConversationsScreen());
+        _onTabTapped(MainTabIndex.messages);
         break;
       case 'bookings':
         _onTabTapped(MainTabIndex.profile);
@@ -103,6 +102,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const ExploreScreen(key: ValueKey<String>('main_tab_explore')),
             const MisRutasScreen(key: ValueKey<String>('main_tab_routes')),
+            const ConversationsScreen(key: ValueKey<String>('main_tab_messages')),
             const ProfileScreen(key: ValueKey<String>('main_tab_profile')),
           ],
         ),
@@ -148,10 +148,18 @@ class _MainScreenState extends State<MainScreen> {
                   _NavBarItem(
                     index: 3,
                     isSelected: _currentIndex == 3,
+                    label: 'Mensajes',
+                    outlineIcon: Icons.chat_bubble_outline_rounded,
+                    solidIcon: Icons.chat_bubble_rounded,
+                    onTap: () => _onTabTapped(3),
+                  ),
+                  _NavBarItem(
+                    index: 4,
+                    isSelected: _currentIndex == 4,
                     label: l10n.navUser,
                     outlineIcon: Icons.person_outline,
                     solidIcon: Icons.person,
-                    onTap: () => _onTabTapped(3),
+                    onTap: () => _onTabTapped(4),
                   ),
                 ],
               ),

@@ -6,6 +6,7 @@ import '../../../core/theme/style_guide.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_image.dart';
 
 class ComparisonScreen extends StatefulWidget {
   final List<ItineraryStop> originalStops;
@@ -558,11 +559,9 @@ class _NearbySection extends StatelessWidget {
                   children: [
                     if (imageUrl != null)
                       Expanded(
-                        child: Image.network(
-                          imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                        child: SmarturImage(
+                          url: imageUrl,
+                          errorWidget: Container(
                             color: scheme.primary.withValues(alpha: 0.08),
                             child: Center(
                               child: Icon(Icons.place_outlined,

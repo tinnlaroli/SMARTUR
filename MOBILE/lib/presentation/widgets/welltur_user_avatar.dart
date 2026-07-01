@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/constants/avatar_icon_map.dart';
-import '../../core/theme/welltur_theme_extensions.dart';
 
 /// Avatar: foto de red, icono permitido o iniciales.
 class WellturUserAvatar extends StatelessWidget {

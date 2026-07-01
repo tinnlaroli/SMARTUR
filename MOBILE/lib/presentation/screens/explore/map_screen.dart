@@ -9,6 +9,7 @@ import '../../../core/theme/style_guide.dart';
 import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_image.dart';
 import '../../widgets/smartur_loader.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import 'detail_view_page.dart';
@@ -384,17 +385,12 @@ class _MapScreenState extends State<MapScreen> {
           child: Row(
             children: [
               // Thumbnail / category icon
-              ClipRRect(
+              SmarturImage.thumb(
+                url: place.imageUrl.isNotEmpty ? place.imageUrl : null,
+                width: 52,
+                height: 52,
+                errorWidget: _categoryIconBox(icon, color),
                 borderRadius: BorderRadius.circular(10),
-                child: place.imageUrl.isNotEmpty
-                    ? Image.network(
-                        place.imageUrl,
-                        width: 52,
-                        height: 52,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _categoryIconBox(icon, color),
-                      )
-                    : _categoryIconBox(icon, color),
               ),
               const SizedBox(width: 12),
               Expanded(

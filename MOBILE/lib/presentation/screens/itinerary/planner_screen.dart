@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
-import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
@@ -12,7 +11,6 @@ import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../main/main_screen.dart' show routeStopCount;
 import 'comparison_screen.dart';
-import 'itinerary_detail_screen.dart';
 
 class PlannerScreen extends StatefulWidget {
   final Itinerary itinerary;

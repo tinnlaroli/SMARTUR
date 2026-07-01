@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
-import 'package:provider/provider.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../../core/settings/app_settings_scope.dart';
 
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/style_guide.dart';
@@ -1043,7 +1043,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         child: child,
                       );
                     },
-                    child: Consumer<AppSettings>(
+                    child: ValueListenableBuilder<AppSettings>(
+                      valueListenable: AppSettingsScope.of(context),
                       builder: (context, appSettings, _) {
                         final isWelltur = appSettings.themeMode == AppThemeMode.welltur;
                         return Image.asset(

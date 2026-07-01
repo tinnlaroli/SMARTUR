@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/chat_service.dart';
@@ -66,64 +67,39 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: scheme.surface,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(l10n.chatTitle,
+            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: SmarturBackground(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      onPressed: () => Navigator.pop(context),
-                      color: scheme.onSurface,
-                      padding: EdgeInsets.zero,
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _convos.isEmpty
+                ? _EmptyState(label: l10n.chatNoConversations)
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      itemCount: _convos.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, i) {
+                        final c = _convos[i];
+                        return _ConversationTile(
+                          conversation: c,
+                          timeLabel: _relativeTime(c.lastMessageAt),
+                          onTap: () => Navigator.push(
+                            context,
+                            smarturFadeRoute(ChatScreen(conversation: c)),
+                          ).then((_) => _load(silent: true)),
+                        );
+                      },
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.chatTitle,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: scheme.onSurface,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _convos.isEmpty
-                        ? _EmptyState(label: l10n.chatNoConversations)
-                        : RefreshIndicator(
-                            onRefresh: _load,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                              itemCount: _convos.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, i) {
-                                final c = _convos[i];
-                                return _ConversationTile(
-                                  conversation: c,
-                                  timeLabel: _relativeTime(c.lastMessageAt),
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    smarturFadeRoute(
-                                      ChatScreen(conversation: c),
-                                    ),
-                                  ).then((_) => _load(silent: true)),
-                                );
-                              },
-                            ),
-                          ),
-              ),
-            ],
-          ),
-        ),
+                  ),
       ),
     );
   }

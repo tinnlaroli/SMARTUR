@@ -376,6 +376,7 @@ class _SessionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     if (sessions.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return RefreshIndicator(
@@ -826,8 +827,8 @@ class _SessionReplaySheetState extends State<_SessionReplaySheet> {
                                   ),
                                 ),
                                 if (place != null)
-                                  const Padding(
-                                    padding: EdgeInsets.only(right: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
                                     child: Icon(Icons.chevron_right_rounded,
                                         color: scheme.primary, size: 20),
                                   ),

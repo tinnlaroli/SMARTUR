@@ -193,6 +193,9 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
             ? CachedNetworkImage(
                 imageUrl: _it.coverImageUrl!,
                 fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+                memCacheWidth: 800,
+                fadeInDuration: const Duration(milliseconds: 200),
                 errorWidget: (_, __, ___) => _gradientHeader(),
               )
             : _gradientHeader(),

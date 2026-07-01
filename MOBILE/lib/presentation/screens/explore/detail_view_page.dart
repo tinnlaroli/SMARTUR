@@ -265,6 +265,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                         imageUrl: widget.heroImageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
+                        memCacheWidth: 800,
                         fadeInDuration: const Duration(milliseconds: 300),
                         placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
                         errorWidget: (_, __, ___) => Container(
@@ -626,7 +627,10 @@ class _BottomContent extends StatelessWidget {
                       ),
                       if (activities.isNotEmpty) ...[
                         _SectionLabel(label: 'Actividades disponibles'),
-                        ...activities.map((a) => _ActivityCard(activity: a)),
+                        ...activities
+                            .where((a) =>
+                                (a['name'] as String?)?.isNotEmpty == true)
+                            .map((a) => _ActivityCard(activity: a)),
                       ],
                       _SectionLabel(label: l10n.tabGastronomy),
                       _TabText(text: _gastronomyForCity(locationLine)),

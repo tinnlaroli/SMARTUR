@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/avatar_icon_map.dart';
-import '../../core/theme/smartur_theme_extensions.dart';
 
 /// Avatar: foto de red, icono permitido o iniciales.
 class SmarturUserAvatar extends StatelessWidget {
@@ -69,6 +68,9 @@ class SmarturUserAvatar extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
+          filterQuality: FilterQuality.medium,
+          memCacheWidth: size.ceil() * 2,
+          fadeInDuration: const Duration(milliseconds: 150),
           errorWidget: (context, _, __) => _fallback(context),
           placeholder: (_, __) => _fallback(context),
         ),
