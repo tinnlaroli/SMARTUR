@@ -194,7 +194,7 @@ ThemeData _baseTheme(ColorScheme scheme) {
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       elevation: 0,
-      centerTitle: true,
+      centerTitle: false,
       titleTextStyle: TextStyle(
         fontFamily: 'CalSans',
         fontSize: 20,

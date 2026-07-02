@@ -10,6 +10,7 @@ import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../utils/diary_place_detail.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/smartur_skeleton.dart';
@@ -79,12 +80,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
       length: 3,
       child: Scaffold(
         backgroundColor: scheme.surface,
-        appBar: AppBar(
-          title: Text(l10n.diaryTitle,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
+        appBar: SmarturAppBar(
+          title: l10n.diaryTitle,
           bottom: smarturTabBar(
             context,
             tabs: [
@@ -106,7 +103,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ],
           ),
         ),
-        body: SmarturBackgroundTop(
+        body: SmarturBackground(
           child: _error != null && !_loading
               ? RefreshIndicator(
                   color: scheme.primary,

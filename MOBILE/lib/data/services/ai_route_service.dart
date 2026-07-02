@@ -111,20 +111,20 @@ class AiRouteService {
       );
     }
 
-    // 7. Add stops with visit dates distributed across days
+    // 7. Add stops with visit dates distributed across days.
+    // No se guardan reason_tags en `notes`: así las paradas IA se ven iguales
+    // que las de una ruta manual (los tags siguen en `recommendations`).
+    // Sin visitDate por parada: así las Paradas se ven igual que en una ruta
+    // manual (sin fecha ni agrupación por "Día N"). Las fechas del itinerario
+    // (start/end) se conservan a nivel de cabecera.
     for (var i = 0; i < recs.length; i++) {
       final rec = recs[i];
       final parsed = _parseItemId(rec['item_id']?.toString() ?? '');
       if (parsed == null) continue;
-      final tags = (rec['reason_tags'] as List?)?.map((t) => t.toString()).join(' · ');
-      final dayOffset = config.nDays > 1 ? (i / config.stopsPerDay).floor() : 0;
-      final visitDate = config.startDate?.add(Duration(days: dayOffset));
       await svc.addStop(
         itinerary.id,
         placeKind: parsed.$1,
         placeId: parsed.$2,
-        visitDate: visitDate,
-        notes: tags,
       );
     }
 
@@ -172,10 +172,16 @@ class AiRouteService {
 
     final ageRange = _ageRangeFrom(profile['age'] as int?);
 
+    // Cuando se filtra por ciudad, sobre-pedimos candidatos al ML para que,
+    // tras descartar los de otras ciudades, aún queden suficientes para cubrir
+    // las paradas pedidas (nDias × paradas/día). El servidor limita top_n a 50.
+    final requestedTopN =
+        config.cityData != null ? 50 : config.totalStops;
+
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.mlRecommend}/$userId');
     final payload = {
       'alpha': 0.35,
-      'top_n': config.totalStops,
+      'top_n': requestedTopN,
       'context': {
         // Core trip parameters
         'n_dias': config.nDays,
@@ -221,12 +227,19 @@ class AiRouteService {
     var results = list.whereType<Map<String, dynamic>>().toList();
 
     // Client-side filter: keep only places that belong to the selected city
+    // (el ML no siempre respeta el campo 'ciudad', así que lo garantizamos aquí).
     if (config.cityData != null) {
       final validIds = config.cityData!.places.map((p) => p.id).toSet();
       results = results.where((r) {
         final itemId = r['item_id']?.toString() ?? '';
         return validIds.contains(itemId);
       }).toList();
+    }
+
+    // Recortar al número exacto de paradas del form para respetar la duración
+    // (nDias × paradas/día). Si la ciudad tiene menos lugares, se usan los que haya.
+    if (results.length > config.totalStops) {
+      results = results.sublist(0, config.totalStops);
     }
 
     return results;
@@ -250,10 +263,14 @@ class AiRouteService {
         : cfg.nDays <= 2
             ? 'Fin de semana'
             : '${cfg.nDays} días';
+    // Incluye la ciudad elegida en el form (si la hay) para reflejarla en el título
+    final place = cfg.city != null ? ' en ${cfg.city}' : '';
     final date = cfg.startDate != null
         ? ' · ${_shortDate(cfg.startDate!)}'
         : '';
-    return types.isNotEmpty ? '$prefix · $types$date' : '$prefix IA$date';
+    return types.isNotEmpty
+        ? '$prefix · $types$place$date'
+        : '$prefix IA$place$date';
   }
 
   String _shortDate(DateTime d) =>

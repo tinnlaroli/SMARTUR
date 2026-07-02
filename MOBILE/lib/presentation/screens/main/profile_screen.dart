@@ -9,6 +9,7 @@ import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/wellness_service.dart';
 import 'wellness_assessment_screen.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_user_avatar.dart';
@@ -211,21 +212,18 @@ class _ProfileScreenState extends State<ProfileScreen>
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: SmarturBackgroundTop(
+      body: SmarturBackground(
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
               pinned: true,
               automaticallyImplyLeading: false,
-              backgroundColor: scheme.surface,
+              backgroundColor: Colors.transparent,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
-              expandedHeight: kToolbarHeight + 224,
               forceElevated: innerBoxIsScrolled,
-              title: Text(
-                l10n.myProfile,
-                style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
-              ),
+              flexibleSpace: smarturHeaderGlass(context),
+              title: SmarturAccentTitle(l10n.myProfile),
               actions: [
                 IconButton(
                   icon: Icon(Icons.settings_outlined, color: scheme.onSurface),
@@ -540,7 +538,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
@@ -702,7 +700,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: scheme.outlineVariant),
       ),
@@ -774,7 +772,7 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
       ),

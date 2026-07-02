@@ -145,7 +145,7 @@ class SmarturPanel extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: scheme.outline.withValues(alpha: 0.1)),
         boxShadow: [
@@ -258,14 +258,12 @@ TabBar smarturTabBar(
   final scheme = Theme.of(context).colorScheme;
   return TabBar(
     controller: controller,
-    indicatorSize: TabBarIndicatorSize.tab,
+    indicatorSize: TabBarIndicatorSize.label,
     dividerColor: Colors.transparent,
-    indicator: BoxDecoration(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(12),
-        topRight: Radius.circular(12),
-      ),
-      color: scheme.primary.withValues(alpha: 0.14),
+    indicator: UnderlineTabIndicator(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(width: 3, color: scheme.primary),
+      insets: const EdgeInsets.only(bottom: 6),
     ),
     labelColor: scheme.primary,
     unselectedLabelColor: scheme.onSurfaceVariant,

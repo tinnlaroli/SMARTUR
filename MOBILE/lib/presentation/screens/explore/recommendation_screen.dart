@@ -20,6 +20,7 @@ import '../../../data/services/user_content_service.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../../core/utils/notifications.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_loader.dart';
 import '../../widgets/smartur_loading_overlay.dart';
 import '../../widgets/smartur_ui_kit.dart';
@@ -472,22 +473,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: scheme.surface,
-        foregroundColor: scheme.onSurface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: scheme.surface,
-        centerTitle: true,
-        title: Text(
-          AppLocalizations.of(context)!.recoTitle,
-          style: TextStyle(
-            fontFamily: 'CalSans',
-            color: scheme.onSurface,
-            fontSize: 20,
-          ),
-        ),
+      appBar: SmarturAppBar(
+        title: AppLocalizations.of(context)!.recoTitle,
+        showBack: false,
       ),
       body: ColoredBox(
         color: scheme.surface,

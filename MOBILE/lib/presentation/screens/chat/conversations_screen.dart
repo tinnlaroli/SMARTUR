@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
-import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/chat_service.dart';
+import '../../widgets/smartur_app_bar.dart';
+import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/smartur_background.dart';
 import 'chat_screen.dart';
 
@@ -43,7 +44,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
     if (!silent && mounted) setState(() => _loading = true);
     try {
       final list = await _service.fetchMyConversations();
-      if (mounted) setState(() { _convos = list; _loading = false; });
+      // Mostrar solo conversaciones con mensajes reales (no las creadas al
+      // pulsar "contactar" pero sin haber escrito nada).
+      final withMessages = list
+          .where((c) =>
+              c.lastMessageAt != null ||
+              (c.lastMessage != null && c.lastMessage!.trim().isNotEmpty))
+          .toList();
+      if (mounted) setState(() { _convos = withMessages; _loading = false; });
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
@@ -68,38 +76,54 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(l10n.chatTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-      ),
       body: SmarturBackground(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _convos.isEmpty
-                ? _EmptyState(label: l10n.chatNoConversations)
-                : RefreshIndicator(
-                    onRefresh: _load,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      itemCount: _convos.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (context, i) {
-                        final c = _convos[i];
-                        return _ConversationTile(
-                          conversation: c,
-                          timeLabel: _relativeTime(c.lastMessageAt),
-                          onTap: () => Navigator.push(
-                            context,
-                            smarturFadeRoute(ChatScreen(conversation: c)),
-                          ).then((_) => _load(silent: true)),
-                        );
-                      },
+        child: RefreshIndicator(
+          onRefresh: _load,
+          color: scheme.primary,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SmarturSliverAppBar(title: l10n.chatTitle, showBack: false),
+              if (_loading)
+                SliverPadding(
+                  padding: const EdgeInsets.only(top: 8),
+                  sliver: SliverToBoxAdapter(
+                    child: SmarturShimmer(
+                      enabled: true,
+                      child: Column(
+                        children: List.generate(
+                            7, (_) => const SkeletonListRow()),
+                      ),
                     ),
                   ),
+                )
+              else if (_convos.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyState(label: l10n.chatNoConversations),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  sliver: SliverList.separated(
+                    itemCount: _convos.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) {
+                      final c = _convos[i];
+                      return _ConversationTile(
+                        conversation: c,
+                        timeLabel: _relativeTime(c.lastMessageAt),
+                        onTap: () => Navigator.push(
+                          context,
+                          smarturFadeRoute(ChatScreen(conversation: c)),
+                        ).then((_) => _load(silent: true)),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

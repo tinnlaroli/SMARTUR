@@ -74,17 +74,34 @@ class _SmarturTabFadeStackState extends State<SmarturTabFadeStack>
   }
 
   Widget _tabLayer(int i) {
-    return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _controllers[i],
-        curve: SmarturMotion.standard,
-        reverseCurve: SmarturMotion.exit,
-      ),
-      child: IgnorePointer(
-        // Solo la pestaña activa recibe toques (el fade es solo visual).
-        ignoring: i != widget.index,
-        child: RepaintBoundary(child: widget.children[i]),
-      ),
+    final anim = CurvedAnimation(
+      parent: _controllers[i],
+      curve: SmarturMotion.standard,
+      reverseCurve: SmarturMotion.exit,
+    );
+    final content = IgnorePointer(
+      // Solo la pestaña activa recibe toques (el fade es solo visual).
+      ignoring: i != widget.index,
+      child: RepaintBoundary(child: widget.children[i]),
+    );
+    // Micro-animación de entrada: fade + sube ligeramente + escala sutil.
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (context, child) {
+        final t = anim.value;
+        return Opacity(
+          opacity: t.clamp(0.0, 1.0),
+          child: Transform.translate(
+            offset: Offset(0, (1 - t) * 14),
+            child: Transform.scale(
+              scale: 0.985 + 0.015 * t,
+              alignment: Alignment.topCenter,
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: content,
     );
   }
 

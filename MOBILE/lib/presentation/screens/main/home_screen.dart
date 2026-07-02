@@ -23,6 +23,7 @@ import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/models/place_model.dart';
 import '../../widgets/smartur_skeleton.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_user_avatar.dart';
 import '../../widgets/offline_banner.dart';
@@ -829,7 +830,7 @@ class HomeScreenState extends State<HomeScreen> {
               onRetry: _loadCitiesFromApi,
             ),
           Expanded(
-            child: SmarturBackgroundTop(
+            child: SmarturBackground(
               child: SmarturShimmer(
                 enabled: _isLoadingContent,
                 child: RefreshIndicator(
@@ -866,20 +867,12 @@ class HomeScreenState extends State<HomeScreen> {
     final name = _greetingName ?? widget.userName;
     final greetingName = (name != null && name.isNotEmpty) ? ', $name' : '';
 
-    // El Material del SliverAppBar pinta detrás del título colapsado; el fondo del
-    // FlexibleSpaceBar no cubre esa franja — por eso el color debe ir aquí.
-    final headerBgOpacity =
-        Curves.easeOut.transform(_homeHeaderCollapseT).clamp(0.0, 1.0);
-    final headerBackground = headerBgOpacity <= 0.001
-        ? Colors.transparent
-        : (headerBgOpacity >= 0.999
-            ? scheme.surface
-            : scheme.surface.withValues(alpha: headerBgOpacity));
-
     return SliverAppBar(
-      pinned: true,
+      floating: true,
+      snap: true,
+      pinned: false,
       expandedHeight: _kHomeHeaderExpandedHeight,
-      backgroundColor: headerBackground,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -898,22 +891,41 @@ class HomeScreenState extends State<HomeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          l10n.exploreGreeting(greetingName),
-                          style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: scheme.primary,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                l10n.exploreGreeting(greetingName),
+                                style: SmarturStyle.calSansTitle
+                                    .copyWith(fontSize: 20),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          l10n.highMountainsVeracruz,
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 14),
+                          child: Text(
+                            l10n.highMountainsVeracruz,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -937,6 +949,7 @@ class HomeScreenState extends State<HomeScreen> {
             return Stack(
               fit: StackFit.expand,
               children: [
+                smarturHeaderGlass(context),
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -2356,7 +2369,7 @@ class _WellnessBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'SMARTUR · Descubre tu modo de viaje',
+                    'Welltur · Descubre tu modo de viaje',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -2365,7 +2378,7 @@ class _WellnessBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '4 preguntas rápidas · recomendaciones de bienestar',
+                    '8 preguntas rápidas · recomendaciones de bienestar',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.white.withValues(alpha: 0.8),
@@ -2374,6 +2387,20 @@ class _WellnessBanner extends StatelessWidget {
                 ],
               ),
             ),
+            // Icono de info: abre el modal explicativo sin disparar el onTap
+            GestureDetector(
+              onTap: () => showWellnessInfoSheet(context),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 20,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             Icon(
               Icons.arrow_forward_ios,
               size: 16,

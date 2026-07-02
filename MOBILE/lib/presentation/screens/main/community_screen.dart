@@ -10,6 +10,7 @@ import '../../../data/models/place_model.dart';
 import '../../../data/services/explore_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_image.dart';
 import '../../widgets/smartur_skeleton.dart';
@@ -155,14 +156,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: Text(l10n.communityTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: SmarturBackgroundTop(
+      appBar: SmarturAppBar(title: l10n.communityTitle),
+      body: SmarturBackground(
         child: _error != null && !_loading
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -468,6 +463,16 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
   }
 }
 
+/// Devuelve un nombre mostrable a partir del nombre crudo del autor.
+/// Convierte a "Usuario" cualquier valor vacío o sin caracteres alfanuméricos
+/// (p. ej. "-", "–", "—", "?", "   "), que es como el backend guarda perfiles
+/// sin nombre real.
+String _displayNameFrom(dynamic raw) {
+  final s = (raw?.toString() ?? '').trim();
+  final hasRealName = s.isNotEmpty && RegExp(r'[a-zA-ZÀ-ÿ0-9]').hasMatch(s);
+  return hasRealName ? s : 'Usuario';
+}
+
 class _PostCard extends StatelessWidget {
   final Map<String, dynamic> data;
   final int? currentUserId;
@@ -554,8 +559,7 @@ class _PostCard extends StatelessWidget {
     final imageUrl = data['image_url']?.toString() ?? '';
     final placeName = data['place_name']?.toString() ?? '';
     final author = data['author'] as Map<String, dynamic>? ?? {};
-    final rawName = author['name']?.toString() ?? '';
-    final name = (rawName.isEmpty || rawName == '-' || rawName == '?') ? 'Usuario' : rawName;
+    final name = _displayNameFrom(author['name']);
     final photoUrl = author['photo_url'] as String?;
     final iconKey = author['avatar_icon_key'] as String?;
     final postUserId = data['user_id'] is int ? data['user_id'] as int : int.tryParse(data['user_id']?.toString() ?? '');

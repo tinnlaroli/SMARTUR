@@ -85,6 +85,10 @@ class _DetailViewPageState extends State<DetailViewPage>
   String? _kind;
   int? _pid;
 
+  // Panel de contenido arrastrable hacia abajo para revelar la foto completa.
+  double _sheetOffset = 0;
+  bool _sheetDragging = false;
+
   List<Map<String, dynamic>> _activities = const [];
 
   // Dwell time tracking
@@ -393,13 +397,36 @@ class _DetailViewPageState extends State<DetailViewPage>
                       child: _RightMosaic(galleryUrls: widget.galleryUrls),
                     ),
 
-                  // Main content — bottom sheet style
-                  // (Rating is now inside _BottomContent as the 4th tab)
-                  Positioned(
+                  // Main content — bottom sheet style, arrastrable hacia abajo
+                  // para revelar la foto completa (grip en la parte superior).
+                  AnimatedPositioned(
+                    duration: _sheetDragging
+                        ? Duration.zero
+                        : const Duration(milliseconds: 260),
+                    curve: Curves.easeOut,
                     left: 0,
                     right: 0,
-                    bottom: 0,
+                    bottom: -_sheetOffset,
                     child: _BottomContent(
+                      onHandleDrag: (dy) {
+                        final maxPeek =
+                            MediaQuery.sizeOf(context).height * 0.5;
+                        setState(() {
+                          _sheetDragging = true;
+                          _sheetOffset =
+                              (_sheetOffset + dy).clamp(0.0, maxPeek);
+                        });
+                      },
+                      onHandleDragEnd: () {
+                        final maxPeek =
+                            MediaQuery.sizeOf(context).height * 0.5;
+                        setState(() {
+                          _sheetDragging = false;
+                          // Snap: si se bajó más de 1/4, queda "peek"; si no, sube.
+                          _sheetOffset =
+                              _sheetOffset > maxPeek * 0.5 ? maxPeek : 0;
+                        });
+                      },
                       title: widget.title,
                       locationLine: widget.locationLine,
                       rating: widget.rating,
@@ -504,6 +531,8 @@ class _BottomContent extends StatelessWidget {
   final String? contactPhone;
   final Map<String, String>? operatingHours;
   final List<Map<String, dynamic>> activities;
+  final ValueChanged<double>? onHandleDrag;
+  final VoidCallback? onHandleDragEnd;
 
   const _BottomContent({
     required this.title,
@@ -523,6 +552,8 @@ class _BottomContent extends StatelessWidget {
     this.contactPhone,
     this.operatingHours,
     this.activities = const [],
+    this.onHandleDrag,
+    this.onHandleDragEnd,
   });
 
   bool get _hasServiceInfo =>
@@ -553,6 +584,23 @@ class _BottomContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Grip arrastrable: bájalo para ver la foto completa
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onVerticalDragUpdate: (d) => onHandleDrag?.call(d.delta.dy),
+                onVerticalDragEnd: (_) => onHandleDragEnd?.call(),
+                child: Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
               // Rating + location + directions row
               Row(
                 children: [
@@ -693,12 +741,18 @@ class _ActivityCard extends StatelessWidget {
     final sem = SmarturSemanticColors.of(context);
     final name = activity['name'] as String? ?? '';
     final description = activity['description'] as String? ?? '';
-    final price = activity['price'];
-    final durationMin = activity['duration_minutes'] as int?;
+    // El backend puede mandar estos numéricos como String → parseo tolerante.
+    final rawPrice = activity['price'];
+    final num? price =
+        rawPrice is num ? rawPrice : num.tryParse(rawPrice?.toString() ?? '');
+    final rawDuration = activity['duration_minutes'];
+    final int? durationMin = rawDuration is int
+        ? rawDuration
+        : int.tryParse(rawDuration?.toString() ?? '');
 
     String? priceLabel;
     if (price != null) {
-      priceLabel = '\$${(price as num).toStringAsFixed(0)} MXN';
+      priceLabel = '\$${price.toStringAsFixed(0)} MXN';
     }
 
     String? durationLabel;

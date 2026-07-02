@@ -23,7 +23,10 @@ class PublicProfileSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
 
-    final name = author['name']?.toString() ?? l10n.defaultUserName;
+    final rawName = (author['name']?.toString() ?? '').trim();
+    final hasRealName =
+        rawName.isNotEmpty && RegExp(r'[a-zA-ZÀ-ÿ0-9]').hasMatch(rawName);
+    final name = hasRealName ? rawName : l10n.defaultUserName;
     final photoUrl = author['photo_url'] as String?;
     final iconKey = author['avatar_icon_key'] as String?;
     

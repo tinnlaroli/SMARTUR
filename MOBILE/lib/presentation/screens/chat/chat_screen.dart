@@ -9,7 +9,9 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/chat_service.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
+import '../../widgets/smartur_skeleton.dart';
 
 const _pollInterval = Duration(seconds: 10);
 
@@ -141,68 +143,64 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SmarturBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      onPressed: () => Navigator.pop(context),
-                      color: scheme.onSurface,
-                    ),
-                    CircleAvatar(
-                      radius: 18,
-                      backgroundColor: scheme.primaryContainer,
-                      child: Text(
-                        widget.conversation.companyName.isNotEmpty
-                            ? widget.conversation.companyName[0].toUpperCase()
-                            : '?',
-                        style: TextStyle(
-                          color: scheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.conversation.companyName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (widget.conversation.serviceName != null)
-                            Text(
-                              widget.conversation.serviceName!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(color: scheme.primary),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
+      appBar: SmarturAppBar(
+        showBack: true,
+        titleWidget: Row(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: scheme.primaryContainer,
+              child: Text(
+                widget.conversation.companyName.isNotEmpty
+                    ? widget.conversation.companyName[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  color: scheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
               ),
-              const Divider(height: 1),
-
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.conversation.companyName,
+                    style: const TextStyle(
+                        fontFamily: 'CalSans',
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (widget.conversation.serviceName != null)
+                    Text(
+                      widget.conversation.serviceName!,
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: scheme.primary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: SmarturBackground(
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
               // Messages
               Expanded(
                 child: _loading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const _ChatSkeleton()
                     : _messages.isEmpty
                         ? Center(
                             child: Column(
@@ -446,5 +444,48 @@ class _MessageBubble extends StatelessWidget {
     final h = dt.hour.toString().padLeft(2, '0');
     final m = dt.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skeleton de carga del chat — burbujas alternadas con shimmer
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ChatSkeleton extends StatelessWidget {
+  const _ChatSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    // Anchos y lados alternados para simular una conversación.
+    const bubbles = [
+      (0.55, false),
+      (0.42, true),
+      (0.68, false),
+      (0.35, true),
+      (0.5, false),
+      (0.6, true),
+    ];
+    return SmarturShimmer(
+      enabled: true,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          for (final b in bubbles)
+            Align(
+              alignment:
+                  b.$2 ? Alignment.centerRight : Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: SkeletonContainer(
+                  width: MediaQuery.sizeOf(context).width * b.$1,
+                  height: 44,
+                  borderRadius: 18,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

@@ -17,7 +17,7 @@ class ItineraryDB {
     final path = p.join(dir.path, 'smartur_itineraries.db');
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE itineraries (
@@ -34,7 +34,9 @@ class ItineraryDB {
             owner_name TEXT,
             owner_avatar_url TEXT,
             created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            updated_at TEXT NOT NULL,
+            start_date TEXT,
+            end_date TEXT
           )
         ''');
         await db.execute('''
@@ -61,6 +63,10 @@ class ItineraryDB {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE itinerary_stops ADD COLUMN contact_phone TEXT');
           await db.execute('ALTER TABLE itinerary_stops ADD COLUMN id_company INTEGER');
+        }
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE itineraries ADD COLUMN start_date TEXT');
+          await db.execute('ALTER TABLE itineraries ADD COLUMN end_date TEXT');
         }
       },
     );

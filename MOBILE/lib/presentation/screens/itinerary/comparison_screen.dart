@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/smartur_theme_extensions.dart';
-import '../../../core/theme/style_guide.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../widgets/smartur_background.dart';
@@ -72,16 +72,8 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: Text(
-          l10n.compareTitle,
-          style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
-        ),
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SmarturBackgroundTop(
+      appBar: SmarturAppBar(title: l10n.compareTitle, showBack: true),
+      body: SmarturBackground(
         child: ListView(
           children: [
             // ── Metrics banner ────────────────────────────────────────────────

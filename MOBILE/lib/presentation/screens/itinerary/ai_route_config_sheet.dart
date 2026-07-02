@@ -43,6 +43,12 @@ Future<AiRouteResult?> showAiRouteConfigSheet(BuildContext context) async {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     useSafeArea: true,
+    // No descartable por tap/arrastre: la generación tarda varios segundos y
+    // crea el itinerario en el servidor. Si el sheet se cerrara solo, se
+    // perdería el resultado y la ruta quedaría creada pero sin refrescarse
+    // en "Mis Rutas". El cierre se hace solo con la X (deshabilitada mientras carga).
+    isDismissible: false,
+    enableDrag: false,
     builder: (_) => const _AiRouteConfigSheet(),
   );
 }
@@ -203,40 +209,64 @@ class _AiRouteConfigSheetState extends State<_AiRouteConfigSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.93,
-      minChildSize: 0.5,
-      maxChildSize: 0.97,
-      builder: (_, controller) => Container(
-        decoration: BoxDecoration(
-          color: scheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          children: [
-            _handle(),
-            Expanded(
-              child: _loading
-                  ? _buildLoading(scheme)
-                  : _buildForm(scheme, controller),
-            ),
-          ],
+    // Bloquea el botón atrás mientras se genera (evita cerrar y perder el resultado)
+    return PopScope(
+      canPop: !_loading,
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.93,
+        minChildSize: 0.5,
+        maxChildSize: 0.97,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              _handle(scheme),
+              Expanded(
+                child: _loading
+                    ? _buildLoading(scheme)
+                    : _buildForm(scheme, controller),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _handle() => Padding(
-        padding: const EdgeInsets.only(top: 12, bottom: 4),
-        child: Center(
-          child: Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
+  Widget _handle(ColorScheme scheme) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+        child: Row(
+          children: [
+            const SizedBox(width: 32), // balancea la X para centrar el grip
+            Expanded(
+              child: Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
             ),
-          ),
+            // Cierre manual — oculto mientras genera para no perder el resultado
+            SizedBox(
+              width: 32,
+              child: _loading
+                  ? const SizedBox.shrink()
+                  : IconButton(
+                      icon: Icon(Icons.close_rounded,
+                          size: 22, color: scheme.onSurfaceVariant),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+            ),
+          ],
         ),
       );
 

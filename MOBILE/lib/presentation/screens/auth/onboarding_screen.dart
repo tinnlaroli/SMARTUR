@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
 import '../../../core/motion/smartur_motion.dart';
+import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import 'welcome_screen.dart';
 import '../../widgets/smartur_background.dart';
@@ -18,9 +19,17 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
   late PageController _controller;
   double _pageOffset = 0.0;
+
+  // Color animado sincronizado con el fondo (misma secuencia que SmarturBackground)
+  late AnimationController _colorController;
+  Animation<Color?>? _colorAnim;
+
+  // Bob vertical sutil de las ilustraciones
+  late AnimationController _floatController;
 
   @override
   void initState() {
@@ -31,10 +40,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _pageOffset = _controller.page ?? 0.0;
       });
     });
+    _colorController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 25),
+    )..repeat();
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sem = SmarturSemanticColors.of(context);
+    _colorAnim = TweenSequence<Color?>([
+      TweenSequenceItem(tween: ColorTween(begin: sem.leaf, end: sem.accent), weight: 1),
+      TweenSequenceItem(tween: ColorTween(begin: sem.accent, end: sem.ember), weight: 1),
+      TweenSequenceItem(tween: ColorTween(begin: sem.ember, end: sem.sea), weight: 1),
+      TweenSequenceItem(tween: ColorTween(begin: sem.sea, end: sem.altAccent), weight: 1),
+      TweenSequenceItem(tween: ColorTween(begin: sem.altAccent, end: sem.leaf), weight: 1),
+    ]).animate(_colorController);
   }
 
   @override
   void dispose() {
+    _floatController.dispose();
+    _colorController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -44,13 +76,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await prefs.setBool('onboarding_seen', true);
   }
 
-  Widget _buildImageAsset(String path, {double height = 300, ColorFilter? colorFilter}) {
+  Widget _buildImageAsset(String path,
+      {double height = 300, ColorFilter? colorFilter, Color? tintColor}) {
     if (path.endsWith('.svg')) {
       return SvgPicture.asset(
         path,
         height: height,
         fit: BoxFit.contain,
         colorFilter: colorFilter,
+        // Tiñe solo las zonas de marca (que ahora usan currentColor en el SVG)
+        theme: tintColor != null
+            ? SvgTheme(currentColor: tintColor)
+            : const SvgTheme(),
         placeholderBuilder: (context) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SkeletonContainer(
@@ -122,9 +159,53 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildImageAsset(
-                            contents[i].imagePath,
-                            height: (MediaQuery.sizeOf(context).height * 0.38).clamp(200.0, 380.0),
+                          AnimatedBuilder(
+                            animation: Listenable.merge(
+                                [_colorController, _floatController]),
+                            builder: (context, _) {
+                              final isDark =
+                                  scheme.brightness == Brightness.dark;
+                              // Flotación + escala según qué tan centrada está la página
+                              final bob = (_floatController.value - 0.5) * 14;
+                              final pageScale =
+                                  (1.0 - localDelta.abs() * 0.14)
+                                      .clamp(0.82, 1.0);
+                              return Transform.translate(
+                                offset: Offset(0, bob),
+                                child: Transform.scale(
+                                  scale: pageScale,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(22),
+                                    decoration: BoxDecoration(
+                                      // Lienzo adaptativo: claro en modo oscuro
+                                      // para que los trazos oscuros contrasten.
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.9)
+                                          : Colors.white
+                                              .withValues(alpha: 0.55),
+                                      borderRadius: BorderRadius.circular(28),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.08),
+                                          blurRadius: 24,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: _buildImageAsset(
+                                      contents[i].imagePath,
+                                      height: (MediaQuery.sizeOf(context)
+                                                  .height *
+                                              0.32)
+                                          .clamp(180.0, 340.0),
+                                      tintColor:
+                                          _colorAnim?.value ?? scheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           const Spacer(),
                           Text(

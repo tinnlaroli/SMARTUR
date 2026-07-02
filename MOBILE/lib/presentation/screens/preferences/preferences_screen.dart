@@ -117,7 +117,7 @@ class _PreferencesScreenState extends State<PreferencesScreen>
     final steps = _getSteps(l10n);
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: SmarturBackgroundTop(
+      body: SmarturBackground(
         child: SafeArea(
           child: Column(
             children: [

@@ -1,7 +1,7 @@
-import 'dart:math' as math;
+import 'dart:async';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../data/services/notification_service.dart';
@@ -12,11 +12,11 @@ import 'mis_rutas_screen.dart';
 import 'profile_screen.dart';
 import '../chat/conversations_screen.dart';
 import 'main_tab_scope.dart';
-import '../../widgets/smartur_tab_fade_stack.dart';
 
 /// Contador global de paradas en la ruta activa.
-/// Sprint 3 lo actualizará con datos reales; por ahora siempre 0.
 final routeStopCount = ValueNotifier<int>(0);
+
+const int _kTabCount = 5;
 
 class MainScreen extends StatefulWidget {
   final String? userName;
@@ -30,12 +30,18 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final PageController _pageCtrl;
+
+  // Encoger el nav mientras se hace scroll vertical.
+  bool _isScrolling = false;
+  Timer? _scrollStopTimer;
 
   final GlobalKey<HomeScreenState> _homeScreenKey = GlobalKey<HomeScreenState>();
 
   @override
   void initState() {
     super.initState();
+    _pageCtrl = PageController(initialPage: 0);
     pendingNotificationScreen.addListener(_onNotificationRoute);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) NotificationService.registerWithApi(context: context);
@@ -44,6 +50,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    _scrollStopTimer?.cancel();
+    _pageCtrl.dispose();
     pendingNotificationScreen.removeListener(_onNotificationRoute);
     super.dispose();
   }
@@ -54,20 +62,16 @@ class _MainScreenState extends State<MainScreen> {
     pendingNotificationScreen.value = null;
     if (!mounted) return;
     switch (screen) {
-      case 'explore':  _onTabTapped(MainTabIndex.explore);  break;
-      case 'routes':   _onTabTapped(MainTabIndex.routes);   break;
-      case 'profile':  _onTabTapped(MainTabIndex.profile);  break;
-      case 'home':     _onTabTapped(MainTabIndex.home);     break;
-      case 'messages':
-        _onTabTapped(MainTabIndex.messages);
-        break;
-      case 'bookings':
-        _onTabTapped(MainTabIndex.profile);
-        break;
-      // 'servicios' is empresa-only; mobile users don't need routing for it
+      case 'explore':  _goToTab(MainTabIndex.explore);  break;
+      case 'routes':   _goToTab(MainTabIndex.routes);   break;
+      case 'profile':  _goToTab(MainTabIndex.profile);  break;
+      case 'home':     _goToTab(MainTabIndex.home);     break;
+      case 'messages': _goToTab(MainTabIndex.messages); break;
+      case 'bookings': _goToTab(MainTabIndex.profile);  break;
     }
   }
 
+  /// Tap en un item del nav.
   void _onTabTapped(int index) {
     if (_currentIndex == index) {
       if (index == MainTabIndex.home) {
@@ -76,92 +80,129 @@ class _MainScreenState extends State<MainScreen> {
       }
       return;
     }
+    _goToTab(index);
+  }
+
+  void _goToTab(int index) {
     HapticFeedback.lightImpact();
+    _pageCtrl.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  /// La página quedó asentada en [index].
+  void _onPageSettled(int index) {
+    if (_currentIndex == index) return;
     setState(() => _currentIndex = index);
+    HapticFeedback.lightImpact();
     if (index == MainTabIndex.home) {
       _homeScreenKey.currentState?.refreshUserIdentity();
       _homeScreenKey.currentState?.reloadRecommendations();
     }
   }
 
+  bool _handleScroll(ScrollNotification n) {
+    // Solo el scroll VERTICAL de la pantalla activa encoge el nav
+    // (ignora el propio scroll horizontal del PageView).
+    if (n.metrics.axis != Axis.vertical) return false;
+    if (n is ScrollUpdateNotification || n is UserScrollNotification) {
+      if (!_isScrolling && mounted) setState(() => _isScrolling = true);
+      _scrollStopTimer?.cancel();
+      _scrollStopTimer = Timer(const Duration(milliseconds: 320), () {
+        if (mounted) setState(() => _isScrolling = false);
+      });
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return MainTabScope(
       selectTab: _onTabTapped,
       child: Scaffold(
         backgroundColor: scheme.surface,
-        body: SmarturTabFadeStack(
-          index: _currentIndex,
-          children: [
-            HomeScreen(
-              key: _homeScreenKey,
-              userName: widget.userName,
-              isNewLogin: widget.isNewLogin,
-            ),
-            const ExploreScreen(key: ValueKey<String>('main_tab_explore')),
-            const MisRutasScreen(key: ValueKey<String>('main_tab_routes')),
-            const ConversationsScreen(key: ValueKey<String>('main_tab_messages')),
-            const ProfileScreen(key: ValueKey<String>('main_tab_profile')),
-          ],
-        ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, -4),
+        extendBody: true,
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _handleScroll,
+          child: PageView(
+            controller: _pageCtrl,
+            onPageChanged: _onPageSettled,
+            // En Explorar el swipe horizontal controla sus sub-tabs internas.
+            physics: _currentIndex == MainTabIndex.explore
+                ? const NeverScrollableScrollPhysics()
+                : const ClampingScrollPhysics(),
+            children: [
+              _KeepAlivePage(
+                child: HomeScreen(
+                  key: _homeScreenKey,
+                  userName: widget.userName,
+                  isNewLogin: widget.isNewLogin,
+                ),
+              ),
+              const _KeepAlivePage(
+                child: ExploreScreen(key: ValueKey<String>('main_tab_explore')),
+              ),
+              const _KeepAlivePage(
+                child: MisRutasScreen(key: ValueKey<String>('main_tab_routes')),
+              ),
+              const _KeepAlivePage(
+                child: ConversationsScreen(
+                    key: ValueKey<String>('main_tab_messages')),
+              ),
+              const _KeepAlivePage(
+                child: ProfileScreen(key: ValueKey<String>('main_tab_profile')),
               ),
             ],
           ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _NavBarItem(
-                    index: 0,
-                    isSelected: _currentIndex == 0,
-                    label: l10n.navHome,
-                    outlineIcon: Icons.explore_outlined,
-                    solidIcon: Icons.explore,
-                    onTap: () => _onTabTapped(0),
+        ),
+        bottomNavigationBar: _buildGlassNav(scheme),
+      ),
+    );
+  }
+
+  Widget _buildGlassNav(ColorScheme scheme) {
+    final isDark = scheme.brightness == Brightness.dark;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 0, 28, 12),
+        child: AnimatedScale(
+          // Se encoge 25% mientras se hace scroll y vuelve al parar.
+          scale: _isScrolling ? 0.75 : 1.0,
+          alignment: Alignment.bottomCenter,
+          duration: const Duration(milliseconds: 340),
+          curve: Curves.easeOutCubic,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: scheme.surface
+                      .withValues(alpha: isDark ? 0.55 : 0.7),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: scheme.onSurface
+                        .withValues(alpha: isDark ? 0.14 : 0.08),
+                    width: 1,
                   ),
-                  _NavBarItem(
-                    index: 1,
-                    isSelected: _currentIndex == 1,
-                    label: l10n.navExplore,
-                    outlineIcon: Icons.search_outlined,
-                    solidIcon: Icons.search_rounded,
-                    onTap: () => _onTabTapped(1),
-                  ),
-                  _NavBarItemRoutes(
-                    isSelected: _currentIndex == 2,
-                    label: l10n.navRoutes,
-                    onTap: () => _onTabTapped(2),
-                  ),
-                  _NavBarItem(
-                    index: 3,
-                    isSelected: _currentIndex == 3,
-                    label: 'Mensajes',
-                    outlineIcon: Icons.chat_bubble_outline_rounded,
-                    solidIcon: Icons.chat_bubble_rounded,
-                    onTap: () => _onTabTapped(3),
-                  ),
-                  _NavBarItem(
-                    index: 4,
-                    isSelected: _currentIndex == 4,
-                    label: l10n.navUser,
-                    outlineIcon: Icons.person_outline,
-                    solidIcon: Icons.person,
-                    onTap: () => _onTabTapped(4),
-                  ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.12),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: _NavStrip(
+                  pageCtrl: _pageCtrl,
+                  currentIndex: _currentIndex,
+                  onTapIndex: _onTabTapped,
+                ),
               ),
             ),
           ),
@@ -172,236 +213,235 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Generic nav bar item
+// Tira del nav: indicador deslizante compartido + iconos, arrastrable
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _NavBarItem extends StatelessWidget {
-  final int index;
-  final bool isSelected;
-  final String label;
-  final IconData outlineIcon;
-  final IconData solidIcon;
-  final VoidCallback onTap;
+class _NavStrip extends StatelessWidget {
+  final PageController pageCtrl;
+  final int currentIndex;
+  final ValueChanged<int> onTapIndex;
 
-  const _NavBarItem({
-    required this.index,
-    required this.isSelected,
-    required this.label,
-    required this.outlineIcon,
-    required this.solidIcon,
-    required this.onTap,
+  const _NavStrip({
+    required this.pageCtrl,
+    required this.currentIndex,
+    required this.onTapIndex,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final accent = scheme.primary;
-    final color = isSelected ? accent : scheme.onSurfaceVariant;
+  static const _items = [
+    (Icons.home_outlined, Icons.home_rounded, false),
+    (Icons.search_outlined, Icons.search_rounded, false),
+    (Icons.map_outlined, Icons.map_rounded, true), // badge
+    (Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, false),
+    (Icons.person_outline, Icons.person_rounded, false),
+  ];
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected
-              ? (MediaQuery.sizeOf(context).width < 360 ? 10.0 : 16.0)
-              : (MediaQuery.sizeOf(context).width < 360 ? 8.0 : 12.0),
-          vertical: 10.0,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? accent.withValues(alpha: 0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildIcon(color),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              clipBehavior: Clip.antiAlias,
-              child: isSelected
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: accent,
-                        ),
-                        maxLines: 1,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      ),
+  double get _pagePos {
+    if (pageCtrl.hasClients && pageCtrl.position.haveDimensions) {
+      return (pageCtrl.page ?? currentIndex.toDouble()).clamp(0.0, 4.0);
+    }
+    return currentIndex.toDouble();
+  }
+
+  void _scrubTo(double dx, double slotW) {
+    if (!pageCtrl.hasClients || !pageCtrl.position.haveDimensions) return;
+    final page = (dx / slotW - 0.5).clamp(0.0, (_kTabCount - 1).toDouble());
+    pageCtrl.jumpTo(page * pageCtrl.position.viewportDimension);
+  }
+
+  void _snap() {
+    if (!pageCtrl.hasClients) return;
+    final target = (pageCtrl.page ?? currentIndex.toDouble())
+        .round()
+        .clamp(0, _kTabCount - 1);
+    HapticFeedback.selectionClick();
+    pageCtrl.animateToPage(
+      target,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
     );
   }
 
-  Widget _buildIcon(Color color) {
-    switch (index) {
-      case 0: // Home: giro breve
-        return AnimatedRotation(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutBack,
-          turns: isSelected ? 1.0 : 0.0,
-          child: Icon(isSelected ? solidIcon : outlineIcon, color: color, size: 24),
-        );
-      case 1: // Explorar: escala elástica
-        return TweenAnimationBuilder<double>(
-          key: ValueKey(isSelected),
-          tween: Tween(begin: 0.85, end: 1.0),
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.elasticOut,
-          builder: (_, val, __) => Transform.scale(
-            scale: isSelected ? val : 1.0,
-            child: Icon(isSelected ? solidIcon : outlineIcon, color: color, size: 24),
-          ),
-        );
-      case 3: // Perfil: flip 3D
-        return TweenAnimationBuilder<double>(
-          key: ValueKey(isSelected),
-          tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-          builder: (_, val, __) => Transform(
-            alignment: Alignment.center,
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateY(val * math.pi),
-            child: Icon(isSelected ? solidIcon : outlineIcon, color: color, size: 24),
-          ),
-        );
-      default:
-        return Icon(isSelected ? solidIcon : outlineIcon, color: color, size: 24);
-    }
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mis Rutas nav item — con badge animado de paradas
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _NavBarItemRoutes extends StatelessWidget {
-  final bool isSelected;
-  final String label;
-  final VoidCallback onTap;
-
-  const _NavBarItemRoutes({
-    required this.isSelected,
-    required this.label,
-    required this.onTap,
-  });
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final accent = scheme.primary;
-    final color = isSelected ? accent : scheme.onSurfaceVariant;
-    final badgeColor = SmarturSemanticColors.of(context).altAccent;
+    const height = 49.0;
+    const dotSize = 46.0;
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected
-              ? (MediaQuery.sizeOf(context).width < 360 ? 10.0 : 16.0)
-              : (MediaQuery.sizeOf(context).width < 360 ? 8.0 : 12.0),
-          vertical: 10.0,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? accent.withValues(alpha: 0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final slotW = w / _kTabCount;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragUpdate: (d) => _scrubTo(d.localPosition.dx, slotW),
+          onHorizontalDragEnd: (_) => _snap(),
+          child: SizedBox(
+            height: height,
+            width: w,
+            child: Stack(
               children: [
-                TweenAnimationBuilder<double>(
-                  key: ValueKey(isSelected),
-                  tween: Tween(begin: 0.8, end: 1.0),
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.elasticOut,
-                  builder: (_, val, __) => Transform.scale(
-                    scale: isSelected ? val : 1.0,
-                    child: Icon(
-                      isSelected ? Icons.map_rounded : Icons.map_outlined,
-                      color: color,
-                      size: 24,
-                    ),
-                  ),
-                ),
-                ValueListenableBuilder<int>(
-                  valueListenable: routeStopCount,
-                  builder: (_, count, __) {
-                    if (count == 0) return const SizedBox.shrink();
+                // Indicador deslizante que sigue el swipe/drag en vivo
+                AnimatedBuilder(
+                  animation: pageCtrl,
+                  builder: (context, _) {
+                    final left = slotW * (_pagePos + 0.5) - dotSize / 2;
                     return Positioned(
-                      top: -4,
-                      right: -4,
-                      child: AnimatedScale(
-                        scale: count > 0 ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.elasticOut,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: badgeColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: scheme.surface, width: 1.5),
-                          ),
-                          constraints:
-                              const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            '$count',
-                            style: const TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                      left: left,
+                      top: (height - dotSize) / 2,
+                      child: Container(
+                        width: dotSize,
+                        height: dotSize,
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withValues(alpha: 0.16),
+                          shape: BoxShape.circle,
                         ),
                       ),
                     );
                   },
                 ),
+                // Iconos (solo tap; el drag lo maneja el GestureDetector padre)
+                Row(
+                  children: [
+                    for (var i = 0; i < _items.length; i++)
+                      SizedBox(
+                        width: slotW,
+                        height: height,
+                        child: _NavIcon(
+                          outlineIcon: _items[i].$1,
+                          solidIcon: _items[i].$2,
+                          showBadge: _items[i].$3,
+                          pageCtrl: pageCtrl,
+                          index: i,
+                          currentIndex: currentIndex,
+                          onTap: () => onTapIndex(i),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              clipBehavior: Clip.antiAlias,
-              child: isSelected
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: accent,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NavIcon extends StatelessWidget {
+  final IconData outlineIcon;
+  final IconData solidIcon;
+  final bool showBadge;
+  final PageController pageCtrl;
+  final int index;
+  final int currentIndex;
+  final VoidCallback onTap;
+
+  const _NavIcon({
+    required this.outlineIcon,
+    required this.solidIcon,
+    required this.showBadge,
+    required this.pageCtrl,
+    required this.index,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final badgeColor = SmarturSemanticColors.of(context).altAccent;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedBuilder(
+        animation: pageCtrl,
+        builder: (context, _) {
+          // Proximidad de la página a este slot → interpola color y peso.
+          final page = (pageCtrl.hasClients && pageCtrl.position.haveDimensions)
+              ? (pageCtrl.page ?? currentIndex.toDouble())
+              : currentIndex.toDouble();
+          final t = (1.0 - (page - index).abs()).clamp(0.0, 1.0);
+          final selected = t > 0.5;
+          final color = Color.lerp(
+              scheme.onSurfaceVariant, scheme.primary, t)!;
+          // Pop de escala + leve elevación al acercarse/seleccionarse el slot.
+          final scale = 1.0 + 0.22 * Curves.easeOut.transform(t);
+
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Transform.translate(
+                offset: Offset(0, -3 * t),
+                child: Transform.scale(
+                  scale: scale,
+                  child: Icon(selected ? solidIcon : outlineIcon,
+                      color: color, size: 25),
+                ),
+              ),
+              if (showBadge)
+                ValueListenableBuilder<int>(
+                  valueListenable: routeStopCount,
+                  builder: (_, count, __) {
+                    if (count == 0) return const SizedBox.shrink();
+                    return Positioned(
+                      top: 2,
+                      right: slotOffset(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: scheme.surface, width: 1.5),
                         ),
-                        maxLines: 1,
+                        constraints:
+                            const BoxConstraints(minWidth: 15, minHeight: 15),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
+                    );
+                  },
+                ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  double slotOffset(BuildContext context) => 12;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mantiene vivo el estado de cada pestaña dentro del PageView
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _KeepAlivePage extends StatefulWidget {
+  final Widget child;
+  const _KeepAlivePage({required this.child});
+
+  @override
+  State<_KeepAlivePage> createState() => _KeepAlivePageState();
+}
+
+class _KeepAlivePageState extends State<_KeepAlivePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

@@ -8,6 +8,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/services/update_service.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
@@ -78,19 +79,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: Text(l10n.settingsTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon:
-              Icon(Icons.arrow_back, color: scheme.onSurface),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SmarturBackgroundTop(
+      appBar: SmarturAppBar(title: l10n.settingsTitle, showBack: true),
+      body: SmarturBackground(
         child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [

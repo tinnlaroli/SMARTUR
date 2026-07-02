@@ -100,7 +100,7 @@ class _MapScreenState extends State<MapScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: SmarturBackgroundTop(
+      body: SmarturBackground(
         child: SafeArea(
           child: SmarturLoadTransition(
             loading: _isLoading,

@@ -11,6 +11,8 @@ import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
 import '../../../data/services/user_content_service.dart';
 import '../../../data/services/auth_service.dart';
+import '../../widgets/smartur_app_bar.dart';
+import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_image.dart';
 import '../../widgets/smartur_skeleton.dart';
 import '../../widgets/public_profile_sheet.dart';
@@ -48,22 +50,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: Text(l10n.exploreTitle,
-            style: SmarturStyle.calSansTitle.copyWith(fontSize: 20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        bottom: smarturTabBar(
-          context,
-          controller: _tabCtrl,
-          tabs: [
-            Tab(text: l10n.routesSectionLabel),
-            Tab(text: l10n.communityTitle),
-          ],
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       floatingActionButton: _tabCtrl.index == 1
           ? FloatingActionButton(
               onPressed: () => _communityKey.currentState?._showCreateSheet(),
@@ -71,12 +58,31 @@ class _ExploreScreenState extends State<ExploreScreen>
               child: const Icon(Icons.add_rounded, color: Colors.white),
             )
           : null,
-      body: TabBarView(
-        controller: _tabCtrl,
-        children: [
-          const _RoutesTab(),
-          _CommunityTab(key: _communityKey),
-        ],
+      body: SmarturBackground(
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, _) => [
+            SmarturSliverAppBar(
+              title: l10n.exploreTitle,
+              showBack: false,
+              bottom: smarturTabBar(
+                context,
+                controller: _tabCtrl,
+                tabs: [
+                  Tab(text: l10n.routesSectionLabel),
+                  Tab(text: l10n.communityTitle),
+                ],
+              ),
+            ),
+          ],
+          body: TabBarView(
+            controller: _tabCtrl,
+            children: [
+              const _RoutesTab(),
+              _CommunityTab(key: _communityKey),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -182,7 +188,23 @@ class _RoutesTabState extends State<_RoutesTab>
     final scheme = Theme.of(context).colorScheme;
 
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return SmarturShimmer(
+        enabled: true,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            const SkeletonContainer(height: 52, borderRadius: 16),
+            const SizedBox(height: 20),
+            ...List.generate(
+                5,
+                (_) => const Padding(
+                      padding: EdgeInsets.only(bottom: 4),
+                      child: SkeletonListRow(),
+                    )),
+          ],
+        ),
+      );
     }
 
     if (_error != null && _predefined.isEmpty && _community.isEmpty) {
@@ -395,14 +417,8 @@ class _FollowingEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
-      ),
       child: Column(
         children: [
           Icon(Icons.people_outline_rounded,

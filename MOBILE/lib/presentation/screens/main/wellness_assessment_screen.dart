@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../data/services/wellness_service.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/wellness_poi_card.dart';
 
 const _modoColors = {
@@ -323,22 +324,36 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: _step == 9 ? () => Navigator.of(context).pop() : _prevStep,
+      appBar: SmarturAppBar(
+        showBack: true,
+        onBack: _step == 9 ? () => Navigator.of(context).pop() : _prevStep,
+        titleWidget: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                _step == 0
+                    ? 'Welltur'
+                    : _step <= 8
+                        ? 'Cuéntanos cómo te sientes'
+                        : 'Welltur · Tu recomendación',
+                style: const TextStyle(
+                    fontFamily: 'CalSans', fontSize: 17, fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-        title: Text(
-          _step == 0
-              ? 'SMARTUR'
-              : _step <= 8
-                  ? 'Cuéntanos cómo te sientes'
-                  : 'SMARTUR · Tu recomendación',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        centerTitle: true,
       ),
       body: FadeTransition(
         opacity: _fadeAnim,
@@ -374,9 +389,20 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
             child: const Icon(Icons.eco_outlined, size: 36, color: Color(0xFF10B981)),
           ),
           const SizedBox(height: 24),
-          const Text('SMARTUR',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5, color: Color(0xFF254117))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Welltur',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5, color: Color(0xFF254117))),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => showWellnessInfoSheet(context),
+                child: const Icon(Icons.info_outline_rounded,
+                    size: 16, color: Color(0xFF10B981)),
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           Text(
             '¿Quieres que adaptemos tu viaje\na cómo te sientes?',
@@ -386,7 +412,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Responde 8 preguntas rápidas sobre tu energía y SMARTUR te recomienda lugares de bienestar personalizados.',
+            'Responde 8 preguntas rápidas sobre tu energía y Welltur te recomienda lugares de bienestar personalizados.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, height: 1.5,
                 color: scheme.onSurface.withValues(alpha: 0.6)),
@@ -452,7 +478,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
                 )),
               const SizedBox(width: 10),
               Expanded(child: Text(
-                'Acepto que SMARTUR use mis respuestas para personalizar mis recomendaciones de bienestar. '
+                'Acepto que Welltur use mis respuestas para personalizar mis recomendaciones de bienestar. '
                 'Puedo borrar este historial en cualquier momento desde mi perfil.',
                 style: TextStyle(fontSize: 12, height: 1.5,
                     color: scheme.onSurface.withValues(alpha: 0.65)),
@@ -780,4 +806,125 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
       ]),
     ));
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal informativo del test de bienestar (reutilizado por Home y el intro)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const _kWellturGreen = Color(0xFF10B981);
+
+void showWellnessInfoSheet(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: scheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (ctx) {
+      Widget row(IconData icon, String title, String body) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _kWellturGreen.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 18, color: _kWellturGreen),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 3),
+                      Text(body,
+                          style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 12.5,
+                              height: 1.45,
+                              color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+              22, 16, 22, 22 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 18),
+                    decoration: BoxDecoration(
+                      color: scheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.spa_rounded, color: _kWellturGreen, size: 22),
+                    const SizedBox(width: 8),
+                    Text('Sobre el test de bienestar',
+                        style: TextStyle(
+                            fontFamily: 'CalSans',
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSurface)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                row(Icons.tune_rounded, '¿Qué mide?',
+                    'Explora cómo te sientes en 4 dimensiones —energía, cuerpo, pensamientos y estado interno— con 8 preguntas rápidas.'),
+                row(Icons.verified_outlined, '¿En qué se basa?',
+                    'Los ítems se inspiran en instrumentos validados en psicología de la salud: SF-36 (Vitalidad), SMBM, PSS-4 y PANAS. Adaptados a lenguaje cotidiano, sin terminología clínica.'),
+                row(Icons.health_and_safety_outlined, 'No es un diagnóstico médico',
+                    'Es una herramienta de personalización de viaje. No diagnostica ni sustituye la consulta con un profesional de la salud.'),
+                row(Icons.lock_outline_rounded, 'Tus datos',
+                    'Tus respuestas solo se usan para personalizar tus recomendaciones de bienestar. Puedes borrar este historial cuando quieras desde tu perfil.'),
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _kWellturGreen,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text('Entendido',
+                        style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

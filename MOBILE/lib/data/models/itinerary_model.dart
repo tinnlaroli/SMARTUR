@@ -257,6 +257,12 @@ class Itinerary {
         updatedAt: DateTime.parse(m['updated_at'] as String),
         ownerName: m['owner_name'] as String?,
         ownerAvatarUrl: m['owner_avatar_url'] as String?,
+        startDate: m['start_date'] != null
+            ? DateTime.tryParse(m['start_date'].toString())
+            : null,
+        endDate: m['end_date'] != null
+            ? DateTime.tryParse(m['end_date'].toString())
+            : null,
       );
 
   Itinerary copyWith({

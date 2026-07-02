@@ -7,6 +7,7 @@ import '../../../core/utils/notifications.dart';
 import '../../../data/local/itinerary_db.dart';
 import '../../../data/models/itinerary_model.dart';
 import '../../../data/services/itinerary_service.dart';
+import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/smartur_background.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import '../main/main_screen.dart' show routeStopCount;
@@ -252,16 +253,26 @@ class _PlannerScreenState extends State<PlannerScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(
-        title: GestureDetector(
+      appBar: SmarturAppBar(
+        showBack: true,
+        titleWidget: GestureDetector(
           onTap: _editTitle,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 10),
               Flexible(
                 child: Text(
                   _it.title,
-                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 18),
+                  style: SmarturStyle.calSansTitle.copyWith(fontSize: 20),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -271,9 +282,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ],
           ),
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded),
@@ -283,7 +291,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           ),
         ],
       ),
-      body: SmarturBackgroundTop(
+      body: SmarturBackground(
         child: Column(
           children: [
             // Public toggle
