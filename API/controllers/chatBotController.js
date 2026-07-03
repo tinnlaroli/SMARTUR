@@ -42,3 +42,35 @@ export async function botMessage(req, res) {
 
     return res.status(201).json({ bot_message: msgR.rows[0], matched: true });
 }
+
+/**
+ * GET /conversations/:id/faqs
+ * Lista las preguntas frecuentes de la empresa de esta conversación, para que
+ * el turista pueda elegir una y preguntarle al asistente.
+ */
+export async function listConversationFaqs(req, res) {
+    const conversationId = parseInt(req.params.id, 10);
+    if (Number.isNaN(conversationId)) return res.status(400).json({ error: 'ID inválido' });
+
+    const convR = await pool.query(
+        'SELECT id_company, tourist_id FROM conversation WHERE id_conversation = $1',
+        [conversationId],
+    );
+    if (!convR.rows[0]) return res.status(404).json({ error: 'Conversación no encontrada' });
+    const { id_company, tourist_id } = convR.rows[0];
+
+    const callerId = req.user.id;
+    if (callerId !== tourist_id && req.user.id_company !== id_company) {
+        return res.status(403).json({ error: 'Sin acceso a esta conversación' });
+    }
+
+    const faqR = await pool.query(
+        `SELECT id_faq, question
+         FROM company_faq
+         WHERE id_company = $1
+         ORDER BY created_at ASC`,
+        [id_company],
+    );
+
+    return res.status(200).json({ faqs: faqR.rows });
+}

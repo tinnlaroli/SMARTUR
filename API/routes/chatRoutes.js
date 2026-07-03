@@ -3,7 +3,7 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/rbacMiddleware.js';
 import { requireOwnsCompany } from '../middleware/requireOwnsCompany.js';
 import ChatController from '../controllers/chatController.js';
-import { botMessage } from '../controllers/chatBotController.js';
+import { botMessage, listConversationFaqs } from '../controllers/chatBotController.js';
 import * as faqCtrl from '../controllers/companyFaqController.js';
 
 const router = express.Router();
@@ -38,5 +38,7 @@ router.patch('/conversations/:id/read',    verifyToken, requireRole([2, 3]), Cha
 
 // ── RAG chatbot ───────────────────────────────────────────────────────────────
 router.post('/conversations/:id/bot-message', verifyToken, requireRole([2, 3]), botMessage);
+// Preguntas frecuentes de la empresa de esta conversación (para el turista)
+router.get('/conversations/:id/faqs', verifyToken, requireRole([2, 3]), listConversationFaqs);
 
 export default router;
