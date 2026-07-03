@@ -250,3 +250,22 @@ document.documentElement.dataset.theme = 'dark' | 'light';
 | Tablet | `≤ 1024px` | `--mq-tablet` | `md:` |
 | Desktop | `> 1024px` | default | `lg:` |
 | Large | `≥ 1280px` | `--mq-desktop-sm` | `xl:` |
+
+---
+
+## 13. App Móvil (Flutter) — Design System
+
+**Source of truth:** `MOBILE/lib/core/theme/style_guide.dart` + `smartur_theme_extensions.dart`
+
+| Concepto | Implementación |
+|----------|-----------------|
+| Fondo unificado | `SmarturBackground` (`presentation/widgets/smartur_background.dart`) — gradiente reutilizado en todas las pantallas principales |
+| Header | `SmarturAppBar` / `SmarturSliverAppBar` (`smartur_app_bar.dart`) — barra de acento + `smarturHeaderGlass(context)` como fondo blur |
+| Skeleton/loading | `SmarturSkeleton`, `SmarturShimmer`, `SmarturLoader`, `SmarturLoadingOverlay` — reemplazan spinners simples |
+| Kit de UI | `smartur_ui_kit.dart` — `SmarturFadeIn`, exports de rutas animadas (`smarturFadeRoute`, `smarturDetailRoute`) y overlay de carga |
+| Avatares | `SmarturUserAvatar` (`smartur_user_avatar.dart`) |
+| Nav inferior | Pill flotante con glassmorphism (`BackdropFilter`) en `main_screen.dart`: `PageView` + `PageController` compartido con un indicador arrastrable (`_NavStrip`), iconos con rebote elástico (`_NavIcon`, `AnimationController` + `TweenSequence`) |
+| Modo Welltur (bienestar) | Tema alterno vía `welltur_theme.dart` / `welltur_theme_extensions.dart` (`buildWellturTheme`, `WellturSemanticColors`) — **no** son widgets separados; tiñen los mismos componentes Smartur (evitar recrear un kit de widgets `Welltur*` duplicado, ya se depuró uno sin usar) |
+| Animación de rutas | `WellturMotion` / `wellturFadeRoute` (`core/motion/`) |
+
+**Regla de arquitectura confirmada tras la limpieza de código muerto (2026-07):** el tema Welltur se implementa **tiñendo** los widgets Smartur existentes (`SmarturBackground`, `SmarturSkeleton`, etc.) con los colores/`ThemeExtension` de `welltur_theme_extensions.dart`, no mediante una librería de widgets `Welltur*` paralela. Si se necesita un widget "Welltur", primero verificar si el widget `Smartur` equivalente ya soporta tinte por tema antes de crear uno nuevo.

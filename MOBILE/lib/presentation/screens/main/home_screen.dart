@@ -49,7 +49,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  static const double _kHomeHeaderExpandedHeight = 140;
+  static const double _kHomeHeaderExpandedHeight = 148;
 
   final AuthService _authService = AuthService();
   final ExploreService _exploreService = ExploreService();
@@ -867,143 +867,165 @@ class HomeScreenState extends State<HomeScreen> {
     final name = _greetingName ?? widget.userName;
     final greetingName = (name != null && name.isNotEmpty) ? ', $name' : '';
 
+    // Altura del header adaptada al status bar: barra mini + saludo, sin hueco.
+    final topInset = MediaQuery.paddingOf(context).top;
+    final expandedH = topInset + kToolbarHeight + 42;
+
+    // Barra mini (siempre visible al colapsar): clima
+    final weatherMini = _isLoadingContent
+        ? const SkeletonContainer(height: 34, width: 140, borderRadius: 12)
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.wb_sunny_outlined, color: scheme.primary, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_weatherCity != null)
+                      Text(
+                        _weatherCity!.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    Text(
+                      _weatherLoading
+                          ? l10n.loading
+                          : (_weatherSummary ?? l10n.notAvailable),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+    // Avatar cuyo tamaño crece al expandir (grande, del alto del bloque) y se
+    // encoge al colapsar para caber en la barra mini. [radius] lo pasa el header.
+    Widget avatarBtnOf(double radius) => GestureDetector(
+          onTap: _showProfile,
+          behavior: HitTestBehavior.opaque,
+          child: SmarturUserAvatar(
+            radius: radius,
+            photoUrl: _headerPhotoUrl,
+            avatarIconKey: _headerAvatarIconKey,
+            displayName: name ?? '',
+            backgroundColor: scheme.primary.withValues(alpha: 0.12),
+            foregroundColor: scheme.onSurface,
+          ),
+        );
+
     return SliverAppBar(
-      floating: true,
-      snap: true,
-      pinned: false,
-      expandedHeight: _kHomeHeaderExpandedHeight,
+      pinned: true,
+      expandedHeight: expandedH,
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       shadowColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding:
-            const EdgeInsetsDirectional.only(start: 20, end: 12, bottom: 14),
-        centerTitle: false,
-        title: _isLoadingContent
-            ? const SkeletonText(width: 180, height: 20)
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 4,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: scheme.primary,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                l10n.exploreGreeting(greetingName),
-                                style: SmarturStyle.calSansTitle
-                                    .copyWith(fontSize: 20),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 14),
-                          child: Text(
-                            l10n.highMountainsVeracruz,
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: 11,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _showProfile,
-                    icon: SmarturUserAvatar(
-                      radius: 18,
-                      photoUrl: _headerPhotoUrl,
-                      avatarIconKey: _headerAvatarIconKey,
-                      displayName: name ?? '',
-                      backgroundColor: scheme.primary.withValues(alpha: 0.12),
-                      foregroundColor: scheme.onSurface,
-                    ),
-                  ),
-                ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final top = MediaQuery.paddingOf(context).top;
+          final denom = expandedH - top - kToolbarHeight;
+          // t = 1 arriba del todo (expandido) · 0 al colapsar
+          final t = denom > 0
+              ? ((constraints.maxHeight - top - kToolbarHeight) / denom)
+                  .clamp(0.0, 1.0)
+              : 0.0;
+          final et = Curves.easeOut.transform(t);
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              smarturHeaderGlass(context),
+              // Avatar: grande (del alto del bloque) al expandir, pequeño al
+              // colapsar. Centrado verticalmente sobre el bloque.
+              Positioned(
+                top: top,
+                bottom: 0,
+                right: 12,
+                child: Center(child: avatarBtnOf(19 + 10 * et)),
               ),
-        background: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                smarturHeaderGlass(context),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
-                    child: _isLoadingContent
-                        ? const SkeletonContainer(height: 40, borderRadius: 16)
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.wb_sunny_outlined,
-                                  color: scheme.primary),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+              // Bloque: clima arriba · saludo + subtítulo debajo (fade al colapsar)
+              Positioned(
+                top: top + 8,
+                left: 20,
+                right: 84,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    weatherMini,
+                    const SizedBox(height: 5),
+                    IgnorePointer(
+                      ignoring: t < 0.15,
+                      child: Opacity(
+                        opacity: et,
+                        child: _isLoadingContent
+                            ? const SkeletonText(width: 180, height: 24)
+                            : Column(
                                 mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    l10n.weatherNow,
-                                    style: TextStyle(
-                                      fontFamily: 'Outfit',
-                                      fontSize: 10,
-                                      color: scheme.onSurfaceVariant,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 5,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color: scheme.primary,
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          l10n.exploreGreeting(greetingName),
+                                          style: SmarturStyle.calSansTitle
+                                              .copyWith(fontSize: 26),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  if (_weatherCity != null)
-                                    Text(
-                                      _weatherCity!.name,
+                                  const SizedBox(height: 4),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 15),
+                                    child: Text(
+                                      l10n.highMountainsVeracruz,
                                       style: TextStyle(
                                         fontFamily: 'Outfit',
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: scheme.onSurface,
+                                        fontSize: 14,
+                                        color: scheme.onSurfaceVariant,
                                       ),
-                                    ),
-                                  Text(
-                                    _weatherLoading
-                                        ? l10n.loading
-                                        : (_weatherSummary ?? l10n.notAvailable),
-                                    style: TextStyle(
-                                      fontFamily: 'Outfit',
-                                      fontSize: 11,
-                                      color: scheme.onSurfaceVariant,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1021,7 +1043,7 @@ class HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: TextField(
         controller: _searchController,
         onChanged: (v) => setState(() => _searchQuery = v.trim()),
@@ -1813,6 +1835,12 @@ class _PlaceCardState extends State<_PlaceCard>
     final semantic = Theme.of(context).extension<SmarturSemanticColors>()!;
     final place = widget.place;
     final isHero = widget.isHero;
+    // Resolución de decodificado según el tamaño real en pantalla × densidad,
+    // para que la vista previa no se pixele en pantallas de alta densidad.
+    final dpr = MediaQuery.of(context).devicePixelRatio;
+    final screenW = MediaQuery.sizeOf(context).width;
+    final cacheW =
+        ((isHero ? screenW : screenW * 0.6) * dpr).round().clamp(400, 1600);
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -1848,10 +1876,8 @@ class _PlaceCardState extends State<_PlaceCard>
                     : CachedNetworkImage(
                         imageUrl: place.imageUrl,
                         fit: BoxFit.cover,
-                        filterQuality: isHero
-                            ? FilterQuality.high
-                            : FilterQuality.medium,
-                        memCacheWidth: isHero ? 800 : 500,
+                        filterQuality: FilterQuality.high,
+                        memCacheWidth: cacheW,
                         fadeInDuration: const Duration(milliseconds: 200),
                         placeholder: (_, __) => Container(
                           color: scheme.outlineVariant.withValues(alpha: 0.3),

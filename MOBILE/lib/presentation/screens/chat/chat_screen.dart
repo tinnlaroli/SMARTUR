@@ -123,17 +123,74 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() => _messages.add(botReply));
         _scrollToBottom();
       } else {
-        // No match — provider will answer; notify user quietly
-        SmarturNotifications.showInfo(
-          context,
-          'Sin coincidencia en las FAQs. El prestador te responderá.',
-        );
+        // Sin coincidencia — el bot responde igual con una burbuja útil (local)
+        // para que el usuario vea que fue atendido; el prestador completará.
+        setState(() => _messages.add(ChatMessage(
+              id: -DateTime.now().millisecondsSinceEpoch,
+              conversationId: widget.conversation.id,
+              senderName: 'Asistente',
+              content:
+                  'No tengo una respuesta guardada para eso todavía. Le avisé a '
+                  '${widget.conversation.companyName} para que te responda pronto. '
+                  'Puedes preguntarme por horarios, precios o ubicación.',
+              createdAt: DateTime.now(),
+              isBot: true,
+            )));
+        _scrollToBottom();
       }
     } catch (e) {
       if (mounted) SmarturNotifications.showError(context, 'Asistente no disponible');
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  // Tap al robot: con texto → busca en FAQs; vacío → muestra la hoja de FAQs.
+  void _onBotTap() {
+    if (_inputCtrl.text.trim().isNotEmpty) {
+      _sendBotMessage();
+    } else {
+      _openFaqSheet();
+    }
+  }
+
+  Future<void> _openFaqSheet() async {
+    List<String> faqs;
+    try {
+      faqs = await _service.fetchConversationFaqs(widget.conversation.id);
+    } catch (_) {
+      if (mounted) {
+        SmarturNotifications.showError(
+            context, 'No se pudieron cargar las preguntas.');
+      }
+      return;
+    }
+    if (!mounted) return;
+    if (faqs.isEmpty) {
+      SmarturNotifications.showInfo(
+        context,
+        '${widget.conversation.companyName} aún no tiene preguntas frecuentes. '
+        'Escribe tu duda y te responderán.',
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => _FaqSheet(
+        companyName: widget.conversation.companyName,
+        faqs: faqs,
+        onPick: (q) {
+          Navigator.pop(ctx);
+          _inputCtrl.text = q;
+          _sendBotMessage();
+        },
+      ),
+    );
   }
 
   @override
@@ -268,7 +325,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     // Bot assistant button
                     if (!_sending)
                       IconButton(
-                        onPressed: _sendBotMessage,
+                        onPressed: _onBotTap,
                         icon: const Icon(Icons.smart_toy_outlined),
                         color: scheme.primary,
                         tooltip: 'Preguntar al asistente',
@@ -485,6 +542,122 @@ class _ChatSkeleton extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hoja de preguntas frecuentes del asistente
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FaqSheet extends StatelessWidget {
+  final String companyName;
+  final List<String> faqs;
+  final ValueChanged<String> onPick;
+
+  const _FaqSheet({
+    required this.companyName,
+    required this.faqs,
+    required this.onPick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Icon(Icons.smart_toy_outlined, color: scheme.primary, size: 22),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Preguntas frecuentes',
+                    style: TextStyle(
+                      fontFamily: 'CalSans',
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Toca una pregunta y el asistente de $companyName te responde al instante.',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 12.5,
+                height: 1.4,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: faqs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => onPick(faqs[i]),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.help_outline_rounded,
+                              size: 18, color: scheme.primary),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              faqs[i],
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.chevron_right_rounded,
+                              size: 18,
+                              color: scheme.onSurfaceVariant
+                                  .withValues(alpha: 0.6)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

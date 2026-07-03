@@ -1195,15 +1195,16 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: scheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: scheme.shadow.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: scheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1261,93 +1262,147 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
             ),
           ),
 
-          // Content
-          if (content.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
-              child: Text(
-                content,
-                style: const TextStyle(fontFamily: 'Outfit', fontSize: 14, height: 1.4),
-              ),
-            ),
-
-          // Image
+          // Imagen a todo el ancho, con el chip de lugar encima (abajo-izq)
           if (imageUrl != null) ...[
-            const SizedBox(height: 10),
-            SmarturImage(
-              url: imageUrl,
-              height: 200,
-              errorWidget: const SizedBox.shrink(),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
+            const SizedBox(height: 12),
+            Stack(
+              children: [
+                SmarturImage.hero(
+                  url: imageUrl,
+                  height: 260,
+                  errorWidget: const SizedBox.shrink(),
+                ),
+                if (placeRef != null && placeTitle != null)
+                  Positioned(
+                    left: 12,
+                    bottom: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.place_rounded,
+                              size: 14, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              placeTitle,
+                              style: const TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
 
-          // Place ref
-          if (placeRef != null && placeTitle != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-              child: GestureDetector(
-                onTap: null, // place navigation wired in Sprint 4
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: scheme.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: scheme.primary.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.place_outlined,
-                          size: 14, color: scheme.primary),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          placeTitle,
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 12,
-                            color: scheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-          // Actions row
+          // Acciones: like + contador
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+            padding: EdgeInsets.fromLTRB(6, imageUrl != null ? 4 : 8, 8, 0),
             child: Row(
               children: [
                 IconButton(
                   icon: Icon(
-                    _liked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                    color: _liked ? SmarturSemanticColors.of(context).altAccent : scheme.onSurfaceVariant,
-                    size: 20,
+                    _liked
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_outline_rounded,
+                    color: _liked
+                        ? SmarturSemanticColors.of(context).altAccent
+                        : scheme.onSurfaceVariant,
+                    size: 22,
                   ),
                   onPressed: _toggleLike,
                 ),
                 if (_likeCount > 0)
                   Text(
-                    '$_likeCount',
+                    _likeCount == 1 ? '1 me gusta' : '$_likeCount me gusta',
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 13,
-                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
                     ),
                   ),
               ],
             ),
           ),
+
+          // Caption estilo feed: nombre en negrita + texto
+          if (content.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  14, _likeCount > 0 ? 2 : 0, 14, 14),
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                    text: '$authorName  ',
+                    style: const TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  TextSpan(
+                    text: content,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 14,
+                      height: 1.4,
+                      color: scheme.onSurface.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ]),
+              ),
+            )
+          else
+            const SizedBox(height: 8),
+
+          // Chip de lugar cuando NO hay imagen
+          if (imageUrl == null && placeRef != null && placeTitle != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border:
+                      Border.all(color: scheme.primary.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.place_outlined, size: 14, color: scheme.primary),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        placeTitle,
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 12,
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

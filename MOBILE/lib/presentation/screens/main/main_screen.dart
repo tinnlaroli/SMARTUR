@@ -328,7 +328,7 @@ class _NavStrip extends StatelessWidget {
   }
 }
 
-class _NavIcon extends StatelessWidget {
+class _NavIcon extends StatefulWidget {
   final IconData outlineIcon;
   final IconData solidIcon;
   final bool showBadge;
@@ -348,15 +348,62 @@ class _NavIcon extends StatelessWidget {
   });
 
   @override
+  State<_NavIcon> createState() => _NavIconState();
+}
+
+class _NavIconState extends State<_NavIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _bounce;
+  late final Animation<double> _bounceScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounce = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 480));
+    _bounceScale = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween(begin: 1.0, end: 1.3)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 40),
+      TweenSequenceItem(
+          tween: Tween(begin: 1.3, end: 1.0)
+              .chain(CurveTween(curve: Curves.elasticOut)),
+          weight: 60),
+    ]).animate(_bounce);
+  }
+
+  @override
+  void didUpdateWidget(_NavIcon old) {
+    super.didUpdateWidget(old);
+    // Rebote al convertirse en la pestaña activa.
+    final becameSelected =
+        widget.currentIndex == widget.index && old.currentIndex != widget.index;
+    if (becameSelected) _bounce.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _bounce.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final badgeColor = SmarturSemanticColors.of(context).altAccent;
+    final outlineIcon = widget.outlineIcon;
+    final solidIcon = widget.solidIcon;
+    final showBadge = widget.showBadge;
+    final pageCtrl = widget.pageCtrl;
+    final index = widget.index;
+    final currentIndex = widget.currentIndex;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedBuilder(
-        animation: pageCtrl,
+        animation: Listenable.merge([pageCtrl, _bounce]),
         builder: (context, _) {
           // Proximidad de la página a este slot → interpola color y peso.
           final page = (pageCtrl.hasClients && pageCtrl.position.haveDimensions)
@@ -366,8 +413,9 @@ class _NavIcon extends StatelessWidget {
           final selected = t > 0.5;
           final color = Color.lerp(
               scheme.onSurfaceVariant, scheme.primary, t)!;
-          // Pop de escala + leve elevación al acercarse/seleccionarse el slot.
-          final scale = 1.0 + 0.22 * Curves.easeOut.transform(t);
+          // Escala: pop por proximidad × rebote elástico al seleccionar.
+          final scale =
+              (1.0 + 0.18 * Curves.easeOut.transform(t)) * _bounceScale.value;
 
           return Stack(
             clipBehavior: Clip.none,

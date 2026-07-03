@@ -70,3 +70,14 @@ MODELO/data/Rest-Mex_2025_Train_DataSet/
 # video
 VIDEO/
 /VIDEO/
+
+# Reportes/artefactos sueltos
+lighthouse-report.json
+stderr.txt
+stdout.txt
+
+# Docs de trabajo interno / no publicados
+PDF_OCR_TESTING_GUIDE.md
+SMARTUR_Architecture.drawio
+Proyint/
+pruebas/

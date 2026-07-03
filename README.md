@@ -271,6 +271,20 @@ POST   /api/v2/me/interactions        Registrar interacción implícita
 POST   /api/v2/me/rating              Rating explícito (1-5 estrellas)
 ```
 
+### Chat y FAQs
+```
+POST   /api/v2/conversations                    Crear conversación turista↔empresa
+GET    /api/v2/conversations/me                 Mis conversaciones
+GET    /api/v2/conversations/:id/messages       Mensajes de una conversación
+POST   /api/v2/conversations/:id/messages       Enviar mensaje
+POST   /api/v2/conversations/:id/bot-message    Consulta al bot de FAQs (full-text search)
+GET    /api/v2/conversations/:id/faqs           Listado de FAQs de la empresa (hoja de sugerencias)
+POST   /api/v2/empresa/faqs                     Crear FAQ (rol empresa)
+GET    /api/v2/empresa/faqs                     Listar mis FAQs (rol empresa)
+PATCH  /api/v2/empresa/faqs/:id                 Editar FAQ
+DELETE /api/v2/empresa/faqs/:id                 Eliminar FAQ
+```
+
 ### Administración
 ```
 GET    /api/v2/users                  Listado de usuarios (admin)

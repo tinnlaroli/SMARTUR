@@ -24,7 +24,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get infoSection => 'Información';
 
   @override
-  String get darkMode => 'Modo Oscuro';
+  String get darkMode => 'Tema';
 
   @override
   String get language => 'Idioma';
@@ -479,7 +479,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String exploreGreeting(Object name) {
-    return 'Explorar$name';
+    return 'Explora$name';
   }
 
   @override

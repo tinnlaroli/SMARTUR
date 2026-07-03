@@ -11,7 +11,6 @@ export '../../core/motion/smartur_routes.dart'
         smarturFadeRoute;
 
 export 'smartur_loading_overlay.dart';
-export 'smartur_tab_fade_stack.dart';
 
 /// Entrada escalonada para listas y secciones.
 class SmarturFadeIn extends StatefulWidget {

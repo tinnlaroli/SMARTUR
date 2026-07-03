@@ -907,24 +907,26 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   Widget _buildStep0() {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: SmarturStyle.bgSecondary,
+            color: scheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
-              const Icon(Icons.email_outlined,
-                  color: SmarturStyle.purple, size: 20),
+              Icon(Icons.email_outlined, color: scheme.primary, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   _email.isNotEmpty ? _email : l10n.loading,
-                  style: const TextStyle(
-                      fontFamily: 'Outfit', fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w500,
+                      color: scheme.onSurface),
                 ),
               ),
             ],
@@ -1086,18 +1088,20 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     required IconData icon,
     Widget? suffixIcon,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(fontFamily: 'Outfit'),
-      prefixIcon: Icon(icon, color: SmarturStyle.purple),
+      labelStyle: TextStyle(
+          fontFamily: 'Outfit', color: scheme.onSurfaceVariant),
+      prefixIcon: Icon(icon, color: scheme.primary),
       suffixIcon: suffixIcon,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: SmarturStyle.purple, width: 2),
+        borderSide: BorderSide(color: scheme.primary, width: 2),
       ),
       filled: true,
-      fillColor: SmarturStyle.bgSecondary,
+      fillColor: scheme.surfaceContainerHighest,
     );
   }
 }

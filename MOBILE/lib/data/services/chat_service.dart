@@ -100,4 +100,19 @@ class ChatService {
     if (msg == null) return null; // no match — provider will reply
     return ChatMessage.fromJson(msg as Map<String, dynamic>);
   }
+
+  /// Preguntas frecuentes de la empresa de esta conversación (para el asistente).
+  Future<List<String>> fetchConversationFaqs(int conversationId) async {
+    final uri = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.conversations}/$conversationId/faqs');
+    final res = await ApiClient.get(uri);
+    if (res.statusCode == 401) throw AuthException('Sesión expirada');
+    if (res.statusCode != 200) throw ChatException(_msg(res));
+    final data = ApiClient.tryDecodeJson(res);
+    final list = (data?['faqs'] as List?) ?? [];
+    return list
+        .map((e) => (e as Map<String, dynamic>)['question']?.toString() ?? '')
+        .where((q) => q.isNotEmpty)
+        .toList();
+  }
 }

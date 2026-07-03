@@ -331,9 +331,16 @@ class _DetailViewPageState extends State<DetailViewPage>
             SafeArea(
               child: Stack(
                 children: [
-                  // z-0: Double-tap capture — translucent so buttons/BottomContent still work
+                  // z-0: Double-tap capture — translucent so buttons/BottomContent still work.
+                  // Si el panel está bajado (peek), un tap simple lo vuelve a subir.
                   Positioned.fill(
                     child: GestureDetector(
+                      onTap: _sheetOffset > 0
+                          ? () => setState(() {
+                                _sheetOffset = 0;
+                                _sheetDragging = false;
+                              })
+                          : null,
                       onDoubleTap: _onDoubleTap,
                       behavior: HitTestBehavior.translucent,
                     ),
@@ -410,7 +417,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                     child: _BottomContent(
                       onHandleDrag: (dy) {
                         final maxPeek =
-                            MediaQuery.sizeOf(context).height * 0.5;
+                            MediaQuery.sizeOf(context).height * 0.42;
                         setState(() {
                           _sheetDragging = true;
                           _sheetOffset =
@@ -419,7 +426,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                       },
                       onHandleDragEnd: () {
                         final maxPeek =
-                            MediaQuery.sizeOf(context).height * 0.5;
+                            MediaQuery.sizeOf(context).height * 0.42;
                         setState(() {
                           _sheetDragging = false;
                           // Snap: si se bajó más de 1/4, queda "peek"; si no, sube.

@@ -136,16 +136,22 @@ El proyecto combina una **separación por capas** (`core`, `data`, `presentation
 
 ### Árbol de carpetas (`lib/`)
 
+> Nota (2026-07): se depuraron pantallas/widgets huérfanos de iteraciones previas (`community_screen.dart`, `diary_screen.dart`, `map_screen.dart`, `recommendation_screen.dart`, `genre_picker_screen.dart`, `image_export_service.dart`, kit de widgets `Welltur*` duplicado, `smartur_tab_fade_stack.dart`) — su funcionalidad ya vive en las pantallas listadas abajo. Ver [design.md § 13](../design.md#13-app-móvil-flutter--design-system) para el sistema de diseño Welltur vigente.
+
 ```text
 lib/
 ├── main.dart                         # Punto de entrada: splash, sesión, tema, localización
 ├── core/
 │   ├── constants/
-│   │   ├── api_constants.dart        # Rutas del API (auth, profiles, explore, etc.)
+│   │   ├── api_constants.dart        # Rutas del API (auth, profiles, explore, chat, etc.)
 │   │   ├── env_config.dart           # Variables de entorno vía --dart-define
 │   │   └── avatar_icon_map.dart      # Mapa de iconos de avatar predefinidos
 │   ├── theme/
-│   │   └── style_guide.dart          # Colores (purple, pink, blue, green, orange), tipografía, spacing
+│   │   ├── style_guide.dart          # Colores (purple, pink, blue, green, orange), tipografía, spacing
+│   │   ├── smartur_theme_extensions.dart
+│   │   ├── welltur_theme.dart        # Tema alterno "Welltur" (bienestar) — tiñe los widgets Smartur
+│   │   └── welltur_theme_extensions.dart
+│   ├── motion/                       # smartur_motion.dart, smartur_routes.dart, welltur_motion/routes
 │   ├── utils/
 │   │   ├── notifications.dart        # Helpers para toasts (Toastification)
 │   │   └── profile_photo_validation.dart  # Validación de fotos de perfil
@@ -156,11 +162,15 @@ lib/
 │   ├── models/
 │   │   ├── onboarding_model.dart     # Modelo de páginas del onboarding
 │   │   ├── place_model.dart          # Modelo de lugar/destino turístico
+│   │   ├── chat_model.dart           # Conversation / ChatMessage
 │   │   └── traveler_profile_model.dart  # Perfil de viajero
 │   └── services/
 │       ├── auth_service.dart         # Login, registro, Google Sign-In, JWT, 2FA
 │       ├── profile_service.dart      # Perfil de usuario, avatar, preferencias
 │       ├── explore_service.dart      # Ciudades, lugares, servicios turísticos, puntos de interés
+│       ├── chat_service.dart         # Conversaciones, mensajes, bot de FAQs
+│       ├── wellness_service.dart     # Test de bienestar (modo de viaje Welltur)
+│       ├── ai_route_service.dart     # Generación de rutas con IA
 │       └── user_content_service.dart # Favoritos, visitas, publicaciones de comunidad
 ├── presentation/
 │   ├── screens/
@@ -168,16 +178,25 @@ lib/
 │   │   │   ├── onboarding_screen.dart   # Pantallas de bienvenida inicial
 │   │   │   └── welcome_screen.dart      # Login, registro, OTP, Google, reset de contraseña
 │   │   ├── main/
-│   │   │   ├── main_screen.dart         # Shell con BottomNavigationBar (4 tabs)
-│   │   │   ├── home_screen.dart         # Inicio: ciudades, exploración, recomendaciones IA
-│   │   │   ├── diary_screen.dart        # Diario: favoritos y visitas del usuario
-│   │   │   ├── community_screen.dart    # Comunidad: publicaciones de usuarios
-│   │   │   ├── profile_screen.dart      # Perfil del usuario
+│   │   │   ├── main_screen.dart         # Shell: nav inferior glassmorphism + PageView
+│   │   │   ├── home_screen.dart         # Inicio: clima, ciudades, exploración, recomendaciones IA
+│   │   │   ├── explore_screen.dart      # Explorar: rutas, comunidad (posts estilo feed), certificadas
+│   │   │   ├── profile_screen.dart      # Perfil (tabs: Mi Perfil / Favoritos) + wellness
+│   │   │   ├── wellness_assessment_screen.dart  # Test de bienestar Welltur (8 preguntas)
+│   │   │   ├── mis_rutas_screen.dart    # Rutas guardadas (multi-selección, compartir, borrar)
+│   │   │   ├── settings_screen.dart     # Ajustes de cuenta, tema, idioma, biometría
 │   │   │   └── edit_profile_avatar_screen.dart  # Edición de foto/icono de avatar
+│   │   ├── chat/
+│   │   │   ├── conversations_screen.dart  # Listado de conversaciones
+│   │   │   └── chat_screen.dart           # Chat turista↔empresa + hoja de FAQs del asistente
+│   │   ├── itinerary/
+│   │   │   ├── planner_screen.dart      # Planeador de itinerario
+│   │   │   ├── itinerary_detail_screen.dart
+│   │   │   └── comparison_screen.dart
 │   │   ├── explore/
-│   │   │   ├── map_screen.dart          # Mapa interactivo (flutter_map)
-│   │   │   ├── detail_view_page.dart    # Vista detalle de un lugar
-│   │   │   └── recommendation_screen.dart  # Recomendaciones de IA
+│   │   │   └── detail_view_page.dart    # Vista detalle de un lugar
+│   │   ├── social/
+│   │   │   └── public_profile_screen.dart
 │   │   ├── preferences/
 │   │   │   ├── preferences_screen.dart  # Pantalla contenedora del wizard
 │   │   │   ├── step1_personal_screen.dart   # Paso 1: datos personales (año de nacimiento, género, país)
@@ -188,10 +207,15 @@ lib/
 │   ├── utils/
 │   │   └── diary_place_detail.dart      # Utilidades para detalle de lugar en diario
 │   └── widgets/
-│       ├── smartur_background.dart      # Widget de fondo animado/degradado
+│       ├── smartur_background.dart      # Fondo con gradiente unificado
+│       ├── smartur_app_bar.dart         # SmarturAppBar / SmarturSliverAppBar + smarturHeaderGlass
 │       ├── smartur_loader.dart          # Loader animado de la app (SVG + Lottie)
+│       ├── smartur_loading_overlay.dart
 │       ├── smartur_skeleton.dart        # Skeleton/placeholder durante cargas
+│       ├── smartur_ui_kit.dart          # SmarturFadeIn + exports de rutas animadas
+│       ├── smartur_image.dart           # Imagen con calidad adaptada a densidad de pantalla
 │       ├── smartur_user_avatar.dart     # Avatar circular del usuario
+│       ├── wellness_poi_card.dart
 │       └── terms_and_conditions_modal.dart  # Modal de términos y condiciones
 └── l10n/                               # ARB (es, en, fr, pt) + generados AppLocalizations
 ```
@@ -264,26 +288,31 @@ Definidos en `lib/core/constants/api_constants.dart`:
 
 ### 3. Contenedor principal (`main_screen.dart`)
 
-- Cinco pestañas unificadas: **Inicio**, **Diario**, **IA (Recomendaciones)**, **Comunidad** y **Perfil**.
-- **Animaciones Premium**:
-  - **IA**: Destello elástico con efecto de rotación tipo "varita mágica".
-  - **Diario**: Transición de glifo suave (libro cerrado a abierto).
-  - **Comunidad**: Acercamiento social (reducción de padding).
-  - **Perfil**: Flip 3D (giro sobre eje vertical).
-  - **Inicio**: Giro de brújula 360°.
-- **Haptic Feedback**: Soporte táctil (`lightImpact`) en cada interacción de la barra.
+- Nav inferior en **pill flotante con glassmorphism** (`BackdropFilter`): un `PageView` controla el cuerpo y un indicador arrastrable (`_NavStrip`) se mueve junto con `PageController`.
+- Iconos (`_NavIcon`) cambian de outline a solid al seleccionarse y hacen un **rebote elástico** (`AnimationController` + `TweenSequence`) al convertirse en la pestaña activa.
+- La barra se **encoge al hacer scroll** dentro de la pestaña activa (shrink animation) y vuelve a su tamaño tras un breve reposo.
+- Pestañas: **Inicio**, **Explorar** (rutas + comunidad + certificadas), **Chat**, **Perfil** (con sub-tabs Mi Perfil / Favoritos).
 
-### 4. IA y Recomendaciones (`explore/`)
+### 4. Explorar, IA y comunidad (`explore_screen.dart`, `ai_route_service.dart`)
 
-- **Recomendaciones IA** (`recommendation_screen.dart`): Ahora integrada como pestaña central del menú principal para acceso rápido a sugerencias inteligentes.
-- Datos servidos por `explore_service.dart`.
+- **Rutas con IA**: generadas por `ai_route_service.dart`; las paradas se muestran con la misma estructura visual que una ruta manual (sin fecha ni "coincide con…" para no delatar el origen IA).
+- **Comunidad**: feed estilo Instagram (imagen full-width, chip de lugar overlay, like + caption) dentro de `explore_screen.dart`.
+- **Borrado lógico** de posts propios (`DELETE` sobre `communityPosts`) con ocultación inmediata en la UI y persistencia vía `is_active`.
 
-### 5. Diario y comunidad (`user_content_service.dart`)
+### 5. Diario y favoritos (`user_content_service.dart`, `profile_screen.dart`)
 
-- **Favoritos y visitas**: Bajo rutas `meFavorites` / `meVisits`.
-- **Comunidad**: 
-  - Gestión de publicaciones bajo `communityPosts`.
-  - **Borrado Lógico**: Soporte para eliminar posts propios (`DELETE` endpoint) con ocultación inmediata en la UI y persistencia en base de datos vía `is_active`.
+- **Favoritos y visitas**: bajo rutas `meFavorites` / `meVisits`; se muestran en la pestaña "Favoritos" dentro de Perfil (cada tab tiene su propio scroll independiente — se evitó anidar `NestedScrollView` para prevenir crashes de layout).
+
+### 6. Chat y FAQs (`chat_service.dart`, `chat_screen.dart`)
+
+- Conversación turista↔empresa vía `conversations` / `messages`.
+- Botón asistente (🤖): si el campo de texto está vacío, abre una **hoja de preguntas frecuentes** (`GET /conversations/:id/faqs`) para que el turista elija una pregunta; si hay texto, consulta el bot vía búsqueda de texto completo (`bot-message`) y siempre responde con una burbuja (incluye respuesta de fallback si no hay match).
+- Las empresas gestionan sus propias FAQs desde el dashboard PLATAFORMA (`/api/v2/empresa/faqs`).
+
+### 7. Wellness / Welltur (`wellness_service.dart`, `wellness_assessment_screen.dart`)
+
+- Test de 8 preguntas basado en instrumentos validados (SF-36 Vitalidad, SMBM, PSS-4, PANAS-NA) que determina un "modo de viaje" (calma, restauración, equilibrio).
+- Resultado usado para personalizar recomendaciones; accesible desde un banner en Home y desde la sección de bienestar en Perfil.
 
 ### 6. Preferencias del viajero (`preferences/`)
 

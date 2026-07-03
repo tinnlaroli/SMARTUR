@@ -135,7 +135,7 @@ abstract class AppLocalizations {
   /// No description provided for @darkMode.
   ///
   /// In es, this message translates to:
-  /// **'Modo Oscuro'**
+  /// **'Tema'**
   String get darkMode;
 
   /// No description provided for @language.
@@ -993,7 +993,7 @@ abstract class AppLocalizations {
   /// No description provided for @exploreGreeting.
   ///
   /// In es, this message translates to:
-  /// **'Explorar{name}'**
+  /// **'Explora{name}'**
   String exploreGreeting(Object name);
 
   /// No description provided for @highMountainsVeracruz.

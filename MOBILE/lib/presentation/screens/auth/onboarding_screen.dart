@@ -163,9 +163,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             animation: Listenable.merge(
                                 [_colorController, _floatController]),
                             builder: (context, _) {
-                              final isDark =
-                                  scheme.brightness == Brightness.dark;
-                              // Flotación + escala según qué tan centrada está la página
                               final bob = (_floatController.value - 0.5) * 14;
                               final pageScale =
                                   (1.0 - localDelta.abs() * 0.14)
@@ -174,34 +171,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 offset: Offset(0, bob),
                                 child: Transform.scale(
                                   scale: pageScale,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(22),
-                                    decoration: BoxDecoration(
-                                      // Lienzo adaptativo: claro en modo oscuro
-                                      // para que los trazos oscuros contrasten.
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.9)
-                                          : Colors.white
-                                              .withValues(alpha: 0.55),
-                                      borderRadius: BorderRadius.circular(28),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.08),
-                                          blurRadius: 24,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: _buildImageAsset(
-                                      contents[i].imagePath,
-                                      height: (MediaQuery.sizeOf(context)
-                                                  .height *
-                                              0.32)
-                                          .clamp(180.0, 340.0),
-                                      tintColor:
-                                          _colorAnim?.value ?? scheme.primary,
-                                    ),
+                                  child: _buildImageAsset(
+                                    contents[i].imagePath,
+                                    height: (MediaQuery.sizeOf(context).height *
+                                            0.32)
+                                        .clamp(180.0, 340.0),
+                                    tintColor:
+                                        _colorAnim?.value ?? scheme.primary,
                                   ),
                                 ),
                               );
