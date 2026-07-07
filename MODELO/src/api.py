@@ -691,8 +691,17 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
             'hybrid_cf_rf':   {**_rmse_mae(actuals, hybrid_preds), 'alpha': best_alpha},
         }
 
-        candidates = {k: algorithms[k]['rmse'] for k in ('cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')}
+        # 'baseline' SÍ compite — antes se excluía de "candidates" a propósito,
+        # lo que garantizaba que el sistema nunca pudiera admitir que predecir
+        # el promedio simple le gana a CF/RF/híbrido. Eso ocultaba el problema
+        # real (el modelo no aporta valor) en vez de reportarlo.
+        candidates = {k: algorithms[k]['rmse'] for k in ('baseline', 'cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')}
         best_algorithm = min(candidates, key=candidates.get)
+        if best_algorithm == 'baseline':
+            logger.warning(
+                f"[metrics] El baseline (promedio simple, RMSE={algorithms['baseline']['rmse']:.4f}) "
+                f"le gana a CF/RF/híbrido — el modelo no está aportando valor medible hoy."
+            )
 
         result = {
             'best_algorithm': best_algorithm,

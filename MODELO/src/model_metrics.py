@@ -2,6 +2,7 @@
 Comparativa formal de los 3 algoritmos ML y persistencia de métricas / configuración óptima.
 """
 import json
+import logging
 import os
 from math import sqrt
 
@@ -12,6 +13,7 @@ from cf import predict_cf_pearson
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _METRICS_PATH = os.path.join(_DIR, '..', 'models', 'algorithm_metrics.json')
+logger = logging.getLogger(__name__)
 
 DEFAULT_METRICS = {
     'best_algorithm': 'hybrid',
@@ -108,7 +110,12 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
     triple = 0.15 * preds_cf + 0.50 * preds_rf + 0.35 * preds_gbm
     metrics['hybrid_triple'] = _rmse_mae(actuals, triple)
 
+    # 'baseline' SÍ compite — antes se excluía a propósito, lo que garantizaba
+    # que el sistema nunca pudiera admitir que predecir el promedio simple le
+    # gana a CF/RF/GBM/híbrido. Eso ocultaba el problema real (falta de señal
+    # aprendida) detrás de un "mejor algoritmo" que en realidad no lo era.
     candidates = {
+        'baseline': metrics['baseline']['rmse'],
         'cf_knn_pearson': metrics['cf_knn_pearson']['rmse'],
         'random_forest': metrics['random_forest']['rmse'],
         'gradient_boosting': metrics['gradient_boosting']['rmse'],
@@ -116,6 +123,11 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
         'hybrid_triple': metrics['hybrid_triple']['rmse'],
     }
     best_algorithm = min(candidates, key=candidates.get)
+    if best_algorithm == 'baseline':
+        logger.warning(
+            f"[compare_algorithms] El baseline (RMSE={metrics['baseline']['rmse']:.4f}) "
+            f"le gana a CF/RF/GBM/híbrido — el modelo no aporta valor medible hoy."
+        )
 
     rf_rmse = metrics['random_forest']['rmse']
     gbm_rmse = metrics['gradient_boosting']['rmse']
