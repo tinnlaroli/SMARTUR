@@ -54,4 +54,11 @@ jobs:
             # Limpia imágenes huérfanas
             docker image prune -f
 
+            # Limpia caché de build vieja (>72h) — sin esto se acumula en cada
+            # deploy sin límite (llegó a 29GB/117 volúmenes huérfanos antes de
+            # esta línea, con el disco al 80%). No toca imágenes/contenedores
+            # activos, solo caché de capas intermedias de builds pasados.
+            docker builder prune -af --filter until=72h
+            docker volume prune -f
+
             echo "✓ Deploy completado: $(date)"

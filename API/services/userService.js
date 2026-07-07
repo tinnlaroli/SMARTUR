@@ -78,6 +78,19 @@ export class UserService {
         return { status: 403, message: "Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada." };
       }
 
+      // Cuenta creada vía Google/Facebook: la contraseña es aleatoria e
+      // inservible para el usuario. Solo se revela esto porque el email SÍ
+      // existe (no rompe la política de no-filtrar-existencia del resto de
+      // errores, que siguen siendo el genérico "Credenciales incorrectas").
+      if (user.auth_provider && user.auth_provider !== 'local') {
+        return {
+          status: 409,
+          message: `Esta cuenta usa ${user.auth_provider === 'google' ? 'Google' : 'Facebook'} para iniciar sesión.`,
+          code: 'SOCIAL_ACCOUNT',
+          provider: user.auth_provider,
+        };
+      }
+
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return { status: 400, message: "Credenciales incorrectas" };
@@ -110,6 +123,43 @@ export class UserService {
         error: error.message,
       };
     }
+  }
+
+  /**
+   * Reenvía el código de verificación de login sin pedir la contraseña de
+   * nuevo — solo funciona si ya existe un código pendiente (no usado, no
+   * expirado) para ese usuario, es decir que ya pasó el paso 1 (login()).
+   * Esto evita convertir el reenvío en una forma de generar OTPs sin
+   * conocer la contraseña.
+   */
+  static async resendLoginOtp(email) {
+    const user = await findByEmail(email);
+    if (!user) throw new Error('Usuario no encontrado');
+
+    const pending = await pool.query(
+      `SELECT 1 FROM login_tokens
+       WHERE user_id = $1 AND used = FALSE AND expires_at > NOW()`,
+      [user.user_id],
+    );
+    if (pending.rowCount === 0) {
+      throw new Error('No hay una verificación pendiente. Inicia sesión de nuevo.');
+    }
+
+    // Invalida los códigos pendientes anteriores y emite uno nuevo.
+    await pool.query(
+      `UPDATE login_tokens SET used = TRUE WHERE user_id = $1 AND used = FALSE`,
+      [user.user_id],
+    );
+
+    const verificationCode = String(crypto.randomInt(100000, 1000000));
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    await pool.query(
+      `INSERT INTO login_tokens (user_id, token, expires_at, used)
+             VALUES ($1, $2, $3, $4)`,
+      [user.user_id, hashToken(verificationCode), expiresAt, false],
+    );
+
+    return verificationCode;
   }
 
   /**

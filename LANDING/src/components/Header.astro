@@ -598,7 +598,7 @@ const {
     }
 
     // Close menu and navigate when clicking links
-    const menuLinks = navbar.querySelectorAll('.menu a[href^="#"]');
+    const menuLinks = navbar.querySelectorAll<HTMLAnchorElement>('.menu a[href^="#"]');
     menuLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         console.log('Link clicked:', link.href);

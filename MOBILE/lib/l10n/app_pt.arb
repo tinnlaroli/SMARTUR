@@ -38,6 +38,12 @@
   "sendCode": "Enviar código",
   "updatePassword": "Atualizar senha",
   "resendCode": "Reenviar código",
+  "otpExpiresIn": "O código expira em {time}",
+  "@otpExpiresIn": { "placeholders": { "time": {} } },
+  "otpExpired": "O código expirou",
+  "resendCodeIn": "Reenviar em {seconds}s",
+  "@resendCodeIn": { "placeholders": { "seconds": {} } },
+  "otpResentSuccess": "Código reenviado, verifique seu e-mail",
   "codeSixDigits": "Código de 6 dígitos",
   "passwordMinChars": "Mínimo de 8 caracteres",
   "passwordNeedUpper": "Inclua pelo menos uma letra maiúscula",
@@ -221,6 +227,7 @@
   "signInButton": "ENTRAR",
   "createAccount": "CRIAR CONTA",
   "continueWithGoogle": "Continuar com Google",
+  "continueWithFacebook": "Continuar com Facebook",
   "noAccountPrompt": "Não tem uma conta? ",
   "haveAccountPrompt": "Já tem uma conta? ",
   "signUp": "Cadastre-se",
@@ -371,6 +378,18 @@
   "securitySection": "Segurança",
   "activeSessions": "Sessões ativas",
   "activeSessionsSubtitle": "Gerencie seus dispositivos conectados",
+  "linkWebSession": "Vincular sessão web",
+  "linkWebSessionSubtitle": "Escaneie o código QR da tela de login",
+  "qrScanTitle": "Vincular sessão web",
+  "qrScanInstructions": "Aponte a câmera para o código QR da tela de login na web",
+  "qrScanConfirmTitle": "Autorizar login?",
+  "qrScanConfirmBody": "Isso iniciará sessão na sua conta a partir de outro dispositivo (navegador web).",
+  "qrScanApprove": "Autorizar",
+  "qrScanDeny": "Recusar",
+  "qrScanApproved": "Sessão web autorizada",
+  "qrScanDenied": "Login recusado",
+  "qrScanInvalid": "Este código não é válido para vincular sessão",
+  "qrScanExpired": "O código expirou ou não é válido",
   "sessionRevokeSuccess": "Sessão encerrada com sucesso",
   "sessionRevokeError": "Não foi possível encerrar a sessão. Tente novamente.",
 
@@ -461,7 +480,8 @@
   "recoSavedInDiary":"Recomendações salvas. Você pode revisá-las no Diário.",
   "recoResultsDone":"Concluir",
   "recoResultsRankHint":"Ordenados por compatibilidade com o seu perfil",
-  "googleSignInReleaseConfig":"O Google Sign-In não está configurado nesta versão. Registre o SHA do keystore de release no Firebase."
+  "googleSignInReleaseConfig":"O Google Sign-In não está configurado nesta versão. Registre o SHA do keystore de release no Firebase.",
+  "facebookSignInUnavailable":"O login com Facebook não está disponível no momento."
   ,"communityEmpty":"Nenhuma publicação ainda"
   ,"communityEmptyHint":"Seja o primeiro a compartilhar sua experiência"
   ,"communityFirstPost":"Criar publicação"

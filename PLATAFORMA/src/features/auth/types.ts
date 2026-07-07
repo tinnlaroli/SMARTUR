@@ -53,3 +53,22 @@ export interface ResetPasswordPayload {
     token: string;
     newPassword: string;
 }
+
+export interface QrChallengeResponse {
+    challengeId: number;
+    token: string;
+    expiresAt: string;
+}
+
+export type QrChallengeStatus = 'pending' | 'approved' | 'denied' | 'expired' | 'consumed';
+
+export interface QrExchangeResponse {
+    token: string;
+    refreshToken?: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        role_id: number;
+    };
+}

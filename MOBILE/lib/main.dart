@@ -98,6 +98,16 @@ class SmarturApp extends StatelessWidget {
               locale: appSettings.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
+              // Evita que el tamaño de letra del sistema (accesibilidad) del
+              // teléfono del usuario descuadre el layout diseñado; se permite
+              // un rango razonable sin dejar que crezca sin control.
+              builder: (context, child) {
+                return MediaQuery.withClampedTextScaling(
+                  minScaleFactor: 0.9,
+                  maxScaleFactor: 1.15,
+                  child: child!,
+                );
+              },
               home: _AppLifecycleWatcher(
                 child: _SplashGate(seenOnboarding: seenOnboarding),
               ),

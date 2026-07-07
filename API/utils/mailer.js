@@ -116,35 +116,49 @@ async function deliver({ to, subject, text, html, title, bulk = true }) {
     });
 }
 
-export async function sendEmail(to, code) {
+// Los tres correos de OTP (login, reset de contraseña, registro de empresa)
+// comparten exactamente la misma estructura visual — solo cambian el título,
+// la intro y cuánto dura el código. Un solo helper evita que se desalineen
+// con el tiempo (ya pasó con sendRegistrationConfirmation, que tenía su
+// propio bloque de código con otro estilo).
+async function sendOtpEmail({ to, subject, title, introText, code, validityMinutes, note, bulk = true }) {
     const content = `
-      ${heading('Recuperación de contraseña')}
-      ${paragraph('Usa este código para restablecer tu contraseña.')}
+      ${heading(title)}
+      ${paragraph(introText)}
       ${codeBlock(code)}
-      ${paragraph(`Válido por <strong style="color:${TEXT};">15 minutos</strong>. Si no lo solicitaste, ignora este correo.`)}`;
+      ${paragraph(`Válido por <strong style="color:${TEXT};">${validityMinutes} minutos</strong>. ${note}`)}`;
 
     await deliver({
         to,
-        subject: 'Código de recuperación — SMARTUR',
-        title: 'Recuperación de contraseña',
-        text: `Recuperación de contraseña\n\nCódigo: ${code}\n\nVálido 15 minutos.\n\nSMARTUR`,
+        subject: `${subject} — SMARTUR`,
+        title,
+        text: `${title}\n\nCódigo: ${code}\n\nVálido ${validityMinutes} minutos.\n\nSMARTUR`,
         html: content,
+        bulk,
+    });
+}
+
+export async function sendEmail(to, code) {
+    await sendOtpEmail({
+        to,
+        code,
+        subject: 'Código de recuperación',
+        title: 'Recuperación de contraseña',
+        introText: 'Usa este código para restablecer tu contraseña.',
+        validityMinutes: 15,
+        note: 'Si no lo solicitaste, ignora este correo.',
     });
 }
 
 export async function sendEmailVerification(to, code) {
-    const content = `
-      ${heading('Verificación de acceso')}
-      ${paragraph('Introduce este código para completar el inicio de sesión.')}
-      ${codeBlock(code)}
-      ${paragraph(`Válido por <strong style="color:${TEXT};">5 minutos</strong>. Si no reconoces esta actividad, ignora este correo.`)}`;
-
-    await deliver({
+    await sendOtpEmail({
         to,
-        subject: 'Código de verificación — SMARTUR',
+        code,
+        subject: 'Código de verificación',
         title: 'Verificación de acceso',
-        text: `Verificación de acceso\n\nCódigo: ${code}\n\nVálido 5 minutos.\n\nSMARTUR`,
-        html: content,
+        introText: 'Introduce este código para completar el inicio de sesión.',
+        validityMinutes: 5,
+        note: 'Si no reconoces esta actividad, ignora este correo.',
     });
 }
 
@@ -256,18 +270,14 @@ export async function sendExistingAccountNotification(to) {
 }
 
 export async function sendRegistrationConfirmation(to, { name, otp }) {
-    const content = `
-      ${heading(`Hola ${name}, confirma tu correo`)}
-      ${paragraph('Gracias por registrar tu empresa en SMARTUR. Usa el siguiente código para verificar tu correo electrónico:')}
-      <div style="background:#f3f0ff;border-radius:12px;padding:24px;text-align:center;margin:24px 0;font-size:32px;font-weight:700;letter-spacing:8px;color:#6d28d9;font-family:monospace">${otp}</div>
-      ${paragraph('Este código expira en 10 minutos. Si no registraste una empresa en SMARTUR, ignora este mensaje.')}`;
-
-    await deliver({
+    await sendOtpEmail({
         to,
-        subject: 'Confirma tu correo — SMARTUR',
-        title: 'Verificación de correo',
-        text: `Confirma tu correo\n\nHola ${name}, tu código de verificación es: ${otp}\n\nSMARTUR`,
-        html: content,
+        code: otp,
+        subject: 'Confirma tu correo',
+        title: `Hola ${name}, confirma tu correo`,
+        introText: 'Gracias por registrar tu empresa en SMARTUR. Usa el siguiente código para verificar tu correo electrónico:',
+        validityMinutes: 10,
+        note: 'Si no registraste una empresa en SMARTUR, ignora este mensaje.',
         bulk: false,
     });
 }

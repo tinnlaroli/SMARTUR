@@ -692,6 +692,45 @@ ALTER TABLE tourist_service ALTER COLUMN status SET DEFAULT 'pending_review';
           VALUES ('evaluation_min_score', '7')
           ON CONFLICT (key) DO NOTHING;`,
     },
+    {
+        // Enlaza refresh_tokens con user_sessions para que revocar una sesión
+        // desde "Sesiones activas" corte el acceso real (antes solo marcaba
+        // una bandera cosmética en user_sessions sin afectar refresh_tokens).
+        name: 'v38_refresh_token_session_link',
+        sql: `
+ALTER TABLE refresh_tokens
+    ADD COLUMN IF NOT EXISTS session_id INT REFERENCES user_sessions(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_session ON refresh_tokens(session_id);
+`,
+    },
+    {
+        // Distingue cuentas creadas vía Google/Facebook de las locales, para
+        // poder mostrar un mensaje claro si intentan entrar con contraseña.
+        name: 'v39_user_auth_provider',
+        sql: `
+ALTER TABLE "user"
+    ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) NOT NULL DEFAULT 'local';
+`,
+    },
+    {
+        // Login por QR: la web genera un reto, el móvil (ya logueado) lo
+        // aprueba escaneándolo, y la web canjea el reto por una sesión real.
+        name: 'v40_qr_login_sessions',
+        sql: `
+CREATE TABLE IF NOT EXISTS qr_login_sessions (
+    id                   SERIAL PRIMARY KEY,
+    challenge_token_hash TEXT NOT NULL UNIQUE,
+    status               VARCHAR(10) NOT NULL DEFAULT 'pending'
+                             CHECK (status IN ('pending','approved','denied','expired','consumed')),
+    user_id              INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+    device_hint          VARCHAR(200),
+    ip                   VARCHAR(50),
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at           TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '2 minutes'
+);
+CREATE INDEX IF NOT EXISTS idx_qr_login_sessions_status ON qr_login_sessions(status, expires_at);
+`,
+    },
 ];
 
 export async function runMigrations() {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
@@ -147,12 +148,34 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     bool isWaitingOTP = false;
     bool isLoadingEmail = false;
     bool isLoadingGoogle = false;
+    bool isLoadingFacebook = false;
     bool rememberMe = false;
     bool acceptedTerms = false;
     bool obscurePassword = true;
     bool isForgotPassword = false;
     int forgotStep = 0; // 0: Email, 1: Code & New Password
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    // Temporizador del OTP de login: misma ventana que el servidor (5 min)
+    // + cooldown de reenvío, igual que en la web (TwoFactorView.tsx).
+    const otpTtlSeconds = 5 * 60;
+    const resendCooldownSeconds = 30;
+    Timer? otpTimer;
+    int otpSecondsLeft = otpTtlSeconds;
+    int resendCooldown = resendCooldownSeconds;
+    bool isResendingOtp = false;
+
+    void startOtpTimer(StateSetter setModalState) {
+      otpTimer?.cancel();
+      otpSecondsLeft = otpTtlSeconds;
+      resendCooldown = resendCooldownSeconds;
+      otpTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        setModalState(() {
+          if (otpSecondsLeft > 0) otpSecondsLeft--;
+          if (resendCooldown > 0) resendCooldown--;
+        });
+      });
+    }
 
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
@@ -275,10 +298,58 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                otpSecondsLeft > 0
+                                    ? l10n.otpExpiresIn(
+                                        '${otpSecondsLeft ~/ 60}:${(otpSecondsLeft % 60).toString().padLeft(2, '0')}')
+                                    : l10n.otpExpired,
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: (resendCooldown > 0 || isResendingOtp)
+                                    ? null
+                                    : () async {
+                                        setModalState(() => isResendingOtp = true);
+                                        try {
+                                          await _authService
+                                              .resendLoginOtp(emailController.text.trim());
+                                          if (context.mounted) {
+                                            SmarturNotifications.showSuccess(
+                                                context, l10n.otpResentSuccess);
+                                          }
+                                          setModalState(() {
+                                            otpController.clear();
+                                            isResendingOtp = false;
+                                          });
+                                          startOtpTimer(setModalState);
+                                        } catch (e) {
+                                          setModalState(() => isResendingOtp = false);
+                                          if (context.mounted) {
+                                            SmarturNotifications.showError(
+                                                context,
+                                                e is AuthException
+                                                    ? e.message
+                                                    : l10n.connectionError);
+                                          }
+                                        }
+                                      },
+                                child: Text(
+                                  resendCooldown > 0
+                                      ? l10n.resendCodeIn(resendCooldown)
+                                      : l10n.resendCode,
+                                  style: TextStyle(color: scheme.primary),
+                                ),
+                              ),
                               TextButton(
                                 onPressed: () => setModalState(() {
                                   isWaitingOTP = false;
                                   otpController.clear();
+                                  otpTimer?.cancel();
                                 }),
                                 child: Text(
                                   l10n.changeEmail,
@@ -477,7 +548,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         ],
                         const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: (isLoadingEmail || isLoadingGoogle)
+                          onPressed: (isLoadingEmail || isLoadingGoogle || isLoadingFacebook)
                               ? null
                               : () async {
                                   if (formKey.currentState!.validate()) {
@@ -521,6 +592,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                           );
                                           if (response != null && response['requiresVerification'] == true) {
                                             setModalState(() => isWaitingOTP = true);
+                                            startOtpTimer(setModalState);
                                           } else {
                                             if (context.mounted) {
                                               SmarturNotifications.showError(context, l10n.invalidCredentials);
@@ -596,7 +668,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       if (!isWaitingOTP && !isForgotPassword) ...[
                         const SizedBox(height: 12),
                         OutlinedButton(
-                          onPressed: (isLoadingEmail || isLoadingGoogle)
+                          onPressed: (isLoadingEmail || isLoadingGoogle || isLoadingFacebook)
                               ? null
                               : () async {
                                   setModalState(() => isLoadingGoogle = true);
@@ -698,6 +770,105 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   ],
                                 ),
                         ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: (isLoadingEmail || isLoadingGoogle || isLoadingFacebook)
+                              ? null
+                              : () async {
+                                  setModalState(() => isLoadingFacebook = true);
+                                  try {
+                                    final response = await _authService
+                                        .loginWithFacebook(
+                                          rememberMe: rememberMe,
+                                        );
+                                    if (response != null && context.mounted) {
+                                      final savedName = await _authService
+                                          .getUserName();
+                                      if (!context.mounted) return;
+                                      Navigator.pop(context);
+                                      Navigator.pushReplacement(
+                                        context,
+                                        smarturFadeRoute(
+                                          MainScreen(
+                                            userName: savedName,
+                                            isNewLogin: true,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  } on AuthCancelledException {
+                                    // El usuario cerró el diálogo de Facebook — sin error.
+                                  } on AuthException catch (e) {
+                                    if (context.mounted) {
+                                      final msg = e.code == 'auth.facebook_unavailable'
+                                          ? l10n.facebookSignInUnavailable
+                                          : e.message;
+                                      SmarturNotifications.showError(context, msg);
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      SmarturNotifications.showError(
+                                        context,
+                                        l10n.connectionError,
+                                      );
+                                    }
+                                  } finally {
+                                    setModalState(
+                                      () => isLoadingFacebook = false,
+                                    );
+                                  }
+                                },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: scheme.outlineVariant),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: isLoadingFacebook
+                              ? Text(
+                                  '…',
+                                  style: TextStyle(
+                                    color: scheme.primary.withValues(
+                                      alpha: 0.85,
+                                    ),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Outfit',
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 25,
+                                      height: 25,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: scheme.outlineVariant,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'f',
+                                        style: TextStyle(
+                                          color: scheme.primary,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'Outfit',
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      l10n.continueWithFacebook,
+                                      style: TextStyle(
+                                        color: scheme.onSurface,
+                                        fontFamily: 'Outfit',
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
                       ],
                       const SizedBox(height: 32),
                       TextButton(
@@ -739,7 +910,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           },
         );
       },
-    );
+    ).whenComplete(() => otpTimer?.cancel());
   }
 
   Widget _buildAuthFields(
@@ -996,19 +1167,32 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       if (!didAuthenticate) return;
 
       final String? token = await _authService.getToken();
-      if (token != null && context.mounted) {
+      if (token == null) {
+        await _authService.clearSession();
+        if (context.mounted) {
+          SmarturNotifications.showInfo(context, l10n.sessionExpired);
+        }
+        return;
+      }
+
+      // La huella solo desbloquea la UI local; hay que confirmar contra el
+      // servidor que la sesión sigue viva (no fue revocada desde "Sesiones
+      // activas" en otro dispositivo, ni expiró) antes de dejar pasar.
+      final bool stillValid = await _authService.validateTokenWithServer();
+      if (!stillValid) {
+        if (context.mounted) {
+          SmarturNotifications.showInfo(context, l10n.sessionExpired);
+        }
+        return;
+      }
+
+      if (context.mounted) {
         Navigator.pushReplacement(
           context,
           smarturFadeRoute(
             const MainScreen(userName: null, isNewLogin: false),
           ),
         );
-      } else if (context.mounted) {
-        // Si no hay token guardado (token == null), informamos
-        await _authService.clearSession();
-        if (context.mounted) {
-          SmarturNotifications.showInfo(context, l10n.sessionExpired);
-        }
       }
     } catch (e) {
       if (context.mounted) {

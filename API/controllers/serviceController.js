@@ -11,6 +11,7 @@ import {
 } from '../utils/refreshTokenHelper.js';
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
+import pool from '../config/db.js';
 
 function getClientIp(req) {
     const forwarded = req.headers['x-forwarded-for'];
@@ -80,11 +81,33 @@ class ServicesController {
             }
 
             await logSecurityEvent('LOGIN_FAIL', email ?? null, ip, 'WARN');
-            return res.status(result.status).json({ message: result.message, error: result.error });
+            return res.status(result.status).json({
+                message: result.message,
+                error: result.error,
+                ...(result.code ? { code: result.code, provider: result.provider } : {}),
+            });
         } catch (error) {
             console.error('Error en loginController:', error);
             await logSecurityEvent('LOGIN_FAIL', req.body?.email ?? null, ip, 'WARN').catch(() => {});
             return res.status(500).json({ message: 'Error del servidor' });
+        }
+    }
+
+    static async resendOtpController(req, res) {
+        const ip = getClientIp(req);
+        try {
+            const { email } = req.body;
+            const code = await UserService.resendLoginOtp(email);
+            try {
+                await sendEmailVerification(email, code);
+            } catch (emailError) {
+                // El código ya quedó guardado; el usuario puede reintentar el reenvío.
+            }
+            await logSecurityEvent('OTP_RESEND', email ?? null, ip, 'INFO');
+            return res.status(200).json({ message: 'Código reenviado' });
+        } catch (error) {
+            await logSecurityEvent('OTP_RESEND', req.body?.email ?? null, ip, 'WARN').catch(() => {});
+            return res.status(400).json({ message: error.message });
         }
     }
 
@@ -101,10 +124,11 @@ class ServicesController {
             }
 
             await logSecurityEvent('LOGIN_SUCCESS', email ?? null, ip, 'INFO');
-            // Fire-and-forget: record device session
-            recordSession(result.data.user.id, req);
+            // Se espera (no fire-and-forget) porque el refresh token necesita
+            // el session_id para poder revocarse junto con la sesión.
+            const sessionId = await recordSession(result.data.user.id, req);
             const rawRefresh = generateRefreshToken();
-            await storeRefreshToken(result.data.user.id, rawRefresh);
+            await storeRefreshToken(result.data.user.id, rawRefresh, sessionId);
             res.json({
                 message: 'Login exitoso',
                 token: result.data.token,
@@ -121,10 +145,13 @@ class ServicesController {
     static async refreshController(req, res) {
         try {
             const { refreshToken } = req.body;
-            const userId = await validateAndRotateRefreshToken(refreshToken);
-            if (!userId) {
+            const rotated = await validateAndRotateRefreshToken(refreshToken);
+            if (!rotated) {
+                // Cubre token inválido/expirado/ya usado Y el caso de una sesión
+                // revocada desde "Sesiones activas" — en ambos casos se corta el acceso.
                 return res.status(401).json({ message: 'Refresh token inválido o expirado.' });
             }
+            const { userId, sessionId } = rotated;
 
             const user = await User.findById(userId);
             if (!user || !user.is_active) {
@@ -140,7 +167,13 @@ class ServicesController {
 
             const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
             const newRefresh = generateRefreshToken();
-            await storeRefreshToken(user.user_id, newRefresh);
+            // Mantiene el mismo session_id al rotar, para que "Sesiones activas"
+            // siga representando el mismo dispositivo y su revoke lo alcance.
+            await storeRefreshToken(user.user_id, newRefresh, sessionId);
+            if (sessionId) {
+                pool.query('UPDATE user_sessions SET last_seen = NOW() WHERE id = $1', [sessionId])
+                    .catch(() => {});
+            }
 
             return res.json({ token: newAccessToken, refreshToken: newRefresh });
         } catch (error) {

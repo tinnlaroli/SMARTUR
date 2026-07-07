@@ -81,15 +81,15 @@ class User {
     }
 
     static async create(data) {
-        const { name, email, password, role_id, photo_url = null, avatar_icon_key = null } = data;
+        const { name, email, password, role_id, photo_url = null, avatar_icon_key = null, auth_provider = 'local' } = data;
         const normalizedEmail = normalizeEmail(email);
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const result = await pool.query(
-            `INSERT INTO "user" (name, email, password, role_id, photo_url, avatar_icon_key) 
-             VALUES ($1, $2, $3, $4, $5, $6) 
+            `INSERT INTO "user" (name, email, password, role_id, photo_url, avatar_icon_key, auth_provider)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [name, normalizedEmail, hashedPassword, role_id, photo_url, avatar_icon_key]
+            [name, normalizedEmail, hashedPassword, role_id, photo_url, avatar_icon_key, auth_provider]
         );
 
         return result.rows[0];

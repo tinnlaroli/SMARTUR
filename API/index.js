@@ -207,10 +207,25 @@ app.use('/api/v2/contact', contactLimiter);
 
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
+app.use('/api/v2/resend-otp', authLimiter);
+app.use('/api/v2/resend-otp', otpLimiter);
 app.use('/api/v2/auth/register-empresa', authLimiter);
 app.use('/api/v2/auth/verify-email-otp', authLimiter);
 app.use('/api/v2/auth/verify-email-otp', otpLimiter);
 app.use('/api/v2/auth/refresh', authLimiter);
+// Login por QR: challenge/approve/deny/exchange son acciones puntuales (authLimiter),
+// pero /status se sondea cada ~2s desde la web, por lo que necesita un límite
+// propio más permisivo — si no, el polling normal se bloquearía solo.
+app.use('/api/v2/auth/qr/challenge', authLimiter);
+app.use(/^\/api\/v2\/auth\/qr\/\d+\/(approve|deny|exchange)$/, authLimiter);
+const qrPollLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiadas consultas. Intenta de nuevo en un minuto.' },
+});
+app.use(/^\/api\/v2\/auth\/qr\/\d+\/status$/, qrPollLimiter);
 
 // ─────────────────────────────────────────────────────────────────────────────
 

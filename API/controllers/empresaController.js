@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import cloudinary from '../config/cloudinary.js';
 import { validatePassword } from '../validators/userValidators.js';
 import { generateRefreshToken, storeRefreshToken } from '../utils/refreshTokenHelper.js';
+import { recordSession } from '../utils/sessionHelper.js';
 import { sendRegistrationConfirmation, sendExistingAccountNotification } from '../utils/mailer.js';
 
 async function uploadServiceImage(buffer, id_company) {
@@ -308,8 +309,9 @@ class EmpresaController {
                 { expiresIn: '15m' },
             );
 
+            const sessionId = await recordSession(user.user_id, req);
             const rawRefresh = generateRefreshToken();
-            await storeRefreshToken(user.user_id, rawRefresh);
+            await storeRefreshToken(user.user_id, rawRefresh, sessionId);
 
             return res.status(201).json({
                 message: 'Email verificado. Empresa registrada correctamente.',
@@ -339,8 +341,9 @@ class EmpresaController {
                             process.env.JWT_SECRET,
                             { expiresIn: '15m' },
                         );
+                        const sessionId = await recordSession(u.user_id, req);
                         const rawRefresh = generateRefreshToken();
-                        await storeRefreshToken(u.user_id, rawRefresh);
+                        await storeRefreshToken(u.user_id, rawRefresh, sessionId);
                         return res.status(200).json({
                             message: 'Cuenta ya verificada. Sesión iniciada.',
                             token,

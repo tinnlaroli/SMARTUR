@@ -490,6 +490,7 @@ class UserController {
           password: Math.random().toString(36).slice(-12) + "Aa1",
           photo_url: picture,
           avatar_icon_key: null,
+          auth_provider: "google",
         });
         console.log(`Nuevo usuario turista registrado vía Google: ${email}`);
       } else {
@@ -525,10 +526,11 @@ class UserController {
         { expiresIn: "15m" },
       );
 
-      // Fire-and-forget: record device session + issue refresh token
-      recordSession(user.user_id, req);
+      // Se espera para poder enlazar el refresh token a la sesión (permite
+      // que revocarla desde "Sesiones activas" corte el acceso real).
+      const sessionId = await recordSession(user.user_id, req);
       const rawRefresh = generateRefreshToken();
-      await storeRefreshToken(user.user_id, rawRefresh);
+      await storeRefreshToken(user.user_id, rawRefresh, sessionId);
       return res.status(200).json({
         status: "success",
         message: "Autenticación exitosa",
@@ -541,6 +543,99 @@ class UserController {
       return res.status(401).json({
         status: "error",
         message: "Token de Google no válido o expirado",
+      });
+    }
+  }
+
+  /**
+   * Login con Facebook — espeja googleLogin(). Queda listo pero inactivo
+   * hasta que se configure FACEBOOK_APP_ID/FACEBOOK_APP_SECRET en el .env
+   * (se necesita una app de Facebook for Developers con Facebook Login).
+   */
+  static async facebookLogin(req, res) {
+    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
+      return res.status(501).json({
+        status: "error",
+        message: "Inicio de sesión con Facebook no disponible por ahora.",
+      });
+    }
+
+    const { accessToken } = req.body;
+    if (!accessToken) {
+      return res.status(400).json({ status: "error", message: "Token de Facebook requerido" });
+    }
+
+    try {
+      // Verifica el token consultando directamente el perfil — si el token
+      // es inválido/expirado, Graph API responde con un error en el body.
+      const graphUrl = `https://graph.facebook.com/me?fields=id,email,name,picture.type(large)&access_token=${encodeURIComponent(accessToken)}`;
+      const graphRes = await fetch(graphUrl);
+      const profile = await graphRes.json();
+
+      if (!graphRes.ok || profile.error || !profile.email) {
+        console.error("Error en validación de Facebook:", profile.error ?? profile);
+        return res.status(401).json({
+          status: "error",
+          message: "Token de Facebook no válido o expirado",
+        });
+      }
+
+      const { email, name } = profile;
+      const picture = profile.picture?.data?.url ?? null;
+
+      let user = await User.findByEmail(email);
+
+      if (!user) {
+        user = await User.create({
+          name: name || email.split("@")[0],
+          email,
+          role_id: 2,
+          password: Math.random().toString(36).slice(-12) + "Aa1",
+          photo_url: picture,
+          avatar_icon_key: null,
+          auth_provider: "facebook",
+        });
+        console.log(`Nuevo usuario turista registrado vía Facebook: ${email}`);
+      } else {
+        const updates = {};
+        if (user.is_active === false) {
+          updates.is_active = true;
+          console.log(`Reactivando usuario vía Facebook Login: ${email}`);
+        }
+        if (
+          picture &&
+          !user.photo_url &&
+          (user.avatar_icon_key == null || user.avatar_icon_key === '')
+        ) {
+          updates.photo_url = picture;
+        }
+        if (Object.keys(updates).length > 0) {
+          await User.patch(String(user.user_id), updates);
+          user = await User.findById(user.user_id);
+        }
+      }
+
+      const token = jwt.sign(
+        { id: user.user_id, email: user.email, role_id: user.role_id },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" },
+      );
+
+      const sessionId = await recordSession(user.user_id, req);
+      const rawRefresh = generateRefreshToken();
+      await storeRefreshToken(user.user_id, rawRefresh, sessionId);
+      return res.status(200).json({
+        status: "success",
+        message: "Autenticación exitosa",
+        token,
+        refreshToken: rawRefresh,
+        user: toPublicUser(user),
+      });
+    } catch (error) {
+      console.error("Error en validación de Facebook:", error);
+      return res.status(401).json({
+        status: "error",
+        message: "Token de Facebook no válido o expirado",
       });
     }
   }

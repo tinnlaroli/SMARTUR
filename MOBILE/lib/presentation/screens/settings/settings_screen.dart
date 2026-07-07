@@ -14,6 +14,7 @@ import '../../widgets/smartur_ui_kit.dart';
 import '../../widgets/terms_and_conditions_modal.dart';
 import '../../widgets/privacy_policy_modal.dart';
 import '../auth/welcome_screen.dart';
+import '../auth/qr_login_scan_screen.dart';
 import '../main/edit_profile_avatar_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -213,6 +214,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
             onTap: () => _showSessionsSheet(),
+          ),
+          ListTile(
+            leading: const Icon(Icons.qr_code_scanner_outlined, color: SmarturStyle.purple),
+            title: Text(l10n.linkWebSession,
+                style: const TextStyle(fontFamily: 'Outfit')),
+            subtitle: Text(
+              l10n.linkWebSessionSubtitle,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const QrLoginScanScreen()),
+            ),
           ),
 
           const Divider(height: 32),

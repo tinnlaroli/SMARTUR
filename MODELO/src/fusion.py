@@ -28,6 +28,16 @@ from poi_repository import fetch_all_items
 _ALTAS_MONTANAS_LAT = 18.95
 _ALTAS_MONTANAS_LON = -97.05
 
+# Peso del boost de preferencia declarada dentro del blend final. Se deja como
+# constante nombrada (en vez de enterrarlo en la fórmula) para poder ajustarlo
+# con datos reales más adelante sin tocar la lógica de recommend_hybrid.
+PREFERENCE_BOOST_WEIGHT = 0.2
+
+# presupuesto_bucket (fetch_traveler_profile, poi_repository.py) es un string;
+# price_level en df_biz es numérico (misma escala 1-4 que usa rf_model.py para
+# user_budget). Se mapea aquí para poder comparar ambos.
+_BUDGET_BUCKET_LEVEL = {'bajo': 1, 'medio': 2, 'alto': 3, 'premium': 4}
+
 # Keywords per tourism type for explanation tags
 _TOURISM_KEYWORDS: dict[str, list[str]] = {
     'naturaleza':    ['park', 'hiking', 'waterfall', 'nature', 'botanical', 'outdoor', 'mountain', 'volcano'],
@@ -154,6 +164,16 @@ def _diversify(recs, biz_cat_lookup, top_n, max_per_main_cat=2):
     return selected[:top_n]
 
 
+def _categorias_para_tipos(tipos: list[str]) -> list[str]:
+    """Expande una lista de tiposTurismo a sus palabras clave de categoría
+    (MAPEO_CATEGORIAS) — compartido entre el filtro suave (legado) y el
+    boost de preferencia."""
+    categorias: list[str] = []
+    for tipo in tipos or []:
+        categorias.extend(MAPEO_CATEGORIAS.get(tipo, []))
+    return categorias
+
+
 def filtrar_candidatos_por_contexto(biz_df, context):
     """Filtro suave: prioriza negocios cuyas categorías coincidan con tiposTurismo."""
     if not context:
@@ -162,9 +182,7 @@ def filtrar_candidatos_por_contexto(biz_df, context):
     filtered_df = biz_df.copy()
 
     if 'tiposTurismo' in context and context['tiposTurismo']:
-        yelp_categories = []
-        for tipo in context['tiposTurismo']:
-            yelp_categories.extend(MAPEO_CATEGORIAS.get(tipo, []))
+        yelp_categories = _categorias_para_tipos(context['tiposTurismo'])
         if yelp_categories:
             mask = filtered_df['categories'].str.contains(
                 '|'.join(yelp_categories), case=False, na=False
@@ -174,6 +192,61 @@ def filtrar_candidatos_por_contexto(biz_df, context):
                 filtered_df = filtered_df[mask]
 
     return filtered_df
+
+
+def preference_match_score(
+    categories: str,
+    context: dict | None,
+    price_level: float | None = None,
+    is_romantic: int = 0,
+    is_good_for_kids: int = 0,
+) -> float:
+    """
+    Qué tan bien encaja un candidato con las preferencias DECLARADAS por el
+    usuario (perfil real), independiente de lo que CF/RF hayan aprendido de
+    calificaciones. Devuelve un valor en [0, 1]:
+      - 0.6 si la categoría coincide con algún tiposTurismo declarado
+      - 0.25 según qué tan cerca esté price_level del presupuesto_bucket
+        (penalización gradual, no todo-o-nada)
+      - 0.15 si el tipo de grupo (group_type) coincide con las banderas
+        is_romantic/is_good_for_kids del ítem
+
+    A diferencia de filtrar_candidatos_por_contexto (que excluye candidatos
+    y puede degradar en silencio a "sin filtro" si el match da cero), esto
+    nunca elimina candidatos — solo reordena empujando hacia arriba lo que
+    sí coincide, así que la preferencia declarada siempre tiene efecto en el
+    ranking aunque el catálogo de categorías esté mal etiquetado.
+    """
+    if not context:
+        return 0.0
+
+    score = 0.0
+    cats_lower = (categories or '').lower()
+
+    # Tipo de turismo (peso mayor)
+    tipos = context.get('tiposTurismo') or []
+    keywords = _categorias_para_tipos(tipos)
+    if keywords and any(k.lower() in cats_lower for k in keywords):
+        score += 0.6
+
+    # Presupuesto (peso menor, gradual)
+    bucket = context.get('presupuesto_bucket')
+    bucket_level = _BUDGET_BUCKET_LEVEL.get(bucket) if bucket else None
+    if bucket_level is not None and price_level is not None:
+        try:
+            delta = abs(float(price_level) - bucket_level)
+            score += 0.25 * max(0.0, 1.0 - delta / 3.0)
+        except (TypeError, ValueError):
+            pass
+
+    # Tipo de grupo (peso menor)
+    group_type = (context.get('group_type') or '').lower()
+    if group_type == 'familia' and is_good_for_kids:
+        score += 0.15
+    elif group_type == 'pareja' and is_romantic:
+        score += 0.15
+
+    return min(1.0, score)
 
 
 # ---------------------------------------------------------------------------
@@ -226,15 +299,19 @@ def recommend_hybrid(
         biz_candidates = engine.df_biz[engine.df_biz['business_id'].isin(candidate_ids)]
         effective_alpha = alpha
 
-    # Filtro duro (restricciones binarias)
+    # Filtro duro (restricciones binarias — deal-breakers reales, ej. accesibilidad)
     refined_df = filtro_duro(biz_candidates, context)
 
-    # Filtro suave (categorías de turismo)
-    refined_df = filtrar_candidatos_por_contexto(refined_df, context)
-
-    # Fallback: si los filtros vaciaron la lista, usar pool sin filtrar
+    # Fallback: si el filtro duro vació la lista, usar pool sin filtrar
     if refined_df.empty:
         refined_df = biz_candidates
+
+    # NOTA: el filtro suave por tiposTurismo (filtrar_candidatos_por_contexto)
+    # ya NO se aplica aquí — excluía candidatos por texto libre y podía
+    # degradar en silencio a "sin filtro" si el match daba cero resultados
+    # (categories_raw/categories_mapped son texto sin validación fuerte).
+    # En su lugar, la preferencia declarada se usa como boost de score más
+    # abajo (preference_match_score) — nunca excluye, siempre tiene efecto.
 
     final_ids = refined_df['business_id'].tolist()
 
@@ -249,6 +326,11 @@ def recommend_hybrid(
     biz_desc_lookup = ref_df.set_index('business_id')['description'].to_dict() if 'description' in ref_df.columns else {}
     local_id_set    = set(local_biz['business_id']) if not local_biz.empty else set()
     matrix_col_set  = set(engine.user_item_matrix_columns) if engine is not None else set()
+
+    # Lookups para el boost de preferencia (preference_match_score)
+    price_lookup       = ref_df.set_index('business_id')['price_level'].to_dict() if 'price_level' in ref_df.columns else {}
+    is_romantic_lookup = ref_df.set_index('business_id')['is_romantic'].to_dict() if 'is_romantic' in ref_df.columns else {}
+    is_kids_lookup     = ref_df.set_index('business_id')['is_good_for_kids'].to_dict() if 'is_good_for_kids' in ref_df.columns else {}
 
     # ── Distance map for explanation tags ────────────────────────────────
     # Use user-supplied lat/lon from context; fall back to region center.
@@ -282,17 +364,29 @@ def recommend_hybrid(
 
     recommendations = []
 
+    global_mean_rating = engine.train_data['stars'].mean() if engine is not None else 3.5
+
     for biz_id in final_ids:
         # CF / SVD signal
         if biz_id in local_id_set:
-            score_cf = 4.0          # local POI -> proxy positive signal
+            # Los POIs locales (Altas Montañas) no tienen historial de
+            # interacciones CF real (no vienen de Yelp), así que no hay un
+            # score CF que calcular. Antes se usaba un 4.0 fijo para todos,
+            # lo que igualaba a cualquier POI local sin importar su calidad
+            # real y anulaba el ranking dentro de ese grupo. En vez de eso,
+            # usamos la evaluación de calidad del admin (service_evaluation)
+            # como proxy cuando existe, y si no, el promedio global de
+            # calificaciones — así al menos se diferencian entre ellos.
+            q = (quality_scores or {}).get(biz_id)
+            score_cf = 3.0 + 2.0 * q if q is not None else global_mean_rating
         elif biz_id in matrix_col_set:
             score_cf = predict_cf_pearson(user_id, biz_id, engine)
         else:
-            score_cf = engine.train_data['stars'].mean() if engine is not None else 3.5
+            score_cf = global_mean_rating
 
         score_rf  = rf_map.get(biz_id, 3.0)
         score_lfm = lfm_map.get(biz_id, 3.0)
+        cats      = biz_cat_lookup.get(biz_id, '')
 
         # Blending weights:
         #   Cold-start user -> lean on LightFM (feature-based) + RF (content)
@@ -306,6 +400,22 @@ def recommend_hybrid(
             # LightFM not available -> classic blend
             final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
 
+        # Boost de preferencia declarada (perfil real del usuario), no de lo
+        # que CF/RF aprendieron de calificaciones. Nunca excluye candidatos —
+        # solo empuja hacia arriba lo que coincide con tiposTurismo/presupuesto/
+        # grupo, así que la preferencia siempre influye en el ranking aunque
+        # el modelo no tenga suficientes datos para haberla aprendido solo.
+        score_pref = preference_match_score(
+            cats, context,
+            price_level=price_lookup.get(biz_id),
+            is_romantic=is_romantic_lookup.get(biz_id, 0),
+            is_good_for_kids=is_kids_lookup.get(biz_id, 0),
+        )
+        final_score = (
+            (1 - PREFERENCE_BOOST_WEIGHT) * final_score
+            + PREFERENCE_BOOST_WEIGHT * (score_pref * 5.0)
+        )
+
         # Quality boost from admin service_evaluation (service_evaluation.total_score).
         # Non-linear: 0 boost for quality ≤ 0.5 (score ≤ 50/100), +0.3 max at quality = 1.0.
         # This rewards well-evaluated services without demoting unevaluated POIs.
@@ -317,7 +427,6 @@ def recommend_hybrid(
 
         nombre = all_biz_names.get(biz_id, 'Desconocido')
         kind   = biz_kind_lookup.get(biz_id, 'poi')
-        cats   = biz_cat_lookup.get(biz_id, '')
         desc   = biz_desc_lookup.get(biz_id, '') or ''
 
         recommendations.append({
@@ -328,6 +437,7 @@ def recommend_hybrid(
             'score':       float(round(final_score, 3)),
             'pred_cf':     float(round(score_cf, 3)),
             'pred_rf':     float(round(score_rf, 3)),
+            'pred_pref':   float(round(score_pref, 3)),
             'kind':        kind,
             'reason_tags': _build_reason_tags(
                 biz_id, cats, context or {},

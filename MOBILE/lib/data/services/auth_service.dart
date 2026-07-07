@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -278,10 +279,12 @@ class AuthService {
   Future<void> setRememberMe(bool remember) async {
     await _storage.write(key: _rememberMeKey, value: remember.toString());
     final now = DateTime.now();
-    // rememberMe=true  → 7 días (sesión persistente larga)
-    // rememberMe=false → 24h (igual que el JWT del servidor; no quedarse logueado días)
+    // rememberMe=true  → 30 días, igual al vencimiento real del refresh token
+    // del servidor (refreshTokenHelper.js) — antes eran 7d y el reloj local
+    // cerraba sesión antes de que el servidor lo exigiera.
+    // rememberMe=false → 24h (fuerza reingreso aunque el refresh siga vivo).
     final expiry = remember
-        ? now.add(const Duration(days: 7))
+        ? now.add(const Duration(days: 30))
         : now.add(const Duration(hours: 24));
     await _storage.write(
       key: _sessionExpiryKey,
@@ -329,8 +332,37 @@ class AuthService {
     if (response.statusCode == 429) {
       throw AuthRateLimitException();
     }
+    if (response.statusCode == 409) {
+      final body = _parseBody(response);
+      if (body['code'] == 'SOCIAL_ACCOUNT') {
+        final provider = body['provider'] as String? ?? 'google';
+        final label = provider == 'facebook' ? 'Facebook' : 'Google';
+        throw SocialAccountException(
+          provider,
+          'Esta cuenta usa $label — inicia sesión con el botón de $label.',
+        );
+      }
+    }
     // Siempre "credenciales incorrectas" para no revelar si el usuario existe
     throw AuthException('Credenciales incorrectas.');
+  }
+
+  /// Reenvía el código de verificación de login sin pedir la contraseña de
+  /// nuevo (requiere que ya exista una verificación pendiente del paso 1).
+  Future<void> resendLoginOtp(String email) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.resendOtp}');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({"email": email}),
+    );
+    if (response.statusCode == 429) {
+      throw AuthRateLimitException();
+    }
+    if (response.statusCode != 200) {
+      final body = _parseBody(response);
+      throw AuthException(body['message'] as String? ?? 'No se pudo reenviar el código.');
+    }
   }
 
   // ── LOGIN PASO 2 (OTP) ────────────────────────────────────────────────
@@ -442,6 +474,74 @@ class AuthService {
         );
       }
       throw AuthException('Error inesperado: $error', code: 'auth.google_unknown');
+    }
+  }
+
+  // ── LOGIN Facebook ─────────────────────────────────────────────────────
+  //
+  // Requiere que el proyecto tenga configurado el SDK nativo de Facebook
+  // (FACEBOOK_APP_ID/CLIENT_TOKEN en AndroidManifest.xml / Info.plist) y el
+  // backend con FACEBOOK_APP_ID/FACEBOOK_APP_SECRET — ver API/.env.example.
+  // Sin esa configuración, el backend responde 501 y aquí se traduce a un
+  // mensaje amable en vez de un error confuso.
+
+  Future<Map<String, dynamic>?> loginWithFacebook({bool rememberMe = false}) async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login(
+        permissions: const ['email', 'public_profile'],
+      );
+
+      if (result.status == LoginStatus.cancelled) {
+        throw AuthCancelledException();
+      }
+      if (result.status != LoginStatus.success || result.accessToken == null) {
+        throw AuthException(
+            result.message ?? 'No se pudo iniciar sesión con Facebook.');
+      }
+
+      final url = Uri.parse('${ApiConstants.baseUrl}/facebook-login');
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({"accessToken": result.accessToken!.tokenString}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String? token = data['token'];
+        final String? refresh = data['refreshToken'];
+        if (token != null) await saveToken(token);
+        if (refresh != null) await saveRefreshToken(refresh);
+        await setRememberMe(rememberMe);
+        if (data['user'] != null) {
+          await saveUserData(data['user'] as Map<String, dynamic>);
+        }
+        return data;
+      } else if (response.statusCode == 501) {
+        throw AuthException(
+          'Inicio de sesión con Facebook no disponible por ahora.',
+          code: 'auth.facebook_unavailable',
+        );
+      } else if (response.statusCode == 401) {
+        throw AuthException(
+            'Tu sesión de Facebook ha expirado. Por favor, intenta de nuevo.');
+      } else {
+        throw AuthException(
+            'El servidor no responde (${response.statusCode}). Por favor, intenta más tarde.');
+      }
+    } on AuthCancelledException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } on TimeoutException {
+      throw AuthException(
+        'La conexión tardó demasiado. Verifica tu internet.',
+        code: 'auth.timeout',
+      );
+    } catch (error) {
+      throw AuthException('Error inesperado: $error', code: 'auth.facebook_unknown');
     }
   }
 
@@ -635,6 +735,41 @@ class AuthService {
     ).timeout(const Duration(seconds: 10));
     return response.statusCode == 200;
   }
+
+  // ── Login por QR (aprobar sesión web desde el móvil) ───────────────────
+
+  /// Aprueba el inicio de sesión web cuyo QR fue escaneado. [challengeId] y
+  /// [rawToken] vienen de decodificar el QR ("challengeId:rawToken").
+  Future<void> approveQrLogin(int challengeId, String rawToken) async {
+    final token = await getToken();
+    if (token == null) throw AuthException('Sesión expirada.');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.authQr}/$challengeId/approve');
+    final response = await http
+        .post(
+          uri,
+          headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+          body: jsonEncode({'token': rawToken}),
+        )
+        .timeout(const Duration(seconds: 10));
+    if (response.statusCode != 200) {
+      final body = _parseBody(response);
+      throw AuthException(body['message'] as String? ?? 'No se pudo autorizar el inicio de sesión.');
+    }
+  }
+
+  /// Rechaza el inicio de sesión web escaneado.
+  Future<void> denyQrLogin(int challengeId, String rawToken) async {
+    final token = await getToken();
+    if (token == null) return;
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.authQr}/$challengeId/deny');
+    await http
+        .post(
+          uri,
+          headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+          body: jsonEncode({'token': rawToken}),
+        )
+        .timeout(const Duration(seconds: 10));
+  }
 }
 
 // ── Custom Exceptions ────────────────────────────────────────────────────
@@ -653,6 +788,14 @@ class AuthCancelledException extends AuthException {
           'Inicio de sesión cancelado por el usuario',
           code: 'auth.cancelled',
         );
+}
+
+/// La cuenta se creó vía un proveedor social (Google/Facebook) y no tiene
+/// una contraseña utilizable — el usuario debe entrar con ese proveedor.
+class SocialAccountException extends AuthException {
+  final String provider;
+  SocialAccountException(this.provider, String message)
+      : super(message, code: 'auth.social_account');
 }
 
 /// Thrown when the API returns 429 (rate limit exceeded).

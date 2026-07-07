@@ -218,6 +218,8 @@ export const ui = {
       'Se parte de la <span style="color: var(--color-orange)">riqueza</span> de nuestra <span style="color: var(--color-green)">región</span>',
     "video.description":
       "Descubre la belleza natural y cultural de Las Altas Montañas de Veracruz",
+    "video.ariaLabel": "Video de la región Las Altas Montañas",
+    "video.unsupported": "Tu navegador no soporta el elemento de video.",
 
     // Testimonials
     "testimonials.title":
@@ -484,6 +486,8 @@ export const ui = {
       'Explore the <span style="color: var(--color-orange)">richness</span> of our <span style="color: var(--color-green)">region</span>',
     "video.description":
       "Discover the natural and cultural beauty of the High Mountains of Veracruz",
+    "video.ariaLabel": "Video of the High Mountains region",
+    "video.unsupported": "Your browser does not support the video element.",
 
     // Hero
     "hero.title":
@@ -907,6 +911,25 @@ export const ui = {
     "button.know-more": "En savoir plus",
     "button.view-plans": "Voir les plans",
     "button.contact": "Contacter",
+
+    // User Segmentation
+    "segmentation.title":
+      'Faites partie du <span style="color: var(--color-purple)">catalogue</span>',
+    "segmentation.business.title": "Inscrire mon entreprise",
+    "segmentation.business.desc": "Pour les PME",
+    "segmentation.business.text":
+      "Inscrivez votre entreprise touristique et accédez à des recommandations intelligentes qui connectent les voyageurs à vos services.",
+    "segmentation.tourist.title": "Je suis touriste",
+    "segmentation.tourist.desc": "Pour les Voyageurs",
+    "segmentation.tourist.text":
+      "Découvrez des expériences authentiques dans les Hautes Montagnes avec des recommandations personnalisées par IA.",
+    "region.cta": "Découvrez la région",
+
+    // Marquee
+    "marquee.text1": "Tourisme Intelligent",
+    "marquee.text2": "Innovation Régionale",
+    "marquee.text3": "IA pour les PME",
+    "marquee.text4": "Les Hautes Montagnes",
 
     // Benefits
     "benefits.title":
@@ -1514,6 +1537,8 @@ export const ui = {
       'Seja parte da <span style="color: var(--color-orange)">riqueza</span> da nossa <span style="color: var(--color-green)">região</span>',
     "video.description":
       "Descubra a beleza natural e cultural das Altas Montanhas de Veracruz",
+    "video.ariaLabel": "Vídeo da região Altas Montanhas",
+    "video.unsupported": "Seu navegador não suporta o elemento de vídeo.",
 
     // Testimonials
     "testimonials.title":

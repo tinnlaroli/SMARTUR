@@ -42,6 +42,13 @@ const chips =
       "Cold-start",
       "Sécurité des données",
     ],
+    pt: [
+      "Random Forest",
+      "Filtragem colaborativa",
+      "Ranking por contexto",
+      "Cold-start",
+      "Segurança de dados",
+    ],
   }[lang] ?? ["Random Forest", "Collaborative Filtering"];
 
 const howTitle = t["benefits.howTitle"];
@@ -64,6 +71,12 @@ const stepsData = {
     "Options pertinentes via filtrage collaboratif + règles métier.",
     "Random Forest priorise ce qui est le plus utile maintenant.",
     "Recommandations précises, diversité maîtrisée, données protégées.",
+  ],
+  pt: [
+    "Sinais como localização, temporada, orçamento e intenção de viagem.",
+    "Geramos opções relevantes com filtragem colaborativa + regras de negócio.",
+    "Random Forest prioriza o que é mais útil para esse usuário, agora.",
+    "Recomendações com precisão, diversidade e proteção de dados.",
   ],
 }[lang] ?? [];
 
@@ -120,6 +133,19 @@ const uiCopy =
         "Historique",
         "Contexte",
       ],
+    },
+    pt: {
+      eyebrow: "Recomendação técnica, experiência elegante",
+      panelTitle: "Painel de recomendação",
+      panelSubtitle: "Sinais + modelos → ranking final",
+      kpi1: "Precisão",
+      kpi2: "Diversidade",
+      kpi3: "Cobertura",
+      chart1: "Tendência de qualidade",
+      chart2: "Impacto por sinal",
+      chart3: "Mix de modelos",
+      signalsTitle: "Principais sinais",
+      signals: ["Localização", "Temporada", "Preferências", "Histórico", "Contexto"],
     },
   }[lang] ?? {
     eyebrow: "Recommendation system",

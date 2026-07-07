@@ -49,7 +49,7 @@ def get_poi_connection():
         port=int(_get_env('POI_DB_PORT', 5432)),
         database=_get_env('POI_DB_NAME', 'smartur'),
         user=_get_env('POI_DB_USER', 'postgres'),
-        password=_get_env('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '12345678')),
+        password=_get_env('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '')),
         options='-c client_encoding=UTF8',
     )
 

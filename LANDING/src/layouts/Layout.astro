@@ -362,7 +362,9 @@ const canonicalUrl = new URL(Astro.url.pathname, baseUrl).href;
   (() => {
     const originalTitle = document.title;
     const tabAwayMessage =
-      document.body.dataset.tabAway || document.body.dataset.tabAwayFallback;
+      document.body.dataset.tabAway ||
+      document.body.dataset.tabAwayFallback ||
+      originalTitle;
     document.addEventListener("visibilitychange", () => {
       document.title = document.hidden ? tabAwayMessage : originalTitle;
     });

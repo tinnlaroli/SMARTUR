@@ -261,6 +261,9 @@ const PRECALCULATED_PLANES = [
  *   onFinished → Callback que se ejecuta al terminar toda la secuencia.
  *                Típicamente se usa para ocultar el overlay del loader.
  * ═══════════════════════════════════════════════════════════════════════════ */
+/**
+ * @param {{ label?: string, onFinished?: () => void }} [props]
+ */
 export default function SmartURLoader({ label, onFinished } = {}) {
   // Referencias DOM para animaciones GSAP
   const containerRef = useRef(null); // Contenedor principal (overlay)

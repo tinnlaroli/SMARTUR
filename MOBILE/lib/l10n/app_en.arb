@@ -38,6 +38,12 @@
   "sendCode": "Send code",
   "updatePassword": "Update password",
   "resendCode": "Resend code",
+  "otpExpiresIn": "Code expires in {time}",
+  "@otpExpiresIn": { "placeholders": { "time": {} } },
+  "otpExpired": "The code has expired",
+  "resendCodeIn": "Resend in {seconds}s",
+  "@resendCodeIn": { "placeholders": { "seconds": {} } },
+  "otpResentSuccess": "Code resent, check your email",
   "codeSixDigits": "6-digit code",
   "passwordMinChars": "Minimum 8 characters",
   "passwordNeedUpper": "Include at least one uppercase letter",
@@ -221,6 +227,7 @@
   "signInButton": "SIGN IN",
   "createAccount": "CREATE ACCOUNT",
   "continueWithGoogle": "Continue with Google",
+  "continueWithFacebook": "Continue with Facebook",
   "noAccountPrompt": "Don't have an account? ",
   "haveAccountPrompt": "Already have an account? ",
   "signUp": "Sign up",
@@ -371,6 +378,18 @@
   "securitySection": "Security",
   "activeSessions": "Active sessions",
   "activeSessionsSubtitle": "Manage your connected devices",
+  "linkWebSession": "Link web session",
+  "linkWebSessionSubtitle": "Scan the QR code on the sign-in page",
+  "qrScanTitle": "Link web session",
+  "qrScanInstructions": "Point the camera at the QR code on the web sign-in screen",
+  "qrScanConfirmTitle": "Authorize sign-in?",
+  "qrScanConfirmBody": "This will sign in to your account from another device (web browser).",
+  "qrScanApprove": "Authorize",
+  "qrScanDeny": "Decline",
+  "qrScanApproved": "Web session authorized",
+  "qrScanDenied": "Sign-in declined",
+  "qrScanInvalid": "This code isn't valid for linking a session",
+  "qrScanExpired": "The code has expired or is invalid",
   "sessionRevokeSuccess": "Session closed successfully",
   "sessionRevokeError": "Could not close the session. Please try again.",
 
@@ -461,7 +480,8 @@
   "recoSavedInDiary":"Recommendations saved. You can review them in Diary.",
   "recoResultsDone":"Done",
   "recoResultsRankHint":"Ranked by match with your profile",
-  "googleSignInReleaseConfig":"Google Sign-In is not configured for this app build. Register the release keystore SHA in Firebase."
+  "googleSignInReleaseConfig":"Google Sign-In is not configured for this app build. Register the release keystore SHA in Firebase.",
+  "facebookSignInUnavailable":"Facebook sign-in is not available right now."
   ,"communityEmpty":"No posts yet"
   ,"communityEmptyHint":"Be the first to share your experience"
   ,"communityFirstPost":"Create post"

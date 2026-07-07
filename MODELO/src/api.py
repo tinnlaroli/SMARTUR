@@ -244,6 +244,7 @@ class RecItem(BaseModel):
     score: float
     pred_cf: float
     pred_rf: float
+    pred_pref: float = 0.0
     kind: str = 'poi'
     reason_tags: list[str] = []  # human-readable explanation tags, e.g. ["Coincide con naturaleza", "A 3.2 km"]
 
@@ -462,6 +463,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
                     score=r.get('score', 0.0),
                     pred_cf=r.get('pred_cf', 0.0),
                     pred_rf=r.get('pred_rf', 0.0),
+                    pred_pref=r.get('pred_pref', 0.0),
                     kind=r.get('kind', 'poi'),
                     reason_tags=r.get('reason_tags', []),
                 )
@@ -721,7 +723,7 @@ def _persist_metrics_to_db(metrics_json: dict) -> bool:
             port=int(os.getenv('POI_DB_PORT', 5432)),
             database=os.getenv('POI_DB_NAME', 'smartur'),
             user=os.getenv('POI_DB_USER', 'postgres'),
-            password=os.getenv('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '12345678')),
+            password=os.getenv('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '')),
             options='-c client_encoding=UTF8',
         )
         with conn:
@@ -785,68 +787,76 @@ def _run_full_training():
         from model_metrics import save_metrics, compare_algorithms
         from poi_repository import fetch_real_interactions, fetch_evaluation_scores
 
-        # ── 1. Merge real DB interactions (if any accumulated) ───────────────
-        # Threshold lowered 50->10 so early adopters immediately influence training.
-        # Weight scaled adaptively (3× min -> 10× max) to compensate for the 266K
-        # Yelp corpus — without this, SMARTUR signals are drowned out.
-        _MIN_REAL = 10
-        try:
-            real_df = fetch_real_interactions(min_events=1)
-            if real_df is not None and len(real_df) >= _MIN_REAL:
-                real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
-                real_df['user_id'] = real_df['user_id'].astype(str)
-                n_repeats = max(3, min(10, len(real_df) // 5))
-                tiles = [real_df] * n_repeats
-                engine.train_data = pd.concat([engine.train_data] + tiles, ignore_index=True)
-                logger.info(
-                    f"[train] Datos reales: {len(real_df)} interacciones, ponderadas {n_repeats}×"
-                )
-            else:
-                n_real = len(real_df) if real_df is not None else 0
-                logger.info(f"[train] Solo {n_real} interacciones reales (mínimo {_MIN_REAL}) — usando solo CSV.")
-        except Exception as exc:
-            logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
-
-        # ── 1b. Merge admin evaluation scores ───────────────────────────────
-        try:
-            eval_df = fetch_evaluation_scores()
-            if eval_df is not None and len(eval_df) > 0:
-                # evaluation scores only cover tourist services (svc_N IDs)
-                # Merge columns must match training schema
-                eval_df['user_id'] = eval_df['user_id'].astype(str)
-                eval_df = eval_df.rename(columns={'business_id': 'business_id', 'stars': 'stars'})
-                engine.train_data = pd.concat(
-                    [engine.train_data, eval_df], ignore_index=True
-                )
-                logger.info(f"[train] {len(eval_df)} scores de evaluación admin integrados al entrenamiento.")
-        except Exception as exc:
-            logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
-
-        # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
-        restmex_biz = None
-
-        # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
-        logger.info("[train] Actualizando matriz de Pearson + SVD...")
-        engine.prepare_pearson_matrix()
-
-        # ── 3. Retrain RF ────────────────────────────────────────────────────
-        logger.info("[train] Reentrenando Random Forest...")
-        context_model.train(engine.train_data, df_biz_extra=restmex_biz)
-
-        # ── 4b. Retrain LightFM ──────────────────────────────────────────────
-        if lightfm_model is not None:
-            logger.info("[train] Reentrenando LightFM...")
+        # Todo lo que muta engine/context_model/lightfm_model/content_model_cb
+        # EN VIVO (in-place, no reasignación de referencia) va bajo _models_lock.
+        # Antes el lock solo protegía la lectura (snapshot de referencias en
+        # /recommend), pero como el retrain modifica los mismos objetos en
+        # lugar de construir unos nuevos y reasignarlos, una request podía
+        # quedarse con una referencia al motor mientras este se reescribía a
+        # mitad de camino (matriz Pearson reconstruida, RF reentrenado, etc.).
+        with _models_lock:
+            # ── 1. Merge real DB interactions (if any accumulated) ───────────────
+            # Threshold lowered 50->10 so early adopters immediately influence training.
+            # Weight scaled adaptively (3× min -> 10× max) to compensate for the 266K
+            # Yelp corpus — without this, SMARTUR signals are drowned out.
+            _MIN_REAL = 10
             try:
-                lightfm_model.train(engine.train_data, context_model.df_biz)
-            except Exception as lfm_err:
-                logger.warning(f"[train] LightFM reentrenamiento falló: {lfm_err}")
+                real_df = fetch_real_interactions(min_events=1)
+                if real_df is not None and len(real_df) >= _MIN_REAL:
+                    real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
+                    real_df['user_id'] = real_df['user_id'].astype(str)
+                    n_repeats = max(3, min(10, len(real_df) // 5))
+                    tiles = [real_df] * n_repeats
+                    engine.train_data = pd.concat([engine.train_data] + tiles, ignore_index=True)
+                    logger.info(
+                        f"[train] Datos reales: {len(real_df)} interacciones, ponderadas {n_repeats}×"
+                    )
+                else:
+                    n_real = len(real_df) if real_df is not None else 0
+                    logger.info(f"[train] Solo {n_real} interacciones reales (mínimo {_MIN_REAL}) — usando solo CSV.")
+            except Exception as exc:
+                logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
 
-        # ── 4c. Refit ContentModel ───────────────────────────────────────────
-        if content_model_cb is not None:
+            # ── 1b. Merge admin evaluation scores ───────────────────────────────
             try:
-                content_model_cb.fit(context_model.df_biz)
-            except Exception as cm_err:
-                logger.warning(f"[train] ContentModel refit falló: {cm_err}")
+                eval_df = fetch_evaluation_scores()
+                if eval_df is not None and len(eval_df) > 0:
+                    # evaluation scores only cover tourist services (svc_N IDs)
+                    # Merge columns must match training schema
+                    eval_df['user_id'] = eval_df['user_id'].astype(str)
+                    eval_df = eval_df.rename(columns={'business_id': 'business_id', 'stars': 'stars'})
+                    engine.train_data = pd.concat(
+                        [engine.train_data, eval_df], ignore_index=True
+                    )
+                    logger.info(f"[train] {len(eval_df)} scores de evaluación admin integrados al entrenamiento.")
+            except Exception as exc:
+                logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
+
+            # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
+            restmex_biz = None
+
+            # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
+            logger.info("[train] Actualizando matriz de Pearson + SVD...")
+            engine.prepare_pearson_matrix()
+
+            # ── 3. Retrain RF ────────────────────────────────────────────────────
+            logger.info("[train] Reentrenando Random Forest...")
+            context_model.train(engine.train_data, df_biz_extra=restmex_biz)
+
+            # ── 4b. Retrain LightFM ──────────────────────────────────────────────
+            if lightfm_model is not None:
+                logger.info("[train] Reentrenando LightFM...")
+                try:
+                    lightfm_model.train(engine.train_data, context_model.df_biz)
+                except Exception as lfm_err:
+                    logger.warning(f"[train] LightFM reentrenamiento falló: {lfm_err}")
+
+            # ── 4c. Refit ContentModel ───────────────────────────────────────────
+            if content_model_cb is not None:
+                try:
+                    content_model_cb.fit(context_model.df_biz)
+                except Exception as cm_err:
+                    logger.warning(f"[train] ContentModel refit falló: {cm_err}")
 
         # ── 5. Algorithm metrics (RF + CF) ───────────────────────────────────
         logger.info("[train] Calculando métricas de algoritmos...")
@@ -876,7 +886,8 @@ def _run_full_training():
                 logger.info(
                     f"[train] Ranking local SMARTUR — NDCG@5={ranking.get('ndcg', 0):.4f}, "
                     f"P@5={ranking.get('precision', 0):.4f}, "
-                    f"HR@10={ranking.get('hit_rate', 0):.4f}"
+                    f"HR@10={ranking.get('hit_rate', 0):.4f}, "
+                    f"PrefMatch={ranking.get('preference_match_rate', 0):.4f}"
                 )
             else:
                 # Fallback: Yelp-based eval (will show NDCG≈0 by design)
@@ -919,6 +930,8 @@ def _run_full_training():
             if 'ranking' in metrics:
                 entry['ndcg'] = metrics['ranking'].get('ndcg', 0)
                 entry['hit_rate'] = metrics['ranking'].get('hit_rate', 0)
+                if 'preference_match_rate' in metrics['ranking']:
+                    entry['preference_match_rate'] = metrics['ranking']['preference_match_rate']
             history.append(entry)
             # Keep last 20 entries
             history = history[-20:]
@@ -939,7 +952,9 @@ def _run_full_training():
         # ── 9. Refresh quality scores in-memory (new evaluations during training) ──
         try:
             from poi_repository import fetch_quality_scores
-            quality_scores = fetch_quality_scores()
+            new_quality_scores = fetch_quality_scores()
+            with _models_lock:
+                quality_scores = new_quality_scores
             logger.info(f"[train] Quality scores refrescados: {len(quality_scores)} servicios")
         except Exception as exc:
             logger.warning(f"[train] Quality scores no actualizados: {exc}")

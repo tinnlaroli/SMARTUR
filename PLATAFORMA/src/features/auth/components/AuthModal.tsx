@@ -5,6 +5,7 @@ import { SignUpView } from '../views/SignUpView';
 import { ForgotPasswordView } from '../views/ForgotPasswordView';
 import { TwoFactorView } from '../views/TwoFactorView';
 import { ResetPasswordView } from '../views/ResetPasswordView';
+import { QrLoginView } from '../views/QrLoginView';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -14,11 +15,12 @@ import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 interface AuthStepContentProps {
     step: AuthStep;
     email: string;
-    setStep: (step: AuthStep, email?: string) => void;
+    rememberMe: boolean;
+    setStep: (step: AuthStep, email?: string, rememberMe?: boolean) => void;
     closeModal: () => void;
 }
 
-const AuthStepContent: React.FC<AuthStepContentProps> = ({ step, email, setStep, closeModal }) => {
+const AuthStepContent: React.FC<AuthStepContentProps> = ({ step, email, rememberMe, setStep, closeModal }) => {
     switch (step) {
         case 'login':
             return <LoginView onSwitchStep={setStep} onClose={closeModal} />;
@@ -27,16 +29,18 @@ const AuthStepContent: React.FC<AuthStepContentProps> = ({ step, email, setStep,
         case 'forgotPassword':
             return <ForgotPasswordView onSwitchStep={setStep} />;
         case 'twoFactor':
-            return <TwoFactorView email={email} onSwitchStep={setStep} onClose={closeModal} />;
+            return <TwoFactorView email={email} rememberMe={rememberMe} onSwitchStep={setStep} onClose={closeModal} />;
         case 'resetPassword':
             return <ResetPasswordView email={email} onSwitchStep={setStep} />;
+        case 'qrLogin':
+            return <QrLoginView onSwitchStep={setStep} onClose={closeModal} />;
         default:
             return <LoginView onSwitchStep={setStep} onClose={closeModal} />;
     }
 };
 
 export const AuthModal: React.FC = () => {
-    const { isOpen, step, email, closeModal, setStep } = useAuthModal();
+    const { isOpen, step, email, rememberMe, closeModal, setStep } = useAuthModal();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -86,13 +90,14 @@ export const AuthModal: React.FC = () => {
                                 <AuthStepContent
                                     step={step}
                                     email={email}
+                                    rememberMe={rememberMe}
                                     setStep={setStep}
                                     closeModal={closeModal}
                                 />
                             </div>
 
                             <p className={`mt-8 text-center text-xs ${isDark ? 'text-zinc-600' : 'text-zinc-500'}`}>
-                                © {new Date().getFullYear()} SMARTUR. Todos los derechos reservados.
+                                ï¿½ {new Date().getFullYear()} SMARTUR. Todos los derechos reservados.
                             </p>
                         </motion.div>
                     </div>

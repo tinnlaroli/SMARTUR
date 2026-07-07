@@ -11,11 +11,12 @@ import { useLanguage, useUserPreferences } from '../../../contexts/LanguageConte
 
 interface TwoFactorViewProps {
     email: string;
+    rememberMe?: boolean;
     onSwitchStep: (step: AuthStep) => void;
     onClose?: () => void;
 }
 
-export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewProps) => {
+export const TwoFactorView = ({ email, rememberMe = false, onSwitchStep, onClose }: TwoFactorViewProps) => {
     const toast = useToast();
     const navigate = useNavigate();
     const { t } = useLanguage();
@@ -27,11 +28,50 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
     const [isReady, setIsReady] = useState(false);
     const pendingActionRef = useRef<(() => void) | null>(null);
 
+    // El código expira a los 5 min en el servidor (userService.js) — se
+    // muestra la misma ventana para que el usuario sepa cuándo ya no sirve.
+    const OTP_TTL_SECONDS = 5 * 60;
+    const RESEND_COOLDOWN_SECONDS = 30;
+    const [secondsLeft, setSecondsLeft] = useState(OTP_TTL_SECONDS);
+    const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+    const [isResending, setIsResending] = useState(false);
+
     useEffect(() => {
         if (!email) {
             onSwitchStep('login');
         }
     }, [email, onSwitchStep]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setSecondsLeft((s) => Math.max(0, s - 1));
+            setResendCooldown((s) => Math.max(0, s - 1));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const formatTime = (totalSeconds: number) => {
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    const handleResend = async () => {
+        if (resendCooldown > 0 || isResending) return;
+        setIsResending(true);
+        try {
+            await authApi.resendOtp(email);
+            toast.success(t('auth.twoFactor.resend.title'), t('auth.twoFactor.resend.body'));
+            setSecondsLeft(OTP_TTL_SECONDS);
+            setResendCooldown(RESEND_COOLDOWN_SECONDS);
+            setOtp(Array(6).fill(''));
+            inputsRef.current[0]?.focus();
+        } catch {
+            toast.error(t('auth.twoFactor.error.title'), t('auth.twoFactor.error.body'));
+        } finally {
+            setIsResending(false);
+        }
+    };
 
     const handleOtpChange = (index: number, value: string) => {
         const digit = value.replace(/\D/g, '').slice(-1);
@@ -90,7 +130,7 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
             const { token: jwt } = response;
 
             setAccessToken(jwt);
-            if (response.refreshToken) setStoredRefreshToken(response.refreshToken, false);
+            if (response.refreshToken) setStoredRefreshToken(response.refreshToken, rememberMe);
             setUser(response.user);
             localStorage.removeItem('token');
             localStorage.removeItem('v1:token');
@@ -192,6 +232,26 @@ export const TwoFactorView = ({ email, onSwitchStep, onClose }: TwoFactorViewPro
                             />
                         ))}
                     </div>
+
+                    <p className="text-center text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                        {secondsLeft > 0
+                            ? `${t('auth.twoFactor.expiresIn')} ${formatTime(secondsLeft)}`
+                            : t('auth.twoFactor.expired')}
+                    </p>
+                </div>
+
+                <div className="text-center">
+                    <button
+                        type="button"
+                        onClick={handleResend}
+                        disabled={resendCooldown > 0 || isResending}
+                        className="text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        style={{ color: 'var(--color-purple)' }}
+                    >
+                        {resendCooldown > 0
+                            ? `${t('auth.twoFactor.resend.wait')} ${resendCooldown}s`
+                            : t('auth.twoFactor.resend')}
+                    </button>
                 </div>
 
                 <button

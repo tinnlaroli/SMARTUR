@@ -1,5 +1,5 @@
 import { api } from '../../shared/api/axiosClient';
-import type { LoginPayload, SignUpPayload, TwoFactorPayload, TwoFactorResponse, ForgotPasswordPayload, ResetPasswordPayload, LoginResponse } from './types';
+import type { LoginPayload, SignUpPayload, TwoFactorPayload, TwoFactorResponse, ForgotPasswordPayload, ResetPasswordPayload, LoginResponse, QrChallengeResponse, QrChallengeStatus, QrExchangeResponse } from './types';
 
 export const authApi = {
     login: async (payload: LoginPayload) => {
@@ -27,6 +27,26 @@ export const authApi = {
 
     twoFactor: async (payload: TwoFactorPayload) => {
         const { data } = await api.post<TwoFactorResponse>('/two-factor', payload);
+        return data;
+    },
+
+    resendOtp: async (email: string) => {
+        const { data } = await api.post<{ message: string }>('/resend-otp', { email });
+        return data;
+    },
+
+    createQrChallenge: async () => {
+        const { data } = await api.post<QrChallengeResponse>('/auth/qr/challenge');
+        return data;
+    },
+
+    getQrChallengeStatus: async (challengeId: number) => {
+        const { data } = await api.get<{ status: QrChallengeStatus }>(`/auth/qr/${challengeId}/status`);
+        return data;
+    },
+
+    exchangeQrChallenge: async (challengeId: number, token: string) => {
+        const { data } = await api.post<QrExchangeResponse>(`/auth/qr/${challengeId}/exchange`, { token });
         return data;
     },
 

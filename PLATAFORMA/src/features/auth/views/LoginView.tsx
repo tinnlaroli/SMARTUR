@@ -1,4 +1,4 @@
-import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, QrCode } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { setAccessToken, setStoredRefreshToken } from '../../../shared/api/axiosClient';
@@ -50,7 +50,7 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
         try {
             const response = await authApi.login(formData);
             if (response.requiresVerification === true) {
-                setStep('twoFactor', response.email);
+                setStep('twoFactor', response.email, rememberMe);
                 toast.success(t('auth.login.success.title'), t('auth.login.success.body'));
                 return;
             }
@@ -81,7 +81,13 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
             }
 
         } catch (error) {
-            toast.error(t('auth.login.error.title'), t('auth.login.error.body'));
+            const data = (error as { response?: { data?: { code?: string; message?: string; provider?: string } } })?.response?.data;
+            if (data?.code === 'SOCIAL_ACCOUNT') {
+                const providerLabel = data.provider === 'facebook' ? 'Facebook' : 'Google';
+                toast.error(t('auth.login.error.title'), data.message ?? `Esta cuenta usa ${providerLabel} para iniciar sesión.`);
+            } else {
+                toast.error(t('auth.login.error.title'), t('auth.login.error.body'));
+            }
             setIsLoading(false);
         }
     };
@@ -206,6 +212,17 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                             <span>{t('auth.login.submit')}</span>
                         </div>
                     )}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => onSwitchStep('qrLogin')}
+                    className={`flex w-full items-center justify-center gap-2 text-xs font-medium transition-colors ${
+                        isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-500 hover:text-zinc-900'
+                    }`}
+                >
+                    <QrCode className="size-3.5" />
+                    {t('auth.login.qrLogin')}
                 </button>
 
                 <div className="relative my-6">

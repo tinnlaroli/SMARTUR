@@ -38,6 +38,12 @@
   "sendCode": "Envoyer le code",
   "updatePassword": "Mettre à jour le mot de passe",
   "resendCode": "Renvoyer le code",
+  "otpExpiresIn": "Le code expire dans {time}",
+  "@otpExpiresIn": { "placeholders": { "time": {} } },
+  "otpExpired": "Le code a expiré",
+  "resendCodeIn": "Renvoyer dans {seconds}s",
+  "@resendCodeIn": { "placeholders": { "seconds": {} } },
+  "otpResentSuccess": "Code renvoyé, vérifiez votre e-mail",
   "codeSixDigits": "Code à 6 chiffres",
   "passwordMinChars": "Minimum 8 caractères",
   "passwordNeedUpper": "Incluez au moins une majuscule",
@@ -221,6 +227,7 @@
   "signInButton": "SE CONNECTER",
   "createAccount": "CRÉER UN COMPTE",
   "continueWithGoogle": "Continuer avec Google",
+  "continueWithFacebook": "Continuer avec Facebook",
   "noAccountPrompt": "Pas de compte ? ",
   "haveAccountPrompt": "Déjà un compte ? ",
   "signUp": "Inscrivez-vous",
@@ -371,6 +378,18 @@
   "securitySection": "Sécurité",
   "activeSessions": "Sessions actives",
   "activeSessionsSubtitle": "Gérez vos appareils connectés",
+  "linkWebSession": "Lier une session web",
+  "linkWebSessionSubtitle": "Scannez le code QR de la page de connexion",
+  "qrScanTitle": "Lier une session web",
+  "qrScanInstructions": "Pointez la caméra vers le code QR de l'écran de connexion web",
+  "qrScanConfirmTitle": "Autoriser la connexion ?",
+  "qrScanConfirmBody": "Cela connectera votre compte depuis un autre appareil (navigateur web).",
+  "qrScanApprove": "Autoriser",
+  "qrScanDeny": "Refuser",
+  "qrScanApproved": "Session web autorisée",
+  "qrScanDenied": "Connexion refusée",
+  "qrScanInvalid": "Ce code n'est pas valide pour lier une session",
+  "qrScanExpired": "Le code a expiré ou n'est pas valide",
   "sessionRevokeSuccess": "Session fermée avec succès",
   "sessionRevokeError": "Impossible de fermer la session. Veuillez réessayer.",
 
@@ -461,7 +480,8 @@
   "recoSavedInDiary":"Recommandations enregistrées. Vous pouvez les consulter dans Journal.",
   "recoResultsDone":"Terminé",
   "recoResultsRankHint":"Classés selon la compatibilité avec votre profil",
-  "googleSignInReleaseConfig":"Google Sign-In n'est pas configuré pour cette version. Enregistrez l'empreinte SHA du keystore release dans Firebase."
+  "googleSignInReleaseConfig":"Google Sign-In n'est pas configuré pour cette version. Enregistrez l'empreinte SHA du keystore release dans Firebase.",
+  "facebookSignInUnavailable":"La connexion avec Facebook n'est pas disponible pour le moment."
   ,"communityEmpty":"Aucune publication pour l'instant"
   ,"communityEmptyHint":"Soyez le premier à partager votre expérience"
   ,"communityFirstPost":"Créer une publication"

@@ -43,6 +43,7 @@ CREATE TABLE "user" (
   email_verification_token VARCHAR(255) NULL,
   email_verification_otp VARCHAR(255) NULL,
   email_verification_expires TIMESTAMP NULL,
+  auth_provider VARCHAR(20) NOT NULL DEFAULT 'local',
   id_company INT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -404,6 +405,8 @@ CREATE TABLE refresh_tokens (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
   token_hash TEXT NOT NULL UNIQUE,
+  -- session_id se agrega como FK más abajo, después de crear user_sessions
+  session_id INT NULL,
   expires_at TIMESTAMPTZ NOT NULL,
   revoked BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -587,7 +590,27 @@ CREATE TABLE user_sessions (
   last_seen TIMESTAMPTZ NULL,
   revoked BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+ALTER TABLE refresh_tokens
+  ADD CONSTRAINT fk_refresh_tokens_session
+  FOREIGN KEY (session_id) REFERENCES user_sessions(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_session ON refresh_tokens(session_id);
 CREATE INDEX idx_user_sessions_user ON user_sessions (user_id);
+
+-- Login por QR: la web genera un reto, el móvil (ya logueado) lo aprueba
+-- escaneándolo, y la web canjea el reto por una sesión real.
+CREATE TABLE qr_login_sessions (
+  id                   SERIAL PRIMARY KEY,
+  challenge_token_hash TEXT NOT NULL UNIQUE,
+  status               VARCHAR(10) NOT NULL DEFAULT 'pending'
+                           CHECK (status IN ('pending','approved','denied','expired','consumed')),
+  user_id              INT REFERENCES "user"(user_id) ON DELETE CASCADE,
+  device_hint          VARCHAR(200),
+  ip                   VARCHAR(50),
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at           TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '2 minutes'
+);
+CREATE INDEX idx_qr_login_sessions_status ON qr_login_sessions(status, expires_at);
 
 CREATE TABLE device_token (
   id SERIAL PRIMARY KEY,

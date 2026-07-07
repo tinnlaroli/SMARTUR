@@ -154,7 +154,7 @@ const { texts, direction, class: className = "" } = Astro.props;
 
       const dir = this.direction;
       x -=
-        (Math.min(Math.abs(window.scrollVelocity) * 0.4, 10) + 0.5) *
+        (Math.min(Math.abs(window.scrollVelocity ?? 0) * 0.4, 10) + 0.5) *
         (window.scrollDirection || 1) *
         dir;
 

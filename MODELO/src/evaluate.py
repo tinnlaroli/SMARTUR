@@ -306,7 +306,7 @@ def evaluar_ranking_local(
     y los ítems del test set son los mismos, por lo que NDCG refleja calidad real.
     """
     try:
-        from poi_repository import fetch_real_interactions
+        from poi_repository import fetch_real_interactions, fetch_traveler_profile
         from fusion import recommend_hybrid
         import numpy as np
     except ImportError as e:
@@ -330,7 +330,7 @@ def evaluar_ranking_local(
         )
         return None
 
-    ndcg_scores, precision_scores, hit_scores = [], [], []
+    ndcg_scores, precision_scores, hit_scores, pref_scores = [], [], [], []
 
     for uid in eligible:
         user_df = df[df['user_id'] == uid].sort_values('implicit_score', ascending=False)
@@ -350,13 +350,21 @@ def evaluar_ranking_local(
             # All test items count as relevant (weak signal scenario)
             relevant = test_items
 
+        # Contexto real del usuario (tiposTurismo/presupuesto/grupo) — sin esto
+        # preference_match_rate no mide nada, porque el boost de preferencia
+        # necesita saber qué declaró el usuario para poder compararlo.
+        try:
+            user_context = fetch_traveler_profile(uid) or {}
+        except Exception:
+            user_context = {}
+
         try:
             recs = recommend_hybrid(
                 user_id=str(uid),
                 engine=None,          # will use local POIs only
                 context_model=context_model,
                 alpha=0.4,
-                context={},
+                context=user_context,
                 top_n=max(k * 2, 10),
                 lightfm_model=lightfm_model,
                 content_model=content_model,
@@ -368,6 +376,7 @@ def evaluar_ranking_local(
             continue
 
         rec_ids = [r['item_id'] for r in recs[:k]]
+        pref_scores.extend(r.get('pred_pref', 0.0) for r in recs[:k])
 
         # NDCG@k
         dcg = sum(
@@ -394,6 +403,14 @@ def evaluar_ranking_local(
         'precision': float(np.mean(precision_scores)),
         'hit_rate':  float(np.mean(hit_scores)),
     }
+    if pref_scores:
+        # Qué % de las recomendaciones evaluadas realmente coinciden con lo
+        # que el usuario declaró (tiposTurismo/presupuesto/grupo) — mide
+        # alineación con preferencias, algo que NDCG/precision (basados en
+        # estrellas) no capturan directamente.
+        results['preference_match_rate'] = float(
+            np.mean([1.0 if p >= 0.5 else 0.0 for p in pref_scores])
+        )
     return results
 
 

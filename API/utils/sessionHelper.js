@@ -6,6 +6,7 @@ import pool from '../config/db.js';
  *
  * @param {number} userId
  * @param {import('express').Request} req
+ * @returns {Promise<number|null>} the new session id, or null if recording failed
  */
 export async function recordSession(userId, req) {
     try {
@@ -28,13 +29,16 @@ export async function recordSession(userId, req) {
             deviceHint += ' · Navegador';
         }
 
-        await pool.query(
+        const { rows } = await pool.query(
             `INSERT INTO user_sessions (user_id, device_hint, ip)
-             VALUES ($1, $2, $3)`,
+             VALUES ($1, $2, $3)
+             RETURNING id`,
             [userId, deviceHint, ip],
         );
+        return rows[0]?.id ?? null;
     } catch (err) {
         // Non-fatal — don't block the login response
         console.warn('[sessionHelper] failed to record session:', err.message);
+        return null;
     }
 }

@@ -52,10 +52,17 @@ class _ExploreScreenState extends State<ExploreScreen>
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: _tabCtrl.index == 1
-          ? FloatingActionButton(
-              onPressed: () => _communityKey.currentState?._showCreateSheet(),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: const Icon(Icons.add_rounded, color: Colors.white),
+          ? Padding(
+              // El nav inferior es flotante (glassmorphism) y se pinta sobre
+              // esta pantalla; sin este margen el FAB queda oculto detrás.
+              padding: EdgeInsets.only(
+                bottom: 77 + MediaQuery.of(context).padding.bottom,
+              ),
+              child: FloatingActionButton(
+                onPressed: () => _communityKey.currentState?._showCreateSheet(),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                child: const Icon(Icons.add_rounded, color: Colors.white),
+              ),
             )
           : null,
       body: SmarturBackground(

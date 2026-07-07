@@ -51,6 +51,12 @@ router.delete("/me/sessions/:id", verifyToken, async (req, res) => {
     if (result.rowCount === 0) {
       return res.status(404).json({ message: "Sesión no encontrada." });
     }
+    // Corta el acceso real: sin esto, el dispositivo revocado podía seguir
+    // refrescando su token indefinidamente pese a "desaparecer" de la lista.
+    await pool.query(
+      `UPDATE refresh_tokens SET revoked = TRUE WHERE session_id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id],
+    );
     res.json({ ok: true });
   } catch (err) {
     console.error("[me/sessions/:id DELETE] error:", err.message);

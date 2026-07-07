@@ -330,6 +330,30 @@ abstract class AppLocalizations {
   /// **'Reenviar código'**
   String get resendCode;
 
+  /// No description provided for @otpExpiresIn.
+  ///
+  /// In es, this message translates to:
+  /// **'El código expira en {time}'**
+  String otpExpiresIn(Object time);
+
+  /// No description provided for @otpExpired.
+  ///
+  /// In es, this message translates to:
+  /// **'El código expiró'**
+  String get otpExpired;
+
+  /// No description provided for @resendCodeIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Reenviar en {seconds}s'**
+  String resendCodeIn(Object seconds);
+
+  /// No description provided for @otpResentSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Código reenviado, revisa tu correo'**
+  String get otpResentSuccess;
+
   /// No description provided for @codeSixDigits.
   ///
   /// In es, this message translates to:
@@ -1332,6 +1356,12 @@ abstract class AppLocalizations {
   /// **'Continuar con Google'**
   String get continueWithGoogle;
 
+  /// No description provided for @continueWithFacebook.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar con Facebook'**
+  String get continueWithFacebook;
+
   /// No description provided for @noAccountPrompt.
   ///
   /// In es, this message translates to:
@@ -2166,6 +2196,78 @@ abstract class AppLocalizations {
   /// **'Administra tus dispositivos conectados'**
   String get activeSessionsSubtitle;
 
+  /// No description provided for @linkWebSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincular sesión web'**
+  String get linkWebSession;
+
+  /// No description provided for @linkWebSessionSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Escanea el código QR de la página de inicio de sesión'**
+  String get linkWebSessionSubtitle;
+
+  /// No description provided for @qrScanTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincular sesión web'**
+  String get qrScanTitle;
+
+  /// No description provided for @qrScanInstructions.
+  ///
+  /// In es, this message translates to:
+  /// **'Apunta la cámara al código QR de la pantalla de inicio de sesión en la web'**
+  String get qrScanInstructions;
+
+  /// No description provided for @qrScanConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Autorizar inicio de sesión?'**
+  String get qrScanConfirmTitle;
+
+  /// No description provided for @qrScanConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se iniciará sesión en tu cuenta desde otro dispositivo (navegador web).'**
+  String get qrScanConfirmBody;
+
+  /// No description provided for @qrScanApprove.
+  ///
+  /// In es, this message translates to:
+  /// **'Autorizar'**
+  String get qrScanApprove;
+
+  /// No description provided for @qrScanDeny.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar'**
+  String get qrScanDeny;
+
+  /// No description provided for @qrScanApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión web autorizada'**
+  String get qrScanApproved;
+
+  /// No description provided for @qrScanDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio de sesión rechazado'**
+  String get qrScanDenied;
+
+  /// No description provided for @qrScanInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Este código no es válido para vincular sesión'**
+  String get qrScanInvalid;
+
+  /// No description provided for @qrScanExpired.
+  ///
+  /// In es, this message translates to:
+  /// **'El código ya expiró o no es válido'**
+  String get qrScanExpired;
+
   /// No description provided for @sessionRevokeSuccess.
   ///
   /// In es, this message translates to:
@@ -2632,6 +2734,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esta versión de la app no tiene Google Sign-In configurado. El administrador debe registrar el SHA del keystore de release en Firebase.'**
   String get googleSignInReleaseConfig;
+
+  /// No description provided for @facebookSignInUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio de sesión con Facebook no disponible por ahora.'**
+  String get facebookSignInUnavailable;
 
   /// No description provided for @communityEmpty.
   ///

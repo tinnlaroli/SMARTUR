@@ -158,7 +158,7 @@ const { images, direction } = Astro.props;
       const dir = this.direction;
 
       this.x -=
-        (Math.min(Math.abs(window.scrollVelocity) * 0.4, 10) + 0.5) *
+        (Math.min(Math.abs(window.scrollVelocity ?? 0) * 0.4, 10) + 0.5) *
         (window.scrollDirection || 1) *
         dir;
 

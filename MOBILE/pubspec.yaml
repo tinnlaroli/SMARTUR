@@ -2,7 +2,7 @@
 name: smartur
 description: "A new Flutter project."
 publish_to: 'none'
-version: 3.3.3+30303
+version: 3.3.5+30305
 
 environment:
   sdk: ^3.11.1
@@ -17,6 +17,8 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   flutter_svg: ^2.0.10+1
   google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^7.1.1
+  mobile_scanner: ^7.0.1
   http: ^1.6.0
   http_parser: ^4.1.2
   image_picker: ^1.1.2

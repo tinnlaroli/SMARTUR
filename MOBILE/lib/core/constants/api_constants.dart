@@ -8,6 +8,7 @@ class ApiConstants {
   static const String register = '/users/register';
   static const String login = '/login';
   static const String twoFactor = '/two-factor';
+  static const String resendOtp = '/resend-otp';
   static const String forgot = '/forgot';
   static const String reset = '/reset';
 
@@ -38,6 +39,9 @@ class ApiConstants {
   // Auth — refresh / logout
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
+
+  // Login por QR (aprobar sesión web desde el móvil)
+  static const String authQr = '/auth/qr';
 
   // Explore
   static const String exploreHome = '/explore/home';

@@ -129,6 +129,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get resendCode => 'Renvoyer le code';
 
   @override
+  String otpExpiresIn(Object time) {
+    return 'Le code expire dans $time';
+  }
+
+  @override
+  String get otpExpired => 'Le code a expiré';
+
+  @override
+  String resendCodeIn(Object seconds) {
+    return 'Renvoyer dans ${seconds}s';
+  }
+
+  @override
+  String get otpResentSuccess => 'Code renvoyé, vérifiez votre e-mail';
+
+  @override
   String get codeSixDigits => 'Code à 6 chiffres';
 
   @override
@@ -675,6 +691,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get continueWithGoogle => 'Continuer avec Google';
 
   @override
+  String get continueWithFacebook => 'Continuer avec Facebook';
+
+  @override
   String get noAccountPrompt => 'Pas de compte ? ';
 
   @override
@@ -1113,6 +1132,45 @@ class AppLocalizationsFr extends AppLocalizations {
   String get activeSessionsSubtitle => 'Gérez vos appareils connectés';
 
   @override
+  String get linkWebSession => 'Lier une session web';
+
+  @override
+  String get linkWebSessionSubtitle =>
+      'Scannez le code QR de la page de connexion';
+
+  @override
+  String get qrScanTitle => 'Lier une session web';
+
+  @override
+  String get qrScanInstructions =>
+      'Pointez la caméra vers le code QR de l\'écran de connexion web';
+
+  @override
+  String get qrScanConfirmTitle => 'Autoriser la connexion ?';
+
+  @override
+  String get qrScanConfirmBody =>
+      'Cela connectera votre compte depuis un autre appareil (navigateur web).';
+
+  @override
+  String get qrScanApprove => 'Autoriser';
+
+  @override
+  String get qrScanDeny => 'Refuser';
+
+  @override
+  String get qrScanApproved => 'Session web autorisée';
+
+  @override
+  String get qrScanDenied => 'Connexion refusée';
+
+  @override
+  String get qrScanInvalid => 'Ce code n\'est pas valide pour lier une session';
+
+  @override
+  String get qrScanExpired => 'Le code a expiré ou n\'est pas valide';
+
+  @override
   String get sessionRevokeSuccess => 'Session fermée avec succès';
 
   @override
@@ -1382,6 +1440,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get googleSignInReleaseConfig =>
       'Google Sign-In n\'est pas configuré pour cette version. Enregistrez l\'empreinte SHA du keystore release dans Firebase.';
+
+  @override
+  String get facebookSignInUnavailable =>
+      'La connexion avec Facebook n\'est pas disponible pour le moment.';
 
   @override
   String get communityEmpty => 'Aucune publication pour l\'instant';

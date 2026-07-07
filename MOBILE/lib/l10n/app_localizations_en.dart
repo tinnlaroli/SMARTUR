@@ -128,6 +128,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resendCode => 'Resend code';
 
   @override
+  String otpExpiresIn(Object time) {
+    return 'Code expires in $time';
+  }
+
+  @override
+  String get otpExpired => 'The code has expired';
+
+  @override
+  String resendCodeIn(Object seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get otpResentSuccess => 'Code resent, check your email';
+
+  @override
   String get codeSixDigits => '6-digit code';
 
   @override
@@ -664,6 +680,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithGoogle => 'Continue with Google';
 
   @override
+  String get continueWithFacebook => 'Continue with Facebook';
+
+  @override
   String get noAccountPrompt => 'Don\'t have an account? ';
 
   @override
@@ -1097,6 +1116,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeSessionsSubtitle => 'Manage your connected devices';
 
   @override
+  String get linkWebSession => 'Link web session';
+
+  @override
+  String get linkWebSessionSubtitle => 'Scan the QR code on the sign-in page';
+
+  @override
+  String get qrScanTitle => 'Link web session';
+
+  @override
+  String get qrScanInstructions =>
+      'Point the camera at the QR code on the web sign-in screen';
+
+  @override
+  String get qrScanConfirmTitle => 'Authorize sign-in?';
+
+  @override
+  String get qrScanConfirmBody =>
+      'This will sign in to your account from another device (web browser).';
+
+  @override
+  String get qrScanApprove => 'Authorize';
+
+  @override
+  String get qrScanDeny => 'Decline';
+
+  @override
+  String get qrScanApproved => 'Web session authorized';
+
+  @override
+  String get qrScanDenied => 'Sign-in declined';
+
+  @override
+  String get qrScanInvalid => 'This code isn\'t valid for linking a session';
+
+  @override
+  String get qrScanExpired => 'The code has expired or is invalid';
+
+  @override
   String get sessionRevokeSuccess => 'Session closed successfully';
 
   @override
@@ -1363,6 +1420,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get googleSignInReleaseConfig =>
       'Google Sign-In is not configured for this app build. Register the release keystore SHA in Firebase.';
+
+  @override
+  String get facebookSignInUnavailable =>
+      'Facebook sign-in is not available right now.';
 
   @override
   String get communityEmpty => 'No posts yet';
