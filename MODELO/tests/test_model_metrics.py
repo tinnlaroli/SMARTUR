@@ -50,3 +50,29 @@ def test_baseline_no_gana_si_algoritmo_real_es_mejor():
     best = _select_best_algorithm(rmse)
     assert best != 'baseline'
     assert best == 'hybrid_cf_rf'
+
+
+def test_item_mean_gana_caso_real_observado():
+    # Caso real medido contra los datos de producción tras agregar item_mean:
+    # el promedio por negocio le gana a baseline/CF/RF/híbrido — señal de que
+    # los datos sintéticos están centrados en el promedio de cada negocio y
+    # la "personalización" de CF/RF no aporta nada por encima de eso.
+    rmse = {
+        'baseline': 0.9113,
+        'item_mean': 0.8833,
+        'cf_knn_pearson': 0.9113,
+        'random_forest': 2.2273,
+        'hybrid_cf_rf': 0.9113,
+    }
+    assert _select_best_algorithm(rmse) == 'item_mean'
+
+
+def test_item_mean_no_gana_si_hibrido_es_mejor():
+    rmse = {
+        'baseline': 1.0,
+        'item_mean': 0.9,
+        'cf_knn_pearson': 0.85,
+        'random_forest': 0.95,
+        'hybrid_cf_rf': 0.5,
+    }
+    assert _select_best_algorithm(rmse) == 'hybrid_cf_rf'

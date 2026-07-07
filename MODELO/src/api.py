@@ -620,7 +620,7 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
     import numpy as np
     from math import sqrt
     from sklearn.metrics import mean_absolute_error, mean_squared_error
-    from cf import predict_cf_pearson
+    from cf import predict_cf_pearson, reset_prediction_stats, get_prediction_stats
     from evaluate import _infer_user_context
     from model_metrics import DEFAULT_METRICS
 
@@ -632,6 +632,7 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
 
         n_eval = min(sample_size, len(test_data))
         test_sample = test_data.sample(n_eval, random_state=42)
+        reset_prediction_stats()
 
         # Pre-compute user contexts so predict_with_context gets real signal
         user_contexts = {
@@ -639,7 +640,7 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
             for uid in test_sample['user_id'].unique()
         }
 
-        actuals, preds_cf, preds_rf = [], [], []
+        actuals, preds_cf, preds_rf, business_ids = [], [], [], []
         for _, row in test_sample.iterrows():
             try:
                 p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine_obj)
@@ -655,6 +656,7 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
                 actuals.append(row['stars'])
                 preds_cf.append(p_cf)
                 preds_rf.append(p_rf)
+                business_ids.append(row['business_id'])
             except Exception:
                 continue
 
@@ -684,23 +686,52 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
         hybrid_preds = best_alpha * preds_cf + (1.0 - best_alpha) * preds_rf
         baseline     = np.full_like(actuals, actuals.mean())
 
+        # item_mean: promedio de calificaciones por negocio en el TRAIN set,
+        # aplicado al test set (fallback a la media global si el negocio no
+        # aparece en train). Candidato mucho más barato que CF/RF/híbrido —
+        # cero entrenamiento, solo un groupby. Es un baseline "justo" para
+        # datos sintéticos generados centrados en el promedio de cada
+        # negocio (ver seed_pois_mexico.py/pre_procesamiento_mexico.py): si
+        # item_mean le gana a CF/RF, es señal de que la personalización no
+        # está aportando nada por encima de "cuánto le gusta este lugar a
+        # la gente en general", sin necesidad de retrain para saberlo.
+        item_means_train = engine_obj.train_data.groupby('business_id')['stars'].mean()
+        global_mean = float(actuals.mean())
+        preds_item_mean = np.array(
+            [float(item_means_train.get(bid, global_mean)) for bid in business_ids]
+        )
+
         algorithms = {
             'baseline':       _rmse_mae(actuals, baseline),
+            'item_mean':      _rmse_mae(actuals, preds_item_mean),
             'cf_knn_pearson': _rmse_mae(actuals, preds_cf),
             'random_forest':  _rmse_mae(actuals, preds_rf),
             'hybrid_cf_rf':   {**_rmse_mae(actuals, hybrid_preds), 'alpha': best_alpha},
         }
 
-        # 'baseline' SÍ compite — antes se excluía de "candidates" a propósito,
-        # lo que garantizaba que el sistema nunca pudiera admitir que predecir
-        # el promedio simple le gana a CF/RF/híbrido. Eso ocultaba el problema
-        # real (el modelo no aporta valor) en vez de reportarlo.
-        candidates = {k: algorithms[k]['rmse'] for k in ('baseline', 'cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')}
+        # 'baseline'/'item_mean' SÍ compiten — antes 'baseline' se excluía a
+        # propósito de "candidates", lo que garantizaba que el sistema nunca
+        # pudiera admitir que predecir el promedio simple le gana a
+        # CF/RF/híbrido. Eso ocultaba el problema real (el modelo no aporta
+        # valor) en vez de reportarlo. 'item_mean' es aún más informativo:
+        # si gana, significa que ni siquiera hace falta CF/RF — con el
+        # promedio de calificaciones de cada negocio alcanza.
+        candidates = {
+            k: algorithms[k]['rmse']
+            for k in ('baseline', 'item_mean', 'cf_knn_pearson', 'random_forest', 'hybrid_cf_rf')
+        }
         best_algorithm = min(candidates, key=candidates.get)
-        if best_algorithm == 'baseline':
+        if best_algorithm in ('baseline', 'item_mean'):
             logger.warning(
-                f"[metrics] El baseline (promedio simple, RMSE={algorithms['baseline']['rmse']:.4f}) "
+                f"[metrics] '{best_algorithm}' (RMSE={algorithms[best_algorithm]['rmse']:.4f}) "
                 f"le gana a CF/RF/híbrido — el modelo no está aportando valor medible hoy."
+            )
+
+        cf_stats = get_prediction_stats()
+        if cf_stats.get('fallback_rate') is not None and cf_stats['fallback_rate'] > 0.5:
+            logger.warning(
+                f"[metrics] {cf_stats['fallback_rate']*100:.1f}% de las predicciones de CF "
+                f"cayeron en fallback (sin vecinos con señal real) — dataset demasiado disperso."
             )
 
         result = {
@@ -709,6 +740,7 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
             'local_blend':    {'rf': 1.0, 'gbm': 0.0},
             'algorithms':     algorithms,
             'sample_size':    len(actuals),
+            'cf_prediction_sources': cf_stats,
         }
         enrich = _enrich_metrics(actuals, hybrid_preds, engine_obj, rf_model)
         result.update(enrich)

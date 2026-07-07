@@ -1,3 +1,4 @@
+import logging
 import os
 import pandas as pd
 import numpy as np
@@ -6,8 +7,37 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import train_test_split
 from scipy.sparse import csr_matrix
 
+logger = logging.getLogger(__name__)
+
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA = os.path.join(_DIR, '..', 'data')
+
+# Mínimo de interacciones por usuario para entrar al set de entrenamiento
+# ("k-core filtering"). Con ~198K usuarios y solo 233 negocios en el dataset
+# base, la matriz usuario-ítem es extremadamente dispersa: la mayoría de los
+# usuarios calificaron 1-2 negocios, así que el KNN casi nunca encuentra
+# vecinos con solapamiento real y cae en el fallback constante (ver
+# cf.py:get_prediction_stats). Filtrar a usuarios con más historial sube la
+# densidad real de señal, a costa de menos usuarios en el set.
+K_CORE_MIN_INTERACTIONS = 5
+# Si el filtro deja menos filas que esto, se considera que el dataset no
+# tiene la forma esperada (ej. en tests con datos sintéticos chicos) y se
+# usa el dataset completo sin filtrar en vez de romper el entrenamiento.
+_K_CORE_MIN_ROWS_SAFETY = 500
+
+
+def _apply_k_core_filter(df: pd.DataFrame, min_interactions: int = K_CORE_MIN_INTERACTIONS) -> pd.DataFrame:
+    """Conserva solo las interacciones de usuarios con >= min_interactions
+    reviews. Devuelve el df sin filtrar si el resultado queda demasiado chico
+    (red de seguridad para datasets pequeños/sintéticos, ej. en tests)."""
+    if 'user_id' not in df.columns or df.empty:
+        return df
+    counts = df['user_id'].value_counts()
+    keep_users = counts[counts >= min_interactions].index
+    filtered = df[df['user_id'].isin(keep_users)]
+    if len(filtered) < _K_CORE_MIN_ROWS_SAFETY:
+        return df
+    return filtered
 
 
 class SmarturEngine:
@@ -33,7 +63,16 @@ class SmarturEngine:
             file_name = 'data_negocios_mexico.csv' if data_source == 'mexico' else 'data_negocios_limpio.csv'
             business_path = os.path.join(_DATA, file_name)
 
-        self.df = pd.read_csv(reviews_path)
+        raw_df = pd.read_csv(reviews_path)
+        self.df = _apply_k_core_filter(raw_df)
+        if len(self.df) < len(raw_df):
+            n_users_before = raw_df['user_id'].nunique() if 'user_id' in raw_df.columns else 0
+            n_users_after = self.df['user_id'].nunique() if 'user_id' in self.df.columns else 0
+            logger.info(
+                f"[k-core] Filtrado a usuarios con >= {K_CORE_MIN_INTERACTIONS} interacciones: "
+                f"{len(raw_df)} -> {len(self.df)} filas, {n_users_before} -> {n_users_after} usuarios "
+                f"(sube la densidad real para que KNN tenga vecinos con solapamiento)."
+            )
         self.train_data, self.test_data = train_test_split(
             self.df, test_size=0.2, random_state=42
         )

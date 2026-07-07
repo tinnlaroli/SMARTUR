@@ -543,6 +543,7 @@ const es: DashboardLocale = {
         toastErrorDesc: 'No se pudo iniciar el entrenamiento.',
         algoLabels: {
             baseline:          'Baseline (media global)',
+            item_mean:         'Promedio por negocio',
             cf_knn_pearson:    'CF Pearson KNN',
             random_forest:     'Random Forest + dist_km',
             gradient_boosting: 'Gradient Boosting + dist_km',
@@ -904,6 +905,7 @@ const en: DashboardLocale = {
         toastErrorDesc: 'Could not start training.',
         algoLabels: {
             baseline:          'Baseline (global mean)',
+            item_mean:         'Business average',
             cf_knn_pearson:    'CF Pearson KNN',
             random_forest:     'Random Forest + dist_km',
             gradient_boosting: 'Gradient Boosting + dist_km',
@@ -1265,6 +1267,7 @@ const fr: DashboardLocale = {
         toastErrorDesc: 'Impossible de demarrer l entrainement.',
         algoLabels: {
             baseline:          'Ligne de base (moyenne globale)',
+            item_mean:         'Moyenne par etablissement',
             cf_knn_pearson:    'CF Pearson KNN',
             random_forest:     'Foret aleatoire + dist_km',
             gradient_boosting: 'Gradient Boosting + dist_km',

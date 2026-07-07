@@ -42,9 +42,11 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
     Retorna métricas y pesos recomendados para producción.
     """
     from evaluate import _infer_user_context, evaluar_ranking
+    from cf import reset_prediction_stats, get_prediction_stats
 
     n_eval = min(sample_size, len(engine.test_data))
     test_sample = engine.test_data.sample(n_eval, random_state=42)
+    reset_prediction_stats()
 
     actuals, preds_cf, preds_rf, preds_gbm = [], [], [], []
     user_contexts = {
@@ -52,6 +54,7 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
         for uid in test_sample['user_id'].unique()
     }
 
+    business_ids = []
     for _, row in test_sample.iterrows():
         try:
             p_cf = predict_cf_pearson(row['user_id'], row['business_id'], engine)
@@ -68,6 +71,7 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
             preds_cf.append(p_cf)
             preds_rf.append(p_rf)
             preds_gbm.append(p_gbm)
+            business_ids.append(row['business_id'])
         except Exception:
             continue
 
@@ -82,8 +86,18 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
     media = float(engine.train_data['stars'].mean())
     preds_baseline = np.full_like(actuals, media)
 
+    # item_mean: promedio de calificaciones por negocio en train, aplicado al
+    # test set. Ver nota igual en api.py:_compute_simple_metrics — es el
+    # candidato más barato (sin entrenamiento) y el más "justo" dado que los
+    # datos sintéticos se generan centrados en el promedio de cada negocio.
+    item_means_train = engine.train_data.groupby('business_id')['stars'].mean()
+    preds_item_mean = np.array(
+        [float(item_means_train.get(bid, media)) for bid in business_ids]
+    )
+
     metrics = {
         'baseline': _rmse_mae(actuals, preds_baseline),
+        'item_mean': _rmse_mae(actuals, preds_item_mean),
         'cf_knn_pearson': _rmse_mae(actuals, preds_cf),
         'random_forest': _rmse_mae(actuals, preds_rf),
         'gradient_boosting': _rmse_mae(actuals, preds_gbm),
@@ -110,12 +124,14 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
     triple = 0.15 * preds_cf + 0.50 * preds_rf + 0.35 * preds_gbm
     metrics['hybrid_triple'] = _rmse_mae(actuals, triple)
 
-    # 'baseline' SÍ compite — antes se excluía a propósito, lo que garantizaba
-    # que el sistema nunca pudiera admitir que predecir el promedio simple le
-    # gana a CF/RF/GBM/híbrido. Eso ocultaba el problema real (falta de señal
-    # aprendida) detrás de un "mejor algoritmo" que en realidad no lo era.
+    # 'baseline'/'item_mean' SÍ compiten — antes 'baseline' se excluía a
+    # propósito, lo que garantizaba que el sistema nunca pudiera admitir que
+    # predecir el promedio simple le gana a CF/RF/GBM/híbrido. 'item_mean' es
+    # aún más informativo: si gana, ni CF ni RF están aportando nada por
+    # encima del promedio de calificaciones de cada negocio.
     candidates = {
         'baseline': metrics['baseline']['rmse'],
+        'item_mean': metrics['item_mean']['rmse'],
         'cf_knn_pearson': metrics['cf_knn_pearson']['rmse'],
         'random_forest': metrics['random_forest']['rmse'],
         'gradient_boosting': metrics['gradient_boosting']['rmse'],
@@ -123,9 +139,9 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
         'hybrid_triple': metrics['hybrid_triple']['rmse'],
     }
     best_algorithm = min(candidates, key=candidates.get)
-    if best_algorithm == 'baseline':
+    if best_algorithm in ('baseline', 'item_mean'):
         logger.warning(
-            f"[compare_algorithms] El baseline (RMSE={metrics['baseline']['rmse']:.4f}) "
+            f"[compare_algorithms] '{best_algorithm}' (RMSE={metrics[best_algorithm]['rmse']:.4f}) "
             f"le gana a CF/RF/GBM/híbrido — el modelo no aporta valor medible hoy."
         )
 
@@ -135,6 +151,13 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
     w_rf = (1 / rf_rmse) / total_inv
     w_gbm = (1 / gbm_rmse) / total_inv
 
+    cf_stats = get_prediction_stats()
+    if cf_stats.get('fallback_rate') is not None and cf_stats['fallback_rate'] > 0.5:
+        logger.warning(
+            f"[compare_algorithms] {cf_stats['fallback_rate']*100:.1f}% de las predicciones de "
+            f"CF cayeron en fallback (sin vecinos con señal real) — dataset demasiado disperso."
+        )
+
     result = {
         'best_algorithm': best_algorithm,
         'best_alpha': best_alpha if best_algorithm == 'hybrid_cf_rf' else hybrid_alpha,
@@ -142,6 +165,7 @@ def compare_algorithms(engine, rf_model, gbm_model, sample_size=5000, hybrid_alp
         'local_blend': {'rf': round(w_rf, 3), 'gbm': round(w_gbm, 3)},
         'algorithms': metrics,
         'sample_size': len(actuals),
+        'cf_prediction_sources': cf_stats,
     }
 
     # Enrich with error_distribution, prediction_distribution, data_quality

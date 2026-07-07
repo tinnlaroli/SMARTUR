@@ -1,5 +1,31 @@
 import numpy as np
 
+# Contador de qué "camino" toma cada predicción de CF — instrumentación para
+# medir qué tan seguido el KNN cae en el fallback constante (media global/del
+# usuario) en vez de predecir con señal real. Con 198K usuarios y 233 items
+# en el dataset de Yelp, la sospecha es que la mayoría de las predicciones
+# de evaluación caen en 'fallback_mean', lo que explicaría por qué el
+# baseline (predecir la media) le gana a CF en RMSE. No es thread-safe a
+# propósito: los loops de evaluación (compare_algorithms, _compute_simple_
+# metrics) corren secuenciales en un solo proceso.
+_prediction_source_counts = {'knn': 0, 'svd': 0, 'fallback_mean': 0}
+
+
+def reset_prediction_stats():
+    """Reinicia los contadores — llamar antes de un batch de evaluación."""
+    global _prediction_source_counts
+    _prediction_source_counts = {'knn': 0, 'svd': 0, 'fallback_mean': 0}
+
+
+def get_prediction_stats() -> dict:
+    """Devuelve los contadores acumulados desde el último reset, más el %
+    de predicciones que NO tuvieron señal real de vecinos (fallback_mean)."""
+    counts = dict(_prediction_source_counts)
+    total = sum(counts.values())
+    counts['total'] = total
+    counts['fallback_rate'] = round(counts['fallback_mean'] / total, 4) if total > 0 else None
+    return counts
+
 
 def predict_cf_pearson(user_id, item_id, engine, k=20):
     """
@@ -26,6 +52,7 @@ def predict_cf_pearson(user_id, item_id, engine, k=20):
 
     if user_idx is None or item_idx is None:
         # Si el usuario o el item solicitado sufren de cold-start total
+        _prediction_source_counts['fallback_mean'] += 1
         return engine.train_data['stars'].mean()
 
     user_vector = engine.matrix_centered[user_idx]
@@ -64,11 +91,20 @@ def predict_cf_pearson(user_id, item_id, engine, k=20):
                     svd_pred = float(np.dot(engine.user_latent[u], engine.item_latent[it]))
                     # SVD output is on centered scale; shift back to [1, 5]
                     svd_pred = float(np.clip(svd_pred + user_mean, 1, 5))
-                    return svd_pred if not np.isnan(svd_pred) else user_mean
+                    if not np.isnan(svd_pred):
+                        _prediction_source_counts['svd'] += 1
+                        return svd_pred
+                    _prediction_source_counts['fallback_mean'] += 1
+                    return user_mean
                 except Exception:
                     pass
+        _prediction_source_counts['fallback_mean'] += 1
         return user_mean
 
     prediction = user_mean + (weighted_sum / sim_sum)
     result = float(np.clip(prediction, 1, 5))
-    return result if not np.isnan(result) else user_mean
+    if np.isnan(result):
+        _prediction_source_counts['fallback_mean'] += 1
+        return user_mean
+    _prediction_source_counts['knn'] += 1
+    return result
