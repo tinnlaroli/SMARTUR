@@ -14,10 +14,11 @@ export interface MLMetrics {
     algorithms: Record<string, AlgorithmMetric>;
     sample_size?: number;
     ranking?: {
-        ndcg_at_5: number | null;
-        precision_at_5: number | null;
-        hit_rate_at_10: number | null;
-        users_evaluated?: number;
+        ndcg: number | null;
+        precision: number | null;
+        hit_rate: number | null;
+        preference_match_rate?: number | null;
+        n_users_evaluated?: number;
         error?: string;
     };
     data_quality?: {

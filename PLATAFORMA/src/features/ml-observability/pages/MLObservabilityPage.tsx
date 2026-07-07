@@ -866,18 +866,20 @@ export const MLObservabilityPage = () => {
                                     Métricas de Ranking
                                 </p>
                                 <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                                    {metrics?.ranking?.users_evaluated
-                                        ? `${metrics.ranking.users_evaluated} usuarios evaluados`
+                                    {metrics?.ranking?.n_users_evaluated
+                                        ? `${metrics.ranking.n_users_evaluated} usuarios evaluados`
                                         : 'Umbral relevancia ≥4★'}
                                 </p>
                             </div>
-                            {metrics?.ranking?.ndcg_at_5 != null ? (
+                            {metrics?.ranking?.ndcg != null ? (
                                 <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
                                     {([
-                                        { label: 'NDCG@5',        value: metrics.ranking.ndcg_at_5,        desc: 'Calidad del orden' },
-                                        { label: 'Precision@5',   value: metrics.ranking.precision_at_5,   desc: 'Fracción relevante en top-5' },
-                                        { label: 'Hit Rate@10',   value: metrics.ranking.hit_rate_at_10,   desc: 'Usuarios con resultado relevante' },
+                                        { label: 'NDCG@5',        value: metrics.ranking.ndcg,        desc: 'Calidad del orden' },
+                                        { label: 'Precision@5',   value: metrics.ranking.precision,   desc: 'Fracción relevante en top-5' },
+                                        { label: 'Hit Rate@10',   value: metrics.ranking.hit_rate,    desc: 'Usuarios con resultado relevante' },
+                                        { label: 'Preference Match', value: metrics.ranking.preference_match_rate ?? null, desc: 'Respeta lo que el usuario declaró' },
                                     ] as const).map(({ label, value, desc }) => {
+                                        if (value == null) return null;
                                         const v = value ?? 0;
                                         const color = v >= 0.5
                                             ? DASHBOARD_COLORS.success
