@@ -54,8 +54,10 @@ class _ExploreScreenState extends State<ExploreScreen>
           ? Padding(
               // El nav inferior es flotante (glassmorphism) y se pinta sobre
               // esta pantalla; sin este margen el FAB queda oculto detrás.
+              // 60 (no 77) para compensar el margen por defecto que Flutter
+              // ya agrega al FAB con floatingActionButtonLocation.endFloat.
               padding: EdgeInsets.only(
-                bottom: 77 + MediaQuery.of(context).padding.bottom,
+                bottom: 60 + MediaQuery.of(context).padding.bottom,
               ),
               child: FloatingActionButton(
                 onPressed: () => _communityKey.currentState?._showCreateSheet(),
@@ -929,15 +931,13 @@ class _CommunityTabState extends State<_CommunityTab>
   }
 
   Future<void> _showCreateSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-        child: _CreatePostSheet(onPublished: () { Navigator.pop(ctx); _load(); }),
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => _CreatePostPage(
+          onPublished: () { Navigator.pop(ctx); _load(); },
+        ),
       ),
     );
   }
@@ -1425,22 +1425,43 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Create post sheet
+// Create post — pantalla completa estilo Twitter/X: cerrar a la izquierda,
+// botón de publicar a la derecha (siempre visible), avatar + campo grande.
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _CreatePostSheet extends StatefulWidget {
+class _CreatePostPage extends StatefulWidget {
   final VoidCallback onPublished;
-  const _CreatePostSheet({required this.onPublished});
+  const _CreatePostPage({required this.onPublished});
 
   @override
-  State<_CreatePostSheet> createState() => _CreatePostSheetState();
+  State<_CreatePostPage> createState() => _CreatePostPageState();
 }
 
-class _CreatePostSheetState extends State<_CreatePostSheet> {
+class _CreatePostPageState extends State<_CreatePostPage> {
   final _ctrl = TextEditingController();
+  final _authService = AuthService();
   Uint8List? _imageBytes;
   String? _imageName;
   bool _loading = false;
+  String _userName = '';
+  String? _photoUrl;
+  String? _avatarIconKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl.addListener(() => setState(() {}));
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final name = await _authService.getUserName();
+    final photo = await _authService.getUserPhotoUrl();
+    final icon = await _authService.getUserAvatarIconKey();
+    if (mounted) {
+      setState(() { _userName = name ?? ''; _photoUrl = photo; _avatarIconKey = icon; });
+    }
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -1450,10 +1471,12 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
     if (mounted) setState(() { _imageBytes = bytes; _imageName = picked.name; });
   }
 
+  bool get _canPublish => (_ctrl.text.trim().isNotEmpty || _imageBytes != null) && !_loading;
+
   Future<void> _publish() async {
+    if (!_canPublish) return;
     final content = _ctrl.text.trim();
     final l10n = AppLocalizations.of(context)!;
-    if (content.isEmpty && _imageBytes == null) return;
     setState(() => _loading = true);
     try {
       await UserContentService().createCommunityPost(
@@ -1478,79 +1501,130 @@ class _CreatePostSheetState extends State<_CreatePostSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Center(
-            child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: scheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.communityCreatePost,
-              style: SmarturStyle.calSansTitle.copyWith(fontSize: 18)),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _ctrl,
-            maxLines: 4,
-            maxLength: 500,
-            decoration: InputDecoration(
-              hintText: l10n.communityPostHint,
-              hintStyle: TextStyle(fontFamily: 'Outfit', color: scheme.onSurfaceVariant),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-          if (_imageBytes != null) ...[
-            const SizedBox(height: 8),
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.memory(_imageBytes!, height: 140, fit: BoxFit.cover,
-                      width: double.infinity),
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      appBar: AppBar(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.close_rounded, color: scheme.onSurface),
+          onPressed: _loading ? null : () => Navigator.pop(context),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: FilledButton(
+                onPressed: _canPublish ? _publish : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.primary,
+                  disabledBackgroundColor: scheme.primary.withValues(alpha: 0.35),
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                Positioned(
-                  top: 4, right: 4,
-                  child: GestureDetector(
-                    onTap: () => setState(() { _imageBytes = null; _imageName = null; }),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.black54, shape: BoxShape.circle),
-                      padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.image_outlined, color: scheme.primary),
-                onPressed: _loading ? null : _pickImage,
-              ),
-              const Spacer(),
-              FilledButton(
-                onPressed: _loading ? null : _publish,
-                style: FilledButton.styleFrom(backgroundColor: scheme.primary),
                 child: _loading
                     ? const SizedBox(
-                        width: 18, height: 18,
+                        width: 16, height: 16,
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : Text(l10n.communityPublish,
-                        style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
+                        style: const TextStyle(
+                            fontFamily: 'Outfit', fontWeight: FontWeight.w700, color: Colors.white)),
               ),
-            ],
+            ),
           ),
         ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SmarturUserAvatar(
+                      photoUrl: _photoUrl,
+                      avatarIconKey: _avatarIconKey,
+                      displayName: _userName,
+                      radius: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: _ctrl,
+                            autofocus: true,
+                            minLines: 4,
+                            maxLines: null,
+                            maxLength: 500,
+                            style: const TextStyle(fontFamily: 'Outfit', fontSize: 17),
+                            decoration: InputDecoration(
+                              hintText: l10n.communityPostHint,
+                              hintStyle: TextStyle(
+                                  fontFamily: 'Outfit', fontSize: 17, color: scheme.onSurfaceVariant),
+                              border: InputBorder.none,
+                              counterText: '',
+                            ),
+                          ),
+                          if (_imageBytes != null) ...[
+                            const SizedBox(height: 8),
+                            Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.memory(_imageBytes!, fit: BoxFit.cover,
+                                      width: double.infinity, height: 220),
+                                ),
+                                Positioned(
+                                  top: 8, right: 8,
+                                  child: GestureDetector(
+                                    onTap: () => setState(() { _imageBytes = null; _imageName = null; }),
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                          color: Colors.black54, shape: BoxShape.circle),
+                                      padding: const EdgeInsets.all(6),
+                                      child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Barra inferior estilo Twitter/X: ícono de imagen + contador.
+            Container(
+              padding: EdgeInsets.fromLTRB(
+                  16, 8, 16, 8 + MediaQuery.viewInsetsOf(context).bottom),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4))),
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.image_outlined, color: scheme.primary),
+                    onPressed: _loading ? null : _pickImage,
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${_ctrl.text.length}/500',
+                    style: TextStyle(
+                        fontFamily: 'Outfit', fontSize: 12, color: scheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

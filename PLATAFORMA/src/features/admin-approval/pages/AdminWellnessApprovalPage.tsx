@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Leaf, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, BarChart2, AlertCircle } from 'lucide-react';
+import { Leaf, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { api } from '../../../shared/api/axiosClient';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useAdminBadges } from '../../dashboard/context/AdminBadgesContext';
@@ -252,90 +252,6 @@ function WellnessReviewCard({
     );
 }
 
-// ── Tipos de métricas del clasificador ─────────────────────────────────────
-interface WellnessClassifierMetrics {
-    accuracy: number | null;
-    macro_f1: number | null;
-    trained_at: string | null;
-    n_samples: number | null;
-    dataset: string;
-    classification_report: Record<string, unknown>;
-}
-
-interface WellnessMetricsResponse {
-    classifier: WellnessClassifierMetrics;
-    disclaimer: string;
-}
-
-function WellnessMetricsCard() {
-    const [data, setData] = useState<WellnessMetricsResponse | null>(null);
-    const [err, setErr] = useState(false);
-
-    useEffect(() => {
-        api.get<WellnessMetricsResponse>('/ml/wellness/metrics')
-            .then(r => setData(r.data))
-            .catch(() => setErr(true));
-    }, []);
-
-    const fmt = (v: number | null) => v != null ? (v * 100).toFixed(1) + '%' : '—';
-    const fmtDate = (s: string | null) => s ? new Date(s).toLocaleDateString('es-MX', { dateStyle: 'medium' }) : '—';
-
-    return (
-        <div
-            className="rounded-2xl border p-4 mb-4"
-            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
-        >
-            <div className="flex items-center gap-2 mb-3">
-                <BarChart2 className="size-4" style={{ color: 'var(--color-green)' }} />
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                    Métricas del Clasificador Wellness
-                </p>
-            </div>
-
-            {err ? (
-                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                    <AlertCircle className="size-3.5 shrink-0" />
-                    Modelo no entrenado aún — ejecuta el entrenamiento desde la terminal.
-                </div>
-            ) : !data ? (
-                <div className="h-8 flex items-center">
-                    <Loader2 className="size-4 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
-                </div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Accuracy</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--color-green)' }}>
-                                {fmt(data.classifier.accuracy)}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Macro F1</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--color-cyan)' }}>
-                                {fmt(data.classifier.macro_f1)}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Muestras</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--color-text)' }}>
-                                {data.classifier.n_samples?.toLocaleString('es-MX') ?? '—'}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-1.5 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                        <AlertCircle className="size-3 mt-0.5 shrink-0" />
-                        <span>
-                            Entrenado {fmtDate(data.classifier.trained_at)} sobre datos {data.classifier.dataset}.{' '}
-                            {data.disclaimer}
-                        </span>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-}
-
 export default function AdminWellnessApprovalPage() {
     const [items, setItems] = useState<WellnessPendingItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -356,8 +272,6 @@ export default function AdminWellnessApprovalPage() {
 
     return (
         <div className="space-y-3">
-            <WellnessMetricsCard />
-
             {loading ? (
                 <div className="flex items-center justify-center py-12">
                     <Loader2 className="size-6 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
