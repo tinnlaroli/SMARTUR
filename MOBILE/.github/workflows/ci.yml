@@ -23,7 +23,12 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze
+        # --no-fatal-infos: hay ~64 lints de nivel "info" preexistentes
+        # (unnecessary_underscores, deprecated_member_use, etc.) que no
+        # bloqueaban nada antes de que este workflow existiera. Bloquear solo
+        # en warnings/errors reales evita que el gate falle por deuda de
+        # estilo no relacionada al cambio que se está subiendo.
+        run: flutter analyze --no-fatal-infos
 
       - name: Test
         run: flutter test
