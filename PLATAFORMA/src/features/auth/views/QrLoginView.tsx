@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { ArrowLeft, RefreshCcw, Smartphone } from 'lucide-react';
+import logoMark from '../../../assets/landing/logo.png';
 import { setAccessToken, setStoredRefreshToken } from '../../../shared/api/axiosClient';
 import { authApi } from '../authApi';
 import { useToast } from '../../../shared/context/ToastContext';
@@ -110,7 +111,17 @@ export const QrLoginView = ({ onSwitchStep, onClose }: QrLoginViewProps) => {
             <div className="flex flex-col items-center gap-4">
                 {status === 'pending' && challenge && (
                     <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: '#ffffff' }}>
-                        <QRCodeSVG value={qrValue} size={200} />
+                        <QRCodeSVG
+                            value={qrValue}
+                            size={200}
+                            level="H"
+                            imageSettings={{
+                                src: logoMark,
+                                height: 40,
+                                width: 40,
+                                excavate: true,
+                            }}
+                        />
                     </div>
                 )}
 
