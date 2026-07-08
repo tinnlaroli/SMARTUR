@@ -731,6 +731,18 @@ CREATE TABLE IF NOT EXISTS qr_login_sessions (
 CREATE INDEX IF NOT EXISTS idx_qr_login_sessions_status ON qr_login_sessions(status, expires_at);
 `,
     },
+    {
+        // K-fold cross-validation de CF/RF/GBM, complementa el train/test
+        // split que ya guarda ml_model_metrics.
+        name: 'v41_ml_cross_validation_metrics',
+        sql: `
+CREATE TABLE IF NOT EXISTS ml_cross_validation_metrics (
+    id         SERIAL PRIMARY KEY,
+    cv_json    JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+`,
+    },
 ];
 
 export async function runMigrations() {

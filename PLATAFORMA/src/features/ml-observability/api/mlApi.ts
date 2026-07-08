@@ -33,6 +33,23 @@ export interface MLMetrics {
     };
 }
 
+export interface CrossValidationAlgoResult {
+    rmse_mean: number | null;
+    rmse_std: number | null;
+    mae_mean: number | null;
+    mae_std: number | null;
+    avg_execution_time_ms: number | null;
+    folds_completed: number;
+}
+
+export interface CrossValidationResult {
+    k: number;
+    sample_size: number;
+    algorithms: Record<string, CrossValidationAlgoResult>;
+    total_execution_time_ms?: number;
+    timestamp?: string;
+}
+
 export interface MLHealth {
     latest_metrics: MLMetrics | null;
     daily_sessions: {
@@ -100,6 +117,20 @@ export const mlApi = {
     trainModel: async (): Promise<{ ok: boolean; message: string }> => {
         const { data } = await api.post('/ml/train');
         return data;
+    },
+
+    runCrossValidation: async (): Promise<{ ok: boolean; message: string }> => {
+        const { data } = await api.post('/ml/cross-validation');
+        return data;
+    },
+
+    getCrossValidation: async (): Promise<CrossValidationResult | null> => {
+        try {
+            const { data } = await api.get<CrossValidationResult>('/ml/cross-validation');
+            return data;
+        } catch {
+            return null;
+        }
     },
 
     getSchedulerConfig: async (): Promise<SchedulerConfig> => {

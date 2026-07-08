@@ -119,6 +119,45 @@ router.post('/ml/train', verifyToken, async (req, res) => {
 });
 
 /**
+ * POST /api/v2/ml/cross-validation
+ * Inicia k-fold cross-validation (CF/RF/GBM) en MODELO, en background.
+ */
+router.post('/ml/cross-validation', verifyToken, async (req, res) => {
+    try {
+        const modeloRes = await fetch(`${MODELO_URL}/cross-validation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10_000),
+        });
+        const data = await modeloRes.json().catch(() => ({}));
+        res.json({ ok: true, message: data.message ?? 'Cross-validation iniciada en background' });
+    } catch (err) {
+        console.error('[ml/cross-validation] error:', err.message);
+        res.status(502).json({ message: 'No se pudo iniciar la cross-validation.', detail: err.message });
+    }
+});
+
+/**
+ * GET /api/v2/ml/cross-validation
+ * Proxy al último resultado de k-fold cross-validation guardado en MODELO.
+ */
+router.get('/ml/cross-validation', verifyToken, async (req, res) => {
+    try {
+        const modeloRes = await fetch(`${MODELO_URL}/cross-validation`, {
+            signal: AbortSignal.timeout(10_000),
+        });
+        if (modeloRes.status === 404) {
+            return res.status(404).json({ message: 'Sin resultados de cross-validation aún.' });
+        }
+        const data = await modeloRes.json();
+        res.json(data);
+    } catch (err) {
+        console.error('[ml/cross-validation GET] error:', err.message);
+        res.status(502).json({ message: 'No se pudo obtener la cross-validation.', detail: err.message });
+    }
+});
+
+/**
  * POST /api/v2/ml/recommend/:userId
  * Proxies a recommendation request to the MODELO service,
  * persists the session to ml_recommendation_session, and returns the result.

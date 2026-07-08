@@ -518,6 +518,14 @@ CREATE TABLE ml_model_metrics (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- K-fold cross-validation de los 3 algoritmos principales (CF, RF, GBM),
+-- complementa el train/test split que ya guarda ml_model_metrics.
+CREATE TABLE ml_cross_validation_metrics (
+  id SERIAL PRIMARY KEY,
+  cv_json JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ============================================================
 -- 20. INTERACCIONES Y RATINGS DE USUARIOS (data collection ML)
 -- ============================================================

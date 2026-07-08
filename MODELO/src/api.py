@@ -2,6 +2,8 @@ import asyncio
 import logging
 import os
 import threading
+import time
+from datetime import datetime, timezone
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -780,6 +782,33 @@ def _persist_metrics_to_db(metrics_json: dict) -> bool:
         return False
 
 
+def _persist_cv_metrics_to_db(cv_json: dict) -> bool:
+    """Inserts k-fold cross-validation results into ml_cross_validation_metrics."""
+    try:
+        import psycopg2
+        import json as _json
+
+        conn = psycopg2.connect(
+            host=os.getenv('POI_DB_HOST', 'localhost'),
+            port=int(os.getenv('POI_DB_PORT', 5432)),
+            database=os.getenv('POI_DB_NAME', 'smartur'),
+            user=os.getenv('POI_DB_USER', 'postgres'),
+            password=os.getenv('POI_DB_PASSWORD', os.getenv('DB_PASSWORD', '')),
+            options='-c client_encoding=UTF8',
+        )
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO ml_cross_validation_metrics (cv_json) VALUES (%s)",
+                    (_json.dumps(cv_json, ensure_ascii=False),),
+                )
+        conn.close()
+        return True
+    except Exception as exc:
+        logger.error(f"[cv] No se pudo persistir cross-validation en DB: {exc}")
+        return False
+
+
 def _compute_enrich_from_engine(engine_obj, rf_model):
     """Computes enrichment metrics using a sample of test data."""
     import numpy as np
@@ -1030,6 +1059,71 @@ def train_full(background_tasks: BackgroundTasks):
         raise HTTPException(status_code=503, detail="Modelos no cargados.")
     background_tasks.add_task(_run_full_training)
     return {"ok": True, "message": "Entrenamiento iniciado en background"}
+
+
+_cv_in_progress = False  # True mientras corre la validación cruzada en background
+
+
+def _run_cross_validation(k: int = 5, sample_size: int = 3000) -> None:
+    """
+    Background worker: k-fold cross-validation de CF/RF/GBM (ver
+    cross_validation.py). Complementa el train/test split que ya calcula
+    _run_full_training/_compute_simple_metrics — responde al requisito de
+    que cada algoritmo se evalúe tanto con validación cruzada como con
+    división train/test.
+    """
+    global _cv_in_progress
+    _cv_in_progress = True
+    try:
+        from cross_validation import run_kfold_cv
+        logger.info(f"[cv] Iniciando k-fold cross-validation (k={k}, sample_size={sample_size})...")
+        t0 = time.time()
+        cv_result = run_kfold_cv(engine, k=k, sample_size=sample_size)
+        cv_result['total_execution_time_ms'] = (time.time() - t0) * 1000
+        cv_result['timestamp'] = datetime.now(timezone.utc).isoformat()
+
+        cv_path = Path(_MODELS) / "cv_metrics.json"
+        with open(cv_path, 'w', encoding='utf-8') as f:
+            json.dump(cv_result, f, ensure_ascii=False, indent=2)
+
+        _persist_cv_metrics_to_db(cv_result)
+
+        for algo, m in cv_result['algorithms'].items():
+            logger.info(
+                f"[cv] {algo}: RMSE={m['rmse_mean']:.4f}±{m['rmse_std']:.4f}, "
+                f"MAE={m['mae_mean']:.4f}±{m['mae_std']:.4f}, "
+                f"tiempo={m['avg_execution_time_ms']:.0f}ms/fold"
+            )
+        logger.info(f"[cv] Cross-validation completada en {cv_result['total_execution_time_ms']:.0f}ms.")
+    except Exception as exc:
+        logger.error(f"[cv] Error en cross-validation: {exc}", exc_info=True)
+    finally:
+        _cv_in_progress = False
+
+
+@app.post("/cross-validation")
+def cross_validation_endpoint(background_tasks: BackgroundTasks, k: int = 5, sample_size: int = 3000):
+    """
+    Inicia k-fold cross-validation de CF/RF/GBM en background. Guarda el
+    resultado en models/cv_metrics.json y en la tabla
+    ml_cross_validation_metrics. Consultar el resultado con GET /cross-validation.
+    """
+    if engine is None:
+        raise HTTPException(status_code=503, detail="Modelos no cargados.")
+    if _cv_in_progress:
+        return {"ok": False, "message": "Cross-validation ya en curso."}
+    background_tasks.add_task(_run_cross_validation, k, sample_size)
+    return {"ok": True, "message": f"Cross-validation iniciada en background (k={k}, sample_size={sample_size})"}
+
+
+@app.get("/cross-validation")
+def get_cross_validation():
+    """Devuelve el último resultado de cross-validation guardado en disco."""
+    cv_path = Path(_MODELS) / "cv_metrics.json"
+    if not cv_path.exists():
+        raise HTTPException(status_code=404, detail="Sin resultados de cross-validation aún. Ejecuta POST /cross-validation primero.")
+    with open(cv_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
 
 @app.post("/train-rf")

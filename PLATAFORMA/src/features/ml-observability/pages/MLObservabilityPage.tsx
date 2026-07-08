@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
-import { mlApi, type ModelStatus, type SchedulerConfig, type ExtendedStats } from '../api/mlApi';
+import { mlApi, type ModelStatus, type SchedulerConfig, type ExtendedStats, type CrossValidationResult } from '../api/mlApi';
 import { api } from '../../../shared/api/axiosClient';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -224,6 +224,10 @@ export const MLObservabilityPage = () => {
 
     const [extStats, setExtStats] = useState<ExtendedStats | null>(null);
 
+    const [cvResult, setCvResult] = useState<CrossValidationResult | null>(null);
+    const [cvLoading, setCvLoading] = useState(false);
+    const [cvRunning, setCvRunning] = useState(false);
+
     const fetchModelStatus = useCallback(async () => {
         setStatusLoading(true);
         try {
@@ -251,6 +255,30 @@ export const MLObservabilityPage = () => {
             setExtStats(s);
         } catch { /* non-fatal */ }
     }, []);
+
+    const fetchCrossValidation = useCallback(async () => {
+        setCvLoading(true);
+        try {
+            const r = await mlApi.getCrossValidation();
+            setCvResult(r);
+        } catch {
+            // non-fatal
+        } finally {
+            setCvLoading(false);
+        }
+    }, []);
+
+    const handleRunCrossValidation = async () => {
+        setCvRunning(true);
+        try {
+            await mlApi.runCrossValidation();
+            toast.success('Cross-validation iniciada', 'Corre en segundo plano — puede tardar varios minutos.');
+        } catch {
+            toast.error(copy.toastErrorTitle, 'No se pudo iniciar la cross-validation.');
+        } finally {
+            setCvRunning(false);
+        }
+    };
 
     const handleSaveScheduler = async () => {
         setSchedSaving(true);
@@ -306,6 +334,7 @@ export const MLObservabilityPage = () => {
         void fetchModelStatus();
         void fetchScheduler();
         void fetchExtStats();
+        void fetchCrossValidation();
 
         try {
             const ts = localStorage.getItem(TRAINING_LOCK_KEY);
@@ -832,6 +861,86 @@ export const MLObservabilityPage = () => {
                                 </p>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {/* K-fold Cross-Validation */}
+                {!isLoading && (
+                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                        <div
+                            className="px-4 py-3 border-b flex items-center justify-between gap-3 flex-wrap"
+                            style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}
+                        >
+                            <div>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                                    Validación cruzada (k-fold)
+                                </p>
+                                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
+                                    {cvResult
+                                        ? `k=${cvResult.k} folds · muestra de ${cvResult.sample_size} interacciones${cvResult.timestamp ? ` · ${new Date(cvResult.timestamp).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}`
+                                        : 'CF, Random Forest y Gradient Boosting — complementa el train/test split de arriba'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => void handleRunCrossValidation()}
+                                disabled={cvRunning}
+                                className="flex items-center gap-2 rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}
+                            >
+                                {cvRunning ? (
+                                    <span className="size-4 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                                ) : (
+                                    <Play className="size-4" style={{ color: DASHBOARD_COLORS.success }} />
+                                )}
+                                Correr cross-validation
+                            </button>
+                        </div>
+                        {cvLoading ? (
+                            <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--color-text-alt)' }}>Cargando…</p>
+                        ) : cvResult ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
+                                            {['Algoritmo', 'RMSE (media ± σ)', 'MAE (media ± σ)', 'Folds', 'Tiempo/fold'].map((h, i) => (
+                                                <th
+                                                    key={h}
+                                                    className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider ${i > 0 ? 'text-right' : 'text-left'}`}
+                                                    style={{ color: 'var(--color-text-alt)' }}
+                                                >
+                                                    {h}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Object.entries(cvResult.algorithms).map(([key, alg]) => (
+                                            <tr key={key} className="border-b" style={{ borderColor: 'var(--color-border)' }}>
+                                                <td className="px-4 py-2.5 font-medium" style={{ color: 'var(--color-text)' }}>
+                                                    {copy.algoLabels[key] ?? key}
+                                                </td>
+                                                <td className="px-4 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                    {alg.rmse_mean != null ? `${alg.rmse_mean.toFixed(3)} ± ${(alg.rmse_std ?? 0).toFixed(3)}` : '—'}
+                                                </td>
+                                                <td className="px-4 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                    {alg.mae_mean != null ? `${alg.mae_mean.toFixed(3)} ± ${(alg.mae_std ?? 0).toFixed(3)}` : '—'}
+                                                </td>
+                                                <td className="px-4 py-2.5 text-right text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                                    {alg.folds_completed}/{cvResult.k}
+                                                </td>
+                                                <td className="px-4 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                                                    {alg.avg_execution_time_ms != null ? `${alg.avg_execution_time_ms.toFixed(0)}ms` : '—'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--color-text-alt)' }}>
+                                Sin resultados aún — corre la cross-validation (tarda varios minutos, se ejecuta en segundo plano).
+                            </p>
+                        )}
                     </div>
                 )}
 
