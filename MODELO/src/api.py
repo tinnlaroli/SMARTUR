@@ -885,6 +885,20 @@ def _run_full_training():
             context_model.train(engine.train_data, df_biz_extra=restmex_biz)
 
             # ── 4b. Retrain LightFM ──────────────────────────────────────────────
+            # Si LightFM falló al cargar en el boot (pickle incompatible, archivo
+            # faltante, etc.) queda en None — sin este fallback, el reentrenamiento
+            # nocturno lo saltaba para siempre porque solo reentrenaba una instancia
+            # que ya existiera. Se crea una instancia nueva aquí mismo si hace falta,
+            # así el sistema se autorecupera en el siguiente ciclo de entrenamiento.
+            if lightfm_model is None:
+                try:
+                    from lightfm_model import SmarturLightFMModel
+                    lightfm_model = SmarturLightFMModel()
+                    logger.info("[train] LightFM estaba caído — instancia nueva creada para reintentar.")
+                except Exception as lfm_init_err:
+                    logger.warning(f"[train] No se pudo instanciar LightFM: {lfm_init_err}")
+                    lightfm_model = None
+
             if lightfm_model is not None:
                 logger.info("[train] Reentrenando LightFM...")
                 try:
