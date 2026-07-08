@@ -330,9 +330,6 @@ export const StatisticsPage = () => {
 
             {/* Header */}
             <div className="flex items-center gap-3 shrink-0">
-                <div className="flex size-10 items-center justify-center rounded-xl" style={{ background: 'var(--color-purple)' }}>
-                    <BarChart3 className="size-5 text-white" />
-                </div>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
                         {m.statistics.title}

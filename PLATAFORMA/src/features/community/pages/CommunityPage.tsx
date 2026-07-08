@@ -133,6 +133,17 @@ export const CommunityPage = () => {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.community }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('community.infoBannerTitle')}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {t('community.infoBannerDescription')}
+                    </p>
+                </div>
+            </div>
+
             {/* Tab bar */}
             <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
                 <button
@@ -160,17 +171,6 @@ export const CommunityPage = () => {
 
             {activeTab === 'posts' && (
             <>
-            {/* Info banner */}
-            <div className="rounded-xl border px-5 py-4 flex items-start gap-3" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
-                <MessageSquare className="size-5 mt-0.5 shrink-0" style={{ color: MODULE_COLORS.community }} />
-                <div>
-                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('community.infoBannerTitle')}</p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
-                        {t('community.infoBannerDescription')}
-                    </p>
-                </div>
-            </div>
-
             {/* Controls row */}
             <div className="flex items-center justify-end">
                 <button

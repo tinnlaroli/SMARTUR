@@ -336,12 +336,6 @@ export function AdminDisputasPage() {
         <div className="flex flex-col gap-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div
-                    className="flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: 'rgba(139,92,246,0.12)', color: '#7c3aed' }}
-                >
-                    <MessageSquareDiff className="size-5" />
-                </div>
                 <div className="flex-1">
                     <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Aclaraciones</h1>
                     <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>

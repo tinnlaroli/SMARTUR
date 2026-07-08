@@ -24,12 +24,6 @@ export function AdminApprovalPage() {
         <div className="flex h-[calc(100vh-9rem)] flex-col gap-4 overflow-hidden">
             {/* Header */}
             <div className="flex shrink-0 items-center gap-3">
-                <div
-                    className="flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}
-                >
-                    <ClipboardCheck className="size-5" />
-                </div>
                 <div>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
                         Filtro de Aprobación
