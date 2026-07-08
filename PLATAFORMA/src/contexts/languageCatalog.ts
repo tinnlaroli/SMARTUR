@@ -682,6 +682,8 @@ export const ui = {
         // Notifications (Push)
         'notifications.title': 'Notificaciones Push',
         'notifications.description': 'Envía notificaciones FCM a usuarios de la app SMARTUR',
+        'notifications.bannerTitle': 'Notificaciones push (FCM)',
+        'notifications.bannerDescription': 'Envía avisos directos a los dispositivos de usuarios y empresas registradas en la app móvil. Puedes dirigirlas a todos, solo turistas o solo empresas.',
         'notifications.composeTitle': 'Redactar mensaje',
         'notifications.titleLabel': 'Título',
         'notifications.titlePh': 'Ej: ¡Nueva ruta disponible en Orizaba!',
@@ -1459,6 +1461,8 @@ export const ui = {
         // Notifications (Push)
         'notifications.title': 'Push Notifications',
         'notifications.description': 'Send FCM notifications to SMARTUR app users',
+        'notifications.bannerTitle': 'Push notifications (FCM)',
+        'notifications.bannerDescription': 'Send direct alerts to the devices of users and companies registered in the mobile app. You can target everyone, only tourists, or only companies.',
         'notifications.composeTitle': 'Compose message',
         'notifications.titleLabel': 'Title',
         'notifications.titlePh': 'E.g.: New route available in Orizaba!',
@@ -2236,6 +2240,8 @@ export const ui = {
         // Notifications (Push)
         'notifications.title': 'Notifications Push',
         'notifications.description': 'Envoyer des notifications FCM aux utilisateurs de l\'app SMARTUR',
+        'notifications.bannerTitle': 'Notifications push (FCM)',
+        'notifications.bannerDescription': 'Envoyez des alertes directes aux appareils des utilisateurs et entreprises inscrits sur l application mobile. Vous pouvez cibler tout le monde, uniquement les touristes ou uniquement les entreprises.',
         'notifications.composeTitle': 'Rédiger un message',
         'notifications.titleLabel': 'Titre',
         'notifications.titlePh': 'Ex: Nouvelle route disponible à Orizaba!',

@@ -343,6 +343,15 @@ export const StatisticsPage = () => {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <BarChart3 className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{m.statistics.bannerTitle}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{m.statistics.bannerDescription}</p>
+                </div>
+            </div>
+
             {/* Tabs */}
             <div className="flex gap-1 rounded-2xl p-1.5 shrink-0" style={{ background: 'var(--color-bg-alt)' }}>
                 {tabs.map((tab) => {

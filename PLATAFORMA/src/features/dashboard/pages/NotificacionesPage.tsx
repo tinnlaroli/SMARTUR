@@ -132,6 +132,15 @@ export function NotificacionesPage() {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Bell className="size-5 mt-0.5 shrink-0" style={{ color: 'var(--color-purple)' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>{t('notifications.bannerTitle')}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>{t('notifications.bannerDescription')}</p>
+                </div>
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-2">
 
                 {/* ── Columna izquierda: formulario ───────────────────────── */}

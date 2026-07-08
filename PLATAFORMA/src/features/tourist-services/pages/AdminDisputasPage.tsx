@@ -359,6 +359,17 @@ export function AdminDisputasPage() {
                 </button>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <MessageSquareDiff className="size-5 mt-0.5 shrink-0" style={{ color: '#7c3aed' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Aclaraciones de ediciones</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Cuando una empresa solicita revertir un cambio hecho por un admin sobre su servicio, aparece aquí para que decidas si mantener el cambio o aceptar la propuesta de la empresa.
+                    </p>
+                </div>
+            </div>
+
             {/* Content */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">

@@ -12,7 +12,7 @@ interface SEOHelmetProps {
 }
 
 const SITE_URL = 'https://app.smartur.online';
-const SITE_NAME = 'WELLTUR';
+const SITE_NAME = 'SMARTUR';
 
 function setMeta(name: string, content: string, property = false) {
   const attr = property ? 'property' : 'name';

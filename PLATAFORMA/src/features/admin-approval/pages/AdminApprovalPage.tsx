@@ -40,6 +40,17 @@ export function AdminApprovalPage() {
                 </div>
             </div>
 
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <ClipboardCheck className="size-5 mt-0.5 shrink-0" style={{ color: '#16a34a' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Aprobación de contenido</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Revisa y aprueba las actividades, puntos de interés y servicios de bienestar enviados por empresas antes de que se publiquen para los turistas.
+                    </p>
+                </div>
+            </div>
+
             {/* Tabs */}
             <div
                 className="flex shrink-0 gap-1 rounded-xl border p-1 w-fit"

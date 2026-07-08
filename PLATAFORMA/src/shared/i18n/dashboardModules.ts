@@ -148,6 +148,8 @@ export type DashboardModules = {
     statistics: {
         title: string;
         subtitle: string;
+        bannerTitle: string;
+        bannerDescription: string;
         tabExpenditure: string;
         tabEmployment: string;
         tabCarbon: string;
@@ -596,6 +598,8 @@ const es: DashboardModules = {
     statistics: {
         title: 'Estadísticas y finanzas',
         subtitle: 'KPIs turísticos, laborales y ambientales',
+        bannerTitle: 'Indicadores del destino',
+        bannerDescription: 'Registra y consulta gasto turístico, empleo generado e indicadores ambientales (huella de carbono) para medir el impacto económico y ecológico del turismo en la región.',
         tabExpenditure: 'Gasto turístico',
         tabEmployment: 'Empleo',
         tabCarbon: 'Huella de carbono',
@@ -1059,6 +1063,8 @@ const en: DashboardModules = {
     statistics: {
         title: 'Statistics and finance',
         subtitle: 'Tourism, employment, and environmental KPIs',
+        bannerTitle: 'Destination indicators',
+        bannerDescription: 'Record and review tourist spending, jobs generated, and environmental indicators (carbon footprint) to measure the economic and ecological impact of tourism in the region.',
         tabExpenditure: 'Tourist spending',
         tabEmployment: 'Employment',
         tabCarbon: 'Carbon footprint',
@@ -1522,6 +1528,8 @@ const fr: DashboardModules = {
     statistics: {
         title: 'Statistiques et finances',
         subtitle: 'KPI touristiques, emploi et environnement',
+        bannerTitle: 'Indicateurs de la destination',
+        bannerDescription: 'Enregistrez et consultez les dépenses touristiques, les emplois générés et les indicateurs environnementaux (empreinte carbone) pour mesurer l impact economique et ecologique du tourisme dans la region.',
         tabExpenditure: 'Dépenses touristiques',
         tabEmployment: 'Emploi',
         tabCarbon: 'Empreinte carbone',

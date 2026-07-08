@@ -19,6 +19,8 @@ type DashboardLocale = {
     settings: {
         title: string;
         subtitle: string;
+        bannerTitle: string;
+        bannerDescription: string;
         languageTitle: string;
         languageDescription: string;
         languageCodeLabel: string;
@@ -312,6 +314,8 @@ const es: DashboardLocale = {
     settings: {
         title: 'Configuración',
         subtitle: 'Preferencias activas del panel, idioma y alertas internas.',
+        bannerTitle: 'Preferencias del panel',
+        bannerDescription: 'Ajusta el idioma, la apariencia y las alertas internas de tu sesión administrativa. Estos cambios solo afectan tu cuenta, no la configuración de otros administradores.',
         languageTitle: 'Idioma de la interfaz',
         languageDescription: 'El cambio se aplica inmediatamente en las vistas del dashboard y configuración.',
         languageCodeLabel: 'Código',
@@ -674,6 +678,8 @@ const en: DashboardLocale = {
     settings: {
         title: 'Settings',
         subtitle: 'Active panel preferences, language, and internal alerts.',
+        bannerTitle: 'Panel preferences',
+        bannerDescription: 'Adjust the language, appearance, and internal alerts for your admin session. These changes only affect your account, not other administrators.',
         languageTitle: 'Interface language',
         languageDescription: 'The change is applied immediately across dashboard and settings views.',
         languageCodeLabel: 'Code',
@@ -1036,6 +1042,8 @@ const fr: DashboardLocale = {
     settings: {
         title: 'Configuration',
         subtitle: 'Preferences actives du panneau, langue et alertes internes.',
+        bannerTitle: 'Preferences du panneau',
+        bannerDescription: 'Ajustez la langue, l apparence et les alertes internes de votre session administrateur. Ces changements n affectent que votre compte, pas les autres administrateurs.',
         languageTitle: 'Langue de l interface',
         languageDescription: 'Le changement est applique immediatement dans le dashboard et les parametres.',
         languageCodeLabel: 'Code',
