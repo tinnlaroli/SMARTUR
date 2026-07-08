@@ -221,12 +221,19 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
   int _step = 0;
   bool _consentGiven = false;
   final Map<String, int> _answers = {};
+  // Valor temporal mientras se arrastra el slider, antes de soltar (onChangeEnd)
+  final Map<String, int> _draftValue = {};
   bool _loading = false;
   String? _error;
   WellnessAssessmentResult? _result;
 
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
+
+  // Animación de "respiración" — pulso suave y continuo para transmitir calma
+  // en el hero del disclaimer y en la pantalla de carga.
+  late final AnimationController _breatheCtrl;
+  late final Animation<double> _breatheAnim;
 
   final _service = WellnessService();
 
@@ -239,11 +246,19 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
     _fadeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeInOut);
     _fadeCtrl.forward();
+
+    _breatheCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2600),
+    )..repeat(reverse: true);
+    _breatheAnim = Tween<double>(begin: 0.94, end: 1.04)
+        .animate(CurvedAnimation(parent: _breatheCtrl, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
     _fadeCtrl.dispose();
+    _breatheCtrl.dispose();
     super.dispose();
   }
 
@@ -380,13 +395,28 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 16),
-          Container(
-            width: 72, height: 72,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+          ScaleTransition(
+            scale: _breatheAnim,
+            child: Container(
+              width: 88, height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [
+                  const Color(0xFF10B981).withValues(alpha: 0.22),
+                  const Color(0xFF10B981).withValues(alpha: 0.05),
+                ]),
+              ),
+              child: Center(
+                child: Container(
+                  width: 60, height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF10B981).withValues(alpha: 0.14),
+                  ),
+                  child: const Icon(Icons.eco_outlined, size: 30, color: Color(0xFF10B981)),
+                ),
+              ),
             ),
-            child: const Icon(Icons.eco_outlined, size: 36, color: Color(0xFF10B981)),
           ),
           const SizedBox(height: 24),
           Row(
@@ -520,38 +550,46 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
 
   Widget _buildQuestion(ColorScheme scheme, int questionIndex) {
     final q = _questions[questionIndex];
-    final progress = (questionIndex + 1) / _questions.length;
     final (dimIcon, dimColor) = _dimensionMeta[q.dimension] ?? (Icons.eco_outlined, const Color(0xFF10B981));
 
     // ¿Es el segundo ítem de la dimensión? (índice par=primero, impar=segundo)
     final isSecondInDim = questionIndex.isOdd;
+
+    final answered = _answers[q.id];
+    final hasInteracted = answered != null || _draftValue.containsKey(q.id);
+    // Índice 0..3 a mostrar en el círculo/slider (neutral=1 si aún no se toca)
+    final displayIndex = (answered ?? _draftValue[q.id] ?? 2) - 1;
 
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Barra de progreso
-          Row(children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: scheme.outlineVariant.withValues(alpha: 0.3),
-                  valueColor: AlwaysStoppedAnimation(dimColor),
-                  minHeight: 4,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text('${questionIndex + 1}/8',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                    color: scheme.onSurface.withValues(alpha: 0.5))),
-          ]),
-          const SizedBox(height: 10),
+          // Anillo de progreso — un punto por pregunta, el actual "respira"
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_questions.length, (i) {
+              final isDone = i < questionIndex;
+              final isCurrent = i == questionIndex;
+              final dotColor = isDone || isCurrent
+                  ? dimColor
+                  : scheme.outlineVariant.withValues(alpha: 0.35);
+              final dot = AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isCurrent ? 22 : 8,
+                height: 8,
+                decoration: BoxDecoration(color: dotColor, borderRadius: BorderRadius.circular(8)),
+              );
+              return isCurrent
+                  ? ScaleTransition(scale: _breatheAnim, child: dot)
+                  : dot;
+            }),
+          ),
+          const SizedBox(height: 16),
           // Chip de dimensión
-          Row(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -576,45 +614,88 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
           ]),
           const SizedBox(height: 20),
           Text(q.question,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800,
                   height: 1.3, color: scheme.onSurface)),
-          const SizedBox(height: 24),
           Expanded(
-            child: ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: q.options.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, i) {
-                final isSelected = _answers[q.id] == (i + 1);
-                return GestureDetector(
-                  onTap: () => _selectAnswer(questionIndex, i + 1),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Círculo grande animado con el ícono de la opción actual
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 260),
+                  transitionBuilder: (child, anim) => ScaleTransition(
+                    scale: Tween<double>(begin: 0.85, end: 1.0).animate(anim),
+                    child: FadeTransition(opacity: anim, child: child),
+                  ),
+                  child: Container(
+                    key: ValueKey(displayIndex),
+                    width: 128, height: 128,
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? dimColor.withValues(alpha: 0.10)
-                          : scheme.surfaceVariant.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(16),
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [
+                        dimColor.withValues(alpha: hasInteracted ? 0.22 : 0.10),
+                        dimColor.withValues(alpha: hasInteracted ? 0.06 : 0.02),
+                      ]),
                       border: Border.all(
-                        color: isSelected ? dimColor : scheme.outlineVariant.withValues(alpha: 0.4),
-                        width: isSelected ? 2 : 1,
+                        color: dimColor.withValues(alpha: hasInteracted ? 0.4 : 0.2),
+                        width: 2,
                       ),
                     ),
-                    child: Row(children: [
-                      Icon(q.icons[i], size: 22,
-                          color: isSelected ? dimColor : scheme.onSurface.withValues(alpha: 0.45)),
-                      const SizedBox(width: 14),
-                      Expanded(child: Text(q.options[i],
-                          style: TextStyle(fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                              color: isSelected ? dimColor : scheme.onSurface.withValues(alpha: 0.8)))),
-                      if (isSelected)
-                        Icon(Icons.check_circle, size: 20, color: dimColor),
-                    ]),
+                    child: Icon(q.icons[displayIndex], size: 56,
+                        color: dimColor.withValues(alpha: hasInteracted ? 1 : 0.45)),
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 22),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Padding(
+                    key: ValueKey('label_$displayIndex'),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(q.options[displayIndex],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15,
+                            fontWeight: FontWeight.w600, height: 1.4,
+                            color: scheme.onSurface.withValues(alpha: hasInteracted ? 0.9 : 0.4))),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                // Slider redondo — desliza para elegir, suelta para confirmar
+                SliderTheme(
+                  data: SliderThemeData(
+                    trackHeight: 6,
+                    activeTrackColor: dimColor,
+                    inactiveTrackColor: dimColor.withValues(alpha: 0.15),
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14, elevation: 2),
+                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 26),
+                    thumbColor: dimColor,
+                    overlayColor: dimColor.withValues(alpha: 0.15),
+                    trackShape: const RoundedRectSliderTrackShape(),
+                    showValueIndicator: ShowValueIndicator.never,
+                  ),
+                  child: Slider(
+                    value: displayIndex.toDouble(),
+                    min: 0, max: 3, divisions: 3,
+                    onChanged: (v) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _draftValue[q.id] = v.round() + 1);
+                    },
+                    onChangeEnd: (v) => _selectAnswer(questionIndex, v.round() + 1),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Óptimo', style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
+                          color: scheme.onSurface.withValues(alpha: 0.4))),
+                      Text('Agotado/a', style: TextStyle(fontFamily: 'Outfit', fontSize: 11,
+                          color: scheme.onSurface.withValues(alpha: 0.4))),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -784,10 +865,21 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen>
 
   Widget _buildLoading(ColorScheme scheme) {
     return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const SizedBox(width: 48, height: 48,
-          child: CircularProgressIndicator(strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)))),
-      const SizedBox(height: 16),
+      ScaleTransition(
+        scale: _breatheAnim,
+        child: Container(
+          width: 72, height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(colors: [
+              const Color(0xFF10B981).withValues(alpha: 0.20),
+              const Color(0xFF10B981).withValues(alpha: 0.04),
+            ]),
+          ),
+          child: const Icon(Icons.self_improvement_outlined, size: 32, color: Color(0xFF10B981)),
+        ),
+      ),
+      const SizedBox(height: 20),
       Text('Encontrando tus lugares ideales…',
           style: TextStyle(fontSize: 14, color: scheme.onSurface.withValues(alpha: 0.55))),
     ]));
