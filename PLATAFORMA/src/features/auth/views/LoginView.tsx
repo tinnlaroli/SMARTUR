@@ -109,7 +109,7 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 />
             )}
             <div className="mb-6 flex justify-center">
-                <img src={theme === 'welltur' ? '/wellturLogo.png' : '/smartur.png'} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-12 w-auto object-contain" />
+                <img src={theme === 'welltur' ? '/wellturLogo.png' : '/logo.png'} alt={theme === 'welltur' ? 'WELLTUR' : 'SMARTUR'} className="h-12 w-auto object-contain" />
             </div>
 
             <div className="mb-8 text-center">
@@ -131,11 +131,10 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                             value={formData.email}
                             onChange={handleFieldChange}
                             placeholder={t('auth.login.email.placeholder')}
-                            className={`w-full rounded-lg border py-2.5 pr-4 pl-9 text-sm transition-colors focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none ${
-                                isDark
+                            className={`w-full rounded-lg border py-2.5 pr-4 pl-9 text-sm transition-colors focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none ${isDark
                                     ? 'border-zinc-800 bg-zinc-950 text-white placeholder:text-zinc-500'
                                     : 'border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400'
-                            }`}
+                                }`}
                         />
                         <Mail className={`absolute top-1/2 left-3 size-4 -translate-y-1/2 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                     </div>
@@ -154,19 +153,17 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                             value={formData.password}
                             onChange={handleFieldChange}
                             placeholder="………………"
-                            className={`w-full rounded-lg border py-2.5 pr-10 pl-9 text-sm transition-colors focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none ${
-                                isDark
+                            className={`w-full rounded-lg border py-2.5 pr-10 pl-9 text-sm transition-colors focus:border-[var(--color-purple)] focus:ring-1 focus:ring-[var(--color-purple)] focus:outline-none ${isDark
                                     ? 'border-zinc-800 bg-zinc-950 text-white placeholder:text-zinc-500'
                                     : 'border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400'
-                            }`}
+                                }`}
                         />
                         <Lock className={`absolute top-1/2 left-3 size-4 -translate-y-1/2 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className={`absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 transition-colors ${
-                                isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-600'
-                            }`}
+                            className={`absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 transition-colors ${isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-600'
+                                }`}
                         >
                             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                         </button>
@@ -197,9 +194,8 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className={`w-full rounded-lg bg-[var(--color-purple)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:ring-2 focus:ring-[var(--color-purple)] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                        isDark ? 'focus:ring-offset-zinc-900' : 'focus:ring-offset-white'
-                    }`}
+                    className={`w-full rounded-lg bg-[var(--color-purple)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:ring-2 focus:ring-[var(--color-purple)] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${isDark ? 'focus:ring-offset-zinc-900' : 'focus:ring-offset-white'
+                        }`}
                 >
                     {isLoading ? (
                         <div className="flex items-center justify-center gap-2">
@@ -217,9 +213,8 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 <button
                     type="button"
                     onClick={() => onSwitchStep('qrLogin')}
-                    className={`flex w-full items-center justify-center gap-2 text-xs font-medium transition-colors ${
-                        isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-500 hover:text-zinc-900'
-                    }`}
+                    className={`flex w-full items-center justify-center gap-2 text-xs font-medium transition-colors ${isDark ? 'text-zinc-400 hover:text-white' : 'text-zinc-500 hover:text-zinc-900'
+                        }`}
                 >
                     <QrCode className="size-3.5" />
                     {t('auth.login.qrLogin')}
@@ -237,11 +232,10 @@ export const LoginView = ({ onSwitchStep, onClose }: LoginViewProps) => {
                 <button
                     type="button"
                     onClick={() => onSwitchStep('signup')}
-                    className={`flex w-full items-center justify-center gap-2 rounded-lg border bg-transparent px-4 py-2.5 text-sm font-medium transition-colors focus:ring-2 focus:ring-[var(--color-purple)] focus:ring-offset-2 focus:outline-none ${
-                        isDark
+                    className={`flex w-full items-center justify-center gap-2 rounded-lg border bg-transparent px-4 py-2.5 text-sm font-medium transition-colors focus:ring-2 focus:ring-[var(--color-purple)] focus:ring-offset-2 focus:outline-none ${isDark
                             ? 'border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white focus:ring-offset-zinc-900'
                             : 'border-zinc-300 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:ring-offset-white'
-                    }`}
+                        }`}
                 >
                     <UserPlus className="size-4" />
                     <span>{t('auth.login.create')}</span>

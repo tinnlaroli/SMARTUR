@@ -72,6 +72,7 @@ class SmarturNotifications {
       alignment: Alignment.topCenter,
       autoCloseDuration: const Duration(seconds: 4),
       showProgressBar: false,
+      applyBlurEffect: true,
     );
   }
 }
