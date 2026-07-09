@@ -26,12 +26,7 @@ export const evaluationsApi = {
         return response.data;
     },
 
-    // Add more if needed, e.g., get evaluation by service ID
     findByServiceId: async (serviceId: number): Promise<any> => {
-        // This endpoint is not explicitly in the docs but implied by Task 3
-        // "verificar si existe id_evaluation vinculado"
-        // Let's assume there is a way to get it, or it will be part of service detail.
-        // For now I'll just keep the ones from docs.
         const response = await api.get(`/service-evaluation/service/${serviceId}`);
         return response.data;
     },

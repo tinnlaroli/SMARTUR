@@ -367,6 +367,10 @@ class _RouteCard extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: it.coverImageUrl!,
                           fit: BoxFit.cover,
+                          // Miniatura fija de 60x60 — decodificar al tamaño
+                          // real evita cargar el bitmap completo en memoria.
+                          memCacheWidth:
+                              (60 * MediaQuery.devicePixelRatioOf(context)).round(),
                           errorWidget: (_, __, ___) => _defaultCover(),
                         )
                       : _defaultCover(),

@@ -78,10 +78,53 @@ export async function listVisits(userId, limit = 50) {
     return r.rows;
 }
 
+// Trae todos los lugares (servicios + POIs) de un lote de filas en un máximo
+// de 2 queries con IN(...) en vez de una query por fila — antes
+// enrichPlaceRows/listCommunityPosts llamaban placeExists() dentro de un
+// for...of, es decir 1 round-trip extra por cada favorito/visita/post
+// (20+ por página con el limit por defecto).
+async function batchFetchPlaces(rows) {
+    const svcIds = [...new Set(rows.filter((r) => r.place_kind === 'svc').map((r) => r.place_id))];
+    const poiIds = [...new Set(rows.filter((r) => r.place_kind === 'poi').map((r) => r.place_id))];
+    const map = new Map();
+
+    if (svcIds.length > 0) {
+        const r = await pool.query(
+            `SELECT id_service, name, image_url, description, id_location
+             FROM tourist_service WHERE id_service = ANY($1::int[]) AND active = true`,
+            [svcIds],
+        );
+        for (const row of r.rows) map.set(`svc:${row.id_service}`, row);
+    }
+
+    if (poiIds.length > 0) {
+        try {
+            const r = await pool.query(
+                `SELECT id AS id_point, name, image_url, description, id_location, rating
+                 FROM point_of_interest WHERE id = ANY($1::int[]) AND is_active = TRUE`,
+                [poiIds],
+            );
+            for (const row of r.rows) map.set(`poi:${row.id_point}`, row);
+        } catch (_) {
+            // Columnas de display no migradas — fallback a mínimas con defaults seguros.
+            const r = await pool.query(
+                `SELECT id AS id_point, name FROM point_of_interest WHERE id = ANY($1::int[]) AND is_active = TRUE`,
+                [poiIds],
+            );
+            for (const row of r.rows) {
+                map.set(`poi:${row.id_point}`, { ...row, image_url: null, description: null, id_location: null, rating: 4.0 });
+            }
+        }
+    }
+
+    return map;
+}
+
 export async function enrichPlaceRows(rows) {
+    const places = await batchFetchPlaces(rows);
     const out = [];
     for (const row of rows) {
-        const place = await placeExists(row.place_kind, row.place_id);
+        const place = places.get(`${row.place_kind}:${row.place_id}`);
         if (!place) continue;
         const base = {
             place_kind: row.place_kind,
@@ -115,14 +158,11 @@ export async function listCommunityPosts(page = 1, limit = 20) {
          LIMIT $1 OFFSET $2`,
         [limit, offset],
     );
-    const posts = [];
-    for (const row of dataR.rows) {
-        const place = await placeExists(row.place_kind, row.place_id);
-        posts.push({
-            ...row,
-            place_name: place?.name ?? 'Lugar',
-        });
-    }
+    const places = await batchFetchPlaces(dataR.rows);
+    const posts = dataR.rows.map((row) => ({
+        ...row,
+        place_name: places.get(`${row.place_kind}:${row.place_id}`)?.name ?? 'Lugar',
+    }));
     return { total, posts, page, limit };
 }
 

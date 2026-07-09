@@ -719,6 +719,10 @@ class HomeScreenState extends State<HomeScreen> {
                   // error ("auth_in_progress") si se le pide autenticar dos
                   // veces a la vez, lo que se veía como "detecta las 2 acciones".
                   bool busy = false;
+                  // Refleja el nuevo valor sin cerrar y reabrir todo el sheet
+                  // de perfil — antes el toggle exitoso hacía Navigator.pop +
+                  // _showProfile(), perdiendo el estado/scroll del modal.
+                  bool? overrideEnabled;
                   return StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
                     return SwitchListTile(
@@ -727,7 +731,7 @@ class HomeScreenState extends State<HomeScreen> {
                           Icon(Icons.fingerprint, color: scheme.primary),
                       title: Text(l10n.fingerprintAccess,
                           style: const TextStyle(fontFamily: 'Outfit')),
-                      value: enabled,
+                      value: overrideEnabled ?? enabled,
                       onChanged: busy ? null : (bool newValue) async {
                         setState(() => busy = true);
                         try {
@@ -743,8 +747,7 @@ class HomeScreenState extends State<HomeScreen> {
                               if (ctx.mounted) {
                                 SmarturNotifications.showSuccess(
                                     ctx, l10n.biometricActivated);
-                                Navigator.pop(ctx);
-                                _showProfile();
+                                setState(() => overrideEnabled = true);
                               }
                             }
                           } catch (_) {
@@ -758,8 +761,7 @@ class HomeScreenState extends State<HomeScreen> {
                           if (ctx.mounted) {
                             SmarturNotifications.showSuccess(
                                 ctx, l10n.biometricDeactivated);
-                            Navigator.pop(ctx);
-                            _showProfile();
+                            setState(() => overrideEnabled = false);
                           }
                         }
                         } finally {

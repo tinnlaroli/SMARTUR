@@ -268,7 +268,12 @@ router.get('/ml/sessions/me', verifyToken, async (req, res) => {
  * Returns the current nightly retraining schedule from MODELO.
  * Readable by the PLATAFORMA admin dashboard without a UI restart.
  */
-router.get('/ml/scheduler-config', verifyToken, requireRole([1]), async (req, res) => {
+// Rol 4 = 'turismologo' (ver bd.sql) — puede VER la config del scheduler
+// desde ML/Observabilidad IA, pero no cambiarla (el PUT de abajo sigue
+// restringido a admin). El router de PLATAFORMA ya le da acceso a la
+// página completa (allowedRoles={[1,4]} en router.tsx) — antes esta y
+// otras rutas de solo lectura la dejaban fuera y le tiraban 403.
+router.get('/ml/scheduler-config', verifyToken, requireRole([1, 4]), async (req, res) => {
     try {
         const r = await fetch(`${MODELO_URL}/scheduler`, {
             signal: AbortSignal.timeout(5_000),
@@ -343,7 +348,7 @@ router.get('/ml/sessions/user/:userId', verifyToken, requireRole([1]), async (re
  *   - active_users: distinct users in last 7d and 30d
  *   - category_error: placeholder for future per-category error breakdown
  */
-router.get('/ml/extended-stats', verifyToken, requireRole([1]), async (req, res) => {
+router.get('/ml/extended-stats', verifyToken, requireRole([1, 4]), async (req, res) => {
     const safeQuery = async (sql, fallback) => {
         try {
             const result = await db.query(sql);
@@ -759,7 +764,7 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 2]), async (req, r
  * Proxy a MODELO /wellness/metrics — clasificador accuracy/F1.
  * Solo admin y turismólogos.
  */
-router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 2]), async (req, res) => {
+router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 2, 4]), async (req, res) => {
     try {
         const resp = await fetch(`${MODELO_URL}/wellness/metrics`);
         if (resp.status === 404) {

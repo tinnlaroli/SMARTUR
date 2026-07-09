@@ -253,35 +253,52 @@ async function getStopsEnriched(itineraryId) {
         id_company: null,
     }));
 
+    // Antes: 1 query por parada (N+1) — con IN(...) queda en máximo 2 queries
+    // sin importar cuántas paradas tenga el itinerario.
+    const poiIds = [...new Set(stops.filter((s) => s.place_kind === 'poi').map((s) => s.place_id))];
+    const svcIds = [...new Set(stops.filter((s) => s.place_kind === 'svc').map((s) => s.place_id))];
+
+    const poiMap = new Map();
+    if (poiIds.length > 0) {
+        try {
+            const p = await pool.query(
+                `SELECT id, name, image_url, latitude, longitude FROM point_of_interest WHERE id = ANY($1::int[])`,
+                [poiIds],
+            );
+            for (const row of p.rows) poiMap.set(row.id, row);
+        } catch (_) { /* column may not be present in older schema */ }
+    }
+
+    const svcMap = new Map();
+    if (svcIds.length > 0) {
+        const s = await pool.query(
+            `SELECT ts.id_service, ts.name, ts.image_url, ts.contact_phone, ts.id_company, l.latitude, l.longitude
+             FROM tourist_service ts
+             LEFT JOIN location l ON l.id_location = ts.id_location
+             WHERE ts.id_service = ANY($1::int[])`,
+            [svcIds],
+        );
+        for (const row of s.rows) svcMap.set(row.id_service, row);
+    }
+
     for (const stop of stops) {
         if (stop.place_kind === 'poi') {
-            try {
-                const p = await pool.query(
-                    `SELECT name, image_url, latitude, longitude FROM point_of_interest WHERE id = $1`,
-                    [stop.place_id],
-                );
-                if (p.rows[0]) {
-                    stop.place_name = p.rows[0].name;
-                    stop.place_image_url = p.rows[0].image_url;
-                    stop.place_lat = p.rows[0].latitude ? Number(p.rows[0].latitude) : null;
-                    stop.place_lon = p.rows[0].longitude ? Number(p.rows[0].longitude) : null;
-                }
-            } catch (_) { /* column may not be present in older schema */ }
+            const p = poiMap.get(stop.place_id);
+            if (p) {
+                stop.place_name = p.name;
+                stop.place_image_url = p.image_url;
+                stop.place_lat = p.latitude ? Number(p.latitude) : null;
+                stop.place_lon = p.longitude ? Number(p.longitude) : null;
+            }
         } else if (stop.place_kind === 'svc') {
-            const s = await pool.query(
-                `SELECT ts.name, ts.image_url, ts.contact_phone, ts.id_company, l.latitude, l.longitude
-                 FROM tourist_service ts
-                 LEFT JOIN location l ON l.id_location = ts.id_location
-                 WHERE ts.id_service = $1`,
-                [stop.place_id],
-            );
-            if (s.rows[0]) {
-                stop.place_name = s.rows[0].name;
-                stop.place_image_url = s.rows[0].image_url;
-                stop.place_lat = s.rows[0].latitude ? Number(s.rows[0].latitude) : null;
-                stop.place_lon = s.rows[0].longitude ? Number(s.rows[0].longitude) : null;
-                stop.contact_phone = s.rows[0].contact_phone ?? null;
-                stop.id_company = s.rows[0].id_company ?? null;
+            const s = svcMap.get(stop.place_id);
+            if (s) {
+                stop.place_name = s.name;
+                stop.place_image_url = s.image_url;
+                stop.place_lat = s.latitude ? Number(s.latitude) : null;
+                stop.place_lon = s.longitude ? Number(s.longitude) : null;
+                stop.contact_phone = s.contact_phone ?? null;
+                stop.id_company = s.id_company ?? null;
             }
         }
     }

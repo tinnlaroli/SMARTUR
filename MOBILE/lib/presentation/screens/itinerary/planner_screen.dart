@@ -91,6 +91,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 
   Future<void> _clearDateRange() async {
+    final previous = _dateRange;
     setState(() => _dateRange = null);
     try {
       await ItineraryService().updateItinerary(
@@ -98,7 +99,16 @@ class _PlannerScreenState extends State<PlannerScreen> {
         clearStartDate: true,
         clearEndDate: true,
       );
-    } catch (_) {}
+    } catch (e) {
+      // Antes esto se tragaba el error: la UI quedaba mostrando "sin
+      // fechas" aunque el servidor conservara las fechas viejas (estado
+      // desincronizado sin que el usuario se enterara). Ahora se revierte
+      // el cambio optimista y se avisa, igual que _editDateRange.
+      if (mounted) {
+        setState(() => _dateRange = previous);
+        SmarturNotifications.showError(context, e.toString());
+      }
+    }
   }
 
   Future<void> _editTitle() async {

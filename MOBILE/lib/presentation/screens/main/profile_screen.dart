@@ -872,6 +872,13 @@ class _DiaryFavoritesTab extends StatelessWidget {
                     if (url.isNotEmpty)
                       CachedNetworkImage(
                         imageUrl: url, fit: BoxFit.cover,
+                        // Grilla de 2 columnas — decodificar al ancho real de
+                        // la celda evita cargar el bitmap completo en memoria
+                        // por cada miniatura (inconsistente con el resto de
+                        // la app, que sí limita memCacheWidth en imágenes).
+                        memCacheWidth: ((MediaQuery.sizeOf(context).width / 2) *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .round(),
                         errorWidget: (_, __, ___) => Container(
                           color: scheme.outlineVariant,
                           child: Icon(Icons.place_outlined,

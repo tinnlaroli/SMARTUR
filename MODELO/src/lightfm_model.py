@@ -389,15 +389,19 @@ class SmarturLightFMModel:
         """
         try:
             _, uf_map, item_map, _ = self._dataset.mapping()
-            n_users = len(self._known_users)
-            n_items = len(self._known_items)
 
-            # Active user feature column indices (offset by n_users in embedding matrix)
+            # uf_map/item_feature_mapping YA vienen offseteados por LightFM:
+            # Dataset.fit_partial() llena primero las identidades de usuario/ítem
+            # (índices 0..n-1) y sigue con el MISMO contador para las features
+            # declaradas — así que uf_map[tag] y las columnas de
+            # _item_features_matrix ya son índices globales válidos dentro de
+            # user_embeddings/item_embeddings. Sumarles n_users/n_items de nuevo
+            # duplicaba el offset (bug real: "index out of bounds", visto en
+            # producción con índices ~2x el tamaño real del embedding).
             user_feat_tags = context_to_user_features(user_context)
-            uf_col_indices = [uf_map[tag] for tag in user_feat_tags if tag in uf_map]
+            uf_embed_idx = [uf_map[tag] for tag in user_feat_tags if tag in uf_map]
 
-            if uf_col_indices:
-                uf_embed_idx = [n_users + c for c in uf_col_indices]
+            if uf_embed_idx:
                 user_repr = np.sum(self._model.user_embeddings[uf_embed_idx], axis=0)
                 user_bias = float(np.sum(self._model.user_biases[uf_embed_idx]))
             else:
@@ -411,13 +415,13 @@ class SmarturLightFMModel:
                     scores.append(3.0)
                     continue
 
-                # Item representation: identity + feature embeddings
-                # _item_features_matrix row has column indices in the non-augmented feature space
+                # Item representation: identity + feature embeddings.
+                # LightFM ya incluye la columna de identidad del ítem dentro
+                # de item_feat_row.indices (Dataset._FeatureBuilder.build()
+                # agrega esa entrada automáticamente) — sumar iid_idx aparte
+                # lo contaba dos veces.
                 item_feat_row = self._item_features_matrix[iid_idx]
-                if_col_indices = item_feat_row.indices  # columns in (n_items, n_item_features) X matrix
-
-                # In augmented matrix: identity col = iid_idx; side feature cols = n_items + c
-                if_embed_idx = [iid_idx] + [n_items + c for c in if_col_indices]
+                if_embed_idx = list(item_feat_row.indices)
                 item_repr = np.sum(self._model.item_embeddings[if_embed_idx], axis=0)
                 item_bias = float(np.sum(self._model.item_biases[if_embed_idx]))
 

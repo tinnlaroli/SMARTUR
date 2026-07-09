@@ -27,8 +27,13 @@ class ApiClient {
   /// Listen once at the app root and navigate to WelcomeScreen.
   static Stream<void> get onSessionExpired => _sessionExpiredCtrl.stream;
 
-  // Refresh reentrancy guard — prevents multiple parallel refresh attempts.
-  static bool _isRefreshing = false;
+  // Refresh reentrancy guard — comparte el refresh en curso entre requests
+  // concurrentes en vez de solo bloquearlos. Antes era un bool: si dos
+  // pantallas pedían datos a la vez al abrir la app (token recién vencido),
+  // la primera disparaba el refresh pero las demás se rendían de inmediato
+  // ("Acceso denegado") sin esperar a que terminara — justo el escenario de
+  // "recién abro la app y quiero entrar a cualquier cosa".
+  static Future<String?>? _refreshFuture;
 
   // ── Public HTTP helpers ────────────────────────────────────────────────────
 
@@ -103,25 +108,18 @@ class ApiClient {
     try {
       final response = await factory(headers).timeout(timeout ?? _defaultTimeout);
       if (response.statusCode == 401 && !isRetry) {
-        // Another request is already refreshing — don't pile on, just expire.
-        if (_isRefreshing) {
-          _sessionExpiredCtrl.add(null);
-          return response;
+        // Si ya hay un refresh en curso (disparado por otra request
+        // concurrente), esperamos ESE mismo resultado en vez de rendirnos —
+        // así todas las requests que llegaron juntas al abrir la app se
+        // benefician de un solo refresh y reintentan con el token nuevo.
+        final future = _refreshFuture ??= _doRefresh();
+        final newToken = await future;
+        if (newToken != null) {
+          // Retry with fresh token now stored in secure storage.
+          return _send(factory, timeout: timeout, isRetry: true);
         }
-        _isRefreshing = true;
-        try {
-          final auth = AuthService();
-          final newToken = await auth.tryRefreshToken();
-          if (newToken != null) {
-            // Retry with fresh token now stored in secure storage.
-            return _send(factory, timeout: timeout, isRetry: true);
-          } else {
-            _sessionExpiredCtrl.add(null);
-            return response;
-          }
-        } finally {
-          _isRefreshing = false;
-        }
+        _sessionExpiredCtrl.add(null);
+        return response;
       }
       return response;
     } on TimeoutException {
@@ -130,6 +128,16 @@ class ApiClient {
       throw ApiNetworkException(e.message);
     } on http.ClientException catch (e) {
       throw ApiNetworkException(e.message);
+    }
+  }
+
+  /// Dispara el refresh real y libera `_refreshFuture` al terminar (éxito o
+  /// falla), para que el siguiente 401 genuino pueda disparar uno nuevo.
+  static Future<String?> _doRefresh() async {
+    try {
+      return await AuthService().tryRefreshToken();
+    } finally {
+      _refreshFuture = null;
     }
   }
 
