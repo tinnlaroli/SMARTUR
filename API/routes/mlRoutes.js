@@ -667,23 +667,42 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 2]), 
     const pk = type === 'service' ? 'tourist_service_id' : 'poi_id';
 
     try {
-        const sets = [
-            `wellness_status = '${action}'`,
-            `wellness_reviewed_at = NOW()`,
-            `wellness_reviewed_by = ${req.user.id}`,
-        ];
-        if (admin_notes != null) sets.push(`wellness_admin_notes = '${admin_notes.replace(/'/g, "''")}'`);
+        // Todos los valores van parametrizados ($N) — antes action/categoria_wellness
+        // se interpolaban directo en el string SQL (inyección real: un admin_notes
+        // o categoria_wellness malicioso podía alterar la query). `table`/`pk` siguen
+        // viniendo de la whitelist ya validada arriba (type), nunca de input crudo.
+        const sets = ['wellness_status = $1', 'wellness_reviewed_at = NOW()', 'wellness_reviewed_by = $2'];
+        const values = [action, req.user.id];
+
+        if (admin_notes != null) {
+            values.push(admin_notes);
+            sets.push(`wellness_admin_notes = $${values.length}`);
+        }
         if (action === 'approved') {
-            if (nivel_aislamiento != null) sets.push(`nivel_aislamiento = ${parseFloat(nivel_aislamiento)}`);
-            if (restauracion_pasiva != null) sets.push(`restauracion_pasiva = ${parseFloat(restauracion_pasiva)}`);
-            if (demanda_fisica != null) sets.push(`demanda_fisica = ${parseFloat(demanda_fisica)}`);
-            if (categoria_wellness) sets.push(`categoria_wellness = '${categoria_wellness}'`);
-            sets.push(`is_wellness = TRUE`);
+            for (const [col, raw] of [
+                ['nivel_aislamiento', nivel_aislamiento],
+                ['restauracion_pasiva', restauracion_pasiva],
+                ['demanda_fisica', demanda_fisica],
+            ]) {
+                if (raw == null) continue;
+                const num = parseFloat(raw);
+                if (Number.isNaN(num)) {
+                    return res.status(400).json({ message: `${col} debe ser numérico.` });
+                }
+                values.push(num);
+                sets.push(`${col} = $${values.length}`);
+            }
+            if (categoria_wellness) {
+                values.push(categoria_wellness);
+                sets.push(`categoria_wellness = $${values.length}`);
+            }
+            sets.push('is_wellness = TRUE');
         }
 
+        values.push(parseInt(id, 10));
         await db.query(
-            `UPDATE ${table} SET ${sets.join(', ')} WHERE ${pk} = $1`,
-            [parseInt(id, 10)],
+            `UPDATE ${table} SET ${sets.join(', ')} WHERE ${pk} = $${values.length}`,
+            values,
         );
         res.json({ ok: true, action, type, id });
     } catch (err) {
