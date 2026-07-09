@@ -714,6 +714,11 @@ class HomeScreenState extends State<HomeScreen> {
                 future: _authService.isBiometricEnabled(),
                 builder: (_, snap) {
                   final enabled = snap.data ?? false;
+                  // Evita que dos toques rápidos disparen dos llamadas
+                  // concurrentes a _auth.authenticate() — local_auth lanza un
+                  // error ("auth_in_progress") si se le pide autenticar dos
+                  // veces a la vez, lo que se veía como "detecta las 2 acciones".
+                  bool busy = false;
                   return StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
                     return SwitchListTile(
@@ -723,7 +728,9 @@ class HomeScreenState extends State<HomeScreen> {
                       title: Text(l10n.fingerprintAccess,
                           style: const TextStyle(fontFamily: 'Outfit')),
                       value: enabled,
-                      onChanged: (bool newValue) async {
+                      onChanged: busy ? null : (bool newValue) async {
+                        setState(() => busy = true);
+                        try {
                         if (newValue) {
                           try {
                             final didAuth = await _auth.authenticate(
@@ -754,6 +761,9 @@ class HomeScreenState extends State<HomeScreen> {
                             Navigator.pop(ctx);
                             _showProfile();
                           }
+                        }
+                        } finally {
+                          if (context.mounted) setState(() => busy = false);
                         }
                       },
                     );
@@ -1593,6 +1603,7 @@ class HomeScreenState extends State<HomeScreen> {
                         place: _recommendedPlaces[i],
                         isHero: false,
                         onTap: () => _openPlaceDetail(_recommendedPlaces, i),
+                        onLongPress: () => _openPlaceDetailModal(_recommendedPlaces, i),
                       ),
                     ),
                   ),
@@ -1632,6 +1643,7 @@ class HomeScreenState extends State<HomeScreen> {
               place: places.first,
               isHero: true,
               onTap: () => _openPlaceDetail(places, 0),
+              onLongPress: () => _openPlaceDetailModal(places, 0),
             ),
           ),
         ),
@@ -1667,6 +1679,7 @@ class HomeScreenState extends State<HomeScreen> {
                       place: places[leftIdx],
                       isHero: false,
                       onTap: () => _openPlaceDetail(places, leftIdx),
+                      onLongPress: () => _openPlaceDetailModal(places, leftIdx),
                     ),
                   );
                 } else {
@@ -1681,6 +1694,7 @@ class HomeScreenState extends State<HomeScreen> {
                             place: places[leftIdx],
                             isHero: false,
                             onTap: () => _openPlaceDetail(places, leftIdx),
+                      onLongPress: () => _openPlaceDetailModal(places, leftIdx),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -1690,6 +1704,7 @@ class HomeScreenState extends State<HomeScreen> {
                             place: places[rightIdx],
                             isHero: false,
                             onTap: () => _openPlaceDetail(places, rightIdx),
+                            onLongPress: () => _openPlaceDetailModal(places, rightIdx),
                           ),
                         ),
                       ],
@@ -1724,6 +1739,28 @@ class HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  /// Mantener sostenida una tarjeta abre la misma vista extendida pero como
+  /// modal (respuesta háptica ya disparada por _PlaceCard.onLongPress) —
+  /// un atajo rápido para asomarse sin dejar del todo la pantalla de Home.
+  void _openPlaceDetailModal(List<Place> allPlaces, int initialIndex) {
+    final place = allPlaces[initialIndex];
+    if (place.imageUrl.isNotEmpty) {
+      precacheImage(NetworkImage(place.imageUrl), context);
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.94,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          child: _HomePlaceSwipeView(places: allPlaces, initialIndex: initialIndex),
+        ),
+      ),
+    );
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1735,11 +1772,13 @@ class _PlaceCard extends StatefulWidget {
   final Place place;
   final bool isHero;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _PlaceCard({
     required this.place,
     required this.isHero,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
@@ -1846,6 +1885,12 @@ class _PlaceCardState extends State<_PlaceCard>
       child: GestureDetector(
       onTap: widget.onTap,
       onDoubleTap: _onDoubleTap,
+      onLongPress: widget.onLongPress == null
+          ? null
+          : () {
+              HapticFeedback.mediumImpact();
+              widget.onLongPress!();
+            },
       child: Hero(
         tag: 'place_${place.id}',
         child: Container(

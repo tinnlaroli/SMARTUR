@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -161,7 +162,10 @@ class _DetailViewPageState extends State<DetailViewPage>
       return;
     }
     final svc = UserContentService();
-    await svc.recordVisit(_kind!, _pid!);
+    // recordVisit/batchInteractions no bloquean el resto — antes recordVisit
+    // se esperaba (await) antes de siquiera empezar a pedir actividades, así
+    // que esa sección llegaba visiblemente después que todo lo demás.
+    unawaited(svc.recordVisit(_kind!, _pid!));
     svc.batchInteractions([
       {'place_kind': _kind, 'place_id': _pid, 'event_type': 'detail_open'}
     ]);
@@ -269,7 +273,14 @@ class _DetailViewPageState extends State<DetailViewPage>
                         imageUrl: widget.heroImageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
-                        memCacheWidth: 800,
+                        // Antes 800px fijos — en pantallas de 1080-1440px de
+                        // ancho físico (la mayoría de celulares actuales) la
+                        // imagen se veía borrosa/pixelada al estirarse sobre
+                        // toda la pantalla. Se calcula según el ancho real
+                        // del dispositivo en píxeles físicos.
+                        memCacheWidth: (MediaQuery.sizeOf(context).width *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .round(),
                         fadeInDuration: const Duration(milliseconds: 300),
                         placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
                         errorWidget: (_, __, ___) => Container(
@@ -654,49 +665,45 @@ class _BottomContent extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // Contenido unificado — todas las secciones en vista continua
-              Container(
-                constraints: BoxConstraints(
-                  maxHeight: (MediaQuery.sizeOf(context).height * 0.35).clamp(240.0, 320.0),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (_hasServiceInfo) ...[
-                        _SectionLabel(label: 'Información del servicio'),
-                        _ServiceInfoBand(
-                          priceFrom: priceFrom,
-                          priceTo: priceTo,
-                          currency: currency ?? 'MXN',
-                          durationMinutes: durationMinutes,
-                          contactPhone: contactPhone,
-                          operatingHours: operatingHours,
-                        ),
-                      ],
-                      _SectionLabel(label: l10n.tabHistory),
-                      _TabText(
-                        text: subtitle.isNotEmpty
-                            ? subtitle
-                            : 'Próximamente — agrega una reseña sobre este lugar.',
+              // Contenido unificado — todas las secciones en vista continua,
+              // dentro de un cuadro que se puede expandir con "Ver más".
+              _ExpandableInfoBox(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_hasServiceInfo) ...[
+                      _SectionLabel(label: 'Información del servicio'),
+                      _ServiceInfoBand(
+                        priceFrom: priceFrom,
+                        priceTo: priceTo,
+                        currency: currency ?? 'MXN',
+                        durationMinutes: durationMinutes,
+                        contactPhone: contactPhone,
+                        operatingHours: operatingHours,
                       ),
-                      if (activities.isNotEmpty) ...[
-                        _SectionLabel(label: 'Actividades disponibles'),
-                        ...activities
-                            .where((a) =>
-                                (a['name'] as String?)?.isNotEmpty == true)
-                            .map((a) => _ActivityCard(activity: a)),
-                      ],
-                      _SectionLabel(label: l10n.tabGastronomy),
-                      _TabText(text: _gastronomyForCity(locationLine)),
-                      _RatingTab(
-                        userRating: userRating,
-                        busy: ratingBusy,
-                        onRate: onRate,
-                      ),
-                      const SizedBox(height: 8),
                     ],
-                  ),
+                    _SectionLabel(label: l10n.tabHistory),
+                    _TabText(
+                      text: subtitle.isNotEmpty
+                          ? subtitle
+                          : 'Próximamente — agrega una reseña sobre este lugar.',
+                    ),
+                    if (activities.isNotEmpty) ...[
+                      _SectionLabel(label: 'Actividades disponibles'),
+                      ...activities
+                          .where((a) =>
+                              (a['name'] as String?)?.isNotEmpty == true)
+                          .map((a) => _ActivityCard(activity: a)),
+                    ],
+                    _SectionLabel(label: l10n.tabGastronomy),
+                    _TabText(text: _gastronomyForCity(locationLine)),
+                    _RatingTab(
+                      userRating: userRating,
+                      busy: ratingBusy,
+                      onRate: onRate,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -738,6 +745,62 @@ class _BottomContent extends StatelessWidget {
 
 // ── Reusable small widgets ──
 
+/// Cuadro de info con altura acotada por defecto y un botón "Ver más" que
+/// lo expande a una altura mayor (sigue siendo scrolleable, nunca overflow).
+class _ExpandableInfoBox extends StatefulWidget {
+  final Widget child;
+  const _ExpandableInfoBox({required this.child});
+
+  @override
+  State<_ExpandableInfoBox> createState() => _ExpandableInfoBoxState();
+}
+
+class _ExpandableInfoBoxState extends State<_ExpandableInfoBox> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final collapsedHeight =
+        (MediaQuery.sizeOf(context).height * 0.35).clamp(240.0, 320.0);
+    final expandedHeight = MediaQuery.sizeOf(context).height * 0.62;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeInOut,
+          constraints: BoxConstraints(
+            maxHeight: _expanded ? expandedHeight : collapsedHeight,
+          ),
+          child: SingleChildScrollView(child: widget.child),
+        ),
+        Center(
+          child: TextButton.icon(
+            onPressed: () => setState(() => _expanded = !_expanded),
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.primary,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              minimumSize: const Size(0, 32),
+              visualDensity: VisualDensity.compact,
+            ),
+            icon: Icon(
+              _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+              size: 18,
+            ),
+            label: Text(
+              _expanded ? 'Ver menos' : 'Ver más',
+              style: const TextStyle(
+                  fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ActivityCard extends StatelessWidget {
   final Map<String, dynamic> activity;
   const _ActivityCard({required this.activity});
@@ -778,10 +841,13 @@ class _ActivityCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
+      // Mismo lenguaje visual que _InfoChip (alpha 0.10/0.30, radius 16) —
+      // antes usaba valores distintos (0.06/0.18, radius 14) y se veía
+      // desentonado justo debajo de los chips de información del servicio.
       decoration: BoxDecoration(
-        color: sem.accent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: sem.accent.withValues(alpha: 0.18)),
+        color: sem.accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: sem.accent.withValues(alpha: 0.30)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1060,11 +1060,17 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
   }
 
   void _viewProfile(BuildContext context) {
-    // Build author map from post data (no separate profile endpoint yet)
+    // Build author map from post data — la API anida los datos bajo
+    // `author: {...}`; se leen de ahí con fallback a las claves planas
+    // por compatibilidad con otras fuentes de post que sí las usen.
+    final postAuthor = widget.post['author'] as Map<String, dynamic>?;
     final author = <String, dynamic>{
-      'name': widget.post['author_name'],
-      'photo_url': widget.post['author_photo_url'] ?? widget.post['author_photo'],
-      'avatar_icon_key': widget.post['author_avatar_icon_key'],
+      'name': postAuthor?['name'] ?? widget.post['author_name'],
+      'photo_url': postAuthor?['photo_url'] ??
+          widget.post['author_photo_url'] ??
+          widget.post['author_photo'],
+      'avatar_icon_key':
+          postAuthor?['avatar_icon_key'] ?? widget.post['author_avatar_icon_key'],
       'id_user': widget.post['user_id'] ?? widget.post['id_user'],
     };
     showModalBottomSheet(
@@ -1180,10 +1186,16 @@ class _CommunityPostCardState extends State<_CommunityPostCard> {
     final scheme = Theme.of(context).colorScheme;
     final post = widget.post;
     final content = (post['caption'] ?? post['content'] ?? '') as String;
-    final authorName = post['author_name'] as String? ?? '—';
-    final authorPhoto =
-        (post['author_photo_url'] ?? post['author_photo']) as String?;
-    final authorIconKey = post['author_avatar_icon_key'] as String?;
+    // La API anida los datos del autor bajo `author: {...}` — antes se leía
+    // `post['author_name']` (plano) que nunca existe en la respuesta real,
+    // así que el nombre/foto siempre caían en el fallback ('—'/sin foto).
+    final author = post['author'] as Map<String, dynamic>?;
+    final authorName = (author?['name'] ?? post['author_name']) as String? ?? '—';
+    final authorPhoto = (author?['photo_url'] ??
+        post['author_photo_url'] ??
+        post['author_photo']) as String?;
+    final authorIconKey =
+        (author?['avatar_icon_key'] ?? post['author_avatar_icon_key']) as String?;
     final imageUrl = post['image_url'] as String?;
     // Derive placeRef from place_kind + place_id (API format)
     final placeKindRaw = post['place_kind'] as String?;
@@ -1515,21 +1527,32 @@ class _CreatePostPageState extends State<_CreatePostPage> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Center(
+              // Siempre visible con contorno, aunque esté deshabilitado —
+              // antes el fondo desvanecido (alpha 0.35, sin borde) lo hacía
+              // casi invisible y parecía que no había botón de publicar.
               child: FilledButton(
                 onPressed: _canPublish ? _publish : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: scheme.primary,
-                  disabledBackgroundColor: scheme.primary.withValues(alpha: 0.35),
+                  backgroundColor: _canPublish ? scheme.primary : Colors.transparent,
+                  disabledBackgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: scheme.onSurfaceVariant,
+                  side: _canPublish
+                      ? BorderSide.none
+                      : BorderSide(color: scheme.outlineVariant, width: 1.4),
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: _loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16, height: 16,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        child: CircularProgressIndicator(
+                            color: _canPublish ? Colors.white : scheme.onSurfaceVariant,
+                            strokeWidth: 2))
                     : Text(l10n.communityPublish,
-                        style: const TextStyle(
-                            fontFamily: 'Outfit', fontWeight: FontWeight.w700, color: Colors.white)),
+                        style: TextStyle(
+                            fontFamily: 'Outfit', fontWeight: FontWeight.w700,
+                            color: _canPublish ? Colors.white : scheme.onSurfaceVariant)),
               ),
             ),
           ),

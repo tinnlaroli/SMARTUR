@@ -2,7 +2,7 @@
 name: smartur
 description: "A new Flutter project."
 publish_to: 'none'
-version: 3.3.10+30310
+version: 3.3.11+30311
 
 environment:
   sdk: ^3.11.1

@@ -53,9 +53,11 @@ class _MisRutasScreenState extends State<MisRutasScreen> {
           _itineraries = list;
           _loading = false;
         });
-        if (list.isNotEmpty) {
-          routeStopCount.value = list.first.stops.length;
-        }
+        // Entrar a "Mis rutas" cuenta como haber visto las paradas nuevas —
+        // antes se reasignaba al mismo conteo (list.first.stops.length), así
+        // que el badge del bottom bar nunca bajaba a 0 aunque ya se hubieran
+        // visto. Vuelve a subir solo cuando se agrega una parada nueva.
+        routeStopCount.value = 0;
         await ItineraryDB.saveItineraries(list);
       }
     } catch (e) {

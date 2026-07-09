@@ -1,5 +1,21 @@
 import pool from '../config/db.js';
 
+// Trae company_name/service_name igual que getMyConversations — sin esto,
+// una conversación recién creada (o encontrada) no traía el nombre de la
+// empresa hasta el próximo GET /conversations/me, y el chat mostraba un
+// nombre vacío ("alguien") hasta que llegaba/enviaba un mensaje.
+async function _withCompanyInfo(conversationId) {
+    const r = await pool.query(
+        `SELECT cv.*, c.name AS company_name, ts.name AS service_name
+         FROM conversation cv
+         JOIN company c ON c.id_company = cv.id_company
+         LEFT JOIN tourist_service ts ON ts.id_service = cv.id_service
+         WHERE cv.id_conversation = $1`,
+        [conversationId]
+    );
+    return r.rows[0];
+}
+
 export async function getOrCreateConversation(touristId, companyId, serviceId = null) {
     const select = serviceId
         ? pool.query(
@@ -11,13 +27,13 @@ export async function getOrCreateConversation(touristId, companyId, serviceId = 
               [touristId, companyId]
           );
     const existing = await select;
-    if (existing.rows[0]) return existing.rows[0];
+    if (existing.rows[0]) return _withCompanyInfo(existing.rows[0].id_conversation);
 
     const r = await pool.query(
         'INSERT INTO conversation (tourist_id, id_company, id_service) VALUES ($1,$2,$3) RETURNING *',
         [touristId, companyId, serviceId]
     );
-    return r.rows[0];
+    return _withCompanyInfo(r.rows[0].id_conversation);
 }
 
 export async function getMyConversations(touristId) {
