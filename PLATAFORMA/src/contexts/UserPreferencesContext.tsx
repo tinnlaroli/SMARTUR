@@ -31,6 +31,18 @@ function readUserFromStorage(): SessionUser | null {
     return null;
 }
 
+/** Envuelve un cambio de tema en la View Transitions API (efecto "circle" —
+ * ver index.css). Sin soporte del navegador (ej. Firefox), aplica el cambio
+ * directo sin animación. */
+function withViewTransition(applyChange: () => void): void {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
+    if (typeof doc.startViewTransition === 'function') {
+        doc.startViewTransition(applyChange);
+    } else {
+        applyChange();
+    }
+}
+
 function legacyTheme(): Theme {
     const stored = localStorage.getItem('theme') as Theme | null;
     if (stored === 'dark' || stored === 'light') return stored;
@@ -139,11 +151,13 @@ export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = 
     const clearUser = useCallback(() => setUser(null), [setUser]);
 
     const setTheme = useCallback((next: Theme) => {
-        setThemeState(next);
+        withViewTransition(() => setThemeState(next));
     }, []);
 
     const toggleTheme = useCallback(() => {
-        setThemeState((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'welltur' : 'light'));
+        withViewTransition(() => {
+            setThemeState((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'welltur' : 'light'));
+        });
     }, []);
 
     const changeLanguage = useCallback((code: string) => {

@@ -147,7 +147,14 @@
   function toggleTheme() {
     const current = document.documentElement.getAttribute("data-theme");
     const newTheme = current === "dark" ? "light" : "dark";
-    setTheme(newTheme);
+    // Efecto "circle" (View Transitions API) — ver estilo global en
+    // src/styles/global.css. Sin soporte del navegador, cambia sin animar.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => void };
+    if (typeof doc.startViewTransition === "function") {
+      doc.startViewTransition(() => setTheme(newTheme));
+    } else {
+      setTheme(newTheme);
+    }
   }
 
   // Initialize theme on page load
