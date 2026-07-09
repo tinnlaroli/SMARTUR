@@ -297,8 +297,12 @@ def fetch_traveler_profile(user_id):
     except (ValueError, TypeError):
         return None
 
+    # preferred_place/sustainable_preferences ya se le preguntan al usuario en
+    # el formulario de perfil y se guardan en la tabla, pero preference_match_score
+    # nunca las leía — el motor ignoraba dos señales que el usuario ya dio.
     query = '''
-        SELECT age_range, interests, activity_level, travel_type, has_accessibility
+        SELECT age_range, interests, activity_level, travel_type, has_accessibility,
+               preferred_place, sustainable_preferences
         FROM traveler_profile
         WHERE user_id = %s AND is_active = TRUE
         LIMIT 1
@@ -310,7 +314,8 @@ def fetch_traveler_profile(user_id):
     if not row:
         return None
 
-    age_range, interests, activity_level, travel_type, has_accessibility = row
+    (age_range, interests, activity_level, travel_type, has_accessibility,
+     preferred_place, sustainable_preferences) = row
 
     tipos = []
     if interests:
@@ -325,6 +330,8 @@ def fetch_traveler_profile(user_id):
         'presupuesto_bucket': _ACTIVITY_BUDGET.get(activity_level, 'medio'),
         'group_type': (travel_type or 'solo').lower(),
         'requiere_accesibilidad': bool(has_accessibility),
+        'preferred_place': (preferred_place or 'indiferente').lower(),
+        'sustainable_preferences': bool(sustainable_preferences),
     }
 
 

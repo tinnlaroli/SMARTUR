@@ -194,22 +194,38 @@ def filtrar_candidatos_por_contexto(biz_df, context):
     return filtered_df
 
 
+# Categorías que cuentan como "turismo sostenible" — mismo criterio que ya
+# se usa para tiposTurismo naturaleza/rural (áreas naturales, comunidades
+# rurales), no hay una bandera dedicada de sostenibilidad a nivel de ítem.
+_SUSTAINABLE_TIPOS = ['naturaleza', 'rural']
+
+
 def preference_match_score(
     categories: str,
     context: dict | None,
     price_level: float | None = None,
     is_romantic: int = 0,
     is_good_for_kids: int = 0,
+    outdoor: int = 0,
 ) -> float:
     """
     Qué tan bien encaja un candidato con las preferencias DECLARADAS por el
     usuario (perfil real), independiente de lo que CF/RF hayan aprendido de
     calificaciones. Devuelve un valor en [0, 1]:
-      - 0.6 si la categoría coincide con algún tiposTurismo declarado
-      - 0.25 según qué tan cerca esté price_level del presupuesto_bucket
+      - 0.45 si la categoría coincide con algún tiposTurismo declarado
+      - 0.20 según qué tan cerca esté price_level del presupuesto_bucket
         (penalización gradual, no todo-o-nada)
-      - 0.15 si el tipo de grupo (group_type) coincide con las banderas
+      - 0.10 si el tipo de grupo (group_type) coincide con las banderas
         is_romantic/is_good_for_kids del ítem
+      - 0.15 si preferred_place ('aire'/'cerrado') coincide con el flag
+        outdoor del ítem
+      - 0.10 si sustainable_preferences está activo y la categoría es de
+        naturaleza/rural
+
+    Estas dos últimas señales ('preferred_place', 'sustainable_preferences')
+    ya se le preguntan al usuario en el perfil (traveler_profile) y se
+    guardan en la BD, pero antes nunca llegaban al motor de recomendación
+    — se pedían y se ignoraban.
 
     A diferencia de filtrar_candidatos_por_contexto (que excluye candidatos
     y puede degradar en silencio a "sin filtro" si el match da cero), esto
@@ -227,7 +243,7 @@ def preference_match_score(
     tipos = context.get('tiposTurismo') or []
     keywords = _categorias_para_tipos(tipos)
     if keywords and any(k.lower() in cats_lower for k in keywords):
-        score += 0.6
+        score += 0.45
 
     # Presupuesto (peso menor, gradual)
     bucket = context.get('presupuesto_bucket')
@@ -235,16 +251,29 @@ def preference_match_score(
     if bucket_level is not None and price_level is not None:
         try:
             delta = abs(float(price_level) - bucket_level)
-            score += 0.25 * max(0.0, 1.0 - delta / 3.0)
+            score += 0.20 * max(0.0, 1.0 - delta / 3.0)
         except (TypeError, ValueError):
             pass
 
     # Tipo de grupo (peso menor)
     group_type = (context.get('group_type') or '').lower()
     if group_type == 'familia' and is_good_for_kids:
-        score += 0.15
+        score += 0.10
     elif group_type == 'pareja' and is_romantic:
+        score += 0.10
+
+    # Lugar preferido (aire libre / cerrado) — 'indiferente' no suma ni resta.
+    preferred_place = (context.get('preferred_place') or 'indiferente').lower()
+    if preferred_place == 'aire' and outdoor:
         score += 0.15
+    elif preferred_place == 'cerrado' and not outdoor:
+        score += 0.15
+
+    # Preferencia de turismo sostenible
+    if context.get('sustainable_preferences'):
+        sustainable_keywords = _categorias_para_tipos(_SUSTAINABLE_TIPOS)
+        if sustainable_keywords and any(k.lower() in cats_lower for k in sustainable_keywords):
+            score += 0.10
 
     return min(1.0, score)
 
@@ -331,6 +360,7 @@ def recommend_hybrid(
     price_lookup       = ref_df.set_index('business_id')['price_level'].to_dict() if 'price_level' in ref_df.columns else {}
     is_romantic_lookup = ref_df.set_index('business_id')['is_romantic'].to_dict() if 'is_romantic' in ref_df.columns else {}
     is_kids_lookup     = ref_df.set_index('business_id')['is_good_for_kids'].to_dict() if 'is_good_for_kids' in ref_df.columns else {}
+    outdoor_lookup     = ref_df.set_index('business_id')['outdoor'].to_dict() if 'outdoor' in ref_df.columns else {}
 
     # ── Distance map for explanation tags ────────────────────────────────
     # Use user-supplied lat/lon from context; fall back to region center.
@@ -410,6 +440,7 @@ def recommend_hybrid(
             price_level=price_lookup.get(biz_id),
             is_romantic=is_romantic_lookup.get(biz_id, 0),
             is_good_for_kids=is_kids_lookup.get(biz_id, 0),
+            outdoor=outdoor_lookup.get(biz_id, 0),
         )
         final_score = (
             (1 - PREFERENCE_BOOST_WEIGHT) * final_score

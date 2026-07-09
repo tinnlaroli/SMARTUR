@@ -237,14 +237,67 @@ def test_preference_match_score_sin_contexto_es_cero():
 
 def test_preference_match_score_coincidencia_total():
     # tipo de turismo coincide (naturaleza -> Parks/Hiking), presupuesto exacto,
-    # y grupo familia con is_good_for_kids=1 -> los 3 componentes suman
+    # grupo familia con is_good_for_kids=1 -> 0.45 + 0.20 + 0.10 = 0.75
+    # (preferred_place/sustainable_preferences no están en el contexto)
     score = preference_match_score(
         'Parks, Hiking',
         {'tiposTurismo': ['naturaleza'], 'presupuesto_bucket': 'medio', 'group_type': 'familia'},
         price_level=2,
         is_good_for_kids=1,
     )
+    assert score == pytest.approx(0.75)
+
+
+def test_preference_match_score_coincidencia_absoluta_con_lugar_y_sostenible():
+    # Los 5 componentes coinciden -> 0.45+0.20+0.10+0.15+0.10 = 1.0
+    score = preference_match_score(
+        'Parks, Hiking',
+        {
+            'tiposTurismo': ['naturaleza'], 'presupuesto_bucket': 'medio', 'group_type': 'familia',
+            'preferred_place': 'aire', 'sustainable_preferences': True,
+        },
+        price_level=2,
+        is_good_for_kids=1,
+        outdoor=1,
+    )
     assert score == pytest.approx(1.0)
+
+
+def test_preference_match_score_preferred_place_aire_vs_outdoor():
+    aire_afuera = preference_match_score('Parks', {'preferred_place': 'aire'}, outdoor=1)
+    aire_adentro = preference_match_score('Parks', {'preferred_place': 'aire'}, outdoor=0)
+    assert aire_afuera == pytest.approx(0.15)
+    assert aire_adentro == 0.0
+
+
+def test_preference_match_score_preferred_place_cerrado_vs_outdoor():
+    cerrado_adentro = preference_match_score('Museums', {'preferred_place': 'cerrado'}, outdoor=0)
+    cerrado_afuera = preference_match_score('Museums', {'preferred_place': 'cerrado'}, outdoor=1)
+    assert cerrado_adentro == pytest.approx(0.15)
+    assert cerrado_afuera == 0.0
+
+
+def test_preference_match_score_preferred_place_indiferente_no_suma():
+    score = preference_match_score('Parks', {'preferred_place': 'indiferente'}, outdoor=1)
+    assert score == 0.0
+
+
+def test_preference_match_score_sostenible_con_categoria_naturaleza():
+    con_pref = preference_match_score(
+        'Parks, Nature Reserve', {'sustainable_preferences': True},
+    )
+    sin_pref = preference_match_score(
+        'Parks, Nature Reserve', {'sustainable_preferences': False},
+    )
+    assert con_pref == pytest.approx(0.10)
+    assert sin_pref == 0.0
+
+
+def test_preference_match_score_sostenible_sin_categoria_naturaleza_no_suma():
+    score = preference_match_score(
+        'Restaurants, Mexican', {'sustainable_preferences': True},
+    )
+    assert score == 0.0
 
 
 def test_preference_match_score_sin_coincidencia_es_cero():
@@ -259,14 +312,14 @@ def test_preference_match_score_sin_coincidencia_es_cero():
 
 
 def test_preference_match_score_solo_tipo_turismo_sin_presupuesto_ni_grupo():
-    # Solo coincide tiposTurismo (0.6); sin bucket de presupuesto en el contexto
-    # y sin match de grupo -> el score debe ser exactamente 0.6, no más ni menos.
+    # Solo coincide tiposTurismo (0.45); sin bucket de presupuesto en el contexto
+    # y sin match de grupo -> el score debe ser exactamente 0.45, no más ni menos.
     score = preference_match_score(
         'Parks, Hiking',
         {'tiposTurismo': ['naturaleza']},
         price_level=3,
     )
-    assert score == pytest.approx(0.6)
+    assert score == pytest.approx(0.45)
 
 
 def test_preference_match_score_presupuesto_gradual_no_todo_o_nada():
