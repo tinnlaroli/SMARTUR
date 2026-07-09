@@ -588,6 +588,13 @@ class _BottomContent extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Container(
+        // El sheet completo ya no crece sin límite — antes cada sección
+        // interna tenía su propio recorte con botón "Ver más"; ahora todo
+        // el contenido sale completo desde el inicio y es el sheet entero
+        // el que se puede recorrer con scroll si no cabe en pantalla.
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.82,
+        ),
         padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
@@ -619,6 +626,12 @@ class _BottomContent extends StatelessWidget {
                   ),
                 ),
               ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
               // Rating + location + directions row
               Row(
                 children: [
@@ -665,46 +678,38 @@ class _BottomContent extends StatelessWidget {
               ),
               const SizedBox(height: 14),
 
-              // Contenido unificado — todas las secciones en vista continua,
-              // dentro de un cuadro que se puede expandir con "Ver más".
-              _ExpandableInfoBox(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_hasServiceInfo) ...[
-                      _SectionLabel(label: 'Información del servicio'),
-                      _ServiceInfoBand(
-                        priceFrom: priceFrom,
-                        priceTo: priceTo,
-                        currency: currency ?? 'MXN',
-                        durationMinutes: durationMinutes,
-                        contactPhone: contactPhone,
-                        operatingHours: operatingHours,
-                      ),
-                    ],
-                    _SectionLabel(label: l10n.tabHistory),
-                    _TabText(
-                      text: subtitle.isNotEmpty
-                          ? subtitle
-                          : 'Próximamente — agrega una reseña sobre este lugar.',
-                    ),
-                    if (activities.isNotEmpty) ...[
-                      _SectionLabel(label: 'Actividades disponibles'),
-                      ...activities
-                          .where((a) =>
-                              (a['name'] as String?)?.isNotEmpty == true)
-                          .map((a) => _ActivityCard(activity: a)),
-                    ],
-                    _SectionLabel(label: l10n.tabGastronomy),
-                    _TabText(text: _gastronomyForCity(locationLine)),
-                    _RatingTab(
-                      userRating: userRating,
-                      busy: ratingBusy,
-                      onRate: onRate,
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+              // Contenido unificado — todas las secciones completas desde
+              // el inicio, sin recorte ni botón "Ver más".
+              if (_hasServiceInfo) ...[
+                _SectionLabel(label: 'Información del servicio'),
+                _ServiceInfoBand(
+                  priceFrom: priceFrom,
+                  priceTo: priceTo,
+                  currency: currency ?? 'MXN',
+                  durationMinutes: durationMinutes,
+                  contactPhone: contactPhone,
+                  operatingHours: operatingHours,
                 ),
+              ],
+              _SectionLabel(label: l10n.tabHistory),
+              _TabText(
+                text: subtitle.isNotEmpty
+                    ? subtitle
+                    : 'Próximamente — agrega una reseña sobre este lugar.',
+              ),
+              if (activities.isNotEmpty) ...[
+                _SectionLabel(label: 'Actividades disponibles'),
+                ...activities
+                    .where((a) =>
+                        (a['name'] as String?)?.isNotEmpty == true)
+                    .map((a) => _ActivityCard(activity: a)),
+              ],
+              _SectionLabel(label: l10n.tabGastronomy),
+              _TabText(text: _gastronomyForCity(locationLine)),
+              _RatingTab(
+                userRating: userRating,
+                busy: ratingBusy,
+                onRate: onRate,
               ),
               const SizedBox(height: 16),
 
@@ -736,6 +741,10 @@ class _BottomContent extends StatelessWidget {
                         ),
                       ),
               ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -744,62 +753,6 @@ class _BottomContent extends StatelessWidget {
 }
 
 // ── Reusable small widgets ──
-
-/// Cuadro de info con altura acotada por defecto y un botón "Ver más" que
-/// lo expande a una altura mayor (sigue siendo scrolleable, nunca overflow).
-class _ExpandableInfoBox extends StatefulWidget {
-  final Widget child;
-  const _ExpandableInfoBox({required this.child});
-
-  @override
-  State<_ExpandableInfoBox> createState() => _ExpandableInfoBoxState();
-}
-
-class _ExpandableInfoBoxState extends State<_ExpandableInfoBox> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final collapsedHeight =
-        (MediaQuery.sizeOf(context).height * 0.35).clamp(240.0, 320.0);
-    final expandedHeight = MediaQuery.sizeOf(context).height * 0.62;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeInOut,
-          constraints: BoxConstraints(
-            maxHeight: _expanded ? expandedHeight : collapsedHeight,
-          ),
-          child: SingleChildScrollView(child: widget.child),
-        ),
-        Center(
-          child: TextButton.icon(
-            onPressed: () => setState(() => _expanded = !_expanded),
-            style: TextButton.styleFrom(
-              foregroundColor: scheme.primary,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              minimumSize: const Size(0, 32),
-              visualDensity: VisualDensity.compact,
-            ),
-            icon: Icon(
-              _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-              size: 18,
-            ),
-            label: Text(
-              _expanded ? 'Ver menos' : 'Ver más',
-              style: const TextStyle(
-                  fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _ActivityCard extends StatelessWidget {
   final Map<String, dynamic> activity;
