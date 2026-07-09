@@ -56,12 +56,20 @@ interface WellnessMetricsResponse {
 
 function WellnessMetricsCard() {
     const [data, setData] = useState<WellnessMetricsResponse | null>(null);
-    const [err, setErr] = useState(false);
+    const [err, setErr] = useState<string | null>(null);
 
     useEffect(() => {
         api.get<WellnessMetricsResponse>('/ml/wellness/metrics')
             .then(r => setData(r.data))
-            .catch(() => setErr(true));
+            .catch((e) => {
+                // Antes cualquier fallo (permiso, red, servidor) mostraba el
+                // mismo texto genérico "modelo no entrenado" — imposible
+                // distinguir un 403 de un modelo realmente sin entrenar.
+                const status = e?.response?.status;
+                if (status === 403) setErr('No tienes permiso para ver estas métricas.');
+                else if (status === 404) setErr('Modelo no entrenado aún — ejecuta el entrenamiento desde la terminal.');
+                else setErr(`No se pudieron cargar las métricas (${status ?? 'error de red'}).`);
+            });
     }, []);
 
     const fmt = (v: number | null) => v != null ? (v * 100).toFixed(1) + '%' : '—';
@@ -82,7 +90,7 @@ function WellnessMetricsCard() {
             {err ? (
                 <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
                     <AlertCircle className="size-3.5 shrink-0" />
-                    Modelo no entrenado aún — ejecuta el entrenamiento desde la terminal.
+                    {err}
                 </div>
             ) : !data ? (
                 <div className="h-8 flex items-center">
