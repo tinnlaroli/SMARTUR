@@ -14,7 +14,7 @@ import pytest
 
 from fusion import (
     filtro_duro, _diversify, filtrar_candidatos_por_contexto, recommend_hybrid,
-    preference_match_score,
+    preference_match_score, _resolve_cf_score,
 )
 
 
@@ -361,3 +361,133 @@ def test_recommend_hybrid_returns_empty_without_engine_or_local_pois(monkeypatch
         top_n=5,
     )
     assert result == []
+
+
+# ---------------------------------------------------------------------------
+# _resolve_cf_score — el arreglo que DESBLOQUEÓ al CF-KNN.
+#
+# Bug original: la rama `if biz_id in local_id_set` (proxy de calidad) iba
+# PRIMERO. Como en producción todos los candidatos son POIs locales, esa rama
+# siempre ganaba y predict_cf_pearson NUNCA corría para un lugar recomendado
+# — el CF-KNN estaba estructuralmente muerto y no podía despertar por más
+# interacciones reales que se acumularan.
+#
+# Comportamiento correcto: CF se intenta SIEMPRE primero; el proxy de calidad
+# solo entra cuando el CF no tiene señal real.
+# ---------------------------------------------------------------------------
+
+class _FakeEngineConSenalCF:
+    """Engine cuyo CF sí devuelve señal real ('knn')."""
+    def __init__(self, score=4.7):
+        self._score = score
+        self.train_data = pd.DataFrame({'stars': [3.0, 4.0]})
+
+    def get_user_idx(self, user_id):
+        return 0
+
+    def get_biz_idx(self, item_id):
+        return 0
+
+
+class _FakeEngineSinSenalCF:
+    """Engine en cold-start total: el CF solo puede devolver un promedio."""
+    def __init__(self):
+        self.train_data = pd.DataFrame({'stars': [3.0, 4.0, 5.0]})
+
+    def get_user_idx(self, user_id):
+        return None
+
+    def get_biz_idx(self, item_id):
+        return None
+
+
+def test_resolve_cf_usa_CF_REAL_aunque_sea_poi_local(monkeypatch):
+    """EL TEST CLAVE: un POI local CON señal CF real debe usar el CF,
+    NO el proxy de calidad. Antes esto era imposible."""
+    import fusion as fusion_module
+
+    monkeypatch.setattr(
+        fusion_module, 'predict_cf_pearson_with_source',
+        lambda uid, bid, eng: (4.7, 'knn'),
+    )
+
+    score, signal = _resolve_cf_score(
+        'u1', 'poi_5', _FakeEngineConSenalCF(),
+        matrix_col_set={'poi_5'},          # el POI SÍ está en la matriz de interacciones
+        local_id_set={'poi_5'},            # y es un POI local (el caso de producción)
+        quality_scores={'poi_5': 1.0},     # hay proxy de calidad disponible...
+        global_mean_rating=3.5,
+    )
+    assert signal == 'knn'    # ...pero gana el CF real
+    assert score == 4.7
+    assert score != 3.0 + 2.0 * 1.0   # NO usó el proxy de calidad (5.0)
+
+
+def test_resolve_cf_cae_al_proxy_de_calidad_si_CF_no_tiene_senal(monkeypatch):
+    """Sin señal CF real (aún no hay interacciones), un POI local usa la
+    evaluación del admin como proxy — el comportamiento correcto en frío."""
+    import fusion as fusion_module
+
+    monkeypatch.setattr(
+        fusion_module, 'predict_cf_pearson_with_source',
+        lambda uid, bid, eng: (3.9, 'fallback_mean'),   # promedio, sin información
+    )
+
+    score, signal = _resolve_cf_score(
+        'u1', 'poi_5', _FakeEngineSinSenalCF(),
+        matrix_col_set={'poi_5'},
+        local_id_set={'poi_5'},
+        quality_scores={'poi_5': 0.75},
+        global_mean_rating=3.5,
+    )
+    assert signal == 'quality_proxy'
+    assert score == 3.0 + 2.0 * 0.75      # 4.5
+    assert score != 3.9                   # ignoró el promedio de relleno del CF
+
+
+def test_resolve_cf_poi_local_sin_evaluacion_usa_media_global(monkeypatch):
+    import fusion as fusion_module
+    monkeypatch.setattr(
+        fusion_module, 'predict_cf_pearson_with_source',
+        lambda uid, bid, eng: (3.9, 'fallback_mean'),
+    )
+
+    score, signal = _resolve_cf_score(
+        'u1', 'poi_9', _FakeEngineSinSenalCF(),
+        matrix_col_set={'poi_9'},
+        local_id_set={'poi_9'},
+        quality_scores={},                 # sin evaluación del admin todavía
+        global_mean_rating=3.5,
+    )
+    assert signal == 'global_mean'
+    assert score == 3.5
+
+
+def test_resolve_cf_sin_engine_no_revienta():
+    """Catálogo recién nacido: sin engine, debe caer al proxy de calidad."""
+    score, signal = _resolve_cf_score(
+        'u1', 'poi_1', None,
+        matrix_col_set=set(),
+        local_id_set={'poi_1'},
+        quality_scores={'poi_1': 0.9},
+        global_mean_rating=3.5,
+    )
+    assert signal == 'quality_proxy'
+    assert score == 3.0 + 2.0 * 0.9
+
+
+def test_resolve_cf_svd_tambien_cuenta_como_senal_real(monkeypatch):
+    import fusion as fusion_module
+    monkeypatch.setattr(
+        fusion_module, 'predict_cf_pearson_with_source',
+        lambda uid, bid, eng: (4.2, 'svd'),
+    )
+    score, signal = _resolve_cf_score(
+        'u1', 'poi_5', _FakeEngineConSenalCF(),
+        matrix_col_set={'poi_5'},
+        local_id_set={'poi_5'},
+        quality_scores={'poi_5': 1.0},
+        global_mean_rating=3.5,
+    )
+    assert signal == 'svd'
+    assert score == 4.2

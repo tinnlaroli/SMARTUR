@@ -20,7 +20,7 @@ Blending:
 import numpy as np
 import pandas as pd
 
-from cf import predict_cf_pearson
+from cf import REAL_SIGNAL_SOURCES, predict_cf_pearson_with_source
 from context_encoder import MAPEO_CATEGORIAS
 from poi_repository import fetch_all_items
 
@@ -278,6 +278,54 @@ def preference_match_score(
     return min(1.0, score)
 
 
+def _resolve_cf_score(
+    user_id,
+    biz_id,
+    engine,
+    *,
+    matrix_col_set: set,
+    local_id_set: set,
+    quality_scores: dict | None,
+    global_mean_rating: float,
+) -> tuple[float, str]:
+    """
+    Decide la señal colaborativa de un candidato y de dónde salió.
+
+    ORDEN IMPORTANTE — aquí vivía un bug estructural: antes se preguntaba
+    PRIMERO `if biz_id in local_id_set` (y se usaba el proxy de calidad).
+    Como en producción TODOS los candidatos son POIs locales, esa rama
+    siempre ganaba y `predict_cf_pearson` NUNCA se ejecutaba para un lugar
+    recomendado — el CF-KNN estaba muerto y no podía despertar por más
+    interacciones reales que se acumularan.
+
+    Ahora se intenta el CF SIEMPRE primero, y el proxy de calidad solo entra
+    cuando el CF no tiene señal real (devuelve 'fallback_mean', o sea un
+    promedio sin información). Así el CF-KNN se activa solo en cuanto haya
+    interacciones reales sobre POIs locales: los IDs ya coinciden (poi_N /
+    svc_N tanto en fetch_all_items como en fetch_real_interactions) y esas
+    interacciones ya se mezclan al entrenamiento del engine.
+
+    Returns:
+        (score, signal) donde signal ∈ {'knn','svd','quality_proxy','global_mean'}
+        — 'knn'/'svd' significan que el CF realmente aportó.
+    """
+    if engine is not None and biz_id in matrix_col_set:
+        cf_pred, cf_source = predict_cf_pearson_with_source(user_id, biz_id, engine)
+        if cf_source in REAL_SIGNAL_SOURCES:
+            return cf_pred, cf_source
+
+    # Sin señal CF real todavía.
+    if biz_id in local_id_set:
+        # Proxy: evaluación de calidad del admin (service_evaluation) — así al
+        # menos los POIs locales se diferencian entre sí en vez de compartir
+        # un score plano.
+        q = (quality_scores or {}).get(biz_id)
+        if q is not None:
+            return 3.0 + 2.0 * q, 'quality_proxy'
+
+    return global_mean_rating, 'global_mean'
+
+
 # ---------------------------------------------------------------------------
 # Pipeline principal
 # ---------------------------------------------------------------------------
@@ -397,22 +445,27 @@ def recommend_hybrid(
     global_mean_rating = engine.train_data['stars'].mean() if engine is not None else 3.5
 
     for biz_id in final_ids:
-        # CF / SVD signal
-        if biz_id in local_id_set:
-            # Los POIs locales (Altas Montañas) no tienen historial de
-            # interacciones CF real (no vienen de Yelp), así que no hay un
-            # score CF que calcular. Antes se usaba un 4.0 fijo para todos,
-            # lo que igualaba a cualquier POI local sin importar su calidad
-            # real y anulaba el ranking dentro de ese grupo. En vez de eso,
-            # usamos la evaluación de calidad del admin (service_evaluation)
-            # como proxy cuando existe, y si no, el promedio global de
-            # calificaciones — así al menos se diferencian entre ellos.
-            q = (quality_scores or {}).get(biz_id)
-            score_cf = 3.0 + 2.0 * q if q is not None else global_mean_rating
-        elif biz_id in matrix_col_set:
-            score_cf = predict_cf_pearson(user_id, biz_id, engine)
-        else:
-            score_cf = global_mean_rating
+        # ── Señal colaborativa (CF-KNN) con fallback a calidad ────────────
+        # ORDEN IMPORTANTE. Antes la rama `if biz_id in local_id_set` iba
+        # PRIMERO y siempre ganaba: como en producción todos los candidatos
+        # son POIs locales, predict_cf_pearson NUNCA se ejecutaba para un
+        # lugar recomendado — el CF-KNN estaba estructuralmente muerto y no
+        # podía despertar por más datos reales que se acumularan.
+        #
+        # Ahora se intenta CF primero SIEMPRE, y solo se usa el proxy de
+        # calidad (evaluación del admin) cuando el CF no tiene señal real
+        # (devuelve 'fallback_mean', o sea un promedio sin información).
+        # Así el CF se activa solo en cuanto haya interacciones reales sobre
+        # POIs locales — los IDs ya coinciden (poi_N / svc_N tanto en
+        # fetch_all_items como en fetch_real_interactions), y esas
+        # interacciones ya se mezclan al entrenamiento del engine.
+        score_cf, cf_signal = _resolve_cf_score(
+            user_id, biz_id, engine,
+            matrix_col_set=matrix_col_set,
+            local_id_set=local_id_set,
+            quality_scores=quality_scores,
+            global_mean_rating=global_mean_rating,
+        )
 
         score_rf  = rf_map.get(biz_id, 3.0)
         score_lfm = lfm_map.get(biz_id, 3.0)
@@ -467,6 +520,11 @@ def recommend_hybrid(
             'category':    str(cats),
             'score':       float(round(final_score, 3)),
             'pred_cf':     float(round(score_cf, 3)),
+            # De dónde salió pred_cf: 'knn'/'svd' = CF real aportó;
+            # 'quality_proxy'/'global_mean' = CF aún sin señal (esperando
+            # interacciones reales sobre este POI). Permite ver en /metrics
+            # cuándo el CF-KNN por fin despierta, sin adivinar.
+            'cf_signal':   cf_signal,
             'pred_rf':     float(round(score_rf, 3)),
             'pred_pref':   float(round(score_pref, 3)),
             'kind':        kind,

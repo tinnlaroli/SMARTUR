@@ -27,33 +27,24 @@ def get_prediction_stats() -> dict:
     return counts
 
 
-def predict_cf_pearson(user_id, item_id, engine, k=20):
+# Fuentes que cuentan como SEÑAL REAL (el CF de verdad aportó algo):
+# 'knn' = vecinos que sí calificaron este ítem; 'svd' = factorización latente.
+# 'fallback_mean' NO es señal — es solo un promedio de relleno.
+REAL_SIGNAL_SOURCES = ('knn', 'svd')
+
+
+def _predict_cf_pearson_impl(user_id, item_id, engine, k=20):
     """
-    Predicción utilizando Filtrado Colaborativo Basado en Memoria (K-NN user-based approach).
-    Predice la puntuación (1 a 5 estrellas) matemática extrapolada que un `user_id` le otorgaría
-    a un `item_id` determinado, en base as su similitud vectorial (con coseno geométrico) respecto
-    a una vecindad con los K-usuarios más similares a su perfil.
-
-    Fórmula Matemática general:
-        Pred = Media_u + Σ(Sim · (Rating_v − Media_v)) / Σ|Sim|
-
-    Args:
-        user_id (str): Identificador textual en la db del usuario objetivo.
-        item_id (str): Identificador de Yelp o negocio a calificar.
-        engine (SmarturEngine): Referencia general en memoria al Motor construido con scikit Sparse matrix.
-        k (int): Cantidad máxima de vecinos a buscar.
-        
-    Returns:
-        float: Una predicción de puntaje inferido delimitado (clip) entre 1.0 y 5.0. 
-               Devuelve por defecto la media del individuo si no hay datos de vecinos disponibles.
+    Núcleo del CF. Devuelve (score, source) donde source ∈
+    {'knn', 'svd', 'fallback_mean'} — así los llamadores pueden distinguir
+    una predicción con señal real de un simple promedio de relleno.
     """
     user_idx = engine.get_user_idx(user_id)
     item_idx = engine.get_biz_idx(item_id)
 
     if user_idx is None or item_idx is None:
         # Si el usuario o el item solicitado sufren de cold-start total
-        _prediction_source_counts['fallback_mean'] += 1
-        return engine.train_data['stars'].mean()
+        return float(engine.train_data['stars'].mean()), 'fallback_mean'
 
     user_vector = engine.matrix_centered[user_idx]
     n_neighbors = min(k + 1, engine.matrix_centered.shape[0])
@@ -92,19 +83,53 @@ def predict_cf_pearson(user_id, item_id, engine, k=20):
                     # SVD output is on centered scale; shift back to [1, 5]
                     svd_pred = float(np.clip(svd_pred + user_mean, 1, 5))
                     if not np.isnan(svd_pred):
-                        _prediction_source_counts['svd'] += 1
-                        return svd_pred
-                    _prediction_source_counts['fallback_mean'] += 1
-                    return user_mean
+                        return svd_pred, 'svd'
+                    return user_mean, 'fallback_mean'
                 except Exception:
                     pass
-        _prediction_source_counts['fallback_mean'] += 1
-        return user_mean
+        return user_mean, 'fallback_mean'
 
     prediction = user_mean + (weighted_sum / sim_sum)
     result = float(np.clip(prediction, 1, 5))
     if np.isnan(result):
-        _prediction_source_counts['fallback_mean'] += 1
-        return user_mean
-    _prediction_source_counts['knn'] += 1
-    return result
+        return user_mean, 'fallback_mean'
+    return result, 'knn'
+
+
+def predict_cf_pearson_with_source(user_id, item_id, engine, k=20):
+    """
+    Igual que predict_cf_pearson pero devuelve (score, source).
+
+    Permite al ranking (fusion.recommend_hybrid) decidir si el CF realmente
+    tuvo algo que decir sobre este par usuario-ítem, o si solo devolvió un
+    promedio — en cuyo caso conviene usar otra señal (ej. la evaluación de
+    calidad del admin) en lugar de un número sin información.
+    """
+    score, source = _predict_cf_pearson_impl(user_id, item_id, engine, k)
+    _prediction_source_counts[source] += 1
+    return score, source
+
+
+def predict_cf_pearson(user_id, item_id, engine, k=20):
+    """
+    Predicción utilizando Filtrado Colaborativo Basado en Memoria (K-NN user-based approach).
+    Predice la puntuación (1 a 5 estrellas) matemática extrapolada que un `user_id` le otorgaría
+    a un `item_id` determinado, en base as su similitud vectorial (con coseno geométrico) respecto
+    a una vecindad con los K-usuarios más similares a su perfil.
+
+    Fórmula Matemática general:
+        Pred = Media_u + Σ(Sim · (Rating_v − Media_v)) / Σ|Sim|
+
+    Args:
+        user_id (str): Identificador textual en la db del usuario objetivo.
+        item_id (str): Identificador de Yelp o negocio a calificar.
+        engine (SmarturEngine): Referencia general en memoria al Motor construido con scikit Sparse matrix.
+        k (int): Cantidad máxima de vecinos a buscar.
+
+    Returns:
+        float: Una predicción de puntaje inferido delimitado (clip) entre 1.0 y 5.0.
+               Devuelve por defecto la media del individuo si no hay datos de vecinos disponibles.
+               (Usa predict_cf_pearson_with_source si necesitas saber si hubo señal real.)
+    """
+    score, _ = predict_cf_pearson_with_source(user_id, item_id, engine, k)
+    return score

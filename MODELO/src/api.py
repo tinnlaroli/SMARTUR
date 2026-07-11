@@ -245,6 +245,10 @@ class RecItem(BaseModel):
     category: str = ''
     score: float
     pred_cf: float
+    # Fuente real de pred_cf: 'knn'/'svd' = el CF-KNN aportó señal real;
+    # 'quality_proxy'/'global_mean' = todavía sin interacciones reales sobre
+    # este lugar, se usó la evaluación del admin o el promedio.
+    cf_signal: str = 'none'
     pred_rf: float
     pred_pref: float = 0.0
     kind: str = 'poi'
@@ -464,6 +468,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
                     category=r.get('category', ''),
                     score=r.get('score', 0.0),
                     pred_cf=r.get('pred_cf', 0.0),
+                    cf_signal=r.get('cf_signal', 'none'),
                     pred_rf=r.get('pred_rf', 0.0),
                     pred_pref=r.get('pred_pref', 0.0),
                     kind=r.get('kind', 'poi'),
