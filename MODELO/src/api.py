@@ -36,6 +36,18 @@ context_model   = None
 lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
+# data_warmth ∈ [0,1]: qué tan "caliente" está el sistema en datos reales.
+# Controla el blend dinámico en fusion.recommend_hybrid — con warmth≈0 la
+# preferencia declarada domina; con warmth→1 los modelos aprendidos toman el
+# control. Se recalcula al arrancar y tras cada reentrenamiento.
+_data_warmth: float = 0.0
+# Umbral de "madurez": nº de usuarios reales con historial suficiente (>=3 items
+# interactuados) para confiar al 100% en los modelos aprendidos. Se mide por
+# USUARIOS con historial, no por interacciones crudas — 1000 eventos de 15
+# usuarios no dan señal colaborativa; lo que CF/RF necesitan es DIVERSIDAD de
+# usuarios con historial repetido. Constante nombrada y ajustable con el tiempo.
+_WARMTH_TARGET_USERS = 100
+_WARMTH_MIN_ITEMS_PER_USER = 3
 _scheduler      = None   # APScheduler instance — module-level so endpoints can read/update it
 _restmex_cache  = None   # tuple of (reviews_df, biz_df)
 _training_in_progress = False   # True mientras se entrena en background al arrancar
@@ -94,6 +106,32 @@ def _merge_restmex(train_data, peso=0.3):
     return train_data, None
 
 
+def _refresh_data_warmth() -> float:
+    """Recalcula _data_warmth desde la DIVERSIDAD de usuarios reales con
+    historial suficiente (no desde interacciones crudas).
+        warmth = min(1, usuarios_con_>=N_items / _WARMTH_TARGET_USERS)
+    Si falla la consulta, deja el warmth en 0.0 (lado seguro: la preferencia
+    declarada domina)."""
+    global _data_warmth
+    try:
+        from poi_repository import fetch_real_interactions
+        df = fetch_real_interactions(min_events=1)
+        if df is None or df.empty:
+            eligible = 0
+        else:
+            counts = df.groupby('user_id').size()
+            eligible = int((counts >= _WARMTH_MIN_ITEMS_PER_USER).sum())
+        _data_warmth = min(1.0, eligible / _WARMTH_TARGET_USERS)
+        logger.info(
+            f"[warmth] {eligible} usuarios con >={_WARMTH_MIN_ITEMS_PER_USER} items "
+            f"(de {_WARMTH_TARGET_USERS} objetivo) -> data_warmth={_data_warmth:.3f}"
+        )
+    except Exception as exc:
+        logger.warning(f"[warmth] No se pudo calcular data_warmth: {exc}")
+        _data_warmth = 0.0
+    return _data_warmth
+
+
 def _load_or_train_models(do_train: bool = False) -> None:
     """
     Carga los modelos desde disco. Si do_train=True y alguno falta, lo entrena.
@@ -150,6 +188,9 @@ def _load_or_train_models(do_train: bool = False) -> None:
             logger.info(f"[boot] Quality scores: {len(quality_scores)} servicios")
         except Exception:
             quality_scores = {}
+
+        # Estado inicial del blend dinámico (frío hasta que la BD diga otra cosa).
+        _refresh_data_warmth()
 
         lfm_st = "LightFM✓" if lightfm_model else "LightFM✗"
         cm_st  = "ContentModel✓" if content_model_cb else "ContentModel✗"
@@ -283,6 +324,10 @@ def health():
         "users_count":         engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
         "training_in_progress": _training_in_progress,
         "skip_model_boot":     os.getenv("SKIP_MODEL_BOOT") == "1",
+        # Estado del blend dinámico: warmth=0 → la preferencia declarada domina;
+        # warmth=1 → los modelos aprendidos (CF/RF/LightFM) toman el control.
+        "data_warmth":         round(_data_warmth, 3),
+        "pref_weight":         round(0.65 - 0.45 * _data_warmth, 3),
     }
 
 
@@ -386,6 +431,7 @@ def get_recommendation(
             user_id, engine, context_model,
             alpha=alpha, top_n=top_n,
             lightfm_model=lightfm_model, content_model=content_model_cb,
+            quality_scores=quality_scores, data_warmth=_data_warmth,
         )
         return RecommendationResponse(
             user_id=user_id,
@@ -457,6 +503,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             lightfm_model=_lfm,
             content_model=_cb,
             quality_scores=_qs,
+            data_warmth=_data_warmth,
         )
         return RecommendationResponse(
             user_id=user_id,
@@ -1047,6 +1094,9 @@ def _run_full_training():
             logger.info(f"[train] Quality scores refrescados: {len(quality_scores)} servicios")
         except Exception as exc:
             logger.warning(f"[train] Quality scores no actualizados: {exc}")
+
+        # Recalcula el warmth: tras entrenar puede haber más interacciones reales.
+        _refresh_data_warmth()
 
         logger.info(f"[train] Entrenamiento completado. Muestra: {metrics.get('sample_size', '?')} predicciones.")
     except Exception as e:

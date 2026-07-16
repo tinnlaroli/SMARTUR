@@ -28,10 +28,29 @@ from poi_repository import fetch_all_items
 _ALTAS_MONTANAS_LAT = 18.95
 _ALTAS_MONTANAS_LON = -97.05
 
-# Peso del boost de preferencia declarada dentro del blend final. Se deja como
-# constante nombrada (en vez de enterrarlo en la fórmula) para poder ajustarlo
-# con datos reales más adelante sin tocar la lógica de recommend_hybrid.
-PREFERENCE_BOOST_WEIGHT = 0.2
+# ── Blend dinámico por densidad de datos reales (data_warmth ∈ [0,1]) ────────
+# El peso de la preferencia declarada (contenido) NO es fijo: depende de cuántos
+# datos reales tiene el sistema. Con catálogo/uso frío (data_warmth≈0), la
+# preferencia DOMINA — es la única señal que discrimina cuando CF/RF aún no
+# aprendieron nada (todos devuelven un valor plano). Conforme se acumulan
+# interacciones reales (data_warmth→1), la preferencia baja a su peso "maduro"
+# y los modelos aprendidos (CF/RF/LightFM) toman el control. Todo automático,
+# sin ajustar pesos a mano.
+#   pref_weight = COLD - (COLD - WARM) * data_warmth
+PREF_WEIGHT_COLD = 0.65   # frío: la preferencia manda
+PREF_WEIGHT_WARM = 0.20   # maduro: peso "de fondo" (era el valor fijo anterior)
+
+# Retrocompatibilidad: algunos módulos/tests importan esta constante. Equivale
+# al peso maduro (warm). El valor efectivo lo calcula _preference_weight().
+PREFERENCE_BOOST_WEIGHT = PREF_WEIGHT_WARM
+
+
+def _preference_weight(data_warmth: float) -> float:
+    """Peso de la preferencia en el blend final según data_warmth ∈ [0,1].
+    Interpola linealmente entre PREF_WEIGHT_COLD (frío) y PREF_WEIGHT_WARM
+    (maduro). Fuera de rango se recorta a [0,1]."""
+    w = min(1.0, max(0.0, float(data_warmth)))
+    return PREF_WEIGHT_COLD - (PREF_WEIGHT_COLD - PREF_WEIGHT_WARM) * w
 
 # presupuesto_bucket (fetch_traveler_profile, poi_repository.py) es un string;
 # price_level en df_biz es numérico (misma escala 1-4 que usa rf_model.py para
@@ -334,7 +353,7 @@ def recommend_hybrid(
     user_id, engine, context_model,
     alpha=0.4, context=None, top_n=5,
     lightfm_model=None, content_model=None,
-    quality_scores=None,
+    quality_scores=None, data_warmth=0.0,
 ):
     """
     Sistema Híbrido SMARTUR v4 (Retrieval + Ranking multi-señal).
@@ -444,6 +463,10 @@ def recommend_hybrid(
 
     global_mean_rating = engine.train_data['stars'].mean() if engine is not None else 3.5
 
+    # Peso dinámico de la preferencia: alto en frío (domina), bajo cuando hay
+    # datos reales suficientes (los modelos aprendidos toman el control).
+    pref_weight = _preference_weight(data_warmth)
+
     for biz_id in final_ids:
         # ── Señal colaborativa (CF-KNN) con fallback a calidad ────────────
         # ORDEN IMPORTANTE. Antes la rama `if biz_id in local_id_set` iba
@@ -496,8 +519,8 @@ def recommend_hybrid(
             outdoor=outdoor_lookup.get(biz_id, 0),
         )
         final_score = (
-            (1 - PREFERENCE_BOOST_WEIGHT) * final_score
-            + PREFERENCE_BOOST_WEIGHT * (score_pref * 5.0)
+            (1 - pref_weight) * final_score
+            + pref_weight * (score_pref * 5.0)
         )
 
         # Quality boost from admin service_evaluation (service_evaluation.total_score).

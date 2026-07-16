@@ -491,3 +491,34 @@ def test_resolve_cf_svd_tambien_cuenta_como_senal_real(monkeypatch):
     )
     assert signal == 'svd'
     assert score == 4.2
+
+
+# ---------------------------------------------------------------------------
+# _preference_weight — blend dinámico por densidad de datos reales.
+# En frío (data_warmth≈0) la preferencia domina; con datos reales suficientes
+# (data_warmth→1) baja a su peso maduro y los modelos aprendidos toman control.
+# ---------------------------------------------------------------------------
+from fusion import _preference_weight, PREF_WEIGHT_COLD, PREF_WEIGHT_WARM
+
+
+def test_preference_weight_frio_es_el_maximo():
+    assert _preference_weight(0.0) == PREF_WEIGHT_COLD == 0.65
+
+
+def test_preference_weight_maduro_es_el_minimo():
+    assert _preference_weight(1.0) == PREF_WEIGHT_WARM == 0.20
+
+
+def test_preference_weight_interpola_linealmente():
+    assert _preference_weight(0.5) == pytest.approx((0.65 + 0.20) / 2)
+
+
+def test_preference_weight_recorta_fuera_de_rango():
+    assert _preference_weight(-3.0) == PREF_WEIGHT_COLD   # nunca > COLD
+    assert _preference_weight(9.0) == PREF_WEIGHT_WARM     # nunca < WARM
+
+
+def test_preference_weight_decrece_monotono_con_los_datos():
+    # A más datos reales, MENOS peso a la preferencia (más a lo aprendido).
+    ws = [_preference_weight(w) for w in (0.0, 0.25, 0.5, 0.75, 1.0)]
+    assert ws == sorted(ws, reverse=True)
