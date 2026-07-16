@@ -4,6 +4,12 @@ export interface AlgorithmMetric {
     rmse: number;
     mae: number;
     alpha?: number;
+    // Métricas de clasificación de relevancia (rating >= umbral). Presentes
+    // cuando el backend las calcula; opcionales por compatibilidad.
+    accuracy?: number;
+    precision?: number;
+    recall?: number;
+    f1?: number;
 }
 
 export interface MLMetrics {
@@ -13,6 +19,11 @@ export interface MLMetrics {
     local_blend?: { rf: number; gbm: number };
     algorithms: Record<string, AlgorithmMetric>;
     sample_size?: number;
+    // Info de selección de modelos (para explicar por qué se usa cuál):
+    selection_metric?: string;       // criterio de elección (ej. 'rmse')
+    relevance_threshold?: number;    // umbral de relevancia para A/P/R/F1
+    selection_rationale?: string;    // texto de por qué se eligió el modelo
+    data_warmth?: number;            // 0=frío (preferencia domina), 1=maduro
     ranking?: {
         ndcg: number | null;
         precision: number | null;

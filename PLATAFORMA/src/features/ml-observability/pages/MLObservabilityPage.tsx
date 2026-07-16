@@ -800,13 +800,22 @@ export const MLObservabilityPage = () => {
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr style={{ background: 'var(--color-bg-alt)', borderBottom: '1px solid var(--color-border)' }}>
-                                                {[copy.tableColAlgo, copy.tableColRmse, copy.tableColMae, copy.tableColStatus].map((h, i) => (
+                                                {([
+                                                    { label: copy.tableColAlgo, align: 'text-left' },
+                                                    { label: copy.tableColRmse, align: 'text-right' },
+                                                    { label: copy.tableColMae, align: 'text-right' },
+                                                    { label: 'Accuracy', align: 'text-right' },
+                                                    { label: 'Precision', align: 'text-right' },
+                                                    { label: 'Recall', align: 'text-right' },
+                                                    { label: 'F1', align: 'text-right' },
+                                                    { label: copy.tableColStatus, align: 'text-center' },
+                                                ] as const).map((h) => (
                                                     <th
-                                                        key={h}
-                                                        className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wider ${i > 0 && i < 3 ? 'text-right' : i === 3 ? 'text-center' : 'text-left'}`}
+                                                        key={h.label}
+                                                        className={`px-3 py-2.5 text-xs font-semibold uppercase tracking-wider ${h.align}`}
                                                         style={{ color: 'var(--color-text-alt)' }}
                                                     >
-                                                        {h}
+                                                        {h.label}
                                                     </th>
                                                 ))}
                                             </tr>
@@ -843,10 +852,22 @@ export const MLObservabilityPage = () => {
                                                         >
                                                             {alg.rmse.toFixed(3)}
                                                         </td>
-                                                        <td className="px-4 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
                                                             {alg.mae.toFixed(3)}
                                                         </td>
-                                                        <td className="px-4 py-2.5 text-center">
+                                                        <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                            {alg.accuracy != null ? `${(alg.accuracy * 100).toFixed(1)}%` : '—'}
+                                                        </td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                            {alg.precision != null ? `${(alg.precision * 100).toFixed(1)}%` : '—'}
+                                                        </td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
+                                                            {alg.recall != null ? `${(alg.recall * 100).toFixed(1)}%` : '—'}
+                                                        </td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: isBest ? PURPLE : 'var(--color-text)', fontWeight: isBest ? 700 : 400 }}>
+                                                            {alg.f1 != null ? `${(alg.f1 * 100).toFixed(1)}%` : '—'}
+                                                        </td>
+                                                        <td className="px-3 py-2.5 text-center">
                                                             <span
                                                                 className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
                                                                 style={{
@@ -862,6 +883,35 @@ export const MLObservabilityPage = () => {
                                             })}
                                         </tbody>
                                     </table>
+
+                                    {/* Info de selección de modelos: por qué se usa cuál */}
+                                    <div className="px-4 py-3 border-t space-y-2" style={{ borderColor: 'var(--color-border)' }}>
+                                        <div className="flex items-start gap-2">
+                                            <span
+                                                className="mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold shrink-0"
+                                                style={{ background: `${PURPLE}26`, color: PURPLE }}
+                                            >
+                                                EN USO: {copy.algoLabels[metrics.best_algorithm] ?? metrics.best_algorithm}
+                                            </span>
+                                            {metrics.selection_rationale && (
+                                                <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                                                    {metrics.selection_rationale}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                            <span>Criterio de selección: <b style={{ color: 'var(--color-text)' }}>{(metrics.selection_metric ?? 'rmse').toUpperCase()}</b> (menor = mejor)</span>
+                                            {metrics.relevance_threshold != null && (
+                                                <span>Umbral de relevancia (A/P/R/F1): <b style={{ color: 'var(--color-text)' }}>≥ {metrics.relevance_threshold}★</b></span>
+                                            )}
+                                            {metrics.data_warmth != null && (
+                                                <span>
+                                                    Blend dinámico: <b style={{ color: 'var(--color-text)' }}>data_warmth = {metrics.data_warmth.toFixed(2)}</b>{' '}
+                                                    ({metrics.data_warmth < 0.34 ? 'frío — la preferencia declarada domina' : metrics.data_warmth < 0.67 ? 'transición' : 'maduro — modelos aprendidos al control'})
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--color-text-alt)' }}>

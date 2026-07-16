@@ -722,10 +722,37 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
         preds_cf = np.asarray(preds_cf, dtype=float)
         preds_rf = np.asarray(preds_rf, dtype=float)
 
+        # Umbral de relevancia: un lugar es "relevante" si su calificación
+        # (real o predicha) es >= 4 estrellas. Esto convierte la regresión de
+        # rating en una CLASIFICACIÓN binaria (relevante / no relevante), lo
+        # que permite reportar Accuracy/Precision/Recall/F1 — las métricas
+        # estándar para evaluar recomendadores como clasificador de relevancia.
+        _REL_THRESHOLD = 4.0
+
+        def _classification_metrics(a, p, thr=_REL_THRESHOLD):
+            a_rel = np.asarray(a, dtype=float) >= thr
+            p_rel = np.asarray(p, dtype=float) >= thr
+            tp = int(np.sum(a_rel & p_rel))
+            fp = int(np.sum(~a_rel & p_rel))
+            fn = int(np.sum(a_rel & ~p_rel))
+            tn = int(np.sum(~a_rel & ~p_rel))
+            total = tp + fp + fn + tn
+            accuracy  = (tp + tn) / total if total else 0.0
+            precision = tp / (tp + fp) if (tp + fp) else 0.0
+            recall    = tp / (tp + fn) if (tp + fn) else 0.0
+            f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+            return {
+                'accuracy':  round(float(accuracy), 4),
+                'precision': round(float(precision), 4),
+                'recall':    round(float(recall), 4),
+                'f1':        round(float(f1), 4),
+            }
+
         def _rmse_mae(a, p):
             return {
                 'rmse': float(sqrt(mean_squared_error(a, p))),
                 'mae':  float(mean_absolute_error(a, p)),
+                **_classification_metrics(a, p),
             }
 
         # Find best blending alpha (CF weight) for hybrid
@@ -788,6 +815,22 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
                 f"cayeron en fallback (sin vecinos con señal real) — dataset demasiado disperso."
             )
 
+        # Razón legible de por qué se eligió este modelo — para mostrar en el
+        # dashboard junto a la tabla comparativa.
+        _best_rmse = algorithms[best_algorithm]['rmse']
+        if best_algorithm in ('baseline', 'item_mean'):
+            _rationale = (
+                f"Seleccionado por menor RMSE ({_best_rmse:.3f}). Que un método sin "
+                f"aprendizaje ('{best_algorithm}') gane indica que CF/RF aún no aportan "
+                f"valor sobre estos datos — el sistema lo reporta con honestidad en vez "
+                f"de forzar un modelo peor."
+            )
+        else:
+            _rationale = (
+                f"Seleccionado por menor RMSE ({_best_rmse:.3f}) entre todos los "
+                f"algoritmos evaluados sobre el mismo conjunto de prueba."
+            )
+
         result = {
             'best_algorithm': best_algorithm,
             'best_alpha':     best_alpha if best_algorithm == 'hybrid_cf_rf' else 0.2,
@@ -795,6 +838,11 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
             'algorithms':     algorithms,
             'sample_size':    len(actuals),
             'cf_prediction_sources': cf_stats,
+            # Info de selección de modelos para el dashboard:
+            'selection_metric':   'rmse',   # criterio de elección (menor = mejor)
+            'relevance_threshold': _REL_THRESHOLD,  # umbral para Accuracy/Precision/Recall/F1
+            'selection_rationale': _rationale,
+            'data_warmth':        round(_data_warmth, 3),
         }
         enrich = _enrich_metrics(actuals, hybrid_preds, engine_obj, rf_model)
         result.update(enrich)
