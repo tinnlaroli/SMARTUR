@@ -118,12 +118,20 @@ def generate_ratings(personas: pd.DataFrame, biz_df: pd.DataFrame, seed: int = R
 
     rows = []
     for _, persona in personas.iterrows():
+        # Afinidad máxima de la persona (Dirichlet suma 1, así que el favorito
+        # ronda 0.3-0.6). Se normaliza cada afinidad contra este máximo para
+        # que un match con el tipo FAVORITO de la persona dé ~1.0 y produzca
+        # calificaciones de 4-5★. Sin esto las afinidades crudas son chicas y
+        # casi ningún rating llega al umbral de relevancia (≥4★), dejando las
+        # métricas de clasificación (Accuracy/Precision/Recall/F1) degeneradas.
+        max_aff = max((persona[f'aff_{t}'] for t in TOURISM_TYPES), default=0.0) or 1.0
         n_ratings = int(rng.integers(RATINGS_PER_PERSONA[0], RATINGS_PER_PERSONA[1] + 1))
         n_ratings = min(n_ratings, len(biz))
         sample_idx = rng.choice(len(biz), size=n_ratings, replace=False)
         for idx in sample_idx:
             item = biz.iloc[idx]
-            afinidad = max((persona[f'aff_{t}'] for t in item['_tipos']), default=0.0)
+            afinidad_raw = max((persona[f'aff_{t}'] for t in item['_tipos']), default=0.0)
+            afinidad = afinidad_raw / max_aff  # 0..1 relativo al favorito de la persona
             price = item.get('price_level', 2) or 2
             try:
                 budget_fit = 1.0 - abs(float(persona['budget']) - float(price)) / 3.0

@@ -83,4 +83,4 @@ Proyint/
 pruebas/
 
 # Respaldo generado por el modo de entrenamiento sintético (no versionar)
-MODELO/data/synthetic_training_backup.csv
+MODELO/models/synthetic_training_backup.csv

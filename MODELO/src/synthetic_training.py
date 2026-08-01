@@ -50,6 +50,9 @@ logger = logging.getLogger(__name__)
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA = os.path.join(_DIR, '..', 'data')
+# El respaldo se escribe en el volumen de modelos (escribible por el usuario
+# no-root del contenedor); /app/data es de solo lectura para modeluser.
+_MODELS = os.path.join(_DIR, '..', 'models')
 
 # Escala por defecto: bastante mayor que el experimento de validación (800) para
 # densificar la matriz usuario-ítem sobre el catálogo real y darle al CF vecinos
@@ -59,7 +62,7 @@ _DEFAULT_N_PERSONAS = 2500
 _TRUTHY = {'1', 'true', 'yes', 'on', 'y', 't'}
 
 # Nombre del respaldo del dataset sintético generado (reproducible/inspeccionable).
-SYNTH_BACKUP_CSV = os.path.join(_DATA, 'synthetic_training_backup.csv')
+SYNTH_BACKUP_CSV = os.path.join(_MODELS, 'synthetic_training_backup.csv')
 
 
 def synth_training_enabled() -> bool:
