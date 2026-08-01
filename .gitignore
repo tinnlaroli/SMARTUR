@@ -81,3 +81,6 @@ PDF_OCR_TESTING_GUIDE.md
 SMARTUR_Architecture.drawio
 Proyint/
 pruebas/
+
+# Respaldo generado por el modo de entrenamiento sintético (no versionar)
+MODELO/data/synthetic_training_backup.csv

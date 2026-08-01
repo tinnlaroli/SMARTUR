@@ -964,46 +964,68 @@ def _run_full_training():
         # lugar de construir unos nuevos y reasignarlos, una request podía
         # quedarse con una referencia al motor mientras este se reescribía a
         # mitad de camino (matriz Pearson reconstruida, RF reentrenado, etc.).
+        # ── 0. ¿Modo sintético (opt-in, reversible)? ─────────────────────────
+        # Cuando SMARTUR_SYNTH_TRAINING está activo, se REEMPLAZA train/test por
+        # un dataset sintético a gran escala con estructura latente aprendible,
+        # para demostrar (train/test + CV + API + dashboard + persistencia) que
+        # el ML supera al baseline cuando existe estructura. OFF por defecto:
+        # en ese caso el flujo es idéntico al de siempre (datos reales/CSV).
+        # Las métricas se marcan con synthetic_augmented para no confundir este
+        # desempeño con el de usuarios reales.
+        from synthetic_training import synth_training_enabled, build_synthetic_split
+        _synth_active = synth_training_enabled()
+
         with _models_lock:
-            # ── 1. Merge real DB interactions (if any accumulated) ───────────────
-            # Threshold lowered 50->10 so early adopters immediately influence training.
-            # Weight scaled adaptively (3× min -> 10× max) to compensate for the 266K
-            # Yelp corpus — without this, SMARTUR signals are drowned out.
-            _MIN_REAL = 10
-            try:
-                real_df = fetch_real_interactions(min_events=1)
-                if real_df is not None and len(real_df) >= _MIN_REAL:
-                    real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
-                    real_df['user_id'] = real_df['user_id'].astype(str)
-                    n_repeats = max(3, min(10, len(real_df) // 5))
-                    tiles = [real_df] * n_repeats
-                    engine.train_data = pd.concat([engine.train_data] + tiles, ignore_index=True)
-                    logger.info(
-                        f"[train] Datos reales: {len(real_df)} interacciones, ponderadas {n_repeats}×"
-                    )
-                else:
-                    n_real = len(real_df) if real_df is not None else 0
-                    logger.info(f"[train] Solo {n_real} interacciones reales (mínimo {_MIN_REAL}) — usando solo CSV.")
-            except Exception as exc:
-                logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
-
-            # ── 1b. Merge admin evaluation scores ───────────────────────────────
-            try:
-                eval_df = fetch_evaluation_scores()
-                if eval_df is not None and len(eval_df) > 0:
-                    # evaluation scores only cover tourist services (svc_N IDs)
-                    # Merge columns must match training schema
-                    eval_df['user_id'] = eval_df['user_id'].astype(str)
-                    eval_df = eval_df.rename(columns={'business_id': 'business_id', 'stars': 'stars'})
-                    engine.train_data = pd.concat(
-                        [engine.train_data, eval_df], ignore_index=True
-                    )
-                    logger.info(f"[train] {len(eval_df)} scores de evaluación admin integrados al entrenamiento.")
-            except Exception as exc:
-                logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
-
-            # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
             restmex_biz = None
+            if _synth_active:
+                # ── 1s. Reemplazo sintético (NO son usuarios reales) ─────────────
+                logger.warning(
+                    "[train][SYNTH] SMARTUR_SYNTH_TRAINING activo — entrenando sobre "
+                    "estructura latente INVENTADA. Las métricas NO representan turistas reales."
+                )
+                syn_train, syn_test = build_synthetic_split(engine.df_biz)
+                engine.train_data = syn_train
+                engine.test_data = syn_test
+            else:
+                # ── 1. Merge real DB interactions (if any accumulated) ───────────────
+                # Threshold lowered 50->10 so early adopters immediately influence training.
+                # Weight scaled adaptively (3× min -> 10× max) to compensate for the 266K
+                # Yelp corpus — without this, SMARTUR signals are drowned out.
+                _MIN_REAL = 10
+                try:
+                    real_df = fetch_real_interactions(min_events=1)
+                    if real_df is not None and len(real_df) >= _MIN_REAL:
+                        real_df = real_df.rename(columns={'item_id': 'business_id', 'implicit_score': 'stars'})
+                        real_df['user_id'] = real_df['user_id'].astype(str)
+                        n_repeats = max(3, min(10, len(real_df) // 5))
+                        tiles = [real_df] * n_repeats
+                        engine.train_data = pd.concat([engine.train_data] + tiles, ignore_index=True)
+                        logger.info(
+                            f"[train] Datos reales: {len(real_df)} interacciones, ponderadas {n_repeats}×"
+                        )
+                    else:
+                        n_real = len(real_df) if real_df is not None else 0
+                        logger.info(f"[train] Solo {n_real} interacciones reales (mínimo {_MIN_REAL}) — usando solo CSV.")
+                except Exception as exc:
+                    logger.warning(f"[train] Interacciones reales no disponibles: {exc}")
+
+                # ── 1b. Merge admin evaluation scores ───────────────────────────────
+                try:
+                    eval_df = fetch_evaluation_scores()
+                    if eval_df is not None and len(eval_df) > 0:
+                        # evaluation scores only cover tourist services (svc_N IDs)
+                        # Merge columns must match training schema
+                        eval_df['user_id'] = eval_df['user_id'].astype(str)
+                        eval_df = eval_df.rename(columns={'business_id': 'business_id', 'stars': 'stars'})
+                        engine.train_data = pd.concat(
+                            [engine.train_data, eval_df], ignore_index=True
+                        )
+                        logger.info(f"[train] {len(eval_df)} scores de evaluación admin integrados al entrenamiento.")
+                except Exception as exc:
+                    logger.warning(f"[train] Scores de evaluación admin no disponibles: {exc}")
+
+                # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
+                restmex_biz = None
 
             # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
             logger.info("[train] Actualizando matriz de Pearson + SVD...")
@@ -1045,6 +1067,20 @@ def _run_full_training():
         # ── 5. Algorithm metrics (RF + CF) ───────────────────────────────────
         logger.info("[train] Calculando métricas de algoritmos...")
         metrics = _compute_simple_metrics(engine, context_model)
+
+        # Integridad: si el entrenamiento corrió en modo sintético, marcarlo para
+        # que el dashboard avise que este desempeño es sobre una verdad inventada,
+        # no sobre turistas reales. Nunca se debe presentar como métrica real.
+        if _synth_active:
+            metrics['synthetic_augmented'] = True
+            _prev_rationale = metrics.get('selection_rationale', '')
+            metrics['selection_rationale'] = (
+                "⚠ ENTRENAMIENTO SINTÉTICO (SMARTUR_SYNTH_TRAINING activo): estos "
+                "resultados son sobre personas sintéticas con estructura latente "
+                "inventada, para validar que el pipeline de ML aprende cuando existe "
+                "estructura. NO representan el comportamiento de turistas reales. "
+                + _prev_rationale
+            )
 
         # ── 5b. Enrich with error_dist, data_quality, prediction_distribution ──
         if 'error_distribution' not in metrics:

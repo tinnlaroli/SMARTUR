@@ -884,6 +884,22 @@ export const MLObservabilityPage = () => {
                                         </tbody>
                                     </table>
 
+                                    {/* Aviso: entrenamiento con datos sintéticos (no reales) */}
+                                    {metrics.synthetic_augmented && (
+                                        <div
+                                            className="px-4 py-2.5 border-t flex items-start gap-2 text-xs leading-relaxed"
+                                            style={{ borderColor: 'var(--color-border)', background: '#f59e0b1a', color: '#b45309' }}
+                                        >
+                                            <span className="font-bold shrink-0">⚠ Datos sintéticos</span>
+                                            <span>
+                                                Este entrenamiento corrió en modo de validación con personas
+                                                sintéticas (estructura latente inventada) para demostrar que el
+                                                pipeline de ML aprende cuando existe estructura. Estas métricas
+                                                <b> no representan a turistas reales.</b>
+                                            </span>
+                                        </div>
+                                    )}
+
                                     {/* Info de selección de modelos: por qué se usa cuál */}
                                     <div className="px-4 py-3 border-t space-y-2" style={{ borderColor: 'var(--color-border)' }}>
                                         <div className="flex items-start gap-2">

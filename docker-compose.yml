@@ -103,6 +103,13 @@ services:
       POI_DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD es requerido en .env}
       SKIP_MODEL_BOOT: ${SKIP_MODEL_BOOT:-0}
       AUTO_BOOTSTRAP: ${AUTO_BOOTSTRAP:-1}
+      # Modo de entrenamiento sintético (opt-in, reversible). Default 0 = OFF:
+      # entrena con datos reales/CSV como siempre. Poner 1 en el .env del VPS
+      # SOLO para la demo académica: reemplaza train/test por un dataset
+      # sintético con estructura latente para demostrar que el ML supera al
+      # baseline. Las métricas quedan marcadas como synthetic_augmented.
+      SMARTUR_SYNTH_TRAINING: ${SMARTUR_SYNTH_TRAINING:-0}
+      SMARTUR_SYNTH_PERSONAS: ${SMARTUR_SYNTH_PERSONAS:-2500}
       KAGGLE_USERNAME: ${KAGGLE_USERNAME:-}
       KAGGLE_KEY: ${KAGGLE_KEY:-}
       CORS_ORIGINS: "http://plataforma:5173,http://api:3000,http://localhost:5173,http://localhost:3000,https://smartur.online,https://www.smartur.online,https://app.smartur.online"

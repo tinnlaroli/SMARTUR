@@ -24,6 +24,7 @@ export interface MLMetrics {
     relevance_threshold?: number;    // umbral de relevancia para A/P/R/F1
     selection_rationale?: string;    // texto de por qué se eligió el modelo
     data_warmth?: number;            // 0=frío (preferencia domina), 1=maduro
+    synthetic_augmented?: boolean;   // true = entrenado con datos sintéticos (no reales)
     ranking?: {
         ndcg: number | null;
         precision: number | null;
