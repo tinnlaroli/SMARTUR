@@ -38,9 +38,33 @@ _INTEREST_MAP = {
     'gastronomy': 'gastronomico', 'gastronomico': 'gastronomico',
     'aventura': 'aventura', 'adventure': 'aventura',
     'rural': 'rural',
+    # Opciones de interés de la app móvil que antes NO se mapeaban y se caían
+    # en silencio (dejando tiposTurismo vacío para muchos usuarios reales):
+    'historia': 'cultural', 'history': 'cultural',
+    'arte': 'cultural', 'art': 'cultural',
+    'deportes': 'aventura', 'sports': 'aventura',
+    'fotografía': 'naturaleza', 'fotografia': 'naturaleza', 'photography': 'naturaleza',
+    'bienestar': 'naturaleza', 'wellness': 'naturaleza',
+    'nightlife': 'nocturno', 'vida nocturna': 'nocturno',
 }
 
 _ACTIVITY_BUDGET = {1: 'bajo', 2: 'bajo', 3: 'medio', 4: 'alto', 5: 'premium'}
+
+# Mapea el travel_type que guarda la app móvil (Mochilero/Familiar/Lujo/
+# Aventura/Romántico/De negocios) al vocabulario de GROUP_TYPES que entiende
+# preference_match_score. Antes 'Familiar' llegaba como 'familiar' (≠ 'familia')
+# y 'Romántico' como 'romántico' (≠ 'pareja'), así que el bono de grupo
+# (familia con niños / pareja romántica) NUNCA se activaba con datos reales.
+# Los valores ya correctos (solo/pareja/familia/amigos, de datos semilla) pasan
+# de largo por el fallback.
+_TRAVEL_GROUP_MAP = {
+    'familiar': 'familia',
+    'romántico': 'pareja', 'romantico': 'pareja',
+    'mochilero': 'amigos',
+    'aventura': 'amigos',
+    'lujo': 'solo',
+    'de negocios': 'solo', 'negocios': 'solo',
+}
 
 
 def get_poi_connection():
@@ -324,11 +348,12 @@ def fetch_traveler_profile(user_id):
             if mapped and mapped not in tipos:
                 tipos.append(mapped)
 
+    _travel_lower = (travel_type or 'solo').lower()
     return {
         'edad_range': age_range or '25-34',
         'tiposTurismo': tipos,
         'presupuesto_bucket': _ACTIVITY_BUDGET.get(activity_level, 'medio'),
-        'group_type': (travel_type or 'solo').lower(),
+        'group_type': _TRAVEL_GROUP_MAP.get(_travel_lower, _travel_lower),
         'requiere_accesibilidad': bool(has_accessibility),
         'preferred_place': (preferred_place or 'indiferente').lower(),
         'sustainable_preferences': bool(sustainable_preferences),

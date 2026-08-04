@@ -64,6 +64,7 @@ _TOURISM_KEYWORDS: dict[str, list[str]] = {
     'cultural':      ['museum', 'history', 'monument', 'landmark', 'cathedral', 'market'],
     'gastronomico':  ['restaurant', 'food', 'gastronomy', 'cafe', 'market'],
     'rural':         ['hacienda', 'ranch', 'rural', 'countryside', 'sanctuary'],
+    'nocturno':      ['bar', 'pub', 'nightlife', 'cantina', 'lounge', 'antro'],
 }
 
 

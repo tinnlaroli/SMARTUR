@@ -48,6 +48,16 @@ MAPEO_CATEGORIAS = {
         # Local POI
         'culture', 'hacienda',
     ],
+    'nocturno': [
+        # Vida nocturna / bares. Hoy el catálogo de las Altas Montañas no tiene
+        # POIs de este tipo (0 coincidencias), pero el tipo queda listo para
+        # activarse solo en cuanto se registre un bar/antro — alineado con el
+        # crecimiento del catálogo lugar por lugar.
+        # Yelp
+        'Bars', 'Nightlife', 'Pubs', 'Lounges', 'Dance Clubs', 'Cocktail Bars',
+        # Local POI — categories_raw
+        'bar', 'pub', 'nightlife', 'cantina', 'antro', 'lounge',
+    ],
 }
 
 TOURISM_TYPES = list(MAPEO_CATEGORIAS.keys())
