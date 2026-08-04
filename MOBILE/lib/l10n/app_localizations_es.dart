@@ -923,6 +923,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get activityExtreme => 'Extremo';
 
   @override
+  String get budgetLevel => 'Presupuesto';
+
+  @override
+  String get budgetLow => 'Económico';
+
+  @override
+  String get budgetMedium => 'Medio';
+
+  @override
+  String get budgetHigh => 'Alto';
+
+  @override
+  String get budgetPremium => 'Premium';
+
+  @override
   String get travelBackpacker => 'Mochilero';
 
   @override

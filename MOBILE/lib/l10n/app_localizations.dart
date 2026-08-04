@@ -1824,6 +1824,36 @@ abstract class AppLocalizations {
   /// **'Extremo'**
   String get activityExtreme;
 
+  /// No description provided for @budgetLevel.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto'**
+  String get budgetLevel;
+
+  /// No description provided for @budgetLow.
+  ///
+  /// In es, this message translates to:
+  /// **'Económico'**
+  String get budgetLow;
+
+  /// No description provided for @budgetMedium.
+  ///
+  /// In es, this message translates to:
+  /// **'Medio'**
+  String get budgetMedium;
+
+  /// No description provided for @budgetHigh.
+  ///
+  /// In es, this message translates to:
+  /// **'Alto'**
+  String get budgetHigh;
+
+  /// No description provided for @budgetPremium.
+  ///
+  /// In es, this message translates to:
+  /// **'Premium'**
+  String get budgetPremium;
+
   /// No description provided for @travelBackpacker.
   ///
   /// In es, this message translates to:

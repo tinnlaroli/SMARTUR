@@ -46,6 +46,15 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     {'key': 'De negocios', 'label': l10n.travelBusiness, 'icon': Icons.business_center_outlined},
   ];
 
+  // Presupuesto declarado. Las keys son los buckets que entiende el modelo
+  // (bajo/medio/alto/premium); el modelo normaliza a minúsculas al leerlos.
+  List<Map<String, dynamic>> _budgetOptions(AppLocalizations l10n) => [
+    {'key': 'bajo', 'label': l10n.budgetLow, 'icon': Icons.savings_outlined},
+    {'key': 'medio', 'label': l10n.budgetMedium, 'icon': Icons.account_balance_wallet_outlined},
+    {'key': 'alto', 'label': l10n.budgetHigh, 'icon': Icons.paid_outlined},
+    {'key': 'premium', 'label': l10n.budgetPremium, 'icon': Icons.diamond_outlined},
+  ];
+
   List<Map<String, dynamic>> _placeOptions(AppLocalizations l10n) => [
     {'key': 'Playa', 'label': l10n.placeBeach, 'icon': Icons.beach_access},
     {'key': 'Montaña', 'label': l10n.placeMountain, 'icon': Icons.landscape_outlined},
@@ -59,6 +68,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
   String? _activityLevel;
   String? _travelType;
   String? _preferredPlace;
+  String? _budget;
 
   @override
   void initState() {
@@ -85,6 +95,8 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     }
     _travelType = widget.data['travel_type'];
     _preferredPlace = widget.data['preferred_place'];
+    final rawBudget = widget.data['budget'];
+    _budget = rawBudget is String && rawBudget.isNotEmpty ? rawBudget.toLowerCase() : null;
   }
 
   void _submit() {
@@ -93,7 +105,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
       SmarturNotifications.showError(context, l10n.selectAtLeastOneInterest);
       return;
     }
-    if (_activityLevel == null || _travelType == null || _preferredPlace == null) {
+    if (_activityLevel == null || _travelType == null || _preferredPlace == null || _budget == null) {
       SmarturNotifications.showError(context, l10n.completeAllFields);
       return;
     }
@@ -112,6 +124,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     widget.data['activity_level'] = activityValue;
     widget.data['travel_type'] = _travelType;
     widget.data['preferred_place'] = _preferredPlace;
+    widget.data['budget'] = _budget;
     widget.onNext();
   }
 
@@ -134,6 +147,7 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
     final interests = _interestOptions(l10n);
     final activities = _activityOptions(l10n);
     final travels = _travelOptions(l10n);
+    final budgets = _budgetOptions(l10n);
     final places = _placeOptions(l10n);
 
     return Column(
@@ -225,6 +239,30 @@ class _PreferencesStep2State extends State<PreferencesStep2> {
                 side: BorderSide(color: selected ? sem.sea : sem.sea.withValues(alpha: 0.2)),
               ),
               onSelected: (_) => setState(() => _travelType = item['key'] as String),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: SmarturStyle.spacingLg),
+
+        _sectionLabel(l10n.budgetLevel, Icons.attach_money_outlined),
+        const SizedBox(height: SmarturStyle.spacingSm),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: budgets.map((item) {
+            final selected = _budget == item['key'] as String;
+            return ChoiceChip(
+              avatar: Icon(item['icon'] as IconData, size: 16, color: selected ? Colors.white : sem.altAccent),
+              label: Text(item['label'] as String, style: TextStyle(fontFamily: 'Outfit', color: selected ? Colors.white : scheme.onSurface)),
+              selected: selected,
+              showCheckmark: false,
+              selectedColor: sem.altAccent,
+              backgroundColor: sem.altAccent.withValues(alpha: 0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: selected ? sem.altAccent : sem.altAccent.withValues(alpha: 0.2)),
+              ),
+              onSelected: (_) => setState(() => _budget = item['key'] as String),
             );
           }).toList(),
         ),

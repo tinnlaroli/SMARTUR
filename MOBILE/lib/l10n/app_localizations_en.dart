@@ -921,6 +921,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityExtreme => 'Extreme';
 
   @override
+  String get budgetLevel => 'Budget';
+
+  @override
+  String get budgetLow => 'Budget-friendly';
+
+  @override
+  String get budgetMedium => 'Medium';
+
+  @override
+  String get budgetHigh => 'High';
+
+  @override
+  String get budgetPremium => 'Premium';
+
+  @override
   String get travelBackpacker => 'Backpacker';
 
   @override

@@ -928,6 +928,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityExtreme => 'Extremo';
 
   @override
+  String get budgetLevel => 'Orçamento';
+
+  @override
+  String get budgetLow => 'Econômico';
+
+  @override
+  String get budgetMedium => 'Médio';
+
+  @override
+  String get budgetHigh => 'Alto';
+
+  @override
+  String get budgetPremium => 'Premium';
+
+  @override
   String get travelBackpacker => 'Mochileiro';
 
   @override
