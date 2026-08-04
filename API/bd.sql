@@ -79,6 +79,7 @@ CREATE TABLE traveler_profile (
   gender VARCHAR(20),
   interests TEXT[],
   activity_level INT DEFAULT 3,
+  budget VARCHAR(20),
   preferred_place VARCHAR(50),
   travel_type VARCHAR(50),
   has_accessibility BOOLEAN DEFAULT FALSE,

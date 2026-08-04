@@ -743,6 +743,15 @@ CREATE TABLE IF NOT EXISTS ml_cross_validation_metrics (
 );
 `,
     },
+    {
+        // Presupuesto declarado como campo propio. Antes el modelo deducía el
+        // presupuesto del nivel de actividad física (activity_level), un proxy
+        // conceptualmente incorrecto. Nullable: perfiles existentes no se tocan
+        // y el modelo cae al proxy viejo mientras budget sea NULL (retrocompat).
+        name: 'v42_traveler_profile_budget',
+        sql: `ALTER TABLE traveler_profile
+              ADD COLUMN IF NOT EXISTS budget VARCHAR(20);`,
+    },
 ];
 
 export async function runMigrations() {

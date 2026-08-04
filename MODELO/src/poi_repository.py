@@ -50,6 +50,10 @@ _INTEREST_MAP = {
 
 _ACTIVITY_BUDGET = {1: 'bajo', 2: 'bajo', 3: 'medio', 4: 'alto', 5: 'premium'}
 
+# Buckets de presupuesto válidos (coinciden con BUDGET_MAP en context_encoder y
+# _BUDGET_BUCKET_LEVEL en fusion). Se usan para validar el campo `budget` real.
+_VALID_BUDGET_BUCKETS = {'bajo', 'medio', 'alto', 'premium'}
+
 # Mapea el travel_type que guarda la app móvil (Mochilero/Familiar/Lujo/
 # Aventura/Romántico/De negocios) al vocabulario de GROUP_TYPES que entiende
 # preference_match_score. Antes 'Familiar' llegaba como 'familiar' (≠ 'familia')
@@ -326,7 +330,7 @@ def fetch_traveler_profile(user_id):
     # nunca las leía — el motor ignoraba dos señales que el usuario ya dio.
     query = '''
         SELECT age_range, interests, activity_level, travel_type, has_accessibility,
-               preferred_place, sustainable_preferences
+               preferred_place, sustainable_preferences, budget
         FROM traveler_profile
         WHERE user_id = %s AND is_active = TRUE
         LIMIT 1
@@ -339,7 +343,7 @@ def fetch_traveler_profile(user_id):
         return None
 
     (age_range, interests, activity_level, travel_type, has_accessibility,
-     preferred_place, sustainable_preferences) = row
+     preferred_place, sustainable_preferences, budget) = row
 
     tipos = []
     if interests:
@@ -349,10 +353,21 @@ def fetch_traveler_profile(user_id):
                 tipos.append(mapped)
 
     _travel_lower = (travel_type or 'solo').lower()
+
+    # Presupuesto declarado como campo propio (budget). Si el usuario ya lo
+    # respondió, se usa directo; si no (perfiles viejos con budget NULL), se
+    # cae al proxy histórico derivado del nivel de actividad — que es
+    # conceptualmente incorrecto pero mantiene la retrocompatibilidad.
+    _budget_norm = (budget or '').strip().lower()
+    if _budget_norm in _VALID_BUDGET_BUCKETS:
+        presupuesto = _budget_norm
+    else:
+        presupuesto = _ACTIVITY_BUDGET.get(activity_level, 'medio')
+
     return {
         'edad_range': age_range or '25-34',
         'tiposTurismo': tipos,
-        'presupuesto_bucket': _ACTIVITY_BUDGET.get(activity_level, 'medio'),
+        'presupuesto_bucket': presupuesto,
         'group_type': _TRAVEL_GROUP_MAP.get(_travel_lower, _travel_lower),
         'requiere_accesibilidad': bool(has_accessibility),
         'preferred_place': (preferred_place or 'indiferente').lower(),

@@ -77,3 +77,28 @@ def test_lujo_y_negocios_no_activan_bono_falso():
     """Lujo/De negocios no deben mapearse a pareja/familia (evita bono falso)."""
     assert pr._TRAVEL_GROUP_MAP.get('lujo') not in ('familia', 'pareja')
     assert pr._TRAVEL_GROUP_MAP.get('de negocios') not in ('familia', 'pareja')
+
+
+def _resolve_budget(budget, activity_level):
+    """Replica la lógica de presupuesto de fetch_traveler_profile: usa el
+    campo budget declarado si es válido; si no, cae al proxy por actividad."""
+    b = (budget or '').strip().lower()
+    if b in pr._VALID_BUDGET_BUCKETS:
+        return b
+    return pr._ACTIVITY_BUDGET.get(activity_level, 'medio')
+
+
+def test_budget_declarado_se_usa_directo():
+    for bucket in ('bajo', 'medio', 'alto', 'premium'):
+        assert _resolve_budget(bucket, 1) == bucket           # ignora activity
+        assert _resolve_budget(bucket.upper(), 5) == bucket   # case-insensitive
+
+
+def test_budget_nulo_cae_al_proxy_de_actividad():
+    # Sin budget declarado (perfiles viejos), se usa el proxy histórico.
+    assert _resolve_budget(None, 4) == pr._ACTIVITY_BUDGET[4]   # 'alto'
+    assert _resolve_budget('', 1) == pr._ACTIVITY_BUDGET[1]     # 'bajo'
+
+
+def test_budget_invalido_cae_al_proxy():
+    assert _resolve_budget('carísimo', 3) == pr._ACTIVITY_BUDGET[3]  # 'medio'

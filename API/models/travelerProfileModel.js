@@ -109,6 +109,7 @@ class TravelerProfile {
       gender,
       interests,
       activity_level,
+      budget,
       preferred_place,
       travel_type,
       has_accessibility,
@@ -119,20 +120,21 @@ class TravelerProfile {
     } = data;
 
     const query = `
-            INSERT INTO traveler_profile 
-                (user_id, age, age_range, gender, interests, activity_level, 
-                preferred_place, travel_type, has_accessibility, 
+            INSERT INTO traveler_profile
+                (user_id, age, age_range, gender, interests, activity_level,
+                budget, preferred_place, travel_type, has_accessibility,
                 accessibility_detail, has_visited_before, restrictions,
                 sustainable_preferences)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            ON CONFLICT (user_id) 
-            DO UPDATE SET 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            ON CONFLICT (user_id)
+            DO UPDATE SET
                 is_active = TRUE,
                 age = EXCLUDED.age,
                 age_range = EXCLUDED.age_range,
                 gender = EXCLUDED.gender,
                 interests = EXCLUDED.interests,
                 activity_level = EXCLUDED.activity_level,
+                budget = EXCLUDED.budget,
                 preferred_place = EXCLUDED.preferred_place,
                 travel_type = EXCLUDED.travel_type,
                 has_accessibility = EXCLUDED.has_accessibility,
@@ -150,6 +152,7 @@ class TravelerProfile {
       gender,
       interests,
       activity_level,
+      budget ?? null,
       preferred_place,
       travel_type,
       has_accessibility,
