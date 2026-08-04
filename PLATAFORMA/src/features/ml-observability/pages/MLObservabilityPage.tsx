@@ -916,7 +916,7 @@ export const MLObservabilityPage = () => {
                                             )}
                                         </div>
                                         <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
-                                            <span>Criterio de selección: <b style={{ color: 'var(--color-text)' }}>{(metrics.selection_metric ?? 'rmse').toUpperCase()}</b> (menor = mejor)</span>
+                                            <span>Criterio de selección: <b style={{ color: 'var(--color-text)' }}>{(metrics.selection_metric ?? 'rmse').toUpperCase()}</b> ({(metrics.selection_metric ?? 'rmse') === 'ndcg' ? 'mayor = mejor · calidad de ordenamiento' : 'menor = mejor'})</span>
                                             {metrics.relevance_threshold != null && (
                                                 <span>Umbral de relevancia (A/P/R/F1): <b style={{ color: 'var(--color-text)' }}>≥ {metrics.relevance_threshold}★</b></span>
                                             )}

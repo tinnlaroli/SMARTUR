@@ -852,6 +852,58 @@ def _compute_simple_metrics(engine_obj, rf_model, sample_size: int = 800) -> dic
         return dict(DEFAULT_METRICS)
 
 
+# Mínimo de usuarios reales evaluados para confiar en el NDCG como criterio
+# primario (coincide con evaluar_ranking_local.min_users). Por debajo de esto,
+# el ranking es demasiado ruidoso y se mantiene el RMSE como proxy estable.
+_RANKING_TRUST_MIN_USERS = 20
+
+
+def _apply_ranking_based_selection(metrics: dict, min_users: int = _RANKING_TRUST_MIN_USERS) -> dict:
+    """
+    Relevo automático del criterio de selección (misma filosofía que data_warmth,
+    aplicada a la métrica-norte). Cuando las métricas de ranking son CONFIABLES
+    —evaluación local sobre >= min_users usuarios reales con historial—, el
+    criterio primario con el que se juzga y presenta el sistema pasa de RMSE
+    (error de predicción de estrellas) a NDCG (calidad de ORDENAMIENTO, que es
+    lo que de verdad le importa a una recomendación). Si no hay datos
+    suficientes, se conserva el RMSE como proxy estable.
+
+    No cambia `best_algorithm` (qué predictor de rating se mezcla en el blend);
+    cambia `selection_metric`/`selection_rationale` — la métrica con la que el
+    sistema se autoevalúa. En modo sintético NO se aplica: ese ranking no
+    representa usuarios reales.
+    """
+    if metrics.get('synthetic_augmented'):
+        return metrics
+
+    ranking = metrics.get('ranking')
+    trustworthy = (
+        isinstance(ranking, dict)
+        and not ranking.get('error')
+        and ranking.get('ndcg') is not None
+        and (ranking.get('n_users_evaluated') or 0) >= min_users
+    )
+    if not trustworthy:
+        metrics.setdefault('selection_metric', 'rmse')
+        return metrics
+
+    ndcg = float(ranking['ndcg'])
+    n_users = int(ranking.get('n_users_evaluated') or 0)
+    pref = ranking.get('preference_match_rate')
+    pref_txt = (
+        f" Coincidencia con preferencias declaradas: {pref:.1%}."
+        if isinstance(pref, (int, float)) else ""
+    )
+    metrics['selection_metric'] = 'ndcg'
+    metrics['selection_rationale'] = (
+        f"Criterio primario: NDCG@5 = {ndcg:.3f} sobre {n_users} usuarios reales con "
+        f"historial suficiente. El sistema ya tiene datos para juzgarse por CALIDAD DE "
+        f"ORDENAMIENTO (poner lo mejor arriba) en vez de por error de predicción de "
+        f"estrellas (RMSE)." + pref_txt
+    )
+    return metrics
+
+
 def _persist_metrics_to_db(metrics_json: dict) -> bool:
     """
     Inserts ML training metrics into the ml_model_metrics table
@@ -1101,8 +1153,10 @@ def _run_full_training():
                 content_model=content_model_cb,
                 k=5,
             )
+            _ranking_is_local = False
             if ranking is not None:
                 metrics['ranking'] = ranking
+                _ranking_is_local = True   # evaluación sobre POIs + usuarios reales
                 logger.info(
                     f"[train] Ranking local SMARTUR — NDCG@5={ranking.get('ndcg', 0):.4f}, "
                     f"P@5={ranking.get('precision', 0):.4f}, "
@@ -1115,6 +1169,12 @@ def _run_full_training():
                 if ranking:
                     metrics['ranking'] = ranking
                     logger.info("[train] Ranking Yelp (fallback — sin suficientes datos reales SMARTUR)")
+
+            # Relevo automático RMSE → NDCG: solo cuando el ranking viene de la
+            # evaluación LOCAL (POIs + usuarios reales). El fallback Yelp da
+            # NDCG≈0 por diseño y nunca debe convertirse en criterio primario.
+            if _ranking_is_local:
+                _apply_ranking_based_selection(metrics)
         except Exception as exc:
             logger.warning(f"[train] Ranking evaluation omitida: {exc}")
 

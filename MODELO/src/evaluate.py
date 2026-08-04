@@ -402,6 +402,10 @@ def evaluar_ranking_local(
         'ndcg':      float(np.mean(ndcg_scores)),
         'precision': float(np.mean(precision_scores)),
         'hit_rate':  float(np.mean(hit_scores)),
+        # Cuántos usuarios reales entraron a la evaluación — lo usa el relevo
+        # automático de criterio de selección (api._apply_ranking_based_selection)
+        # para decidir si el NDCG ya es confiable o hay que seguir con RMSE.
+        'n_users_evaluated': len(ndcg_scores),
     }
     if pref_scores:
         # Qué % de las recomendaciones evaluadas realmente coinciden con lo
