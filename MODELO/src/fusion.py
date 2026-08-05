@@ -12,9 +12,10 @@ Fase B (Ranking) — 4 señales:
   - LightFM WARP (cold-start + warm via feature embeddings)
   - ContentModel TF-IDF (fallback cuando LightFM no disponible)
 
-Blending:
-  Cold-start: 0.60 LightFM + 0.40 RF
-  Warm user:  0.30 LightFM + 0.30 CF + 0.40 RF
+Blending (RF de-ponderado — el peor estimador en datos reales y sintéticos;
+ver constantes LFM_W_* / RF_W_* más abajo):
+  Cold-start: 0.70 LightFM + 0.30 RF
+  Warm user:  0.40 LightFM + 0.35 CF + 0.25 RF
 """
 
 import numpy as np
