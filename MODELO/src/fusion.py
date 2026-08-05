@@ -45,6 +45,22 @@ PREF_WEIGHT_WARM = 0.20   # maduro: peso "de fondo" (era el valor fijo anterior)
 PREFERENCE_BOOST_WEIGHT = PREF_WEIGHT_WARM
 
 
+# ── Pesos del blend de servicio (bloque de modelos aprendidos) ──────────────
+# El Random Forest es, de forma CONSISTENTE, el peor estimador de rating: tanto
+# en datos reales (RMSE 2.227 vs item_mean 0.883) como en el experimento
+# sintético con estructura latente aprendible a propósito (item_mean 1.067 <
+# CF 1.174 < RF 1.603, ver synthetic_persona_validation.py). Ni siquiera cuando
+# hay estructura que aprender el RF/CF superan a un simple promedio. Por eso su
+# peso en la recomendación SERVIDA se redujo a favor de LightFM (basado en
+# features, el mejor en arranque en frío) y CF. Los tres modelos siguen
+# construyéndose, entrenándose, evaluándose y comparándose en el dashboard
+# (requisito académico intacto); esto solo ajusta cuánto influye cada uno en el
+# score final que ve el usuario.
+LFM_W_COLD, RF_W_COLD             = 0.70, 0.30         # antes 0.60 / 0.40
+LFM_W_WARM, CF_W_WARM, RF_W_WARM  = 0.40, 0.35, 0.25   # antes 0.30 / 0.30 / 0.40
+RF_W_MAX_NOLFM                    = 0.50               # tope al RF sin LightFM (antes ~0.94)
+
+
 def _preference_weight(data_warmth: float) -> float:
     """Peso de la preferencia en el blend final según data_warmth ∈ [0,1].
     Interpola linealmente entre PREF_WEIGHT_COLD (frío) y PREF_WEIGHT_WARM
@@ -495,17 +511,19 @@ def recommend_hybrid(
         score_lfm = lfm_map.get(biz_id, 3.0)
         cats      = biz_cat_lookup.get(biz_id, '')
 
-        # Blending weights:
-        #   Cold-start user -> lean on LightFM (feature-based) + RF (content)
-        #   Warm user       -> balanced: LightFM + CF + RF
+        # Blending weights (RF de-ponderado — ver constantes arriba):
+        #   Cold-start user -> LightFM (feature-based) domina, RF de apoyo
+        #   Warm user       -> LightFM + CF por delante, RF de apoyo
         if lfm_map:
             if is_cold_start:
-                final_score = 0.60 * score_lfm + 0.40 * score_rf
+                final_score = LFM_W_COLD * score_lfm + RF_W_COLD * score_rf
             else:
-                final_score = 0.30 * score_lfm + 0.30 * score_cf + 0.40 * score_rf
+                final_score = LFM_W_WARM * score_lfm + CF_W_WARM * score_cf + RF_W_WARM * score_rf
         else:
-            # LightFM not available -> classic blend
-            final_score = (effective_alpha * score_cf) + ((1 - effective_alpha) * score_rf)
+            # LightFM not available -> classic blend, pero con tope al RF para no
+            # dejar que el peor estimador domine (antes llegaba a ~0.94).
+            rf_w = min(RF_W_MAX_NOLFM, 1 - effective_alpha)
+            final_score = ((1 - rf_w) * score_cf) + (rf_w * score_rf)
 
         # Boost de preferencia declarada (perfil real del usuario), no de lo
         # que CF/RF aprendieron de calificaciones. Nunca excluye candidatos —

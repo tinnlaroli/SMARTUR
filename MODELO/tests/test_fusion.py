@@ -15,7 +15,24 @@ import pytest
 from fusion import (
     filtro_duro, _diversify, filtrar_candidatos_por_contexto, recommend_hybrid,
     preference_match_score, _resolve_cf_score,
+    LFM_W_COLD, RF_W_COLD, LFM_W_WARM, CF_W_WARM, RF_W_WARM, RF_W_MAX_NOLFM,
 )
+
+
+# ---------------------------------------------------------------------------
+# Pesos del blend de servicio: RF de-ponderado (el peor estimador)
+# ---------------------------------------------------------------------------
+
+def test_blend_cold_suma_uno_y_rf_es_minoria():
+    assert LFM_W_COLD + RF_W_COLD == pytest.approx(1.0)
+    assert RF_W_COLD < LFM_W_COLD          # RF pesa menos que LightFM
+
+def test_blend_warm_suma_uno_y_rf_es_el_menor():
+    assert LFM_W_WARM + CF_W_WARM + RF_W_WARM == pytest.approx(1.0)
+    assert RF_W_WARM == min(LFM_W_WARM, CF_W_WARM, RF_W_WARM)   # RF es el más chico
+
+def test_rf_tope_sin_lightfm_no_domina():
+    assert RF_W_MAX_NOLFM <= 0.5           # sin LightFM, RF nunca domina el blend
 
 
 # ---------------------------------------------------------------------------
