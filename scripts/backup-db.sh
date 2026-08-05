@@ -4,11 +4,15 @@
 
 set -euo pipefail
 
+# NO usar `source .env`: ese archivo contiene valores no aptos para ejecutar en
+# shell (p.ej. FIREBASE_SERVICE_ACCOUNT en base64), y con `set -euo pipefail`
+# eso abortaba el backup antes del pg_dump. Extraemos solo lo que necesitamos.
+# (pg_dump vía `docker exec` usa auth peer dentro del contenedor — sin password.)
 ENV_FILE="/opt/SMARTUR/.env"
-[ -f "$ENV_FILE" ] && source "$ENV_FILE"
+_read_env() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"'"'"'"' ; }
 
-DB_USER="${DB_USER:-postgres}"
-DB_NAME="${DB_NAME:-smartur}"
+DB_USER="$(_read_env DB_USER)"; DB_USER="${DB_USER:-postgres}"
+DB_NAME="$(_read_env DB_NAME)"; DB_NAME="${DB_NAME:-smartur}"
 BACKUP_DIR="/opt/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 FILE="$BACKUP_DIR/smartur-$DATE.sql.gz"
