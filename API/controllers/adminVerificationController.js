@@ -24,7 +24,7 @@ class AdminVerificationController {
                 `SELECT
                     c.id_company, c.name, c.address, c.phone, c.status, c.registration_date,
                     c.id_location,
-                    cv.owner_full_name, cv.owner_curp, cv.owner_rfc, cv.submitted_at,
+                    cv.owner_full_name, cv.owner_curp, cv.owner_rfc, cv.owner_municipio, cv.submitted_at,
                     cv.ine_front_url, cv.ine_back_url, cv.address_proof_url,
                     cv.resubmission_count, cv.rejection_reason,
                     ts.name AS sector_name,
@@ -118,6 +118,36 @@ class AdminVerificationController {
             }
 
             const newStatus = action === 'approve' ? 'active' : action === 'suspend' ? 'suspended' : 'rejected';
+
+            if (action === 'approve') {
+                const compCheck = await client.query(
+                    `SELECT c.id_location, cv.owner_municipio 
+                     FROM company c 
+                     LEFT JOIN company_verification cv ON cv.id_company = c.id_company 
+                     WHERE c.id_company = $1`,
+                    [id]
+                );
+                if (compCheck.rows[0] && !compCheck.rows[0].id_location && compCheck.rows[0].owner_municipio) {
+                    const cleanMuni = compCheck.rows[0].owner_municipio.trim();
+                    const locRes = await client.query(
+                        `SELECT id_location FROM location 
+                         WHERE LOWER(name) = LOWER($1) 
+                            OR LOWER(municipality) = LOWER($1)
+                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(municipality, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+                         LIMIT 1`,
+                        [cleanMuni]
+                    );
+                    if (locRes.rows[0]) {
+                        await client.query(
+                            'UPDATE company SET id_location = $1 WHERE id_company = $2',
+                            [locRes.rows[0].id_location, id]
+                        );
+                    }
+                }
+            }
 
             await client.query(
                 'UPDATE company SET status = $1 WHERE id_company = $2',

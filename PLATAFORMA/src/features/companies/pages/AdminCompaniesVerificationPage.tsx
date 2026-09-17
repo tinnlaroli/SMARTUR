@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CheckCircle, XCircle, Eye, Clock, ShieldCheck, Loader2,
     RefreshCw, X, ShieldX, MapPin,
@@ -44,6 +44,7 @@ interface PendingCompany {
     owner_full_name: string | null;
     owner_curp: string | null;
     owner_rfc: string | null;
+    owner_municipio?: string | null;
     submitted_at: string | null;
     ine_front_url: string | null;
     ine_back_url: string | null;
@@ -208,11 +209,11 @@ function ReviewModal({ company, onClose, onReviewed }: ReviewModalProps) {
                     className="rounded-xl px-4 py-3 mb-4 flex items-center gap-3"
                     style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}
                 >
-                    <MapPin className="size-4 shrink-0" style={{ color: c.location_name ? COLOR : '#f59e0b' }} />
+                    <MapPin className="size-4 shrink-0" style={{ color: (c.location_name || c.owner_municipio) ? COLOR : '#f59e0b' }} />
                     <div className="min-w-0">
                         <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Municipio</p>
-                        <p className="text-sm font-semibold" style={{ color: c.location_name ? 'var(--color-text)' : '#f59e0b' }}>
-                            {c.location_name ?? 'Sin municipio registrado'}
+                        <p className="text-sm font-semibold" style={{ color: (c.location_name || c.owner_municipio) ? 'var(--color-text)' : '#f59e0b' }}>
+                            {c.location_name ?? (c.owner_municipio ? `${c.owner_municipio} (pendiente de vincular)` : 'Sin municipio registrado')}
                         </p>
                     </div>
                 </div>

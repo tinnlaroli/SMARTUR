@@ -755,6 +755,117 @@ CREATE TABLE message (
 CREATE INDEX idx_message_conversation ON message(id_conversation, created_at DESC);
 
 -- ============================================================
+-- WELLTUR: TURISMO DE BIENESTAR (Wellness)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS wellness_destination (
+  dest_id          SERIAL PRIMARY KEY,
+  nombre_lugar     VARCHAR(200) NOT NULL,
+  estado           VARCHAR(100),
+  municipio        VARCHAR(100),
+  lat              NUMERIC(9, 6),
+  lon              NUMERIC(9, 6),
+  nivel_aislamiento    NUMERIC(4, 3) CHECK (nivel_aislamiento BETWEEN 0 AND 1),
+  restauracion_pasiva  NUMERIC(4, 3) CHECK (restauracion_pasiva BETWEEN 0 AND 1),
+  demanda_fisica       NUMERIC(4, 3) CHECK (demanda_fisica BETWEEN 0 AND 1),
+  categoria_wellness   VARCHAR(50),
+  wellness_sentiment_score NUMERIC(5, 4) DEFAULT 0.5000 CHECK (wellness_sentiment_score BETWEEN 0 AND 1),
+  descripcion          TEXT,
+  fuente               VARCHAR(100) DEFAULT 'manual',
+  activo               BOOLEAN DEFAULT TRUE,
+  created_at           TIMESTAMP DEFAULT NOW(),
+  poi_fk_id            INT REFERENCES point_of_interest(id) ON DELETE SET NULL,
+  service_fk_id        INT REFERENCES tourist_service(id_service) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_wellness_dest_categoria    ON wellness_destination (categoria_wellness);
+CREATE INDEX IF NOT EXISTS idx_wellness_dest_estado       ON wellness_destination (estado);
+CREATE INDEX IF NOT EXISTS idx_wellness_dest_aislamiento  ON wellness_destination (nivel_aislamiento);
+CREATE INDEX IF NOT EXISTS idx_wellness_dest_restauracion ON wellness_destination (restauracion_pasiva);
+
+CREATE TABLE IF NOT EXISTS stress_assessment (
+  assessment_id    SERIAL PRIMARY KEY,
+  user_id          INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  q1_energia       SMALLINT NOT NULL CHECK (q1_energia BETWEEN 1 AND 4),
+  q2_tension       SMALLINT NOT NULL CHECK (q2_tension BETWEEN 1 AND 4),
+  q3_rumiacion     SMALLINT NOT NULL CHECK (q3_rumiacion BETWEEN 1 AND 4),
+  q4_activacion    SMALLINT NOT NULL CHECK (q4_activacion BETWEEN 1 AND 4),
+  modo_viaje       VARCHAR(30) NOT NULL,
+  perfil_interno   VARCHAR(30),
+  confianza_ml     NUMERIC(4, 3),
+  metodo_decision  VARCHAR(20),
+  consent_given    BOOLEAN NOT NULL DEFAULT FALSE,
+  consent_at       TIMESTAMP,
+  created_at       TIMESTAMP DEFAULT NOW(),
+  app_version      VARCHAR(20),
+  CONSTRAINT chk_stress_consent CHECK (consent_given = TRUE)
+);
+
+CREATE INDEX IF NOT EXISTS idx_stress_assessment_user    ON stress_assessment (user_id);
+CREATE INDEX IF NOT EXISTS idx_stress_assessment_modo    ON stress_assessment (modo_viaje);
+CREATE INDEX IF NOT EXISTS idx_stress_assessment_created ON stress_assessment (created_at DESC);
+
+CREATE TABLE IF NOT EXISTS wellness_recommendation_session (
+  session_id        SERIAL PRIMARY KEY,
+  user_id           INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  assessment_id     INT REFERENCES stress_assessment(assessment_id) ON DELETE SET NULL,
+  modo_viaje        VARCHAR(30) NOT NULL,
+  recommended_ids   JSONB NOT NULL DEFAULT '[]',
+  top_n             SMALLINT DEFAULT 3,
+  algorithm_version VARCHAR(20) DEFAULT '1.0',
+  created_at        TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_wellness_session_user       ON wellness_recommendation_session (user_id);
+CREATE INDEX IF NOT EXISTS idx_wellness_session_assessment ON wellness_recommendation_session (assessment_id);
+CREATE INDEX IF NOT EXISTS idx_wellness_session_modo       ON wellness_recommendation_session (modo_viaje);
+
+CREATE TABLE IF NOT EXISTS wellness_satisfaction (
+  sat_id        SERIAL PRIMARY KEY,
+  session_id    INT NOT NULL REFERENCES wellness_recommendation_session(session_id) ON DELETE CASCADE,
+  user_id       INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  fit_rating    SMALLINT NOT NULL CHECK (fit_rating BETWEEN 1 AND 5),
+  feedback_text TEXT,
+  created_at    TIMESTAMP DEFAULT NOW(),
+  CONSTRAINT uq_wellness_sat_session UNIQUE (session_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_wellness_sat_user    ON wellness_satisfaction (user_id);
+CREATE INDEX IF NOT EXISTS idx_wellness_sat_session ON wellness_satisfaction (session_id);
+
+-- Columnas wellness de revisión en servicios y POIs
+ALTER TABLE tourist_service
+  ADD COLUMN IF NOT EXISTS is_wellness             BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS wellness_status          VARCHAR(20) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS categoria_wellness       VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS nivel_aislamiento        NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS restauracion_pasiva      NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS demanda_fisica           NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS wellness_sentiment_score NUMERIC(5, 4),
+  ADD COLUMN IF NOT EXISTS descripcion_bienestar    TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_admin_notes     TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL;
+
+ALTER TABLE point_of_interest
+  ADD COLUMN IF NOT EXISTS is_wellness             BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS wellness_status          VARCHAR(20) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS categoria_wellness       VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS nivel_aislamiento        NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS restauracion_pasiva      NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS demanda_fisica           NUMERIC(4, 3),
+  ADD COLUMN IF NOT EXISTS wellness_sentiment_score NUMERIC(5, 4),
+  ADD COLUMN IF NOT EXISTS descripcion_bienestar    TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_admin_notes     TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL;
+
+ALTER TABLE traveler_profile
+  ADD COLUMN IF NOT EXISTS wellness_consent    BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS wellness_consent_at TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS wellness_active     BOOLEAN DEFAULT FALSE;
+
+-- ============================================================
 -- SEEDS: DATOS DE PRUEBA
 -- Contraseña de todos los usuarios: Password1a
 -- bcrypt hash: $2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe

@@ -139,9 +139,17 @@ class KycController {
 
                 // Sincronizar id_location en company si el municipio enviado coincide con un registro
                 if (owner_municipio) {
+                    const cleanMuni = owner_municipio.trim();
                     const locResult = await client.query(
-                        'SELECT id_location FROM location WHERE LOWER(name) = LOWER($1) LIMIT 1',
-                        [owner_municipio]
+                        `SELECT id_location FROM location 
+                         WHERE LOWER(name) = LOWER($1) 
+                            OR LOWER(municipality) = LOWER($1)
+                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(municipality, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+                         LIMIT 1`,
+                        [cleanMuni]
                     );
                     if (locResult.rows[0]) {
                         await client.query(

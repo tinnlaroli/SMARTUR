@@ -616,24 +616,24 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 2]), async (req,
     try {
         const [svcRes, poiRes] = await Promise.all([
             db.query(
-                `SELECT ts.tourist_service_id AS id, ts.name, ts.is_wellness,
+                `SELECT ts.id_service AS id, ts.name, ts.is_wellness,
                         ts.wellness_status, ts.categoria_wellness,
                         ts.nivel_aislamiento, ts.restauracion_pasiva, ts.demanda_fisica,
                         ts.descripcion_bienestar,
-                        c.business_name AS empresa,
+                        c.name AS empresa,
                         'service' AS type
                  FROM tourist_service ts
-                 LEFT JOIN company c ON c.company_id = ts.company_id
+                 LEFT JOIN company c ON c.id_company = ts.id_company
                  WHERE ts.wellness_status = 'pending'
-                 ORDER BY ts.tourist_service_id DESC`,
+                 ORDER BY ts.id_service DESC`,
             ),
             db.query(
-                `SELECT poi_id AS id, name, is_wellness, wellness_status,
+                `SELECT id AS id, name, is_wellness, wellness_status,
                         categoria_wellness, nivel_aislamiento, restauracion_pasiva,
                         demanda_fisica, descripcion_bienestar, 'poi' AS type
                  FROM point_of_interest
                  WHERE wellness_status = 'pending'
-                 ORDER BY poi_id DESC`,
+                 ORDER BY id DESC`,
             ),
         ]);
         res.json({ items: [...svcRes.rows, ...poiRes.rows] });
@@ -669,7 +669,7 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 2]), 
     }
 
     const table = type === 'service' ? 'tourist_service' : 'point_of_interest';
-    const pk = type === 'service' ? 'tourist_service_id' : 'poi_id';
+    const pk = type === 'service' ? 'id_service' : 'id';
 
     try {
         // Todos los valores van parametrizados ($N) — antes action/categoria_wellness
