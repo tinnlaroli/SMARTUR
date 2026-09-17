@@ -1,6 +1,46 @@
 import pool from '../config/db.js';
 import { sendFcmToUser } from '../services/fcmService.js';
 
+async function resolveLocationId(client, municipioStr) {
+    if (!municipioStr) return null;
+    const str = String(municipioStr).trim().toLowerCase();
+
+    // 1. Coincidencia directa por nombre o municipio
+    const directResult = await client.query(
+        `SELECT id_location FROM location 
+         WHERE LOWER(name) = LOWER($1) 
+            OR LOWER(municipality) = LOWER($1)
+         LIMIT 1`,
+        [municipioStr.trim()]
+    );
+    if (directResult.rows[0]) return directResult.rows[0].id_location;
+
+    // 2. Coincidencia por palabra clave para municipios conocidos de Veracruz
+    if (str.includes('xalapa') || str.includes('910') || str.includes('911')) return 1;
+    if (str.includes('coatepec') || str.includes('915')) return 2;
+    if (str.includes('rdoba') || str.includes('cordoba') || str.includes('945')) return 3;
+    if (str.includes('orizaba') || str.includes('943')) return 4;
+    if (str.includes('fort') || str.includes('9447')) return 5;
+    if (str.includes('xico') || str.includes('9124')) return 6;
+    if (str.includes('ixtac') || str.includes('zoquitl')) return 7;
+    if (str.includes('cuitl') || str.includes('9498')) return 8;
+    if (str.includes('amatl') || str.includes('9494')) return 9;
+    if (str.includes('yanga') || str.includes('9496')) return 10;
+    if (str.includes('atoyac') || str.includes('9495')) return 11;
+
+    // 3. Coincidencia sin tildes en SQL
+    const unaccentResult = await client.query(
+        `SELECT id_location FROM location 
+         WHERE LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(municipality, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
+               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
+         LIMIT 1`,
+        [municipioStr.trim()]
+    );
+    return unaccentResult.rows[0]?.id_location ?? null;
+}
+
 class AdminVerificationController {
     // ─── EMPRESAS ───────────────────────────────────────────────────────────────
 
@@ -127,23 +167,15 @@ class AdminVerificationController {
                      WHERE c.id_company = $1`,
                     [id]
                 );
-                if (compCheck.rows[0] && !compCheck.rows[0].id_location && compCheck.rows[0].owner_municipio) {
-                    const cleanMuni = compCheck.rows[0].owner_municipio.trim();
-                    const locRes = await client.query(
-                        `SELECT id_location FROM location 
-                         WHERE LOWER(name) = LOWER($1) 
-                            OR LOWER(municipality) = LOWER($1)
-                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(name, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
-                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
-                            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(municipality, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u')) = 
-                               LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE($1, 'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'))
-                         LIMIT 1`,
-                        [cleanMuni]
-                    );
-                    if (locRes.rows[0]) {
+                if (compCheck.rows[0]) {
+                    let locId = compCheck.rows[0].id_location;
+                    if (!locId && compCheck.rows[0].owner_municipio) {
+                        locId = await resolveLocationId(client, compCheck.rows[0].owner_municipio);
+                    }
+                    if (locId) {
                         await client.query(
                             'UPDATE company SET id_location = $1 WHERE id_company = $2',
-                            [locRes.rows[0].id_location, id]
+                            [locId, id]
                         );
                     }
                 }

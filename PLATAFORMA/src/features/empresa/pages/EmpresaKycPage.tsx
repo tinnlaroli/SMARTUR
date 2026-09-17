@@ -12,7 +12,7 @@ const SUCCESS = '#10B981';
 const WARNING = '#F59E0B';
 const DANGER  = '#EF4444';
 
-const CURP_RE = /^[A-Z]{4}\d{6}[HM][A-Z¡…Õ”⁄‹—]{5}[A-Z\d]{2}$/;
+const CURP_RE = /^[A-Z]{4}\d{6}[HM][A-Z√Å√â√ç√ì√ö√ú√ë]{5}[A-Z\d]{2}$/;
 const RFC_RE  = /^[A-Z]{3,4}\d{6}[A-Z\d]{3}$/;
 const ZIP_RE  = /^\d{5}$/;
 
@@ -89,7 +89,7 @@ function FileUploadField({
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
                         <p className="text-xs mt-0.5 font-medium" style={{ color: 'var(--color-text-alt)', opacity: 0.7 }}>
-                            JPG, PNG o PDF ∑ M·x. 10 MB
+                            JPG, PNG o PDF ¬∑ M√°x. 10 MB
                         </p>
                     </div>
                 </button>
@@ -136,8 +136,8 @@ function StatusBanner({ kyc }: { kyc: KycStatusResponse }) {
                             <p className="font-semibold text-sm" style={{ color: CERT }}>Certificada por SMARTUR</p>
                             <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
                                 {kyc.certified_at
-                                    ? `CertificaciÛn otorgada el ${new Date(kyc.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}.`
-                                    : 'Tu empresa cuenta con la certificaciÛn oficial SMARTUR.'
+                                    ? `Certificaci√≥n otorgada el ${new Date(kyc.certified_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+                                    : 'Tu empresa cuenta con la certificaci√≥n oficial SMARTUR.'
                                 }
                             </p>
                         </div>
@@ -155,11 +155,11 @@ function StatusBanner({ kyc }: { kyc: KycStatusResponse }) {
                     <Clock className="size-5" style={{ color: WARNING }} />
                 </div>
                 <div>
-                    <p className="font-semibold text-sm" style={{ color: WARNING }}>Documentos en revisiÛn</p>
+                    <p className="font-semibold text-sm" style={{ color: WARNING }}>Documentos en revisi√≥n</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
                         Recibimos tus documentos{kyc.verification?.submitted_at
                             ? ` el ${new Date(kyc.verification.submitted_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}`
-                            : ''}. Si necesitas actualizar alg˙n archivo, puedes reenviarlos abajo.
+                            : ''}. Si necesitas actualizar alg√∫n archivo, puedes reenviarlos abajo.
                     </p>
                 </div>
             </div>
@@ -180,7 +180,7 @@ function StatusBanner({ kyc }: { kyc: KycStatusResponse }) {
                         {kyc.verification.rejection_reason}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'var(--color-text-alt)' }}>
-                        Corrige la informaciÛn y vuelve a enviar.
+                        Corrige la informaci√≥n y vuelve a enviar.
                     </p>
                 </div>
             </div>
@@ -305,7 +305,7 @@ function MunicipioSelect({
                     ['--tw-ring-color' as string]: PURPLE,
                 }}
             >
-                <option value="">Seleccionar municipioÖ</option>
+                <option value="">Seleccionar municipio¬Ö</option>
                 {locations.map(loc => (
                     <option key={loc.id_location} value={loc.name}>{loc.name}</option>
                 ))}
@@ -348,9 +348,9 @@ function SuccessScreen({ onBack }: { onBack: () => void }) {
             </div>
             <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>Documentos enviados</h2>
             <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--color-text-alt)' }}>
-                El equipo de SMARTUR revisar· tu informaciÛn en{' '}
-                <strong style={{ color: 'var(--color-text)' }}>1ñ3 dÌas h·biles</strong>.
-                Te notificaremos por correo cuando tu cuenta estÈ activa.
+                El equipo de SMARTUR revisar√° tu informaci√≥n en{' '}
+                <strong style={{ color: 'var(--color-text)' }}>1¬ñ3 d√≠as h√°biles</strong>.
+                Te notificaremos por correo cuando tu cuenta est√© activa.
             </p>
             <button
                 type="button"
@@ -367,13 +367,13 @@ function SuccessScreen({ onBack }: { onBack: () => void }) {
 // -- Main page -----------------------------------------------------------------
 
 const MUNICIPIOS: { id_location: number; name: string }[] = [
-    { id_location:  9, name: 'Amatl·n de los Reyes' },
+    { id_location:  9, name: 'Amatl√°n de los Reyes' },
     { id_location: 11, name: 'Atoyac' },
     { id_location:  2, name: 'Coatepec' },
-    { id_location:  3, name: 'CÛrdoba' },
-    { id_location:  8, name: 'Cuitl·huac' },
-    { id_location:  5, name: 'FortÌn de las Flores' },
-    { id_location:  7, name: 'Ixtaczoquitl·n' },
+    { id_location:  3, name: 'C√≥rdoba' },
+    { id_location:  8, name: 'Cuitl√°huac' },
+    { id_location:  5, name: 'Fort√≠n de las Flores' },
+    { id_location:  7, name: 'Ixtaczoquitl√°n' },
     { id_location:  4, name: 'Orizaba' },
     { id_location:  1, name: 'Xalapa' },
     { id_location:  6, name: 'Xico' },
@@ -383,15 +383,15 @@ const MUNICIPIOS: { id_location: number; name: string }[] = [
 // CP prefix ? municipio (4-digit checked before 3-digit for overlap resolution)
 const CP_MAP: { prefix: string; name: string }[] = [
     { prefix: '9124', name: 'Xico' },
-    { prefix: '9447', name: 'FortÌn de las Flores' },
-    { prefix: '9445', name: 'Ixtaczoquitl·n' },
-    { prefix: '9446', name: 'Ixtaczoquitl·n' },
-    { prefix: '9494', name: 'Amatl·n de los Reyes' },
+    { prefix: '9447', name: 'Fort√≠n de las Flores' },
+    { prefix: '9445', name: 'Ixtaczoquitl√°n' },
+    { prefix: '9446', name: 'Ixtaczoquitl√°n' },
+    { prefix: '9494', name: 'Amatl√°n de los Reyes' },
     { prefix: '9495', name: 'Atoyac' },
     { prefix: '9496', name: 'Yanga' },
-    { prefix: '9498', name: 'Cuitl·huac' },
+    { prefix: '9498', name: 'Cuitl√°huac' },
     { prefix: '943',  name: 'Orizaba' },
-    { prefix: '945',  name: 'CÛrdoba' },
+    { prefix: '945',  name: 'C√≥rdoba' },
     { prefix: '915',  name: 'Coatepec' },
     { prefix: '910',  name: 'Xalapa' },
     { prefix: '911',  name: 'Xalapa' },
@@ -490,7 +490,7 @@ export function EmpresaKycPage() {
         const name = e.target.name;
         let val = e.target.value;
         if (name === 'owner_full_name') {
-            val = val.replace(/[^a-z·ÈÌÛ˙¸ÒA-Z¡…Õ”⁄‹—\s''.-]/g, '');
+            val = val.replace(/[^a-z√°√©√≠√≥√∫√º√±A-Z√Å√â√ç√ì√ö√ú√ë\s''.-]/g, '');
         } else if (name === 'owner_curp') {
             val = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 18);
         } else if (name === 'owner_rfc') {
@@ -512,7 +512,7 @@ export function EmpresaKycPage() {
         if (step === 0 && !form.owner_full_name.trim())
             return 'El nombre completo es requerido.';
         if (step === 1 && !form.owner_street.trim())
-            return 'La calle y n˙mero son requeridos.';
+            return 'La calle y n√∫mero son requeridos.';
         if (step === 2) {
             const hasFront = ineFront !== null || !!kycData?.verification?.ine_front_url;
             const hasBack  = ineBack  !== null || !!kycData?.verification?.ine_back_url;
@@ -589,10 +589,10 @@ export function EmpresaKycPage() {
                 </button>
                 <div className="flex-1 min-w-0">
                     <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                        VerificaciÛn de identidad
+                        Verificaci√≥n de identidad
                     </h1>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-alt)' }}>
-                        Completa tu informaciÛn para activar tu cuenta
+                        Completa tu informaci√≥n para activar tu cuenta
                     </p>
                 </div>
                 <button
@@ -630,7 +630,7 @@ export function EmpresaKycPage() {
                                 <div key={label}>
                                     <p className="text-xs uppercase tracking-widest font-semibold mb-0.5" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
                                     <p className="text-sm font-medium" style={{ color: value ? 'var(--color-text)' : 'var(--color-text-alt)', opacity: value ? 1 : 0.4 }}>
-                                        {value || 'ó'}
+                                        {value || '¬ó'}
                                     </p>
                                 </div>
                             ))}
@@ -640,7 +640,7 @@ export function EmpresaKycPage() {
                     <SectionCard icon={MapPin} title="Domicilio">
                         <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                             {[
-                                { label: 'Calle y n˙mero', value: form.owner_street },
+                                { label: 'Calle y n√∫mero', value: form.owner_street },
                                 { label: 'Colonia', value: form.owner_colonia },
                                 { label: 'Municipio', value: form.owner_municipio },
                                 { label: 'Estado', value: 'Veracruz' },
@@ -649,7 +649,7 @@ export function EmpresaKycPage() {
                                 <div key={label}>
                                     <p className="text-xs uppercase tracking-widest font-semibold mb-0.5" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
                                     <p className="text-sm font-medium" style={{ color: value ? 'var(--color-text)' : 'var(--color-text-alt)', opacity: value ? 1 : 0.4 }}>
-                                        {value || 'ó'}
+                                        {value || '¬ó'}
                                     </p>
                                 </div>
                             ))}
@@ -681,7 +681,7 @@ export function EmpresaKycPage() {
                 /* -- Editable form (pending / submitted / rejected) ------- */
                 <form onSubmit={handleSubmit} className="space-y-4">
 
-                    {/* Step 0 ó Datos personales */}
+                    {/* Step 0 ¬ó Datos personales */}
                     {step === 0 && (
                         <SectionCard icon={User} title="Datos del propietario" subtitle="Ingresa los datos tal como aparecen en tu INE">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -709,21 +709,21 @@ export function EmpresaKycPage() {
                         </SectionCard>
                     )}
 
-                    {/* Step 1 ó Domicilio */}
+                    {/* Step 1 ¬ó Domicilio */}
                     {step === 1 && (
                         <SectionCard icon={MapPin} title="Domicilio del propietario" subtitle="Debe coincidir con el comprobante de domicilio">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Field label="Calle y n˙mero" name="owner_street" value={form.owner_street}
+                                <Field label="Calle y n√∫mero" name="owner_street" value={form.owner_street}
                                     onChange={handleChange}
                                     onBlur={() => markTouched('owner_street')}
                                     status={fieldStatus('owner_street', form.owner_street)}
-                                    placeholder="Av. Ju·rez 123 int. 4" required full />
+                                    placeholder="Av. Ju√°rez 123 int. 4" required full />
                                 <Field label="Colonia" name="owner_colonia" value={form.owner_colonia}
                                     onChange={handleChange}
                                     onBlur={() => markTouched('owner_colonia')}
                                     status={fieldStatus('owner_colonia', form.owner_colonia)}
-                                    placeholder="Centro HistÛrico" />
-                                <Field label="CÛdigo postal" name="owner_zip" value={form.owner_zip}
+                                    placeholder="Centro Hist√≥rico" />
+                                <Field label="C√≥digo postal" name="owner_zip" value={form.owner_zip}
                                     onChange={handleChange}
                                     onBlur={() => markTouched('owner_zip')}
                                     status={fieldStatus('owner_zip', form.owner_zip)}
@@ -733,7 +733,7 @@ export function EmpresaKycPage() {
                                     onBlur={() => markTouched('owner_municipio')}
                                     status={fieldStatus('owner_municipio', form.owner_municipio)}
                                     required locations={MUNICIPIOS} />
-                                {/* Estado is always Veracruz ó shown read-only */}
+                                {/* Estado is always Veracruz ¬ó shown read-only */}
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-widest mb-1.5"
                                         style={{ color: 'var(--color-text-alt)' }}>Estado</label>
@@ -751,16 +751,16 @@ export function EmpresaKycPage() {
                         </SectionCard>
                     )}
 
-                    {/* Step 2 ó Documentos */}
+                    {/* Step 2 ¬ó Documentos */}
                     {step === 2 && (
                         <SectionCard icon={CreditCard} title="Documentos de identidad"
-                            subtitle="Im·genes claras sin reflejos">
+                            subtitle="Im√°genes claras sin reflejos">
 
                             {kycData?.verification && (kycData.verification.ine_front_url || kycData.verification.ine_back_url || kycData.verification.address_proof_url) && (
                                 <div className="mb-4 rounded-2xl border px-4 py-3"
                                     style={{ background: `${WARNING}08`, borderColor: `${WARNING}25` }}>
                                     <p className="text-xs font-semibold mb-2" style={{ color: WARNING }}>
-                                        Documentos actuales ó puedes reemplazar los que necesites
+                                        Documentos actuales ¬ó puedes reemplazar los que necesites
                                     </p>
                                     <div className="flex gap-2 flex-wrap">
                                         {[
@@ -779,12 +779,12 @@ export function EmpresaKycPage() {
                             )}
 
                             <div className="space-y-4">
-                                <FileUploadField label={`INE ó Frente${kycData?.verification?.ine_front_url ? ' (opcional: reemplazar)' : ''}`}
-                                    hint="Cara con fotografÌa y nombre completo" value={ineFront} onChange={setIneFront} />
-                                <FileUploadField label={`INE ó Reverso${kycData?.verification?.ine_back_url ? ' (opcional: reemplazar)' : ''}`}
-                                    hint="Cara con firma, huella y cÛdigo QR" value={ineBack} onChange={setIneBack} />
+                                <FileUploadField label={`INE ¬ó Frente${kycData?.verification?.ine_front_url ? ' (opcional: reemplazar)' : ''}`}
+                                    hint="Cara con fotograf√≠a y nombre completo" value={ineFront} onChange={setIneFront} />
+                                <FileUploadField label={`INE ¬ó Reverso${kycData?.verification?.ine_back_url ? ' (opcional: reemplazar)' : ''}`}
+                                    hint="Cara con firma, huella y c√≥digo QR" value={ineBack} onChange={setIneBack} />
                                 <FileUploadField label={`Comprobante de domicilio${kycData?.verification?.address_proof_url ? ' (opcional: reemplazar)' : ''}`}
-                                    hint="No mayor a 3 meses ∑ CFE, agua, telÈfono o estado de cuenta bancario"
+                                    hint="No mayor a 3 meses ¬∑ CFE, agua, tel√©fono o estado de cuenta bancario"
                                     value={addressProof} onChange={setAddressProof} />
                             </div>
                         </SectionCard>
@@ -834,7 +834,7 @@ export function EmpresaKycPage() {
                                     ? 'Enviando...'
                                     : kycData?.verification
                                         ? <><RotateCcw className="size-4" /> Actualizar y reenviar</>
-                                        : 'Enviar para revisiÛn'
+                                        : 'Enviar para revisi√≥n'
                                 }
                             </button>
                         )}
