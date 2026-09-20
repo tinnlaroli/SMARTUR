@@ -6,6 +6,7 @@ import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import type { CreatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
+import { POI_CATEGORY_PRESETS } from './poiCategories';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -25,6 +26,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [idLocation, setIdLocation] = useState(0);
+    const [category, setCategory] = useState(1);
     const [error, setError] = useState('');
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
@@ -56,6 +58,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
             name: name.trim(),
             description: description.trim() || undefined,
             id_location: idLocation,
+            categories_raw: POI_CATEGORY_PRESETS.find((c) => c.id === category)?.raw,
             image: image ?? undefined,
             ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
         });
@@ -99,6 +102,23 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             className={inputClass}
                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', resize: 'none' }}
                         />
+                    </div>
+
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Categoría *</label>
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(Number(e.target.value))}
+                            className={inputClass}
+                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                        >
+                            {POI_CATEGORY_PRESETS.map((c) => (
+                                <option key={c.id} value={c.id}>{c.label}</option>
+                            ))}
+                        </select>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            Determina cómo se muestra el POI en la app móvil (Aventuras / Museos / Restaurantes).
+                        </p>
                     </div>
 
                     <div>

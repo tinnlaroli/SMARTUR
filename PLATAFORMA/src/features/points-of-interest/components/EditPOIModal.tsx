@@ -5,6 +5,7 @@ import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import type { POI, UpdatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
+import { POI_CATEGORY_PRESETS, categoryIdFromRaw } from './poiCategories';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -25,6 +26,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     const [name, setName] = useState(poi.name);
     const [description, setDescription] = useState(poi.description ?? '');
     const [idLocation, setIdLocation] = useState<number>(poi.id_location ?? 0);
+    const [category, setCategory] = useState(() => categoryIdFromRaw(poi.categories_raw));
     const [error, setError] = useState('');
 
     const [image, setImage] = useState<File | null>(null);
@@ -65,6 +67,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
             name: name.trim(),
             description: description.trim() || undefined,
             id_location: idLocation || undefined,
+            categories_raw: POI_CATEGORY_PRESETS.find((c) => c.id === category)?.raw,
             image: image ?? undefined,
             is_wellness: isWellness,
             ...(isWellness && {
@@ -113,6 +116,20 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                             className={inputClass}
                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', resize: 'none' }}
                         />
+                    </div>
+
+                    <div>
+                        <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Categoría</label>
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(Number(e.target.value))}
+                            className={inputClass}
+                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                        >
+                            {POI_CATEGORY_PRESETS.map((c) => (
+                                <option key={c.id} value={c.id}>{c.label}</option>
+                            ))}
+                        </select>
                     </div>
 
                     <div>

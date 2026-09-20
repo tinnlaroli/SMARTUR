@@ -1,6 +1,7 @@
 import Location from '../models/locationModel.js';
 import TouristServices from '../models/touristServicesModel.js';
 import PointOfInterest from '../models/pointOfInterestModel.js';
+import { deriveTourismTypeId } from '../utils/poiCategory.js';
 
 /**
  * Payload único para la app móvil (Home): ubicaciones activas con
@@ -42,13 +43,19 @@ class ExploreController {
             for (const p of poiResult.points) {
                 const lid = p.id_location ?? ORPHAN_ID;
                 if (!pointsByLocation.has(lid)) pointsByLocation.set(lid, []);
+                // id_type se deriva de categories_* (columna id_type removida del schema).
+                // La app móvil usa id_type para clasificar el POI (1=Naturaleza, 2=Cultura, 3=Gastronomía).
+                const typeId = deriveTourismTypeId({
+                    categories_raw: p.categories_raw,
+                    categories_mapped: p.categories_mapped,
+                });
                 pointsByLocation.get(lid).push({
                     id: p.id_point,
                     id_point: p.id_point,
                     name: p.name,
                     description: p.description,
-                    typeId: p.id_type,
-                    id_type: p.id_type,
+                    typeId,
+                    id_type: typeId,
                     locationId: p.id_location,
                     id_location: p.id_location,
                     sustainability: p.sustainability,

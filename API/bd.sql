@@ -134,7 +134,13 @@ CREATE TABLE point_of_interest (
   id_location INT REFERENCES location(id_location),
   description TEXT,
   image_url TEXT,
-  rating DECIMAL(2,1) DEFAULT 4.0
+  rating DECIMAL(2,1) DEFAULT 4.0,
+  validation_status VARCHAR(20) NOT NULL DEFAULT 'active'
+    CHECK (validation_status IN ('pending_validation', 'active', 'rejected')),
+  submitted_by_company_id INT,
+  reviewed_by_admin_id INT REFERENCES "user"(user_id) ON DELETE SET NULL,
+  validation_rejection_reason TEXT,
+  validation_submitted_at TIMESTAMP
 );
 
 CREATE INDEX idx_poi_created_at ON point_of_interest(created_at DESC);
@@ -194,6 +200,11 @@ CREATE TABLE company (
 ALTER TABLE "user"
   ADD CONSTRAINT fk_user_company
     FOREIGN KEY (id_company) REFERENCES company(id_company) ON DELETE SET NULL;
+
+-- FK circular point_of_interest <-> company (se agrega tras definir company)
+ALTER TABLE point_of_interest
+  ADD CONSTRAINT fk_poi_submitted_by_company
+    FOREIGN KEY (submitted_by_company_id) REFERENCES company(id_company) ON DELETE SET NULL;
 
 -- ============================================================
 -- 10. VERIFICACIÓN KYC DE EMPRESA

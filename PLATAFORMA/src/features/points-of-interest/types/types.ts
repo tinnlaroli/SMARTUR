@@ -4,6 +4,7 @@ export interface POI {
     description?: string;
     id_location?: number;
     image_url?: string | null;
+    categories_raw?: string | null;
     is_wellness?: boolean;
     wellness_status?: string;
     categoria_wellness?: string;
@@ -17,6 +18,7 @@ export interface CreatePOIDTO {
     name: string;
     description?: string;
     id_location?: number;
+    categories_raw?: string;
     image?: File | null;
 }
 
@@ -24,6 +26,7 @@ export interface UpdatePOIDTO {
     name?: string;
     description?: string;
     id_location?: number;
+    categories_raw?: string;
     image?: File | null;
     is_wellness?: boolean;
     categoria_wellness?: string;

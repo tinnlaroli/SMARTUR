@@ -80,6 +80,23 @@ const CATEGORY_MAP = {
     lago: ['Lakes', 'Parks'],
     laguna: ['Lakes', 'Parks'],
     naturaleza: ['Parks', 'Active Life'],
+
+    // Presets del dashboard PLATAFORMA (formulario de alta de POI)
+    nature: ['Parks', 'Active Life'],
+    park: ['Parks', 'Active Life'],
+    outdoor: ['Active Life', 'Parks'],
+    viewpoint: ['Parks', 'Active Life'],
+    hiking: ['Hiking', 'Active Life'],
+    gastronomy: ['Restaurants', 'Food'],
+    gastronomia: ['Restaurants', 'Food'],
+    food: ['Food', 'Restaurants'],
+    restaurant: ['Restaurants', 'Food'],
+    museum: ['Museums', 'Arts & Entertainment'],
+    culture: ['Arts & Entertainment', 'Cultural Centers'],
+    history: ['Landmarks & Historical Buildings', 'Museums'],
+    art: ['Arts & Entertainment'],
+    heritage: ['Landmarks & Historical Buildings', 'Arts & Entertainment'],
+    coffee: ['Cafes', 'Food'],
 };
 
 const normalizeCategory = (value) =>
@@ -239,8 +256,8 @@ class PointOfInterestController {
 
             const result = await pool.query(
                 `INSERT INTO point_of_interest
-                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, is_active)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE)
                 RETURNING *`,
                 [
                     name,
