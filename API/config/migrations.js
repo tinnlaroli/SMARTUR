@@ -953,13 +953,33 @@ export async function runMigrations() {
             );
             if (check.rowCount > 0) continue; // already applied
 
+            // Cada migración va en una transacción con un único cliente de la
+            // pool: si falla a mitad, ningún statement queda aplicado a medias
+            // (antes, sin transacción, el runner dejaba la BD en estado
+            // parcial y reintentaba SQL ya aplicado al reiniciar). La insert
+            // del registro va dentro de la misma transacción.
+            const client = await pool.connect();
             console.log(`[migration] applying ${migration.name}…`);
-            await pool.query(migration.sql);
-            await pool.query(
-                `INSERT INTO _schema_migrations (name) VALUES ($1) ON CONFLICT DO NOTHING`,
-                [migration.name],
-            );
-            console.log(`[migration] ${migration.name} ✓`);
+            try {
+                await client.query('BEGIN');
+                await client.query(migration.sql);
+                await client.query(
+                    `INSERT INTO _schema_migrations (name) VALUES ($1) ON CONFLICT DO NOTHING`,
+                    [migration.name],
+                );
+                await client.query('COMMIT');
+                console.log(`[migration] ${migration.name} ✓`);
+            } catch (err) {
+                try {
+                    await client.query('ROLLBACK');
+                } catch (_) {
+                    // la conexión pudo morir; no hay nada que deshacer
+                }
+                console.error(`[migration] ERROR applying ${migration.name}:`, err.message);
+                throw err;
+            } finally {
+                client.release();
+            }
         }
     } catch (err) {
         console.error('[migration] ERROR — some migrations failed:', err.message);
