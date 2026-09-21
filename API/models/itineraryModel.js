@@ -125,7 +125,7 @@ export async function updateItinerary(id, userId, updates) {
     values.push(id, userId);
     const r = await pool.query(
         `UPDATE itinerary SET ${fields.join(', ')}
-         WHERE id_itinerary = $${idx++} AND user_id = $${idx++}
+         WHERE id_itinerary = $${idx} AND user_id = $${idx + 1}
          RETURNING *`,
         values,
     );
@@ -210,7 +210,7 @@ export async function updateStop(itineraryId, stopId, userId, { visit_date, visi
     values.push(stopId, itineraryId);
     const r = await pool.query(
         `UPDATE itinerary_stop SET ${fields.join(', ')}
-         WHERE id_stop = $${idx++} AND id_itinerary = $${idx++}
+         WHERE id_stop = $${idx} AND id_itinerary = $${idx + 1}
          RETURNING *`,
         values,
     );

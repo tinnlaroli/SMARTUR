@@ -40,7 +40,7 @@ function matches(hay, terms) {
 export function deriveTourismTypeId({ categories_raw = '', categories_mapped = [] } = {}) {
     const raw = normalize(categories_raw);
 
-    let mapped = '';
+    let mapped;
     try {
         const arr = Array.isArray(categories_mapped)
             ? categories_mapped

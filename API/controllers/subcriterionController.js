@@ -18,7 +18,7 @@ class SubcriterionController {
 
     static async create(req, res) {
         try {
-            const { id_criterion, description, score, order_index } = req.body;
+            const { id_criterion, description } = req.body;
             if (!id_criterion || !description) {
                 return res.status(400).json({ message: 'id_criterion y description son requeridos' });
             }

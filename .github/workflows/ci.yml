@@ -11,16 +11,139 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  # Necesario para publicar imágenes en GHCR (job "images")
+  packages: write
+
 jobs:
   # ─────────────────────────────────────────────────────────────
-  # API — ESLint + Node.js syntax check
+  # Cambios por servicio (path-gating). Cada job solo corre si su
+  # directorio (o infra compartida) cambió.
+  # ─────────────────────────────────────────────────────────────
+  changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      plataforma: ${{ steps.filter.outputs.plataforma }}
+      landing: ${{ steps.filter.outputs.landing }}
+      modelo: ${{ steps.filter.outputs.modelo }}
+      db: ${{ steps.filter.outputs.db }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'API/**'
+              - 'docker-compose.yml'
+              - '.env.example'
+            plataforma:
+              - 'PLATAFORMA/**'
+              - 'docker-compose.yml'
+              - '.env.example'
+            landing:
+              - 'LANDING/**'
+              - 'docker-compose.yml'
+              - '.env.example'
+            modelo:
+              - 'MODELO/**'
+              - 'docker-compose.yml'
+              - '.env.example'
+            db:
+              - 'API/bd.sql'
+              - 'API/config/migrations.js'
+              - 'API/migrations/**'
+              - 'API/config/db.js'
+              - 'API/scripts/schema-migrations-check.mjs'
+
+  # ─────────────────────────────────────────────────────────────
+  # DB — verifica que bd.sql construye el esquema bien (install
+  # fresco), que 001_reconcile_vps.sql es idempotente y que el
+  # runner de migraciones funciona sobre esa base (upgrade path).
+  # ─────────────────────────────────────────────────────────────
+  db-schema:
+    name: DB — Schema & Migrations
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.db == 'true'
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: smartur
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Fresh install (import bd.sql on empty DB)
+        run: |
+          psql -h localhost -U postgres -d smartur -v ON_ERROR_STOP=1 -f API/bd.sql
+          TABLES=$(psql -h localhost -U postgres -d smartur -tAc \
+            "SELECT count(*) FROM pg_tables WHERE schemaname='public'")
+          echo "N tablas = $TABLES"
+          [ "$TABLES" = "56" ] || { echo "FAIL: se esperaban 56 tablas, hay $TABLES"; exit 1; }
+          echo "OK: bd.sql importa sin errores y produce 56 tablas + 1 vista"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Reconcile script idempotente (2 pasadas)
+        run: |
+          psql -h localhost -U postgres -d smartur -v ON_ERROR_STOP=1 \
+            -f API/migrations/001_reconcile_vps.sql > /tmp/r1.log 2>&1
+          grep -q '^ERROR' /tmp/r1.log && { cat /tmp/r1.log; exit 1; } || true
+          psql -h localhost -U postgres -d smartur -v ON_ERROR_STOP=1 \
+            -f API/migrations/001_reconcile_vps.sql > /tmp/r2.log 2>&1
+          grep -q '^ERROR' /tmp/r2.log && { cat /tmp/r2.log; exit 1; } || true
+          echo "OK: 001_reconcile_vps.sql corre 2 veces sin errores (idempotente)"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: API/package-lock.json
+
+      - name: Install API dependencies
+        run: npm ci
+        working-directory: API
+
+      - name: Migration runner idempotente sobre bd.sql
+        run: node scripts/schema-migrations-check.mjs
+        working-directory: API
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: smartur
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+
+  # ─────────────────────────────────────────────────────────────
+  # API — ESLint real + unit tests + syntax check
   # ─────────────────────────────────────────────────────────────
   api:
-    name: API — Lint
+    name: API — Lint & Tests
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' ||
-      contains(github.event.pull_request.changed_files, 'API/')
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     defaults:
       run:
         working-directory: API
@@ -37,9 +160,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint (ESLint)
-        run: npx eslint . --ext .js --max-warnings 0 || true
-        # "|| true" mientras no haya reglas configuradas — quitar cuando ESLint esté configurado
+      - name: Lint (ESLint; falla si hay errores)
+        run: npm run lint
 
       - name: Unit tests (Vitest)
         run: npm test
@@ -58,6 +180,8 @@ jobs:
   plataforma:
     name: PLATAFORMA — TypeScript & Build
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.plataforma == 'true'
     defaults:
       run:
         working-directory: PLATAFORMA
@@ -93,6 +217,8 @@ jobs:
   landing:
     name: LANDING — Astro Build
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.landing == 'true'
     defaults:
       run:
         working-directory: LANDING
@@ -127,6 +253,8 @@ jobs:
   modelo:
     name: MODELO — Python Check
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.modelo == 'true'
     defaults:
       run:
         working-directory: MODELO
@@ -144,7 +272,6 @@ jobs:
         run: |
           # lightfm no tiene wheel para Python 3.11 en CI y no puede compilarse desde fuente.
           # Solo se importa dentro del lifespan que SKIP_MODEL_BOOT=1 omite en el import check.
-          # El runtime Docker usa lightfm compilado correctamente con BLAS nativo.
           grep -v "^lightfm" requirements.txt | pip install --quiet -r /dev/stdin
 
       - name: Syntax check (py_compile)
@@ -172,3 +299,82 @@ jobs:
           POI_DB_USER: postgres
           POI_DB_PASSWORD: ""
 
+  # ─────────────────────────────────────────────────────────────
+  # GHCR — publica imágenes de los servicios app (en main).
+  # Permite al VPS hacer pull en vez de construir en producción.
+  # El deploy usa pull solo si se configura DEPLOY_MODE=pull.
+  # ─────────────────────────────────────────────────────────────
+  images:
+    name: Images — Push GHCR
+    runs-on: ubuntu-latest
+    needs: changes
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      (needs.changes.outputs.api == 'true' ||
+       needs.changes.outputs.plataforma == 'true' ||
+       needs.changes.outputs.landing == 'true' ||
+       needs.changes.outputs.modelo == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push API
+        if: needs.changes.outputs.api == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: API
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/smartur-api:latest
+            ghcr.io/${{ github.repository_owner }}/smartur-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push PLATAFORMA
+        if: needs.changes.outputs.plataforma == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: PLATAFORMA
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/smartur-plataforma:latest
+            ghcr.io/${{ github.repository_owner }}/smartur-plataforma:${{ github.sha }}
+          build-args: |
+            VITE_API_URL=/api/v2
+            VITE_MODELO_URL=http://modelo:8000
+            VITE_BUSINESS_URL=https://smartur.online/
+
+      - name: Build & push LANDING
+        if: needs.changes.outputs.landing == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: LANDING
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/smartur-landing:latest
+            ghcr.io/${{ github.repository_owner }}/smartur-landing:${{ github.sha }}
+          build-args: |
+            PUBLIC_TOURIST_APP_URL=https://app.smartur.online/
+            PUBLIC_API_URL=https://api.smartur.online/api/v2
+            PUBLIC_SITE_URL=https://smartur.online
+
+      - name: Build & push MODELO
+        if: needs.changes.outputs.modelo == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: MODELO
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/smartur-modelo:latest
+            ghcr.io/${{ github.repository_owner }}/smartur-modelo:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

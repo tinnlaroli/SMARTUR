@@ -76,7 +76,7 @@ class User {
             ]);
             return result.rows[0];
         } catch (error) {
-            throw new Error('Error al buscar usuario');
+            throw new Error('Error al buscar usuario', { cause: error });
         }
     }
 

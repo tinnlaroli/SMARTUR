@@ -50,8 +50,6 @@ const CATEGORY_MAP = {
     renta: ['Hotels & Travel', 'Vacation Rentals'],
 
     restaurante: ['Restaurants', 'Food'],
-    restaurant: ['Restaurants', 'Food'],
-    food: ['Food'],
     comida: ['Food'],
     cafe: ['Cafes', 'Food'],
     cafeterias: ['Cafes', 'Food'],
@@ -70,7 +68,6 @@ const CATEGORY_MAP = {
     excursion: ['Tours', 'Active Life'],
     excursiones: ['Tours', 'Active Life'],
     aventura: ['Active Life'],
-    hiking: ['Hiking', 'Active Life'],
     senderismo: ['Hiking', 'Active Life'],
     rafting: ['Rafting', 'Active Life'],
     parque: ['Parks', 'Active Life'],

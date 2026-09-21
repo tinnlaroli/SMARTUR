@@ -155,7 +155,7 @@ export async function listAllPublicItineraries({ limit = 50, offset = 0, certifi
          JOIN "user" u ON u.user_id = i.user_id
          WHERE ${conditions.join(' AND ')}
          ORDER BY i.is_certified DESC, i.copy_count DESC
-         LIMIT $${idx++} OFFSET $${idx++}`,
+         LIMIT $${idx} OFFSET $${idx + 1}`,
         values,
     );
     const count = await pool.query(

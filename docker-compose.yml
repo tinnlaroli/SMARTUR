@@ -33,6 +33,7 @@ services:
   # API Backend
   # ============================================================
   api:
+    image: ${GHCR_IMAGE_PREFIX:-ghcr.io/tinnlaroli}/smartur-api:${APP_TAG:-latest}
     build:
       context: ./API
       dockerfile: Dockerfile
@@ -85,6 +86,7 @@ services:
   # ML Model Service
   # ============================================================
   modelo:
+    image: ${GHCR_IMAGE_PREFIX:-ghcr.io/tinnlaroli}/smartur-modelo:${APP_TAG:-latest}
     build:
       context: ./MODELO
       dockerfile: Dockerfile
@@ -132,6 +134,7 @@ services:
   # Platform (Dashboard) Frontend
   # ============================================================
   plataforma:
+    image: ${GHCR_IMAGE_PREFIX:-ghcr.io/tinnlaroli}/smartur-plataforma:${APP_TAG:-latest}
     build:
       context: ./PLATAFORMA
       dockerfile: Dockerfile
@@ -162,6 +165,7 @@ services:
   # Landing Page Frontend
   # ============================================================
   landing:
+    image: ${GHCR_IMAGE_PREFIX:-ghcr.io/tinnlaroli}/smartur-landing:${APP_TAG:-latest}
     build:
       context: ./LANDING
       dockerfile: Dockerfile

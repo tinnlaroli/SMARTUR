@@ -24,40 +24,122 @@ jobs:
           nc -zv ${{ secrets.VPS_HOST }} 80 -w 5 && echo "PORT 80 OPEN" || echo "PORT 80 CLOSED"
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           timeout: 60s
-          command_timeout: 10m
+          command_timeout: 30m
+          envs: DEPLOY_MODE,GHCR_USER,GHCR_TOKEN
           script: |
-            set -e
+            set -euo pipefail
             cd /opt/SMARTUR
+
+            # ── 0) Modo de despliegue ──────────────────────────────
+            #   build → construye en el VPS (comportamiento actual).
+            #   pull  → baja imágenes de GHCR (publicadas por el job
+            #           "images" del CI) en vez de compilar en prod.
+            #   Se configura con la variable del repo DEPLOY_MODE;
+            #   si además se registran GHCR_USER/GHCR_TOKEN (secrets)
+            #   hace login a ghcr.io (requerido si el paquete es privado).
+            DEPLOY_MODE="${DEPLOY_MODE:-build}"
+            echo "DEPLOY_MODE=$DEPLOY_MODE"
+
+            # ── 1) Backup pre-migración (pg_dump + rotación) ───────
+            BACKUP_DIR=/opt/SMARTUR/backups
+            mkdir -p "$BACKUP_DIR"
+            TS=$(date +%Y%m%d_%H%M%S)
+            docker exec smartur-postgres pg_dump -U postgres -d smartur -Fc \
+              > "$BACKUP_DIR/smartur_$TS.dump"
+            echo "✓ Backup creado: $BACKUP_DIR/smartur_$TS.dump ($(du -h "$BACKUP_DIR/smartur_$TS.dump" | cut -f1))"
+            ls -t "$BACKUP_DIR"/smartur_*.dump | tail -n +11 | xargs -r rm -f
+
+            # ── 2) Traer el código ─────────────────────────────────
+            git stash clear 2>/dev/null || true
+            git fetch origin
+            git reset --hard origin/main
 
             # Inyecta Firebase service account desde GitHub Secret (.env está en .gitignore)
             sed -i '/^FIREBASE_SERVICE_ACCOUNT=/d' .env
             echo "FIREBASE_SERVICE_ACCOUNT=${{ secrets.FIREBASE_SERVICE_ACCOUNT_B64 }}" >> .env
 
-            # Limpia cualquier estado de merge/stash previo y resetea al último commit
-            git stash clear 2>/dev/null || true
-            git fetch origin
-            git reset --hard origin/main
+            # ── 3) Deploy selectivo: qué servicios cambiaron ───────
+            #     Compara el último commit; si no se puede calcular,
+            #     reconstruye todo (fallback seguro). Un cambio en
+            #     docker-compose.yml afecta a todos.
+            PREV=$(git rev-parse origin/main~1 2>/dev/null || true)
+            SERVICES=""
+            if [ -z "$PREV" ]; then
+              echo "⚠ No hay commit previo (rama nueva) → despliega todo"
+              SERVICES=" api plataforma landing modelo"
+            else
+              CHANGED=$(git diff --name-only "$PREV" origin/main 2>/dev/null || true)
+              if [ -z "$CHANGED" ]; then
+                echo "ℹ Sin cambios en la app → solo recarga nginx y valida salud"
+              else
+                echo "$CHANGED" | grep -q '^API/' && SERVICES="$SERVICES api"
+                echo "$CHANGED" | grep -q '^PLATAFORMA/' && SERVICES="$SERVICES plataforma"
+                echo "$CHANGED" | grep -q '^LANDING/' && SERVICES="$SERVICES landing"
+                echo "$CHANGED" | grep -q '^MODELO/' && SERVICES="$SERVICES modelo"
+                echo "$CHANGED" | grep -q '^docker-compose.yml' && SERVICES=" api plataforma landing modelo"
+              fi
+            fi
 
-            # Rebuild servicios de aplicación
-            docker compose -f docker-compose.yml up -d --build \
-              --no-deps api plataforma landing nginx modelo
+            # ── 4) Build o pull + up de los servicios elegidos ─────
+            if [ -n "${SERVICES// /}" ]; then
+              echo "Servicios a desplegar:$SERVICES"
+              if [ "$DEPLOY_MODE" = "pull" ]; then
+                if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+                  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+                fi
+                docker compose -f docker-compose.yml pull $SERVICES
+                docker compose -f docker-compose.yml up -d --no-deps $SERVICES
+              else
+                docker compose -f docker-compose.yml up -d --build --no-deps $SERVICES
+              fi
+            else
+              echo "ℹ Sin servicios app que desplegar"
+            fi
 
             # Fuerza reload de nginx (el config es volume-mount, up -d no lo recarga solo)
-            docker compose -f docker-compose.yml exec -T nginx nginx -s reload
+            docker compose -f docker-compose.yml exec -T nginx nginx -s reload || true
 
-            # Limpia imágenes huérfanas
+            # ── 5) Health-gate: espera a que todo esté saludable ───
+            wait_health() {
+              local c="$1" tries="$2" delay="$3" h=""
+              for i in $(seq 1 "$tries"); do
+                h=$(docker inspect --format '{{.State.Health.Status}}' "$c" 2>/dev/null || echo missing)
+                [ "$h" = "healthy" ] && return 0
+                sleep "$delay"
+              done
+              echo "FAIL health-gate: $c = $h (state: $(docker inspect --format '{{.State.Status}}' "$c" 2>/dev/null || echo none))"
+              return 1
+            }
+
+            wait_health smartur-api      24 10   # ~4 min (start_period 20s)
+            wait_health smartur-plataforma 24 5  # ~2 min
+            wait_health smartur-landing    24 5  # ~2 min
+
+            # nginx no tiene healthcheck en compose → validar vía HTTP
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/ || true)
+            [ "$code" = "200" ] || { echo "FAIL health-gate: nginx HTTP = $code"; exit 1; }
+            echo "✓ smartur-nginx HTTP 200"
+
+            # MODELO: arranque lento si entrena (primer boot / sin modelo)
+            wait_health smartur-modelo 60 15    # hasta ~15 min
+
+            # ── 6) Verificación de migraciones ─────────────────────
+            if docker logs --since 20m smartur-api 2>&1 | grep -q "\[migration\] ERROR"; then
+              echo "FAIL: el runner de migraciones del API reportó errores"
+              exit 1
+            fi
+            MIGS=$(docker exec smartur-postgres psql -U postgres -d smartur -tAc \
+              "SELECT count(*) FROM _schema_migrations" 2>/dev/null || echo 0)
+            echo "✓ _schema_migrations registradas: $MIGS"
+
+            # ── 7) Limpieza (imágenes huérfanas / caché antigua) ───
             docker image prune -f
-
-            # Limpia caché de build vieja (>72h) — sin esto se acumula en cada
-            # deploy sin límite (llegó a 29GB/117 volúmenes huérfanos antes de
-            # esta línea, con el disco al 80%). No toca imágenes/contenedores
-            # activos, solo caché de capas intermedias de builds pasados.
             docker builder prune -af --filter until=72h
             docker volume prune -f
 
