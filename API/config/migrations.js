@@ -863,7 +863,78 @@ ALTER TABLE traveler_profile
     ADD COLUMN IF NOT EXISTS wellness_active     BOOLEAN DEFAULT FALSE;
         `,
     },
+    {
+        // Extras que el VPS ya tenía aplicados a mano y el runner no creaba:
+        // CHECKS de wellness_status, índices de soporte y la vista que usa
+        // AdminBadgesContext para el badge del sidebar (paridad local↔VPS).
+        name: 'v44_wellness_sidebar_status',
+        sql: `
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_poi_wellness_status') THEN
+    ALTER TABLE point_of_interest ADD CONSTRAINT chk_poi_wellness_status
+      CHECK (wellness_status IN ('pending','approved','rejected') OR wellness_status IS NULL);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_wellness_status') THEN
+    ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_wellness_status
+      CHECK (wellness_status IN ('pending','approved','rejected') OR wellness_status IS NULL);
+  END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_poi_wellness_status
+  ON point_of_interest(wellness_status) WHERE wellness_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ts_wellness_status
+  ON tourist_service(wellness_status) WHERE wellness_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ml_session_user ON ml_recommendation_session(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+CREATE OR REPLACE VIEW wellness_pending_count AS
+SELECT (
+  (SELECT COUNT(*) FROM tourist_service  WHERE wellness_status = 'pending') +
+  (SELECT COUNT(*) FROM point_of_interest WHERE wellness_status = 'pending')
+) AS total_pending;
+        `,
+    },
+    {
+        // Mantiene vivo un token reusable para la demo del móvil (login sin
+        // re-captcha). Presente en el VPS; se replica para paridad.
+        name: 'v45_demo_token_refresh',
+        sql: `
+CREATE OR REPLACE FUNCTION reinsert_demo_token() RETURNS trigger
+LANGUAGE plpgsql AS $$
+DECLARE
+  v_demo_user_id int;
+BEGIN
+  SELECT user_id INTO v_demo_user_id
+  FROM "user" WHERE email = 'cafecencalli@cencalli.mx';
+
+  IF NEW.user_id = v_demo_user_id AND NEW.used = TRUE THEN
+    DELETE FROM login_tokens WHERE user_id = v_demo_user_id;
+    INSERT INTO login_tokens (user_id, token, expires_at, used)
+    VALUES (
+      v_demo_user_id,
+      '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+      NOW() + INTERVAL '30 days',
+      false
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_demo_token_refresh ON login_tokens;
+CREATE TRIGGER trg_demo_token_refresh
+  AFTER UPDATE OF used ON login_tokens
+  FOR EACH ROW EXECUTE FUNCTION reinsert_demo_token();
+        `,
+    },
 ];
+
+// Número total de migraciones y sus nombres — usados por el check de esquema
+// en CI (scripts/schema-migrations-check.mjs) para validar idempotencia.
+export const MIGRATION_COUNT = MIGRATIONS.length;
+export const MIGRATION_NAMES = MIGRATIONS.map((m) => m.name);
 
 export async function runMigrations() {
     try {

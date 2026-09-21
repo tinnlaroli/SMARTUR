@@ -122,7 +122,7 @@ CREATE TABLE tourism_type (
 CREATE TABLE point_of_interest (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
-  categories_raw TEXT NOT NULL DEFAULT '',
+  categories_raw TEXT NOT NULL,
   categories_mapped JSONB NOT NULL DEFAULT '[]'::jsonb,
   price_level SMALLINT NOT NULL DEFAULT 2,
   is_accessible BOOLEAN NOT NULL DEFAULT FALSE,
@@ -140,7 +140,7 @@ CREATE TABLE point_of_interest (
   submitted_by_company_id INT,
   reviewed_by_admin_id INT REFERENCES "user"(user_id) ON DELETE SET NULL,
   validation_rejection_reason TEXT,
-  validation_submitted_at TIMESTAMP
+  validation_submitted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_poi_created_at ON point_of_interest(created_at DESC);
@@ -203,7 +203,7 @@ ALTER TABLE "user"
 
 -- FK circular point_of_interest <-> company (se agrega tras definir company)
 ALTER TABLE point_of_interest
-  ADD CONSTRAINT fk_poi_submitted_by_company
+  ADD CONSTRAINT point_of_interest_submitted_by_company_id_fkey
     FOREIGN KEY (submitted_by_company_id) REFERENCES company(id_company) ON DELETE SET NULL;
 
 -- ============================================================
@@ -231,6 +231,61 @@ CREATE TABLE company_verification (
   rejection_reason TEXT,
   resubmission_count INT DEFAULT 0
 );
+
+-- ============================================================
+-- 10b. FAQ DE EMPRESA (chatbot turista ↔ empresa)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS company_faq (
+  id_faq         SERIAL PRIMARY KEY,
+  id_company     INT NOT NULL REFERENCES company(id_company) ON DELETE CASCADE,
+  question       TEXT NOT NULL,
+  answer         TEXT NOT NULL,
+  search_vector  TSVECTOR GENERATED ALWAYS AS (
+    to_tsvector('spanish', coalesce(question, '') || ' ' || coalesce(answer, ''))
+  ) STORED,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_company_faq_search  ON company_faq USING GIN(search_vector);
+CREATE INDEX IF NOT EXISTS idx_company_faq_company ON company_faq(id_company);
+
+-- ============================================================
+-- 10c. BITÁCORA DE CAMBIOS DE ADMIN (disputas y validación KYC)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS admin_change_log (
+  id                   SERIAL PRIMARY KEY,
+  target_type          VARCHAR(20)  NOT NULL CHECK (target_type IN ('service', 'company', 'user')),
+  target_id            INTEGER      NOT NULL,
+  admin_id             INTEGER      REFERENCES "user"(user_id) ON DELETE SET NULL,
+  id_company           INTEGER      REFERENCES company(id_company) ON DELETE SET NULL,
+  changes              JSONB        NOT NULL,
+  status               VARCHAR(30)  NOT NULL DEFAULT 'pending_review'
+                           CHECK (status IN ('pending_review', 'accepted', 'disputed', 'resolved_admin', 'resolved_empresa')),
+  empresa_note         TEXT,
+  empresa_counter      JSONB,
+  admin_resolution_note TEXT,
+  created_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  updated_at           TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_acl_company   ON admin_change_log(id_company, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_acl_status    ON admin_change_log(status);
+
+-- ============================================================
+-- 10d. CONFIGURACIÓN DE LA APP (clave/valor)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS app_config (
+  key        VARCHAR(100) PRIMARY KEY,
+  value      TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO app_config (key, value) VALUES ('evaluation_min_score', '7')
+  ON CONFLICT (key) DO NOTHING;
 
 -- ============================================================
 -- 11. ACTIVIDADES, EMPLEO, INSUMOS (datos estadísticos empresa)
@@ -335,6 +390,25 @@ CREATE INDEX idx_tourist_service_status ON tourist_service(status);
 CREATE INDEX idx_tourist_service_company ON tourist_service(id_company);
 
 -- ============================================================
+-- 13b. ACTIVIDADES DE SERVICIO (paradas de itinerario con actividad)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS service_activity (
+  id_activity     SERIAL PRIMARY KEY,
+  id_service      INT NOT NULL REFERENCES tourist_service(id_service) ON DELETE CASCADE,
+  name            VARCHAR(200) NOT NULL,
+  description     TEXT,
+  duration_minutes INT,
+  price           NUMERIC(10,2),
+  max_capacity    INT,
+  features        JSONB NOT NULL DEFAULT '[]',
+  is_active       BOOL NOT NULL DEFAULT TRUE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_service_activity_service ON service_activity(id_service);
+
+-- ============================================================
 -- 14. EVALUACIONES DE SERVICIOS
 -- ============================================================
 
@@ -425,6 +499,7 @@ CREATE TABLE refresh_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rt_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
 
 -- ============================================================
 -- 16. SEGURIDAD Y AUDITORÍA
@@ -508,6 +583,7 @@ CREATE TABLE ml_recommendation_session (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_ml_rec_session_user_created ON ml_recommendation_session (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ml_session_user ON ml_recommendation_session(user_id);
 
 CREATE TABLE ml_recommendation_item (
   id SERIAL PRIMARY KEY,
@@ -876,6 +952,33 @@ ALTER TABLE traveler_profile
   ADD COLUMN IF NOT EXISTS wellness_consent_at TIMESTAMP,
   ADD COLUMN IF NOT EXISTS wellness_active     BOOLEAN DEFAULT FALSE;
 
+-- Estado de revisión wellness restringido a pendiente/aprobado/rechazado
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_poi_wellness_status') THEN
+    ALTER TABLE point_of_interest ADD CONSTRAINT chk_poi_wellness_status
+      CHECK (wellness_status IN ('pending','approved','rejected') OR wellness_status IS NULL);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_wellness_status') THEN
+    ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_wellness_status
+      CHECK (wellness_status IN ('pending','approved','rejected') OR wellness_status IS NULL);
+  END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_poi_wellness_status
+  ON point_of_interest(wellness_status) WHERE wellness_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ts_wellness_status
+  ON tourist_service(wellness_status) WHERE wellness_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_poi_validation_status ON point_of_interest(validation_status);
+
+-- Conteo de servicios/POIs pendientes de validación wellness (AdminBadgesContext)
+CREATE OR REPLACE VIEW wellness_pending_count AS
+SELECT (
+  (SELECT COUNT(*) FROM tourist_service  WHERE wellness_status = 'pending') +
+  (SELECT COUNT(*) FROM point_of_interest WHERE wellness_status = 'pending')
+) AS total_pending;
+
 -- ============================================================
 -- SEEDS: DATOS DE PRUEBA
 -- Contraseña de todos los usuarios: Password1a
@@ -1149,5 +1252,82 @@ INSERT INTO evaluation_subcriterion (id_criterion, description, score, order_ind
   (4, 'Deficiente', 2, 0), (4, 'Regular', 4, 1), (4, 'Bueno', 6, 2), (4, 'Muy bueno', 8, 3), (4, 'Excelente', 10, 4),
   (5, 'Deficiente', 2, 0), (5, 'Regular', 4, 1), (5, 'Bueno', 6, 2), (5, 'Muy bueno', 8, 3), (5, 'Excelente', 10, 4),
   (6, 'Deficiente', 2, 0), (6, 'Regular', 4, 1), (6, 'Bueno', 6, 2), (6, 'Muy bueno', 8, 3), (6, 'Excelente', 10, 4);
+
+-- ============================================================
+-- RECONCILIACIÓN (paridad con VPS) — idempotente, 100% aditivo.
+-- Estos bloques se pueden re-ejecutar sin errores en BDs existentes.
+-- ============================================================
+
+-- Migraciones de arranque aplicadas por la API (config/migrations.js)
+CREATE TABLE IF NOT EXISTS _schema_migrations (
+  name       VARCHAR(255) PRIMARY KEY,
+  applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Fechas globales de viaje
+ALTER TABLE itinerary
+  ADD COLUMN IF NOT EXISTS start_date DATE,
+  ADD COLUMN IF NOT EXISTS end_date   DATE;
+
+-- Parada de itinerario enlazada a una actividad de servicio
+ALTER TABLE itinerary_stop
+  ADD COLUMN IF NOT EXISTS id_activity INT REFERENCES service_activity(id_activity) ON DELETE SET NULL;
+
+-- Mensajes con origen bot (chatbot / FAQ)
+ALTER TABLE message
+  ADD COLUMN IF NOT EXISTS is_bot BOOL NOT NULL DEFAULT FALSE;
+
+-- Certificado SMARTUR de verificación KYC
+ALTER TABLE company_verification
+  ADD COLUMN IF NOT EXISTS smartur_validation_certificate_url TEXT,
+  ADD COLUMN IF NOT EXISTS certificate_issued_at TIMESTAMPTZ;
+
+-- Preferencias extra del perfil de turista
+ALTER TABLE traveler_profile
+  ADD COLUMN IF NOT EXISTS dietary_restrictions TEXT,
+  ADD COLUMN IF NOT EXISTS has_visited BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS accessibility_description TEXT;
+
+-- Coordenadas del servicio (para mapa y cercanía)
+ALTER TABLE tourist_service
+  ADD COLUMN IF NOT EXISTS latitude  DECIMAL(10,6),
+  ADD COLUMN IF NOT EXISTS longitude DECIMAL(10,6);
+
+-- FK empresa→usuario (owner_user_id), paridad con VPS
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'company_owner_user_id_fkey') THEN
+    ALTER TABLE company ADD CONSTRAINT company_owner_user_id_fkey
+      FOREIGN KEY (owner_user_id) REFERENCES "user"(user_id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
+-- Mantiene vivo un token reusable para la demo del móvil (login sin re-captcha)
+CREATE OR REPLACE FUNCTION reinsert_demo_token() RETURNS trigger
+LANGUAGE plpgsql AS $$
+DECLARE
+  v_demo_user_id int;
+BEGIN
+  SELECT user_id INTO v_demo_user_id
+  FROM "user" WHERE email = 'cafecencalli@cencalli.mx';
+
+  IF NEW.user_id = v_demo_user_id AND NEW.used = TRUE THEN
+    DELETE FROM login_tokens WHERE user_id = v_demo_user_id;
+    INSERT INTO login_tokens (user_id, token, expires_at, used)
+    VALUES (
+      v_demo_user_id,
+      '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+      NOW() + INTERVAL '30 days',
+      false
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_demo_token_refresh ON login_tokens;
+CREATE TRIGGER trg_demo_token_refresh
+  AFTER UPDATE OF used ON login_tokens
+  FOR EACH ROW EXECUTE FUNCTION reinsert_demo_token();
 
 COMMIT;
