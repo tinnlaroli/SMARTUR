@@ -137,10 +137,14 @@ jobs:
             wait_health smartur-plataforma 24 5  # ~2 min
             wait_health smartur-landing    24 5  # ~2 min
 
-            # nginx no tiene healthcheck en compose → validar vía HTTP
+            # nginx no tiene healthcheck en compose → validar vía HTTP.
+            # En prod el :80 redirige 301→https, así que 200/301/302 valen.
             code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/ || true)
-            [ "$code" = "200" ] || { echo "FAIL health-gate: nginx HTTP = $code"; exit 1; }
-            echo "✓ smartur-nginx HTTP 200"
+            case "$code" in 200|301|302) : ;; *)
+              echo "FAIL health-gate: nginx HTTP = $code"
+              exit 1 ;;
+            esac
+            echo "✓ smartur-nginx HTTP $code"
 
             # MODELO: arranque lento si entrena (primer boot / sin modelo)
             wait_health smartur-modelo 60 15    # hasta ~15 min
