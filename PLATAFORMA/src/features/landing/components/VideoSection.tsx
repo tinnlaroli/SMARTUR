@@ -184,8 +184,8 @@ export const VideoSection: React.FC = () => {
             attributionControl={false}
             mapStyle={
               isDark
-                ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-                : 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+                ? 'https://tiles.openfreemap.org/styles/dark'
+                : 'https://tiles.openfreemap.org/styles/voyager'
             }
             interactive={true}
             scrollZoom={false}
