@@ -13,6 +13,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/motion/smartur_routes.dart';
+import '../../../core/constants/env_config.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
 import '../../../core/utils/notifications.dart';
@@ -362,7 +363,7 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
           children: [
             TileLayer(
               urlTemplate: isDark
-                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png?key=${EnvConfig.cartoApiKey}'
                   : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               subdomains: isDark ? const ['a', 'b', 'c'] : const [],
               userAgentPackageName: 'com.smartur.app',

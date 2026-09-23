@@ -18,4 +18,10 @@ class EnvConfig {
     'OPENWEATHER_API_KEY',
     defaultValue: '',
   );
+
+  /// API key de CARTO Basemaps (tiles oscuros del mapa de ruta)
+  static const String cartoApiKey = String.fromEnvironment(
+    'CARTO_API_KEY',
+    defaultValue: 'cb1_3vi5_1_c61e77df1124466042934fe6',
+  );
 }
