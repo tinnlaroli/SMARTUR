@@ -1330,4 +1330,95 @@ CREATE TRIGGER trg_demo_token_refresh
   AFTER UPDATE OF used ON login_tokens
   FOR EACH ROW EXECUTE FUNCTION reinsert_demo_token();
 
+-- ============================================================
+-- SEED EXTRA: ALTAS MONTAÑAS (Foro Gastro 2026)
+-- Municipios de la paridad VPS (12-15) + recorrido gastronómico real
+-- de los alumnos de gastronomía (16-19). La "Ruta Gastronómica de las
+-- Altas Montañas" queda en el orden que devuelve el optimizador ACO del
+-- MODELO: hongos(Calcahualco) -> trueque(Coscomatepec) -> Ixhuatlán -> Tequila.
+-- ============================================================
+
+-- Locations 12-15 (paridad VPS) y 16-19 (Altas Montañas nuevas)
+INSERT INTO location (id_location, name, state, municipality, latitude, longitude) VALUES
+  (12, 'Huatusco',               'Veracruz', 'Huatusco',              19.149700, -96.967600),
+  (13, 'Tlacotalpan',            'Veracruz', 'Tlacotalpan',           18.613000, -95.661000),
+  (14, 'Misantla',               'Veracruz', 'Misantla',              19.930100, -96.857900),
+  (15, 'Veracruz Ciudad',        'Veracruz', 'Veracruz',              19.200000, -96.137700),
+  (16, 'Calcahualco',            'Veracruz', 'Calcahualco',           19.121100, -97.084500),
+  (17, 'Ixhuatlán del Café',     'Veracruz', 'Ixhuatlán del Café',    19.052097, -96.984579),
+  (18, 'Tequila',                'Veracruz', 'Tequila',               18.729980, -97.069910),
+  (19, 'Coscomatepec de Bravo',  'Veracruz', 'Coscomatepec de Bravo', 19.072750, -97.046850);
+
+-- Cuenta demo del equipo de gastronomía (role 2 turista; Password1a)
+INSERT INTO "user" (name, email, password, role_id, is_active, email_verified) VALUES
+  ('Foro Gastronómico 2026', '20233D101094@utcv.edu.mx',
+   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 2, true, true);
+
+INSERT INTO traveler_profile (user_id, is_active, age_range, interests, activity_level, budget, preferred_place, travel_type, has_visited_before)
+SELECT user_id, true, '18-24', ARRAY['Gastronomía'], 3, 'medio', 'Altas Montañas', 'solo', true
+FROM "user" WHERE email = '20233D101094@utcv.edu.mx';
+
+-- POIs nuevos (Altas Montañas) — id_location por nombre para mantenerse alineados
+INSERT INTO point_of_interest (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, rating) VALUES
+  ('Ruta de Recolección de Hongos Silvestres (Nuevo Vaquería)',
+   'hongos, gastronomy, hiking, nature, culture', '["gastronomy","nature","culture"]', 2, false, true,
+   19.121100, -97.084500, (SELECT id_location FROM location WHERE name = 'Calcahualco'),
+   'Recorrido con familias serranas de Nuevo Vaquería para identificar hongos comestibles: tamales de hongos, mole de hongos, hongos en salsa verde y café de olla.', 4.5),
+  ('Mercadito de los Miércoles',
+   'market, gastronomy, culture', '["gastronomy","culture"]', 2, true, true,
+   19.052097, -96.984579, (SELECT id_location FROM location WHERE name = 'Ixhuatlán del Café'),
+   'Tamales de chilatole de frijol gordo, tamales de manjar de fresa, pan de manjar, resobada y café de la región.', 4.6),
+  ('Ruta Cafetalera Urbana (Parque Hidalgo)',
+   'coffee, gastronomy, culture, walking', '["gastronomy","culture"]', 2, true, true,
+   19.052500, -96.984000, (SELECT id_location FROM location WHERE name = 'Ixhuatlán del Café'),
+   'Café de altura de Ixhuatlán del Café con tostado artesanal, panadería tradicional y esculturas alusivas al café en el Parque Hidalgo.', 4.6),
+  ('Mujeres de la Niebla',
+   'gastronomy, culture, workshop', '["gastronomy","culture"]', 2, false, false,
+   19.051200, -96.985200, (SELECT id_location FROM location WHERE name = 'Ixhuatlán del Café'),
+   'Talleres de cocina tradicional del colectivo de productoras: tamales de hongos y mole, tlatoniles de pepita de calabaza y chilacayota.', 4.7),
+  ('Visita a la cocinera tradicional Doña Chela',
+   'gastronomy, culture, mole', '["gastronomy","culture"]', 2, true, false,
+   18.729980, -97.069910, (SELECT id_location FROM location WHERE name = 'Tequila'),
+   'Elaboración participativa del mole tradicional en metate con la cocinera Doña Chela en Tequila: mole casero, tamales rancheros y pan tradicional.', 5.0),
+  ('Mercado prehispánico rodante (Trueque)',
+   'market, gastronomy, nature, culture', '["gastronomy","culture","nature"]', 1, true, true,
+   19.072750, -97.046850, (SELECT id_location FROM location WHERE name = 'Coscomatepec de Bravo'),
+   'Mercado de Coscomatepec de Bravo donde aún se practica el trueque de productos: frutas, verduras, hongos, maíces de colores, quelites, quesos de cabra y chapulines.', 4.8);
+
+-- Ruta certificada + pública en el orden optimizado por IA (ACO)
+INSERT INTO itinerary (user_id, title, description, is_public, is_certified)
+SELECT user_id,
+       'Ruta Gastronómica de las Altas Montañas',
+       'Recorrido de 6 experiencias de la gastronomía serrana de Veracruz: hongos silvestres en Calcahualco, trueque en Coscomatepec de Bravo, café y cocina tradicional en Ixhuatlán del Café, y mole en metate en Tequila. Ruta generada y optimizada con IA (43% de ahorro en distancia).',
+       true, true
+FROM "user" WHERE email = 'martinlaraolivares@gmail.com';
+
+INSERT INTO itinerary_stop (id_itinerary, place_kind, place_id, stop_order, notes)
+SELECT i.id_itinerary, 'poi', p.id, s.ord, s.notes
+FROM itinerary i,
+     (VALUES
+       ('Ruta de Recolección de Hongos Silvestres (Nuevo Vaquería)', 1, 'Recorrido real de campo con familias de Nuevo Vaquería: identificación de hongos comestibles y su cocina tradicional.'),
+       ('Mercado prehispánico rodante (Trueque)', 2, 'Trueque de productos locales: frutas, hongos, maíces de colores, quelites, quesos de cabra y chapulines.'),
+       ('Mercadito de los Miércoles', 3, 'Tamales de chilatole de frijol gordo, tamales de manjar de fresa, pan de manjar y resobada.'),
+       ('Ruta Cafetalera Urbana (Parque Hidalgo)', 4, 'Café de altura con tostado artesanal y panadería tradicional en el Parque Hidalgo.'),
+       ('Mujeres de la Niebla', 5, 'Taller de cocina tradicional: tamales de hongos y mole, tlatoniles de pepita de calabaza y chilacayota.'),
+       ('Visita a la cocinera tradicional Doña Chela', 6, 'Mole tradicional elaborado en metate, tamales rancheros y pan tradicional.')
+     ) s(pname, ord, notes)
+JOIN point_of_interest p ON p.name = s.pname
+WHERE i.title = 'Ruta Gastronómica de las Altas Montañas';
+
+-- Experiencia real del equipo (ratings 5★) para que el recomendador
+-- colabortivo conozca el recorrido — foro gastro 2026.
+INSERT INTO user_rating (user_id, place_kind, place_id, rating)
+SELECT u.user_id, 'poi', p.id, 5
+FROM "user" u JOIN point_of_interest p ON p.name IN (
+  'Ruta de Recolección de Hongos Silvestres (Nuevo Vaquería)',
+  'Mercadito de los Miércoles',
+  'Ruta Cafetalera Urbana (Parque Hidalgo)',
+  'Mujeres de la Niebla',
+  'Visita a la cocinera tradicional Doña Chela',
+  'Mercado prehispánico rodante (Trueque)')
+WHERE u.email = '20233D101094@utcv.edu.mx'
+ON CONFLICT (user_id, place_kind, place_id) DO NOTHING;
+
 COMMIT;
