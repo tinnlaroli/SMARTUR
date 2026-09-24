@@ -21,11 +21,11 @@ interface InitPhoneSceneOptions {
     isWelltur?: boolean;
 }
 
-const SMARTUR_SCENE_URL = 'https://prod.spline.design/l6CGSfUVQH65tNtB/scene.splinecode';
-const WELLTUR_SCENE_URL = 'https://my.spline.design/iphone3dspinning-OenO3OROCEw96oKtvtc5KJvT/';
+const PHONE_SCENE_URL = 'https://my.spline.design/iphone3dspinning-OenO3OROCEw96oKtvtc5KJvT/';
 
 export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOptions = {}) {
     const { onLoad, isWelltur = false } = options;
+    void isWelltur;
 
     // Evitar duplicados si ya existe un canvas
     if (container.querySelector('canvas')) return;
@@ -80,8 +80,8 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
         return best;
     };
 
-    // Cargar Escena (la URL correcta segun el tema)
-    app.load(isWelltur ? WELLTUR_SCENE_URL : SMARTUR_SCENE_URL)
+    // Cargar Escena
+    app.load(PHONE_SCENE_URL)
         .then(() => {
             // Si el componente ya se desmonto, no hacemos nada
             if (!isMounted) return;
@@ -148,13 +148,7 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
                 }
             }
         })
-        .catch(() => {
-            // Fallback: si la escena WELLTUR fallo, cargar la SMARTUR
-            if (isWelltur) {
-                app.load(SMARTUR_SCENE_URL).catch(() => { /* silencioso */ });
-                if (onLoad) onLoad();
-            }
-        });
+        .catch(() => { /* Si la escena falla, no hacemos nada mas */ });
 
     // Limpieza (Cleanup)
     return () => {
