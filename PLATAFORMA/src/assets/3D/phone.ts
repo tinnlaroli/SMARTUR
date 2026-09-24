@@ -40,16 +40,14 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
 
     // Crear canvas
     const canvas = document.createElement('canvas');
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.marginLeft = '10%';
-    canvas.style.marginTop = '-10%';
+    canvas.style.width = '500px';
+    canvas.style.height = '530px';
+    canvas.style.marginLeft = '0';
+    canvas.style.marginTop = '0';
     canvas.style.filter = "drop-shadow(30px 0 20px rgba(0,0,0,0.3))";
     canvas.style.display = 'block';
 
-    // Transform CSS para corregir fondo
-    canvas.style.transform = 'scale(0.7)';
-    canvas.style.transformOrigin = 'center';
+    // Sin transform CSS: el tamano exacto lo da width/height (500x530)
 
     // Smooth opacity transition for loading
     canvas.style.opacity = '0';
@@ -107,7 +105,7 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
                 // quedo a otra escala, el bounding box nos dice el tamano
                 // real EN MUNDO. Escalamos para que el ancho del telefono
                 // ocupe siempre un ancho objetivo fijo -> NUNCA se ve enorme.
-                const targetWorldWidth = 170;
+                const targetWorldWidth = 100;
                 try {
                     const box = (phone as any).getBoundingBox?.();
                     const ext = box && typeof box === 'object' ? (box as any) : null;
@@ -119,7 +117,10 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
                         const sz = max.z - min.z;
                         const worldWidth = Math.max(sx, sy, sz) || 1;
                         const k = targetWorldWidth / worldWidth;
-                        if (k > 0 && (k < 0.7 || k > 1.4)) {
+                        // Aplicar SIEMPRE (sin rango bloqueante): asi cada
+                        // cambio de targetWorldWidth SI se refleja en pantalla,
+                        // crezca o encoja. Solo validamos que k sea sano.
+                        if (k > 0 && Number.isFinite(k)) {
                             phone.scale.x *= k;
                             phone.scale.y *= k;
                             phone.scale.z *= k;
