@@ -21,7 +21,7 @@ interface InitPhoneSceneOptions {
     isWelltur?: boolean;
 }
 
-const PHONE_SCENE_URL = 'https://my.spline.design/iphone3dspinning-OenO3OROCEw96oKtvtc5KJvT/';
+const PHONE_SCENE_URL = 'https://prod.spline.design/l6CGSfUVQH65tNtB/scene.splinecode';
 
 export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOptions = {}) {
     const { onLoad, isWelltur = false } = options;
