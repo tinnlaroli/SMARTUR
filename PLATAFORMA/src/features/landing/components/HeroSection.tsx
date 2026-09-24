@@ -57,11 +57,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
     useEffect(() => {
         if (!phoneContainerRef.current) return;
 
-        // Al cambiar de tema (SMARTUR <-> WELLTUR) se debe recrear la escena:
-        // primero disponemos la anterior para que initPhoneScene no la bloquee.
-        cleanupSplineRef.current?.();
-        cleanupSplineRef.current = undefined;
-
         const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
         if (!isDesktop) return;
 
@@ -85,7 +80,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
             cleanup = () => (window as any).clearTimeout(timeoutId);
         }
         return cleanup;
-    }, [theme]);
+    }, []);
 
     useEffect(() => {
         const hero = heroRef.current;
