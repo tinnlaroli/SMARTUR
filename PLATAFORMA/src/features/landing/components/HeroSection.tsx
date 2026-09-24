@@ -2,7 +2,7 @@
 import gsap from 'gsap';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { initPhoneScene } from '../../../assets/3D/phone';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useLanguage, useUserPreferences } from '../../../contexts/LanguageContext';
 import { prefersReducedMotion } from '../utils/motion';
 import { HeroAppDownloads } from './HeroAppDownloads';
 
@@ -49,6 +49,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
     const cleanupSplineRef = useRef<(() => void) | undefined>(undefined);
 
     const { t } = useLanguage();
+    const { theme } = useUserPreferences();
 
     const title = t('heroSection.titleHtml');
     const subtitle = t('heroSection.subtitle');
@@ -61,7 +62,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ handleStartExperience 
 
         const preload = () => {
             try {
-                const cleanup = initPhoneScene(phoneContainerRef.current!);
+                const cleanup = initPhoneScene(phoneContainerRef.current!, {
+                    isWelltur: theme === 'welltur',
+                });
                 if (cleanup) cleanupSplineRef.current = cleanup;
             } catch (e) {
                 console.warn('3D phone init failed:', e);
