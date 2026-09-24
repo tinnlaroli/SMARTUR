@@ -107,7 +107,7 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
                 // quedo a otra escala, el bounding box nos dice el tamano
                 // real EN MUNDO. Escalamos para que el ancho del telefono
                 // ocupe siempre un ancho objetivo fijo -> NUNCA se ve enorme.
-                const targetWorldWidth = 170;
+                const targetWorldWidth = 150;
                 try {
                     const box = (phone as any).getBoundingBox?.();
                     const ext = box && typeof box === 'object' ? (box as any) : null;
