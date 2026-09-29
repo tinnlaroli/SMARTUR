@@ -114,6 +114,14 @@ def _refresh_data_warmth() -> float:
     declarada domina)."""
     global _data_warmth
     try:
+        # Los registros seed/QA de PostgreSQL no son usuarios reales. En el
+        # bootstrap sintético no deben hacer que el fusionador crea que el
+        # sistema ya tiene señal colaborativa madura.
+        from synthetic_training import synth_training_enabled
+        if synth_training_enabled():
+            _data_warmth = 0.0
+            logger.info("[warmth] bootstrap sintético activo -> data_warmth=0.000")
+            return _data_warmth
         from poi_repository import fetch_real_interactions
         df = fetch_real_interactions(min_events=1)
         if df is None or df.empty:
