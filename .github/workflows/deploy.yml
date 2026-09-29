@@ -69,50 +69,45 @@ jobs:
             #     reconstruye todo (fallback seguro). Un cambio en
             #     docker-compose.yml afecta a todos.
             PREV=$(git rev-parse origin/main~1 2>/dev/null || true)
-            SERVICES=""
+            SERVICES=()
             if [ -z "$PREV" ]; then
               echo "⚠ No hay commit previo (rama nueva) → despliega todo"
-              SERVICES=" api plataforma landing modelo"
+              SERVICES=(api plataforma landing modelo)
             else
               CHANGED=$(git diff --name-only "$PREV" origin/main 2>/dev/null || true)
               if [ -z "$CHANGED" ]; then
                 echo "ℹ Sin cambios en la app → solo recarga nginx y valida salud"
               else
-                echo "$CHANGED" | grep -q '^API/' && SERVICES="$SERVICES api"
-                echo "$CHANGED" | grep -q '^PLATAFORMA/' && SERVICES="$SERVICES plataforma"
-                echo "$CHANGED" | grep -q '^LANDING/' && SERVICES="$SERVICES landing"
-                echo "$CHANGED" | grep -q '^MODELO/' && SERVICES="$SERVICES modelo"
-                echo "$CHANGED" | grep -q '^docker-compose.yml' && SERVICES=" api plataforma landing modelo"
+                echo "$CHANGED" | grep -q '^API/' && SERVICES+=(api)
+                echo "$CHANGED" | grep -q '^PLATAFORMA/' && SERVICES+=(plataforma)
+                echo "$CHANGED" | grep -q '^LANDING/' && SERVICES+=(landing)
+                echo "$CHANGED" | grep -q '^MODELO/' && SERVICES+=(modelo)
+                echo "$CHANGED" | grep -q '^docker-compose.yml' && SERVICES=(api plataforma landing modelo)
               fi
             fi
 
-            # Normaliza la lista de servicios (sin espacios sobrantes)
-            SERVICES=${SERVICES//  / }
-            SERVICES=${SERVICES# }
-            SERVICES=${SERVICES% }
-
             # ── 4) Build o pull + up de los servicios elegidos ─────
-            if [ -n "$SERVICES" ]; then
+            if [ "${#SERVICES[@]}" -gt 0 ]; then
               # Validar que los servicios sí existen en el compose antes de tocar nada
               AVAILABLE=$(docker compose -f docker-compose.yml config --services 2>/dev/null)
-              for sv in $SERVICES; do
+              for sv in "${SERVICES[@]}"; do
                 if ! echo "$AVAILABLE" | grep -qx "$sv"; then
                   echo "FAIL: servicio '$sv' no existe. Disponibles: $(echo "$AVAILABLE" | tr '\n' ' ')"
                   exit 1
                 fi
               done
-              echo "Servicios a desplegar:$SERVICES"
+              echo "Servicios a desplegar: ${SERVICES[*]}"
               if [ "$DEPLOY_MODE" = "pull" ]; then
                 if [ -n "${GHCR_USER:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
                   echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
                 fi
-                echo "> docker compose pull $SERVICES"
-                docker compose -f docker-compose.yml pull $SERVICES
-                echo "> docker compose up -d --no-deps $SERVICES"
-                docker compose -f docker-compose.yml up -d --no-deps $SERVICES
+                echo "> docker compose pull ${SERVICES[*]}"
+                docker compose -f docker-compose.yml pull "${SERVICES[@]}"
+                echo "> docker compose up -d --no-deps ${SERVICES[*]}"
+                docker compose -f docker-compose.yml up -d --no-deps "${SERVICES[@]}"
               else
-                echo "> docker compose up -d --build --no-deps $SERVICES"
-                docker compose -f docker-compose.yml up -d --build --no-deps $SERVICES
+                echo "> docker compose up -d --build --no-deps ${SERVICES[*]}"
+                docker compose -f docker-compose.yml up -d --build --no-deps "${SERVICES[@]}"
               fi
             else
               echo "ℹ Sin servicios app que desplegar"
