@@ -18,6 +18,7 @@ from synthetic_persona_validation import generate_personas, generate_ratings, _p
 from synthetic_training import synth_n_personas
 from rf_model import SmarturContextModel
 from lightfm_model import SmarturLightFMModel
+from content_model import SmarturContentModel
 
 
 def _ndcg(ids, relevant, k):
@@ -50,11 +51,14 @@ def run(n_personas=None, seed=42, k=10):
 
     rf = SmarturContextModel(); rf.load()
     lfm = SmarturLightFMModel(); lfm.load()
+    content = SmarturContentModel(); content.fit(catalog)
     users = {p["persona_id"]: _persona_declared_context(p) for _, p in personas.iterrows()}
     candidates = catalog["business_id"].astype(str).tolist()
     popularity = train.groupby("business_id").size().to_dict()
     means = train.groupby("business_id")["stars"].mean().to_dict()
-    algorithms = {name: [] for name in ("popularity", "item_mean", "lightfm", "rf", "hybrid")}
+    algorithms = {name: [] for name in (
+        "popularity", "item_mean", "content", "lightfm", "rf", "content_rf"
+    )}
     evaluated = 0
 
     for uid, test_user in test.groupby("user_id"):
@@ -70,12 +74,17 @@ def run(n_personas=None, seed=42, k=10):
         avg = np.array([means.get(x, train.stars.mean()) for x in pool], dtype=float)
         lfm_score = np.asarray(lfm.predict(str(uid), pool, user_context=ctx), dtype=float)
         rf_score = np.asarray(rf.predict_with_context(pool, user_context=ctx), dtype=float)
+        content_score = np.asarray(content.score(pool, user_context=ctx), dtype=float)
         scores = {
             "popularity": pop,
             "item_mean": avg,
+            "content": content_score,
             "lightfm": lfm_score,
             "rf": rf_score,
-            "hybrid": 0.7 * _minmax(lfm_score) + 0.3 * _minmax(rf_score),
+            # En bootstrap el contenido representa las preferencias declaradas
+            # y RF aporta atributos/contexto. LightFM se mantiene como benchmark,
+            # pero no participa en la selección hasta superar esta mezcla.
+            "content_rf": 0.7 * _minmax(content_score) + 0.3 * _minmax(rf_score),
         }
         for name, values in scores.items():
             order = np.argsort(-np.nan_to_num(values, nan=-1e9))
