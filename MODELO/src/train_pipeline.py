@@ -25,9 +25,10 @@ from math import sqrt
 
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.model_selection import train_test_split
 
 from engine import SmarturEngine
-from synthetic_training import build_synthetic_split, build_synthetic_ratings
+from synthetic_training import build_synthetic_ratings
 from synthetic_persona_validation import RANDOM_STATE
 from cf import predict_cf_pearson
 
@@ -106,10 +107,12 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
 
     # El benchmark se crea sobre los ítems locales. Así se prueba el ranking
     # que realmente verá el usuario y no un catálogo externo desconectado.
+    # Generar una sola vez: el CSV de respaldo, el split, las métricas y los
+    # artefactos promovidos deben describir exactamente las mismas filas.
     ratings = build_synthetic_ratings(catalog, n_personas=personas, seed=seed)
-    train_df, test_df = build_synthetic_split(
-        catalog, n_personas=personas, seed=seed
-    )
+    train_df, test_df = train_test_split(ratings, test_size=0.2, random_state=seed)
+    train_df = train_df.reset_index(drop=True)
+    test_df = test_df.reset_index(drop=True)
     repeat_rate = float((ratings.groupby("user_id").size() >= 5).mean())
     metrics = _evaluate(train_df, test_df, catalog)
     report = {
