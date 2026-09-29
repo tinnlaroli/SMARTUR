@@ -12,12 +12,13 @@ Fase B (Ranking) — 4 señales:
   - LightFM WARP (cold-start + warm via feature embeddings)
   - ContentModel TF-IDF (fallback cuando LightFM no disponible)
 
-Blending (RF de-ponderado — el peor estimador en datos reales y sintéticos;
-ver constantes LFM_W_* / RF_W_* más abajo):
-  Cold-start: 0.70 LightFM + 0.30 RF
-  Warm user:  0.40 LightFM + 0.35 CF + 0.25 RF
+Blending:
+  Cold-start bootstrap: ContentModel + RF + preferencias declaradas
+  Cold-start validado:  0.70 LightFM + 0.30 RF
+  Warm user validado:   0.40 LightFM + 0.35 CF + 0.25 RF
 """
 
+import os
 import numpy as np
 import pandas as pd
 
@@ -465,7 +466,15 @@ def recommend_hybrid(
         getattr(lightfm_model, '_known_users', set()) if lightfm_model else set()
     ) and str(user_id) not in (getattr(engine, 'user_index', {}) or {})
 
-    if lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False):
+    # Un embedding LightFM entrenado únicamente con personas sintéticas no
+    # debe dominar las recomendaciones de usuarios reales desconocidos. En
+    # bootstrap usamos TF-IDF + RF + preferencias declaradas; conservamos el
+    # artefacto LightFM para activarlo después de recolectar comportamiento
+    # real y validarlo contra esta línea base.
+    bootstrap_mode = os.environ.get('SMARTUR_SYNTH_TRAINING', '').strip().lower() in {
+        '1', 'true', 'yes', 'on', 'y', 't'
+    }
+    if lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False) and not bootstrap_mode:
         lfm_scores  = lightfm_model.predict(str(user_id), final_ids, user_context=context)
         lfm_map     = dict(zip(final_ids, lfm_scores))
         use_content = False
