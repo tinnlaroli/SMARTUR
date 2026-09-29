@@ -166,6 +166,11 @@ def generate_ratings(personas: pd.DataFrame, biz_df: pd.DataFrame, seed: int = R
                 'user_id': persona['persona_id'],
                 'business_id': item['business_id'],
                 'stars': stars,
+                # Se conserva el texto del ítem para que los modelos de
+                # features (LightFM/RF) puedan inferir los intereses del
+                # usuario durante el entrenamiento bootstrap. Sin esta
+                # columna LightFM asignaba las mismas features a todos.
+                'categories': str(item.get('categories', '') or ''),
             })
     return pd.DataFrame(rows)
 
