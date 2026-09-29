@@ -113,6 +113,16 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
     train_df, test_df = train_test_split(ratings, test_size=0.2, random_state=seed)
     train_df = train_df.reset_index(drop=True)
     test_df = test_df.reset_index(drop=True)
+    # Los modelos de features necesitan el texto/categorías del POI. El
+    # enriquecimiento desde el catálogo es la fuente de verdad y también
+    # cubre datasets sintéticos antiguos que no traían esa columna.
+    if "categories" not in train_df.columns:
+        item_categories = catalog[["business_id", "categories"]].copy()
+        item_categories["business_id"] = item_categories["business_id"].astype(str)
+        train_df["business_id"] = train_df["business_id"].astype(str)
+        test_df["business_id"] = test_df["business_id"].astype(str)
+        train_df = train_df.merge(item_categories, on="business_id", how="left")
+        test_df = test_df.merge(item_categories, on="business_id", how="left")
     repeat_rate = float((ratings.groupby("user_id").size() >= 5).mean())
     metrics = _evaluate(train_df, test_df, catalog)
     report = {
