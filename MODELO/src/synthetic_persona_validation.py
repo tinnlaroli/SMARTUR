@@ -127,7 +127,29 @@ def generate_ratings(personas: pd.DataFrame, biz_df: pd.DataFrame, seed: int = R
         max_aff = max((persona[f'aff_{t}'] for t in TOURISM_TYPES), default=0.0) or 1.0
         n_ratings = int(rng.integers(RATINGS_PER_PERSONA[0], RATINGS_PER_PERSONA[1] + 1))
         n_ratings = min(n_ratings, len(biz))
-        sample_idx = rng.choice(len(biz), size=n_ratings, replace=False)
+
+        # No muestrear lugares de forma uniforme. Eso produciría usuarios con
+        # historiales aleatorios y haría que la similitud colaborativa fuera
+        # casi ruido. La probabilidad de exposición debe depender de la misma
+        # afinidad latente que después intentamos recuperar, con temperatura
+        # suficiente para conservar exploración y cobertura del catálogo.
+        utilities = []
+        for _, item in biz.iterrows():
+            item_affinity = max(
+                (persona[f'aff_{t}'] for t in item['_tipos']),
+                default=0.0,
+            )
+            item_price = item.get('price_level', 2) or 2
+            try:
+                item_budget_fit = 1.0 - abs(float(persona['budget']) - float(item_price)) / 3.0
+            except (TypeError, ValueError):
+                item_budget_fit = 0.5
+            utilities.append(0.7 * (item_affinity / max_aff) + 0.3 * max(0.0, item_budget_fit))
+        utilities = np.asarray(utilities, dtype=float)
+        # Softmax estable: evita que todos elijan exactamente los mismos ítems.
+        weights = np.exp((utilities - utilities.max()) / 0.35)
+        weights /= weights.sum()
+        sample_idx = rng.choice(len(biz), size=n_ratings, replace=False, p=weights)
         for idx in sample_idx:
             item = biz.iloc[idx]
             afinidad_raw = max((persona[f'aff_{t}'] for t in item['_tipos']), default=0.0)
