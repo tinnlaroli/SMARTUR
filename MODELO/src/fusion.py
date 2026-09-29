@@ -39,7 +39,7 @@ _ALTAS_MONTANAS_LON = -97.05
 # y los modelos aprendidos (CF/RF/LightFM) toman el control. Todo automático,
 # sin ajustar pesos a mano.
 #   pref_weight = COLD - (COLD - WARM) * data_warmth
-PREF_WEIGHT_COLD = 0.65   # frío: la preferencia manda
+PREF_WEIGHT_COLD = 0.75   # frío: preferencia declarada manda (validado en bootstrap)
 PREF_WEIGHT_WARM = 0.20   # maduro: peso "de fondo" (era el valor fijo anterior)
 
 # Retrocompatibilidad: algunos módulos/tests importan esta constante. Equivale
