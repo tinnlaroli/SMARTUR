@@ -82,7 +82,8 @@ jobs:
                 echo "$CHANGED" | grep -q '^PLATAFORMA/' && SERVICES+=(plataforma)
                 echo "$CHANGED" | grep -q '^LANDING/' && SERVICES+=(landing)
                 echo "$CHANGED" | grep -q '^MODELO/' && SERVICES+=(modelo)
-                echo "$CHANGED" | grep -q '^docker-compose.yml' && SERVICES=(api plataforma landing modelo)
+                echo "$CHANGED" | grep -q '^docker-compose.yml' && SERVICES=(api plataforma landing modelo nginx)
+                echo "$CHANGED" | grep -q '^\.github/workflows/deploy\.yml' && SERVICES=(api plataforma landing modelo nginx)
               fi
             fi
 
