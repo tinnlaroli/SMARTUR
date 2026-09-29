@@ -86,6 +86,12 @@ export function initPhoneScene(container: HTMLElement, options: InitPhoneSceneOp
 
             // Notificar que se cargo
             canvas.style.opacity = '1';
+
+            // Ocultar marca de agua inyectada en el DOM por Spline
+            container.querySelectorAll('a, #spline-watermark, [class*="spline"]').forEach((el) => {
+                (el as HTMLElement).style.display = 'none';
+            });
+
             if (onLoad) onLoad();
 
             // Buscamos el objeto por el nombre que aparece en tu panel de "Objects"

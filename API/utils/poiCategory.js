@@ -40,18 +40,29 @@ function matches(hay, terms) {
 export function deriveTourismTypeId({ categories_raw = '', categories_mapped = [] } = {}) {
     const raw = normalize(categories_raw);
 
+    let mappedPrimary = '';
     let mapped;
     try {
         const arr = Array.isArray(categories_mapped)
             ? categories_mapped
             : JSON.parse(categories_mapped || '[]');
+        if (Array.isArray(arr) && arr.length > 0) {
+            mappedPrimary = normalize(arr[0]);
+        }
         mapped = normalize(Array.isArray(arr) ? arr.join(' ') : arr);
     } catch {
         mapped = normalize(categories_mapped);
+        mappedPrimary = mapped.split(/[\s,]+/)[0] ?? '';
     }
 
     const hay = `${raw} ${mapped}`.trim();
 
+    // Los POIs gastronómicos suelen tener categories_mapped = ["gastronomy","culture"]
+    // (trueque, cafetalera, etc. también son culturales). Como la cultura matchea primero,
+    // el móvil los abría como "Museos" aunque el panel los muestra como Gastronomía.
+    // Corregimos usando el primer mapeo como fuente principal, sin convertir museos/parques
+    // con menciones gastronómicas secundarias en gastronomía.
+    if (mappedPrimary.includes('gastronom')) return 3;
     if (matches(hay, CULTURE_TERMS)) return 2;
     if (matches(hay, NATURE_TERMS)) return 1;
     if (matches(hay, GASTRONOMY_TERMS)) return 3;

@@ -20,6 +20,14 @@ export interface CreatePOIDTO {
     id_location?: number;
     categories_raw?: string;
     image?: File | null;
+    latitude?: number;
+    longitude?: number;
+    is_wellness?: boolean;
+    categoria_wellness?: string;
+    nivel_aislamiento?: number;
+    restauracion_pasiva?: number;
+    demanda_fisica?: number;
+    descripcion_bienestar?: string;
 }
 
 export interface UpdatePOIDTO {

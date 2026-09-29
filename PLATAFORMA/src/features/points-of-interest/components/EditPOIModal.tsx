@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, Star, Loader2, Leaf, ImagePlus } from 'lucide-react';
+import { X, Star, Loader2, ImagePlus } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { locationApi } from '../../locations/api/locationApi';
 import type { Location } from '../../locations/types/types';
 import type { POI, UpdatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { POI_CATEGORY_PRESETS, categoryIdFromRaw } from './poiCategories';
+import WellnessPlaceFields from './WellnessPlaceFields';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -45,11 +46,6 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     const [demandaFisica, setDemandaFisica] = useState(poi.demanda_fisica ?? 0.3);
     const [descripcionBienestar, setDescripcionBienestar] = useState(poi.descripcion_bienestar ?? '');
 
-    const WELLNESS_CATEGORIES = [
-        'Termal', 'Spa', 'Bosque', 'Montaña', 'Lago',
-        'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque',
-    ];
-
     useEffect(() => {
         let cancelled = false;
         locationApi.findAll(1, 200).then((res) => {
@@ -84,7 +80,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
                 <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--color-border)' }}>
                     <h2 className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--color-text)' }}>
                         <Star className="size-4" style={{ color: 'var(--color-pink)' }} />
@@ -95,7 +91,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4 p-5">
+                <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto p-5">
                     <div>
                         <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Nombre *</label>
                         <input
@@ -169,63 +165,24 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                         )}
                     </div>
 
-                    {/* Wellness section */}
-                    <div className="rounded-xl border" style={{ borderColor: 'var(--color-border)' }}>
-                        <label className="flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
-                            <input
-                                type="checkbox"
-                                checked={isWellness}
-                                onChange={(e) => setIsWellness(e.target.checked)}
-                                className="size-4 rounded accent-emerald-500"
-                            />
-                            <Leaf className="size-4 text-emerald-500" />
-                            <div>
-                                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Lugar de Bienestar (WellTur)</p>
-                                <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>Incluir en el pool de recomendaciones wellness</p>
-                            </div>
-                        </label>
-                        {isWellness && (
-                            <div className="space-y-3 border-t px-3 pb-3 pt-3" style={{ borderColor: 'var(--color-border)' }}>
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Categoría wellness</label>
-                                    <select
-                                        value={categoriaWellness}
-                                        onChange={(e) => setCategoriaWellness(e.target.value)}
-                                        className={inputClass}
-                                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                                    >
-                                        <option value="">Seleccionar…</option>
-                                        {WELLNESS_CATEGORIES.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Descripción de bienestar</label>
-                                    <input
-                                        type="text"
-                                        value={descripcionBienestar}
-                                        onChange={(e) => setDescripcionBienestar(e.target.value)}
-                                        placeholder="¿Qué experiencia de bienestar ofrece?"
-                                        className={inputClass}
-                                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                                    />
-                                </div>
-                                {[
-                                    { label: 'Aislamiento', hint: 'Qué tan alejado del ruido urbano', value: nivelAislamiento, set: setNivelAislamiento },
-                                    { label: 'Relajación pasiva', hint: 'Qué tan relajante es la experiencia', value: restauracionPasiva, set: setRestauracionPasiva },
-                                    { label: 'Demanda física', hint: 'Cuánto esfuerzo físico requiere', value: demandaFisica, set: setDemandaFisica },
-                                ].map(({ label, hint, value, set }) => (
-                                    <div key={label}>
-                                        <div className="flex items-center justify-between mb-0.5">
-                                            <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</span>
-                                            <span className="text-xs font-mono" style={{ color: 'var(--color-text-alt)' }}>{value.toFixed(2)}</span>
-                                        </div>
-                                        <input type="range" min={0} max={1} step={0.05} value={value} onChange={e => set(parseFloat(e.target.value))} className="w-full h-1.5 cursor-pointer accent-emerald-500" />
-                                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    <WellnessPlaceFields
+                        values={{
+                            isWellness,
+                            categoriaWellness,
+                            nivelAislamiento,
+                            restauracionPasiva,
+                            demandaFisica,
+                            descripcionBienestar,
+                        }}
+                        onChange={(patch) => {
+                            if (patch.isWellness !== undefined) setIsWellness(patch.isWellness);
+                            if (patch.categoriaWellness !== undefined) setCategoriaWellness(patch.categoriaWellness);
+                            if (patch.nivelAislamiento !== undefined) setNivelAislamiento(patch.nivelAislamiento);
+                            if (patch.restauracionPasiva !== undefined) setRestauracionPasiva(patch.restauracionPasiva);
+                            if (patch.demandaFisica !== undefined) setDemandaFisica(patch.demandaFisica);
+                            if (patch.descripcionBienestar !== undefined) setDescripcionBienestar(patch.descripcionBienestar);
+                        }}
+                    />
 
                     {error && <p className="text-xs text-rose-500">{error}</p>}
 

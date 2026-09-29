@@ -370,6 +370,23 @@
   aspect-ratio: 1 / 1;
   position: relative;
   z-index: 0;
+  overflow: hidden; /* Recortar la marca de agua que sobresalga */
+}
+
+/* Recorte de marca de agua WebGL de Spline (escalar y desplazar el canvas dentro del contenedor recortado) */
+.sy-hero-home .video-wrapper canvas {
+  transform: scale(1.15) translateY(-3%);
+  transform-origin: center center;
+}
+
+/* Ocultar marca de agua / logo inyectado por Spline en DOM */
+.sy-hero-home .video-wrapper a,
+.sy-hero-home .video-wrapper #spline-watermark,
+.sy-hero-home .video-wrapper > *:not(canvas) {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 @media (max-width: 1680px) {

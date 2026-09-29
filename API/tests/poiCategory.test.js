@@ -42,6 +42,9 @@ describe('deriveTourismTypeId', () => {
         expect(
             deriveTourismTypeId({ categories_raw: 'gastronomy, food, restaurant, cafe' })
         ).toBe(3);
+        expect(
+            deriveTourismTypeId({ categories_mapped: ['gastronomy', 'culture'] })
+        ).toBe(3);
     });
 
     it('mapea categories_mapped tipo Yelp', () => {

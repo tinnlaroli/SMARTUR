@@ -7,6 +7,7 @@ import type { Location } from '../../locations/types/types';
 import type { CreatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { POI_CATEGORY_PRESETS } from './poiCategories';
+import WellnessPlaceFields from './WellnessPlaceFields';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -32,6 +33,12 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     const [lng, setLng] = useState(0);
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isWellness, setIsWellness] = useState(false);
+    const [categoriaWellness, setCategoriaWellness] = useState('');
+    const [nivelAislamiento, setNivelAislamiento] = useState(0.5);
+    const [restauracionPasiva, setRestauracionPasiva] = useState(0.5);
+    const [demandaFisica, setDemandaFisica] = useState(0.3);
+    const [descripcionBienestar, setDescripcionBienestar] = useState('');
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] ?? null;
@@ -61,6 +68,14 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
             categories_raw: POI_CATEGORY_PRESETS.find((c) => c.id === category)?.raw,
             image: image ?? undefined,
             ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
+            is_wellness: isWellness,
+            ...(isWellness && {
+                categoria_wellness: categoriaWellness || undefined,
+                nivel_aislamiento: nivelAislamiento,
+                restauracion_pasiva: restauracionPasiva,
+                demanda_fisica: demandaFisica,
+                descripcion_bienestar: descripcionBienestar.trim() || undefined,
+            }),
         });
         setSubmitting(false);
         if (ok) onClose();
@@ -68,7 +83,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
                 <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--color-border)' }}>
                     <h2 className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--color-text)' }}>
                         <Star className="size-4" style={{ color: 'var(--color-pink)' }} />
@@ -79,7 +94,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4 p-5">
+                <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto p-5">
                     <div>
                         <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Nombre *</label>
                         <input
@@ -168,6 +183,25 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             </div>
                         )}
                     </div>
+
+                    <WellnessPlaceFields
+                        values={{
+                            isWellness,
+                            categoriaWellness,
+                            nivelAislamiento,
+                            restauracionPasiva,
+                            demandaFisica,
+                            descripcionBienestar,
+                        }}
+                        onChange={(patch) => {
+                            if (patch.isWellness !== undefined) setIsWellness(patch.isWellness);
+                            if (patch.categoriaWellness !== undefined) setCategoriaWellness(patch.categoriaWellness);
+                            if (patch.nivelAislamiento !== undefined) setNivelAislamiento(patch.nivelAislamiento);
+                            if (patch.restauracionPasiva !== undefined) setRestauracionPasiva(patch.restauracionPasiva);
+                            if (patch.demandaFisica !== undefined) setDemandaFisica(patch.demandaFisica);
+                            if (patch.descripcionBienestar !== undefined) setDescripcionBienestar(patch.descripcionBienestar);
+                        }}
+                    />
 
                     {error && <p className="text-xs text-rose-500">{error}</p>}
 
