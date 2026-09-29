@@ -19,6 +19,7 @@ from synthetic_training import synth_n_personas
 from rf_model import SmarturContextModel
 from lightfm_model import SmarturLightFMModel
 from content_model import SmarturContentModel
+from fusion import preference_match_score
 
 
 def _ndcg(ids, relevant, k):
@@ -52,12 +53,14 @@ def run(n_personas=None, seed=42, k=10):
     rf = SmarturContextModel(); rf.load()
     lfm = SmarturLightFMModel(); lfm.load()
     content = SmarturContentModel(); content.fit(catalog)
+    catalog_by_id = catalog.set_index("business_id")
     users = {p["persona_id"]: _persona_declared_context(p) for _, p in personas.iterrows()}
     candidates = catalog["business_id"].astype(str).tolist()
     popularity = train.groupby("business_id").size().to_dict()
     means = train.groupby("business_id")["stars"].mean().to_dict()
     algorithms = {name: [] for name in (
-        "popularity", "item_mean", "content", "lightfm", "rf", "content_rf"
+        "popularity", "item_mean", "content", "preference", "content_preference",
+        "lightfm", "rf", "content_rf"
     )}
     evaluated = 0
 
@@ -75,10 +78,26 @@ def run(n_personas=None, seed=42, k=10):
         lfm_score = np.asarray(lfm.predict(str(uid), pool, user_context=ctx), dtype=float)
         rf_score = np.asarray(rf.predict_with_context(pool, user_context=ctx), dtype=float)
         content_score = np.asarray(content.score(pool, user_context=ctx), dtype=float)
+        # Esta es la misma señal explícita que utiliza el ranking de producción:
+        # preferencias declaradas, presupuesto y atributos del POI. Se evalúa
+        # por separado para poder distinguir calidad de catálogo de calidad ML.
+        pref_score = np.asarray([
+            preference_match_score(
+                catalog_by_id.loc[x].get("categories", "") if x in catalog_by_id.index else "",
+                ctx,
+                price_level=catalog_by_id.loc[x].get("price_level") if x in catalog_by_id.index else None,
+                is_romantic=catalog_by_id.loc[x].get("is_romantic", 0) if x in catalog_by_id.index else 0,
+                is_good_for_kids=catalog_by_id.loc[x].get("is_good_for_kids", 0) if x in catalog_by_id.index else 0,
+                outdoor=catalog_by_id.loc[x].get("outdoor", 0) if x in catalog_by_id.index else 0,
+            ) * 5.0
+            for x in pool
+        ], dtype=float)
         scores = {
             "popularity": pop,
             "item_mean": avg,
             "content": content_score,
+            "preference": pref_score,
+            "content_preference": 0.65 * _minmax(content_score) + 0.35 * _minmax(pref_score),
             "lightfm": lfm_score,
             "rf": rf_score,
             # En bootstrap el contenido representa las preferencias declaradas
