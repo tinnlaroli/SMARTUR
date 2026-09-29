@@ -142,6 +142,23 @@ def _load_or_train_models(do_train: bool = False) -> None:
     try:
         logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
         engine = SmarturEngine(data_source='mexico')
+        # En el arranque en frío, el CSV mexicano histórico tiene una reseña
+        # por usuario sintético y no contiene señal colaborativa. Si el modo
+        # bootstrap está explícitamente habilitado, construimos la matriz con
+        # personas persistentes y la marcamos como sintética. Al aparecer
+        # usuarios reales, SMARTUR_SYNTH_TRAINING debe volver a 0.
+        try:
+            from synthetic_training import synth_training_enabled, build_synthetic_split
+            if synth_training_enabled():
+                syn_train, syn_test = build_synthetic_split(engine.df_biz)
+                engine.train_data = syn_train
+                engine.test_data = syn_test
+                logger.warning(
+                    "[boot][SYNTH] Engine colaborativo usando bootstrap sintético; "
+                    "no representa usuarios reales."
+                )
+        except Exception as synth_err:
+            logger.warning("[boot] No se pudo preparar bootstrap sintético: %s", synth_err)
         engine.prepare_pearson_matrix()
         # Seed data (seed_pois_mexico.py) ya incluye REST-MEX 2025/2022.
         # No llamar _merge_restmex para evitar duplicar 208K reseñas con
