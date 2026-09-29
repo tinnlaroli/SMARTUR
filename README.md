@@ -57,16 +57,15 @@ Internet
     │
     ▼
  Nginx (reverse proxy)
-    ├── /                    → LANDING    :4321
-    ├── /plataforma          → PLATAFORMA :5173
-    └── /api/v2/             → API        :4000
+    ├── smartur.online       → LANDING    :4321 (internal)
+    ├── app.smartur.online   → PLATAFORMA :5173 (internal)
+    └── api.smartur.online   → API        :3000 (internal)
                                   │
                                   ├── postgres  :5432
-                                  ├── redis     :6379
                                   └── MODELO    :8000 (interno)
 
 App Móvil (Flutter)
-    └── → API :4000  (con JWT)
+    └── → API pública vía nginx/api.smartur.online (con JWT)
              └── /api/v2/ml/recommend  → MODELO :8000
 ```
 
@@ -80,7 +79,6 @@ App Móvil (Flutter)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express%205-000000?style=flat-square&logo=express&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 
 ### <img src="https://cdn.simpleicons.org/scikitlearn/F7931E" width="16" height="16" /> Motor ML
@@ -104,7 +102,6 @@ App Móvil (Flutter)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white)
 
 ---
 
@@ -192,11 +189,11 @@ docker compose logs -f
 
 | Servicio | URL local | Descripción |
 |----------|-----------|-------------|
-| <img src="https://cdn.simpleicons.org/astro/FF5D01" width="14" height="14" /> Landing | http://localhost:4321 | Sitio de marketing |
-| <img src="https://cdn.simpleicons.org/react/61DAFB" width="14" height="14" /> Plataforma | http://localhost:5173 | Dashboard admin |
-| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="14" height="14" /> API | http://localhost:4000 | Backend REST |
-| <img src="https://cdn.simpleicons.org/python/3776AB" width="14" height="14" /> Modelo ML | http://localhost:8000 | Motor de recomendaciones |
-| <img src="https://cdn.simpleicons.org/grafana/F46800" width="14" height="14" /> Grafana | http://localhost:4001 | Monitoreo y métricas |
+| <img src="https://cdn.simpleicons.org/nginx/009639" width="14" height="14" /> Nginx | http://localhost | Entrada pública local |
+| <img src="https://cdn.simpleicons.org/astro/FF5D01" width="14" height="14" /> Landing | interno: landing:4321 | Sitio de marketing |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="14" height="14" /> Plataforma | interno: plataforma:5173 | Dashboard admin |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="14" height="14" /> API | interno: api:3000 | Backend REST |
+| <img src="https://cdn.simpleicons.org/python/3776AB" width="14" height="14" /> Modelo ML | interno: modelo:8000 | Motor de recomendaciones |
 
 > **Nota:** El MODELO puede tardar 5-10 minutos en el primer arranque (descarga y entrena el dataset inicial de Kaggle).
 
@@ -300,6 +297,8 @@ GET    /api/v2/contact-subscriptions  Suscripciones de contacto
 
 `API/bd.sql` es la **única fuente de verdad** del esquema. Cualquier cambio en la BD debe reflejarse aquí.
 
+La API no ejecuta migraciones al arrancar. No agregues archivos de migración ni scripts SQL sueltos para cambios de schema; consolida todo en `API/bd.sql` y aplica ese archivo en los entornos que correspondan.
+
 ```bash
 # Aplicar esquema localmente
 Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d smartur
@@ -308,7 +307,7 @@ Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d s
 ssh root@<VPS_IP> "docker exec -i smartur-postgres psql -U postgres -d smartur" < API/bd.sql
 ```
 
-> **Regla:** No crear archivos `.sql` sueltos en el proyecto. Todo va en `API/bd.sql`.
+> **Regla:** No crear archivos `.sql` sueltos en el proyecto. Todo cambio de schema va en `API/bd.sql`.
 
 ---
 

@@ -103,7 +103,7 @@ router.get('/ml/model-status', verifyToken, async (req, res) => {
  * POST /api/v2/ml/train
  * Triggers model retraining on MODELO (fire-and-forget from the dashboard).
  */
-router.post('/ml/train', verifyToken, async (req, res) => {
+router.post('/ml/train', verifyToken, requireRole([1]), async (req, res) => {
     try {
         const modeloRes = await fetch(`${MODELO_URL}/train`, {
             method: 'POST',
@@ -122,7 +122,7 @@ router.post('/ml/train', verifyToken, async (req, res) => {
  * POST /api/v2/ml/cross-validation
  * Inicia k-fold cross-validation (CF/RF/GBM) en MODELO, en background.
  */
-router.post('/ml/cross-validation', verifyToken, async (req, res) => {
+router.post('/ml/cross-validation', verifyToken, requireRole([1]), async (req, res) => {
     try {
         const modeloRes = await fetch(`${MODELO_URL}/cross-validation`, {
             method: 'POST',
@@ -141,7 +141,7 @@ router.post('/ml/cross-validation', verifyToken, async (req, res) => {
  * GET /api/v2/ml/cross-validation
  * Proxy al último resultado de k-fold cross-validation guardado en MODELO.
  */
-router.get('/ml/cross-validation', verifyToken, async (req, res) => {
+router.get('/ml/cross-validation', verifyToken, requireRole([1, 4]), async (req, res) => {
     try {
         const modeloRes = await fetch(`${MODELO_URL}/cross-validation`, {
             signal: AbortSignal.timeout(10_000),
@@ -225,6 +225,17 @@ router.post('/ml/feedback', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'session_id, item_id y rank_pos son requeridos.' });
     }
     try {
+        const { rows: sessionRows } = await db.query(
+            `SELECT user_id FROM ml_recommendation_session WHERE id = $1`,
+            [session_id],
+        );
+        if (!sessionRows.length) {
+            return res.status(404).json({ message: 'Sesión de recomendación no encontrada.' });
+        }
+        if (sessionRows[0].user_id !== req.user.id && req.user.role_id !== 1) {
+            return res.status(403).json({ message: 'No puedes registrar feedback para esta sesión.' });
+        }
+
         await db.query(
             `INSERT INTO ml_recommendation_feedback (session_id, item_id, rank_pos, clicked, clicked_at)
              VALUES ($1, $2, $3, $4, $5)
@@ -593,7 +604,7 @@ router.delete('/ml/wellness/history/me', verifyToken, async (req, res) => {
  * GET /api/v2/ml/wellness/pending-count
  * Conteo de servicios/POIs con wellness_status='pending'. Para badge del admin.
  */
-router.get('/ml/wellness/pending-count', verifyToken, requireRole([1, 2]), async (req, res) => {
+router.get('/ml/wellness/pending-count', verifyToken, requireRole([1, 4]), async (req, res) => {
     try {
         const { rows } = await db.query(
             `SELECT
@@ -612,7 +623,7 @@ router.get('/ml/wellness/pending-count', verifyToken, requireRole([1, 2]), async
  * GET /api/v2/ml/wellness/pending
  * Lista servicios y POIs con wellness_status='pending' para el admin.
  */
-router.get('/ml/wellness/pending', verifyToken, requireRole([1, 2]), async (req, res) => {
+router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req, res) => {
     try {
         const [svcRes, poiRes] = await Promise.all([
             db.query(
@@ -650,7 +661,7 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 2]), async (req,
  * Body: { action: 'approved'|'rejected', nivel_aislamiento?, restauracion_pasiva?,
  *         demanda_fisica?, categoria_wellness?, admin_notes? }
  */
-router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 2]), async (req, res) => {
+router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), async (req, res) => {
     const { type, id } = req.params;
     const {
         action,
@@ -720,7 +731,7 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 2]), 
  * GET /api/v2/ml/wellness/stats
  * Métricas wellness para el admin dashboard.
  */
-router.get('/ml/wellness/stats', verifyToken, requireRole([1, 2]), async (req, res) => {
+router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, res) => {
     const safeQ = async (sql, fallback) => {
         try { return (await db.query(sql)).rows; }
         catch { return fallback; }
@@ -764,7 +775,7 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 2]), async (req, r
  * Proxy a MODELO /wellness/metrics — clasificador accuracy/F1.
  * Solo admin y turismólogos.
  */
-router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 2, 4]), async (req, res) => {
+router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 4]), async (req, res) => {
     try {
         const resp = await fetch(`${MODELO_URL}/wellness/metrics`);
         if (resp.status === 404) {

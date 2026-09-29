@@ -2,14 +2,13 @@
 
 ## Project overview
 
-Multi-service Docker Compose project with 7 services:
-- **API** (Node.js/Express 5) — Backend API on port 4000
-- **PLATAFORMA** (React/Vite + Nginx) — Admin dashboard on port 5173
-- **LANDING** (Astro + React + Nginx) — Marketing site on port 4321
+Multi-service Docker Compose project with 6 services:
+- **nginx** — Only public entrypoint on port 80
+- **API** (Node.js/Express 5) — Backend API on internal port 3000
+- **PLATAFORMA** (React/Vite + Nginx) — Admin dashboard on internal port 5173
+- **LANDING** (Astro + React + Nginx) — Marketing site on internal port 4321
 - **MODELO** (Python/FastAPI) — ML recommendation engine on port 8000
 - **postgres** (PostgreSQL 16) — Database on port 5432
-- **redis** — Cache on port 6379
-- **grafana** — Analytics on port 4001
 
 ## Key commands
 
@@ -35,19 +34,18 @@ Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d s
 
 | Service | Container | External Port |
 |---------|-----------|---------------|
-| API | smartur-api | 4000 |
-| PLATAFORMA | smartur-plataforma | 5173 |
-| LANDING | smartur-landing | 4321 |
-| MODELO | smartur-modelo | 8000 |
-| postgres | smartur-postgres | 5432 |
-| redis | smartur-redis | 6379 |
-| grafana | smartur-grafana | 4001 |
+| nginx | smartur-nginx | 80 |
+| API | smartur-api | internal only: 3000 |
+| PLATAFORMA | smartur-plataforma | internal only: 5173 |
+| LANDING | smartur-landing | internal only: 4321 |
+| MODELO | smartur-modelo | internal only: 8000 |
+| postgres | smartur-postgres | internal only: 5432 |
 
 ## Architecture notes
 
 - **API prefix**: All routes served under `/api/v2/`
-- **Frontend proxy**: PLATAFORMA nginx proxies `/api/v2/*` → `http://api:4000/api/v2/`; LANDING nginx proxies `/api/v2/*` → same target
-- **Database source of truth**: `API/bd.sql` is the single schema file — no migration files. Any DB change must be applied to local Docker, production VPS (`ssh root@2.24.112.25`), and `bd.sql` simultaneously.
+- **Frontend proxy**: nginx proxies `/api/v2/*` → `http://api:3000/api/v2/`
+- **Database source of truth**: `API/bd.sql` is the single schema file. Do not add migration files or runtime schema mutations. Any DB change must be applied to local Docker, production VPS (`ssh root@2.24.112.25`), and `bd.sql` simultaneously.
 - **DB init**: `bd.sql` is auto-imported when `postgres_data` volume is first created
 - **MODELO bootstrap**: First start downloads Yelp data, preprocesses CSVs, trains RF. Persists in `modelo_data`/`modelo_models` volumes
 - **Express 5**: Does NOT support wildcard routes `app.options('*', ...)` — use `app.options(app.router, cors(corsOptions))`
@@ -93,7 +91,7 @@ Get-Content "API/bd.sql" | docker exec -i smartur-postgres psql -U postgres -d s
 **ML data collection routes**:
 - `POST /api/v2/me/interactions` — batch implicit event ingestion (dwell, detail_open, skip, filter_click)
 - `POST /api/v2/me/rating` — upsert explicit star rating (1–5)
-- `GET /api/v2/recommendations/:userId` — proxied MODELO call with session logging
+- `POST /api/v2/ml/recommend/:userId` — proxied MODELO call with session logging
 - `GET /api/v2/ml/health` — model metrics + daily sessions + CTR for dashboard
 
 ## MODELO (ML Service)

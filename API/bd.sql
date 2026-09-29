@@ -1258,7 +1258,8 @@ INSERT INTO evaluation_subcriterion (id_criterion, description, score, order_ind
 -- Estos bloques se pueden re-ejecutar sin errores en BDs existentes.
 -- ============================================================
 
--- Migraciones de arranque aplicadas por la API (config/migrations.js)
+-- Tabla histórica conservada por compatibilidad. La API no ejecuta migraciones
+-- en runtime; API/bd.sql es la única fuente de verdad del schema.
 CREATE TABLE IF NOT EXISTS _schema_migrations (
   name       VARCHAR(255) PRIMARY KEY,
   applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

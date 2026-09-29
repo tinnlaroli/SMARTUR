@@ -149,14 +149,14 @@ jobs:
             # MODELO: arranque lento si entrena (primer boot / sin modelo)
             wait_health smartur-modelo 60 15    # hasta ~15 min
 
-            # ── 6) Verificación de migraciones ─────────────────────
-            if docker logs --since 20m smartur-api 2>&1 | grep -q "\[migration\] ERROR"; then
-              echo "FAIL: el runner de migraciones del API reportó errores"
-              exit 1
-            fi
-            MIGS=$(docker exec smartur-postgres psql -U postgres -d smartur -tAc \
-              "SELECT count(*) FROM _schema_migrations" 2>/dev/null || echo 0)
-            echo "✓ _schema_migrations registradas: $MIGS"
+            # ── 6) Verificación de schema ──────────────────────────
+            # API/bd.sql es la única fuente de verdad del schema; la API
+            # no ejecuta migraciones en runtime. Aquí solo validamos que la
+            # BD activa tenga el catálogo esperado antes de declarar éxito.
+            TABLES=$(docker exec smartur-postgres psql -U postgres -d smartur -tAc \
+              "SELECT count(*) FROM pg_tables WHERE schemaname='public'" 2>/dev/null || echo 0)
+            [ "$TABLES" -ge 56 ] || { echo "FAIL: schema incompleto, tablas=$TABLES"; exit 1; }
+            echo "✓ Schema activo validado: $TABLES tablas públicas"
 
             # ── 7) Limpieza (imágenes huérfanas / caché antigua) ───
             docker image prune -f

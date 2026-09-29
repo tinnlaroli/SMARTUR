@@ -41,7 +41,6 @@ import BookingRouter from './routes/bookingRoutes.js';
 import ChatRouter from './routes/chatRoutes.js';
 import ServiceActivityRouter from './routes/serviceActivityRoutes.js';
 import AdminChangeLogRouter from './routes/adminChangeLogRoutes.js';
-import { runMigrations } from './config/migrations.js';
 import db from './config/db.js';
 import { validateEnv } from './config/env.js';
 import { initSentry, setupSentryErrorHandler } from './config/sentry.js';
@@ -347,8 +346,9 @@ async function purgeExpiredTokens() {
     }
 }
 
-// Run DB migrations before accepting connections
-runMigrations().then(async () => {
+// API/bd.sql is the single source of truth for schema changes.
+// The API only starts after the DB is reachable; it does not mutate schema at boot.
+db.query('SELECT 1').then(async () => {
     await purgeExpiredTokens();
     setInterval(purgeExpiredTokens, 6 * 60 * 60 * 1000);
     app.listen(PORT, '0.0.0.0', () => {

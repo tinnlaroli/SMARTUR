@@ -493,11 +493,15 @@ const paths = {
     '/api/v2/ml/train': {
         post: op({ tag: 'ML / Recommendations', summary: 'Forzar reentrenamiento del modelo', permission: 'Admin', auth: true }),
     },
+    '/api/v2/ml/cross-validation': {
+        get: op({ tag: 'ML / Recommendations', summary: 'Obtener último resultado de cross-validation', permission: 'Admin/Turismólogo', auth: true }),
+        post: op({ tag: 'ML / Recommendations', summary: 'Iniciar cross-validation del modelo', permission: 'Admin', auth: true }),
+    },
     '/api/v2/ml/recommend/{userId}': {
         post: op({ tag: 'ML / Recommendations', summary: 'Obtener recomendaciones personalizadas', permission: 'Autenticado', auth: true, params: [idParam('userId', 'ID del usuario')], body: jsonBody }),
     },
     '/api/v2/ml/feedback': {
-        post: op({ tag: 'ML / Recommendations', summary: 'Registrar feedback de recomendación (clic/skip)', permission: 'Autenticado', auth: true, body: jsonBody }),
+        post: op({ tag: 'ML / Recommendations', summary: 'Registrar feedback de recomendación para una sesión propia', permission: 'Autenticado', auth: true, body: jsonBody }),
     },
     '/api/v2/ml/sessions/me': {
         get: op({ tag: 'ML / Recommendations', summary: 'Historial de sesiones ML del usuario autenticado', permission: 'Autenticado', auth: true }),
@@ -585,8 +589,8 @@ const options = {
                 description: 'Producción — dominio HTTPS',
             },
             {
-                url: 'http://2.24.112.25:4000',
-                description: 'Producción — VPS directo',
+                url: 'https://api.smartur.online',
+                description: 'Producción — API HTTPS',
             },
         ],
         components: {

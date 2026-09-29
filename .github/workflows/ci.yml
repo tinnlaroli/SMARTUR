@@ -55,18 +55,14 @@ jobs:
               - '.env.example'
             db:
               - 'API/bd.sql'
-              - 'API/config/migrations.js'
-              - 'API/migrations/**'
               - 'API/config/db.js'
-              - 'API/scripts/schema-migrations-check.mjs'
 
   # ─────────────────────────────────────────────────────────────
-  # DB — verifica que bd.sql construye el esquema bien (install
-  # fresco), que 001_reconcile_vps.sql es idempotente y que el
-  # runner de migraciones funciona sobre esa base (upgrade path).
+  # DB — verifica que bd.sql construye el esquema completo en una
+  # instalación fresca. bd.sql es la única fuente de verdad del schema.
   # ─────────────────────────────────────────────────────────────
   db-schema:
-    name: DB — Schema & Migrations
+    name: DB — Schema
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.db == 'true'
@@ -102,39 +98,6 @@ jobs:
           echo "OK: bd.sql importa sin errores y produce 56 tablas + 1 vista"
         env:
           PGPASSWORD: postgres
-
-      - name: Reconcile script idempotente (2 pasadas)
-        run: |
-          psql -h localhost -U postgres -d smartur -v ON_ERROR_STOP=1 \
-            -f API/migrations/001_reconcile_vps.sql > /tmp/r1.log 2>&1
-          grep -q '^ERROR' /tmp/r1.log && { cat /tmp/r1.log; exit 1; } || true
-          psql -h localhost -U postgres -d smartur -v ON_ERROR_STOP=1 \
-            -f API/migrations/001_reconcile_vps.sql > /tmp/r2.log 2>&1
-          grep -q '^ERROR' /tmp/r2.log && { cat /tmp/r2.log; exit 1; } || true
-          echo "OK: 001_reconcile_vps.sql corre 2 veces sin errores (idempotente)"
-        env:
-          PGPASSWORD: postgres
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: API/package-lock.json
-
-      - name: Install API dependencies
-        run: npm ci
-        working-directory: API
-
-      - name: Migration runner idempotente sobre bd.sql
-        run: node scripts/schema-migrations-check.mjs
-        working-directory: API
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: smartur
-          DB_USER: postgres
-          DB_PASSWORD: postgres
 
   # ─────────────────────────────────────────────────────────────
   # API — ESLint real + unit tests + syntax check
