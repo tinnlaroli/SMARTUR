@@ -352,7 +352,10 @@ def health():
         # Estado del blend dinámico: warmth=0 → la preferencia declarada domina;
         # warmth=1 → los modelos aprendidos (CF/RF/LightFM) toman el control.
         "data_warmth":         round(_data_warmth, 3),
-        "pref_weight":         round(0.65 - 0.45 * _data_warmth, 3),
+        # Mantener este valor alineado con fusion._preference_weight(); el
+        # endpoint se usa para observabilidad y no debe reportar una fórmula
+        # histórica distinta del score que recibe el usuario.
+        "pref_weight":         round(0.85 - 0.65 * _data_warmth, 3),
     }
 
 

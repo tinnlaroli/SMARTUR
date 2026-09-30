@@ -60,7 +60,8 @@ def run(n_personas=None, seed=42, k=10):
     means = train.groupby("business_id")["stars"].mean().to_dict()
     algorithms = {name: [] for name in (
         "popularity", "item_mean", "content", "preference", "content_preference",
-        "lightfm", "rf", "content_rf"
+        "lightfm", "rf", "content_rf", "production_cold_075",
+        "production_cold_085", "production_cold_090"
     )}
     evaluated = 0
 
@@ -105,6 +106,16 @@ def run(n_personas=None, seed=42, k=10):
             # pero no participa en la selección hasta superar esta mezcla.
             "content_rf": 0.7 * _minmax(content_score) + 0.3 * _minmax(rf_score),
         }
+        # Approximate the exact cold-start serving blend used by fusion.py:
+        # content + RF as the learned block, then declared preferences as the
+        # dominant signal. Keep several preference weights in the report so a
+        # single seed cannot decide the production setting by itself.
+        learned_block = 0.7 * _minmax(content_score) + 0.3 * _minmax(rf_score)
+        pref_norm = _minmax(pref_score)
+        for weight in (0.75, 0.85, 0.90):
+            scores[f"production_cold_{int(weight * 100):03d}"] = (
+                (1.0 - weight) * learned_block + weight * pref_norm
+            )
         for name, values in scores.items():
             order = np.argsort(-np.nan_to_num(values, nan=-1e9))
             recs = [pool[i] for i in order[:k]]

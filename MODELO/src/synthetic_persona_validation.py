@@ -252,7 +252,12 @@ def run_validation(n_personas: int = N_PERSONAS, test_size: float = 0.2) -> dict
     }
     with _sandboxed_model_dir():
         rf = _rf_model_module.SmarturContextModel()
-        rf.train(train_df, dynamic_override=True)
+        # RF obtiene las categorías desde su catálogo interno durante el
+        # merge. El generador puede conservarlas para otros evaluadores, pero
+        # pasarlas aquí provoca categories_user/categories_biz y rompe la
+        # extracción de features.
+        rf_train_df = train_df.drop(columns=['categories'], errors='ignore')
+        rf.train(rf_train_df, dynamic_override=True)
         rf_preds = [
             float(rf.predict_with_context(
                 [row.business_id], user_context=persona_ctx.get(row.user_id))[0])
