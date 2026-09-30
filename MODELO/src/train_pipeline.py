@@ -24,12 +24,13 @@ import time
 from math import sqrt
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
 
 from engine import SmarturEngine
 from synthetic_training import build_synthetic_ratings
-from synthetic_persona_validation import RANDOM_STATE
+from synthetic_persona_validation import RANDOM_STATE, TOURISM_TYPES, generate_personas
 from cf import predict_cf_pearson
 
 logger = logging.getLogger("smartur.train_pipeline")
@@ -99,6 +100,47 @@ def _catalog_quality(catalog):
     }
 
 
+def _synthetic_contexts(personas):
+    """Contexto declarado de cada persona, separado de sus ratings."""
+    contexts = personas.copy()
+    affinity_cols = [f"aff_{t}" for t in TOURISM_TYPES]
+    contexts["top_type"] = contexts[affinity_cols].idxmax(axis=1).str.replace(
+        "aff_", "", regex=False
+    )
+    contexts["presupuesto_bucket"] = contexts["budget"].map(
+        {1: "bajo", 2: "medio", 3: "alto", 4: "premium"}
+    )
+    contexts["tiposTurismo"] = contexts["top_type"].map(lambda value: [value])
+    return contexts[["persona_id", "presupuesto_bucket", "tiposTurismo"]].rename(
+        columns={"persona_id": "user_id"}
+    )
+
+
+def _preference_ml_metrics(train_df, test_df, catalog, contexts):
+    from sklearn.metrics import mean_absolute_error, mean_squared_error
+    from preference_model import PreferenceContextModel
+
+    model = PreferenceContextModel().fit(train_df, contexts, catalog)
+    item_catalog = catalog.copy()
+    item_catalog["business_id"] = item_catalog["business_id"].astype(str)
+    item_catalog = item_catalog.set_index("business_id")
+    test_rows = test_df[test_df["business_id"].astype(str).isin(item_catalog.index)].copy()
+    predictions = []
+    for _, rating in test_rows.iterrows():
+        item = item_catalog.loc[str(rating["business_id"])].to_dict()
+        item["business_id"] = str(rating["business_id"])
+        context = model._context_for_user(contexts, rating["user_id"])
+        predictions.append(float(model.predict(pd.DataFrame([item]), context)[0]))
+    actual = test_rows["stars"].to_numpy(dtype=float)
+    pred = np.asarray(predictions, dtype=float)
+    return model, {
+        "rmse": float(np.sqrt(mean_squared_error(actual, pred))),
+        "mae": float(mean_absolute_error(actual, pred)),
+        "n_test": int(len(actual)),
+        "algorithm": "hist_gradient_boosting_preference_context",
+    }
+
+
 def run(personas=2500, promote=False, seed=RANDOM_STATE):
     started = time.time()
     base = SmarturEngine(data_source="mexico")
@@ -109,6 +151,7 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
     # que realmente verá el usuario y no un catálogo externo desconectado.
     # Generar una sola vez: el CSV de respaldo, el split, las métricas y los
     # artefactos promovidos deben describir exactamente las mismas filas.
+    persona_rows = generate_personas(personas, seed=seed)
     ratings = build_synthetic_ratings(catalog, n_personas=personas, seed=seed)
     train_df, test_df = train_test_split(ratings, test_size=0.2, random_state=seed)
     train_df = train_df.reset_index(drop=True)
@@ -125,6 +168,11 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
         test_df = test_df.merge(item_categories, on="business_id", how="left")
     repeat_rate = float((ratings.groupby("user_id").size() >= 5).mean())
     metrics = _evaluate(train_df, test_df, catalog)
+    contexts = _synthetic_contexts(persona_rows)
+    preference_model, preference_metrics = _preference_ml_metrics(
+        train_df, test_df, catalog, contexts
+    )
+    metrics["preference_context_ml"] = preference_metrics
     report = {
         "dataset_type": "synthetic_bootstrap",
         "synthetic_augmented": True,
@@ -156,6 +204,7 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
         # el extractor de features. LightFM sí recibe la columna completa.
         rf_train_df = train_df.drop(columns=["categories"], errors="ignore")
         rf.train(rf_train_df, dynamic_override=True)
+        preference_model.save(os.path.join(models_dir, "preference_context_model.joblib"))
         try:
             from lightfm_model import SmarturLightFMModel
             lfm = SmarturLightFMModel()

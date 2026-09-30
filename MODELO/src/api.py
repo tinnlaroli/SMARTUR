@@ -33,6 +33,7 @@ logger = logging.getLogger("smartur-api")
 
 engine          = None
 context_model   = None
+preference_ml_model = None  # HistGradientBoosting para ranking contextual cold-start
 lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
@@ -145,7 +146,7 @@ def _load_or_train_models(do_train: bool = False) -> None:
     Carga los modelos desde disco. Si do_train=True y alguno falta, lo entrena.
     Diseñado para ejecutarse en un ThreadPoolExecutor (CPU-bound).
     """
-    global engine, context_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
+    global engine, context_model, preference_ml_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
 
     try:
         logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
@@ -181,6 +182,19 @@ def _load_or_train_models(do_train: bool = False) -> None:
                 context_model.train(engine.train_data, df_biz_extra=restmex_biz)
             else:
                 context_model = None
+
+        # Modelo ML contextual entrenado con contexto declarado + atributos del
+        # lugar. Si no existe el artefacto, el RF histórico queda como fallback.
+        try:
+            from preference_model import PreferenceContextModel
+            preference_ml_model = PreferenceContextModel()
+            if not preference_ml_model.load():
+                preference_ml_model = None
+            else:
+                logger.info("[boot] PreferenceContextModel ML cargado")
+        except Exception as pref_err:
+            preference_ml_model = None
+            logger.warning("[boot] PreferenceContextModel no disponible: %s", pref_err)
 
         logger.info("[boot] Cargando LightFM (cold-start WARP)...")
         try:
@@ -316,6 +330,7 @@ class RecItem(BaseModel):
     # este lugar, se usó la evaluación del admin o el promedio.
     cf_signal: str = 'none'
     pred_rf: float
+    pred_ml: Optional[float] = None
     pred_pref: float = 0.0
     kind: str = 'poi'
     reason_tags: list[str] = []  # human-readable explanation tags, e.g. ["Coincide con naturaleza", "A 3.2 km"]
@@ -343,6 +358,7 @@ def health():
         "status": "ok",
         "engine_ready":        engine is not None and engine.user_item_matrix is not None,
         "rf_ready":            context_model is not None and getattr(context_model, 'is_fitted', False),
+        "preference_ml_ready": preference_ml_model is not None and getattr(preference_ml_model, 'is_fitted', False),
         "svd_ready":           engine is not None and hasattr(engine, 'user_latent'),
         "lightfm_ready":       lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
         "content_ready":       content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
@@ -459,6 +475,7 @@ def get_recommendation(
             user_id, engine, context_model,
             alpha=alpha, top_n=top_n,
             lightfm_model=lightfm_model, content_model=content_model_cb,
+            preference_model=preference_ml_model,
             quality_scores=quality_scores, data_warmth=_data_warmth,
         )
         return RecommendationResponse(
@@ -517,6 +534,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
         with _models_lock:
             _engine = engine
             _ctx    = context_model
+            _pref   = preference_ml_model
             _lfm    = lightfm_model
             _cb     = content_model_cb
             _qs     = quality_scores
@@ -530,6 +548,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             top_n=payload.top_n,
             lightfm_model=_lfm,
             content_model=_cb,
+            preference_model=_pref,
             quality_scores=_qs,
             data_warmth=_data_warmth,
         )
@@ -545,6 +564,7 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
                     pred_cf=r.get('pred_cf', 0.0),
                     cf_signal=r.get('cf_signal', 'none'),
                     pred_rf=r.get('pred_rf', 0.0),
+                    pred_ml=r.get('pred_ml'),
                     pred_pref=r.get('pred_pref', 0.0),
                     kind=r.get('kind', 'poi'),
                     reason_tags=r.get('reason_tags', []),

@@ -8,7 +8,8 @@ Fase A (Retrieval):
 
 Fase B (Ranking) — 4 señales:
   - CF/SVD Pearson (warm users only)
-  - RF contextual [Item + User + Match features]
+  - PreferenceContextModel ML contextual [preferencias declaradas + item]
+  - RF contextual [Item + User + Match features] (fallback)
   - LightFM WARP (cold-start + warm via feature embeddings)
   - ContentModel TF-IDF (fallback cuando LightFM no disponible)
 
@@ -371,7 +372,7 @@ def _resolve_cf_score(
 def recommend_hybrid(
     user_id, engine, context_model,
     alpha=0.4, context=None, top_n=5,
-    lightfm_model=None, content_model=None,
+    lightfm_model=None, content_model=None, preference_model=None,
     quality_scores=None, data_warmth=0.0,
 ):
     """
@@ -434,6 +435,13 @@ def recommend_hybrid(
     ref_df = local_biz if not local_biz.empty else (engine.df_biz if engine is not None else pd.DataFrame())
     rf_scores = context_model.predict_with_context(final_ids, user_context=context, df_biz_override=ref_df)
     rf_map = dict(zip(final_ids, rf_scores))
+    ml_map = {}
+    if preference_model is not None and getattr(preference_model, "is_fitted", False):
+        try:
+            ml_scores = preference_model.predict(ref_df[ref_df["business_id"].isin(final_ids)], context=context)
+            ml_map = dict(zip(ref_df[ref_df["business_id"].isin(final_ids)]["business_id"].tolist(), ml_scores))
+        except Exception:
+            ml_map = {}
 
     biz_cat_lookup  = ref_df.set_index('business_id')['categories'].to_dict()
     all_biz_names   = ref_df.set_index('business_id')['name'].to_dict()
@@ -518,6 +526,10 @@ def recommend_hybrid(
         )
 
         score_rf  = rf_map.get(biz_id, 3.0)
+        score_ml  = ml_map.get(biz_id)
+        # El modelo ML contextual es la señal aprendida principal en cold-start
+        # cuando existe artefacto. RF queda como respaldo compatible.
+        score_context = float(score_ml) if score_ml is not None else float(score_rf)
         score_lfm = lfm_map.get(biz_id, 3.0)
         cats      = biz_cat_lookup.get(biz_id, '')
 
@@ -526,14 +538,14 @@ def recommend_hybrid(
         #   Warm user       -> LightFM + CF por delante, RF de apoyo
         if lfm_map:
             if is_cold_start:
-                final_score = LFM_W_COLD * score_lfm + RF_W_COLD * score_rf
+                final_score = LFM_W_COLD * score_lfm + RF_W_COLD * score_context
             else:
-                final_score = LFM_W_WARM * score_lfm + CF_W_WARM * score_cf + RF_W_WARM * score_rf
+                final_score = LFM_W_WARM * score_lfm + CF_W_WARM * score_cf + RF_W_WARM * score_context
         else:
             # LightFM not available -> classic blend, pero con tope al RF para no
             # dejar que el peor estimador domine (antes llegaba a ~0.94).
             rf_w = min(RF_W_MAX_NOLFM, 1 - effective_alpha)
-            final_score = ((1 - rf_w) * score_cf) + (rf_w * score_rf)
+            final_score = ((1 - rf_w) * score_cf) + (rf_w * score_context)
 
         # Boost de preferencia declarada (perfil real del usuario), no de lo
         # que CF/RF aprendieron de calificaciones. Nunca excluye candidatos —
@@ -578,6 +590,7 @@ def recommend_hybrid(
             # cuándo el CF-KNN por fin despierta, sin adivinar.
             'cf_signal':   cf_signal,
             'pred_rf':     float(round(score_rf, 3)),
+            'pred_ml':     float(round(score_ml, 3)) if score_ml is not None else None,
             'pred_pref':   float(round(score_pref, 3)),
             'kind':        kind,
             'reason_tags': _build_reason_tags(
