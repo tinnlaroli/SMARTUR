@@ -570,22 +570,63 @@ def get_metrics():
     _BASE = Path(_MODELS)
     data = {}
 
-    # 1. Try DB first (pooled connection — no new TCP handshake per request)
+    # El bootstrap sintético y las métricas históricas de la BD no describen
+    # el mismo dataset. En ese modo, leer primero ml_model_metrics mezclaba
+    # generaciones antiguas (incluidos usuarios Yelp) con el artefacto actual
+    # de 2,500 personas. El dashboard debe observar el reporte promovido.
     try:
-        pool = _get_db_pool()
-        conn = pool.getconn()
+        from synthetic_training import synth_training_enabled
+        bootstrap_active = synth_training_enabled()
+    except Exception:
+        bootstrap_active = False
+
+    if bootstrap_active:
+        ranking_path = _BASE / "bootstrap_ranking_metrics.json"
+        rating_path = _BASE / "bootstrap_metrics.json"
+        if not ranking_path.exists():
+            raise HTTPException(status_code=404, detail="No hay métricas bootstrap almacenadas todavía.")
         try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT metrics_json FROM ml_model_metrics ORDER BY created_at DESC LIMIT 1"
-                )
-                row = cur.fetchone()
-        finally:
-            pool.putconn(conn)
-        if row:
-            data = row[0]  # psycopg2 returns jsonb as dict automatically
-    except Exception as db_err:
-        logger.warning(f"[metrics] DB fallback: {db_err}")
+            with open(ranking_path, encoding="utf-8") as f:
+                data = json.load(f)
+            data["metrics_source"] = "bootstrap_ranking_metrics.json"
+            data["synthetic_augmented"] = True
+            if rating_path.exists():
+                with open(rating_path, encoding="utf-8") as f:
+                    rating = json.load(f)
+                data["bootstrap_rating_metrics"] = rating.get("metrics", {})
+                data["data_quality"] = rating.get("catalog_quality", {})
+                data["data_quality"].update({
+                    "personas": rating.get("personas", 0),
+                    "ratings": rating.get("ratings", 0),
+                })
+            data["selection_metric"] = "ndcg"
+            data["selection_rationale"] = (
+                "Bootstrap sintético: se selecciona por calidad de ranking; "
+                "no representa usuarios reales."
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"[metrics] Error leyendo métricas bootstrap: {e}")
+            raise HTTPException(status_code=500, detail="Error al leer métricas bootstrap.")
+
+    if not bootstrap_active:
+        # 1. Try DB first (pooled connection — no new TCP handshake per request)
+        try:
+            pool = _get_db_pool()
+            conn = pool.getconn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT metrics_json FROM ml_model_metrics ORDER BY created_at DESC LIMIT 1"
+                    )
+                    row = cur.fetchone()
+            finally:
+                pool.putconn(conn)
+            if row:
+                data = row[0]  # psycopg2 returns jsonb as dict automatically
+        except Exception as db_err:
+            logger.warning(f"[metrics] DB fallback: {db_err}")
 
     # 2. Fall back to JSON file in the models volume
     if not data:
