@@ -118,6 +118,7 @@ def _synthetic_contexts(personas):
 
 def _preference_ml_metrics(train_df, test_df, catalog, contexts):
     from sklearn.metrics import mean_absolute_error, mean_squared_error
+    from sklearn.metrics import ndcg_score
     from preference_model import PreferenceContextModel
 
     model = PreferenceContextModel().fit(train_df, contexts, catalog)
@@ -133,11 +134,32 @@ def _preference_ml_metrics(train_df, test_df, catalog, contexts):
         predictions.append(float(model.predict(pd.DataFrame([item]), context)[0]))
     actual = test_rows["stars"].to_numpy(dtype=float)
     pred = np.asarray(predictions, dtype=float)
+    ranking_ndcg = []
+    ranking_recall = []
+    ranking_hit = []
+    scored = test_rows.copy()
+    scored["prediction"] = pred
+    for _, group in scored.groupby("user_id"):
+        if len(group) < 2:
+            continue
+        relevant = (group["stars"].to_numpy(dtype=float) >= 4).astype(float)
+        if relevant.sum() == 0:
+            continue
+        scores = group["prediction"].to_numpy(dtype=float)
+        k = min(10, len(group))
+        order = np.argsort(-scores)[:k]
+        ranking_ndcg.append(float(ndcg_score([relevant], [scores], k=k)))
+        ranking_recall.append(float(relevant[order].sum() / relevant.sum()))
+        ranking_hit.append(float(relevant[order].sum() > 0))
     return model, {
         "rmse": float(np.sqrt(mean_squared_error(actual, pred))),
         "mae": float(mean_absolute_error(actual, pred)),
         "n_test": int(len(actual)),
         "algorithm": "hist_gradient_boosting_preference_context",
+        "ndcg_at_10": float(np.mean(ranking_ndcg)) if ranking_ndcg else 0.0,
+        "recall_at_10": float(np.mean(ranking_recall)) if ranking_recall else 0.0,
+        "hit_rate_at_10": float(np.mean(ranking_hit)) if ranking_hit else 0.0,
+        "ranking_users": int(len(ranking_ndcg)),
     }
 
 
