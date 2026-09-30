@@ -433,8 +433,15 @@ def recommend_hybrid(
 
     # ── Fase B: Ranking ──────────────────────────────────────────────────
     ref_df = local_biz if not local_biz.empty else (engine.df_biz if engine is not None else pd.DataFrame())
-    rf_scores = context_model.predict_with_context(final_ids, user_context=context, df_biz_override=ref_df)
-    rf_map = dict(zip(final_ids, rf_scores))
+    # Cuando existe el nuevo modelo ML contextual, RF deja de ser necesario en
+    # cada request: el benchmark bootstrap lo encontró claramente peor y su
+    # inferencia añade costo. Se conserva como fallback si el artefacto ML no
+    # está disponible o en instalaciones antiguas.
+    if preference_model is not None and getattr(preference_model, "is_fitted", False):
+        rf_map = {biz_id: 3.0 for biz_id in final_ids}
+    else:
+        rf_scores = context_model.predict_with_context(final_ids, user_context=context, df_biz_override=ref_df)
+        rf_map = dict(zip(final_ids, rf_scores))
     ml_map = {}
     if preference_model is not None and getattr(preference_model, "is_fitted", False):
         try:

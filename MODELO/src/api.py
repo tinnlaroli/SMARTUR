@@ -196,20 +196,32 @@ def _load_or_train_models(do_train: bool = False) -> None:
             preference_ml_model = None
             logger.warning("[boot] PreferenceContextModel no disponible: %s", pref_err)
 
-        logger.info("[boot] Cargando LightFM (cold-start WARP)...")
+        # El LightFM bootstrap se evaluó por debajo del modelo contextual y
+        # añade memoria/tiempo de carga. Se conserva el código para activarlo
+        # con datos reales, pero no se carga durante el bootstrap sintético.
         try:
-            from lightfm_model import SmarturLightFMModel
-            lightfm_model = SmarturLightFMModel()
-            if not lightfm_model.load():
-                if do_train and context_model is not None:
-                    ok = lightfm_model.train(engine.train_data, context_model.df_biz)
-                    if not ok:
-                        lightfm_model = None
-                else:
-                    lightfm_model = None
-        except Exception as lfm_err:
+            from synthetic_training import synth_training_enabled
+            bootstrap_active = synth_training_enabled()
+        except Exception:
+            bootstrap_active = False
+        if bootstrap_active:
             lightfm_model = None
-            logger.warning(f"[boot] LightFM no disponible: {lfm_err}")
+            logger.info("[boot] LightFM omitido en bootstrap: no aporta al ranking actual")
+        else:
+            logger.info("[boot] Cargando LightFM (cold-start WARP)...")
+            try:
+                from lightfm_model import SmarturLightFMModel
+                lightfm_model = SmarturLightFMModel()
+                if not lightfm_model.load():
+                    if do_train and context_model is not None:
+                        ok = lightfm_model.train(engine.train_data, context_model.df_biz)
+                        if not ok:
+                            lightfm_model = None
+                    else:
+                        lightfm_model = None
+            except Exception as lfm_err:
+                lightfm_model = None
+                logger.warning(f"[boot] LightFM no disponible: {lfm_err}")
 
         logger.info("[boot] Cargando ContentModel (TF-IDF)...")
         try:
