@@ -8,13 +8,13 @@ import numpy as np
 # baseline (predecir la media) le gana a CF en RMSE. No es thread-safe a
 # propósito: los loops de evaluación (compare_algorithms, _compute_simple_
 # metrics) corren secuenciales en un solo proceso.
-_prediction_source_counts = {'knn': 0, 'svd': 0, 'fallback_mean': 0}
+_prediction_source_counts = {'knn': 0, 'fallback_mean': 0}
 
 
 def reset_prediction_stats():
     """Reinicia los contadores — llamar antes de un batch de evaluación."""
     global _prediction_source_counts
-    _prediction_source_counts = {'knn': 0, 'svd': 0, 'fallback_mean': 0}
+    _prediction_source_counts = {'knn': 0, 'fallback_mean': 0}
 
 
 def get_prediction_stats() -> dict:
@@ -28,15 +28,15 @@ def get_prediction_stats() -> dict:
 
 
 # Fuentes que cuentan como SEÑAL REAL (el CF de verdad aportó algo):
-# 'knn' = vecinos que sí calificaron este ítem; 'svd' = factorización latente.
+# 'knn' = vecinos que sí calificaron este ítem.
 # 'fallback_mean' NO es señal — es solo un promedio de relleno.
-REAL_SIGNAL_SOURCES = ('knn', 'svd')
+REAL_SIGNAL_SOURCES = ('knn',)
 
 
 def _predict_cf_pearson_impl(user_id, item_id, engine, k=20):
     """
     Núcleo del CF. Devuelve (score, source) donde source ∈
-    {'knn', 'svd', 'fallback_mean'} — así los llamadores pueden distinguir
+    {'knn', 'fallback_mean'} — así los llamadores pueden distinguir
     una predicción con señal real de un simple promedio de relleno.
     """
     user_idx = engine.get_user_idx(user_id)
@@ -73,20 +73,7 @@ def _predict_cf_pearson_impl(user_id, item_id, engine, k=20):
         user_mean = float(engine.train_data['stars'].mean())
 
     if sim_sum == 0:
-        # No KNN neighbors rated this item -> try SVD dot-product for a better estimate
-        if hasattr(engine, 'user_latent') and hasattr(engine, 'item_latent'):
-            u = engine.user_index.get(user_id)
-            it = engine.item_index.get(item_id)
-            if u is not None and it is not None:
-                try:
-                    svd_pred = float(np.dot(engine.user_latent[u], engine.item_latent[it]))
-                    # SVD output is on centered scale; shift back to [1, 5]
-                    svd_pred = float(np.clip(svd_pred + user_mean, 1, 5))
-                    if not np.isnan(svd_pred):
-                        return svd_pred, 'svd'
-                    return user_mean, 'fallback_mean'
-                except Exception:
-                    pass
+        # Sin vecinos que hayan valorado el ítem, el CF no tiene señal real.
         return user_mean, 'fallback_mean'
 
     prediction = user_mean + (weighted_sum / sim_sum)

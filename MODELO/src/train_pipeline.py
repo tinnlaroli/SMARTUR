@@ -220,22 +220,7 @@ def run(personas=2500, promote=False, seed=RANDOM_STATE):
         # deben confundirse con métricas de usuarios reales.
         ratings.to_csv(os.path.join(models_dir, "synthetic_training_backup.csv"), index=False)
         preference_model.save(os.path.join(models_dir, "preference_context_model.joblib"))
-        # RF y LightFM históricos quedan disponibles como fallback/estudio,
-        # pero no se vuelven a entrenar por defecto: el benchmark mostró que
-        # no mejoran al modelo contextual y solo aumentan tiempo y memoria.
-        if os.environ.get("SMARTUR_TRAIN_LEGACY_MODELS", "").lower() in {"1", "true", "yes"}:
-            from rf_model import SmarturContextModel
-            rf = SmarturContextModel()
-            rf_train_df = train_df.drop(columns=["categories"], errors="ignore")
-            rf.train(rf_train_df, dynamic_override=True)
-            try:
-                from lightfm_model import SmarturLightFMModel
-                lfm = SmarturLightFMModel()
-                lfm.train(train_df, catalog)
-            except Exception as exc:
-                logger.warning("LightFM no pudo entrenarse en bootstrap: %s", exc)
-        else:
-            logger.info("RF/LightFM legacy omitidos; usar SMARTUR_TRAIN_LEGACY_MODELS=1 para auditoría")
+        logger.info("Modelos legacy RF/LightFM omitidos; el artefacto activo es PreferenceContextModel")
         with open(os.path.join(models_dir, "training_manifest.json"), "w", encoding="utf-8") as fh:
             json.dump({
                 "dataset_type": "synthetic_bootstrap",

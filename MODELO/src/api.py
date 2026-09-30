@@ -20,7 +20,7 @@ Conecta los flujos entre el Engine de Pearson y el Modelo Contextual de RF.
 """
 
 from engine import SmarturEngine
-from rf_model import SmarturContextModel, _MODELS
+from catalog_context import CatalogContext, _MODELS
 from fusion import recommend_hybrid
 from route_optimizer import optimize_route as _aco_optimize
 import json
@@ -32,9 +32,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("smartur-api")
 
 engine          = None
-context_model   = None
+context_model   = None  # adaptador de catálogo; el ranking ML vive en preference_ml_model
 preference_ml_model = None  # HistGradientBoosting para ranking contextual cold-start
-lightfm_model   = None   # LightFM: cold-start-aware matrix factorization (WARP loss)
 content_model_cb = None  # ContentModel: TF-IDF fallback for cold-start
 quality_scores: dict = {}  # {business_id: normalized quality ∈ [0,1]} from service_evaluation
 # data_warmth ∈ [0,1]: qué tan "caliente" está el sistema en datos reales.
@@ -146,10 +145,10 @@ def _load_or_train_models(do_train: bool = False) -> None:
     Carga los modelos desde disco. Si do_train=True y alguno falta, lo entrena.
     Diseñado para ejecutarse en un ThreadPoolExecutor (CPU-bound).
     """
-    global engine, context_model, preference_ml_model, lightfm_model, content_model_cb, quality_scores, _training_in_progress
+    global engine, context_model, preference_ml_model, content_model_cb, quality_scores, _training_in_progress
 
     try:
-        logger.info("[boot] Cargando Motor de Pearson + SVD (Engine)...")
+        logger.info("[boot] Cargando Motor de Pearson + KNN (Engine)...")
         engine = SmarturEngine(data_source='mexico')
         # En el arranque en frío, el CSV mexicano histórico tiene una reseña
         # por usuario sintético y no contiene señal colaborativa. Si el modo
@@ -174,14 +173,8 @@ def _load_or_train_models(do_train: bool = False) -> None:
         # business_ids inconsistentes (idx%40 genera 40 IDs por Town+Type).
         restmex_biz = None
 
-        logger.info("[boot] Cargando Modelo de Contexto (Random Forest)...")
-        context_model = SmarturContextModel()
-        if not context_model.load():
-            if do_train:
-                logger.info("[boot] Modelo RF no encontrado — entrenando en segundo plano...")
-                context_model.train(engine.train_data, df_biz_extra=restmex_biz)
-            else:
-                context_model = None
+        logger.info("[boot] Cargando adaptador de catálogo (sin RF)...")
+        context_model = CatalogContext(data_source="mexico")
 
         # Modelo ML contextual entrenado con contexto declarado + atributos del
         # lugar. Si no existe el artefacto, el RF histórico queda como fallback.
@@ -196,32 +189,7 @@ def _load_or_train_models(do_train: bool = False) -> None:
             preference_ml_model = None
             logger.warning("[boot] PreferenceContextModel no disponible: %s", pref_err)
 
-        # El LightFM bootstrap se evaluó por debajo del modelo contextual y
-        # añade memoria/tiempo de carga. Se conserva el código para activarlo
-        # con datos reales, pero no se carga durante el bootstrap sintético.
-        try:
-            from synthetic_training import synth_training_enabled
-            bootstrap_active = synth_training_enabled()
-        except Exception:
-            bootstrap_active = False
-        if bootstrap_active:
-            lightfm_model = None
-            logger.info("[boot] LightFM omitido en bootstrap: no aporta al ranking actual")
-        else:
-            logger.info("[boot] Cargando LightFM (cold-start WARP)...")
-            try:
-                from lightfm_model import SmarturLightFMModel
-                lightfm_model = SmarturLightFMModel()
-                if not lightfm_model.load():
-                    if do_train and context_model is not None:
-                        ok = lightfm_model.train(engine.train_data, context_model.df_biz)
-                        if not ok:
-                            lightfm_model = None
-                    else:
-                        lightfm_model = None
-            except Exception as lfm_err:
-                lightfm_model = None
-                logger.warning(f"[boot] LightFM no disponible: {lfm_err}")
+        logger.info("[boot] LightFM deshabilitado: modelo retirado del flujo de producción")
 
         logger.info("[boot] Cargando ContentModel (TF-IDF)...")
         try:
@@ -243,9 +211,8 @@ def _load_or_train_models(do_train: bool = False) -> None:
         # Estado inicial del blend dinámico (frío hasta que la BD diga otra cosa).
         _refresh_data_warmth()
 
-        lfm_st = "LightFM✓" if lightfm_model else "LightFM✗"
         cm_st  = "ContentModel✓" if content_model_cb else "ContentModel✗"
-        logger.info(f"[boot] SMARTUR v4 listo (RF + SVD/CF + {lfm_st} + {cm_st}).")
+        logger.info(f"[boot] SMARTUR listo (Preference ML + KNN-CF + {cm_st}).")
     except Exception as e:
         logger.error(f"[boot] Error cargando modelos: {e}")
     finally:
@@ -337,7 +304,7 @@ class RecItem(BaseModel):
     category: str = ''
     score: float
     pred_cf: float
-    # Fuente real de pred_cf: 'knn'/'svd' = el CF-KNN aportó señal real;
+    # Fuente real de pred_cf: 'knn' = el CF-KNN aportó señal real;
     # 'quality_proxy'/'global_mean' = todavía sin interacciones reales sobre
     # este lugar, se usó la evaluación del admin o el promedio.
     cf_signal: str = 'none'
@@ -369,10 +336,11 @@ def health():
     return {
         "status": "ok",
         "engine_ready":        engine is not None and engine.user_item_matrix is not None,
-        "rf_ready":            context_model is not None and getattr(context_model, 'is_fitted', False),
+        "rf_ready":            False,
         "preference_ml_ready": preference_ml_model is not None and getattr(preference_ml_model, 'is_fitted', False),
-        "svd_ready":           engine is not None and hasattr(engine, 'user_latent'),
-        "lightfm_ready":       lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False),
+        # Campos legacy conservados para no romper el dashboard antiguo.
+        "svd_ready":           False,
+        "lightfm_ready":       False,
         "content_ready":       content_model_cb is not None and getattr(content_model_cb, 'is_fitted', False),
         "users_count":         engine.user_item_matrix.shape[0] if engine and engine.user_item_matrix is not None else 0,
         "training_in_progress": _training_in_progress,
@@ -486,7 +454,7 @@ def get_recommendation(
         recs = recommend_hybrid(
             user_id, engine, context_model,
             alpha=alpha, top_n=top_n,
-            lightfm_model=lightfm_model, content_model=content_model_cb,
+            content_model=content_model_cb,
             preference_model=preference_ml_model,
             quality_scores=quality_scores, data_warmth=_data_warmth,
         )
@@ -547,7 +515,6 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             _engine = engine
             _ctx    = context_model
             _pref   = preference_ml_model
-            _lfm    = lightfm_model
             _cb     = content_model_cb
             _qs     = quality_scores
 
@@ -558,7 +525,6 @@ def post_recommendation(user_id: str, payload: RecommendRequest):
             alpha=payload.alpha,
             context=merged_context,
             top_n=payload.top_n,
-            lightfm_model=_lfm,
             content_model=_cb,
             preference_model=_pref,
             quality_scores=_qs,
@@ -1100,17 +1066,17 @@ def _compute_enrich_from_engine(engine_obj, rf_model):
 
 def _run_full_training():
     """
-    Background worker: retrains all models (RF + GBM + LightFM), refreshes
-    Pearson/SVD matrix, computes full algorithm comparison metrics, appends
+    Background worker: refreshes the KNN matrix and contextual metrics, computes
+    the algorithm comparison, and appends
     ranking metrics, and persists to DB.
     """
-    global engine, context_model, lightfm_model, content_model_cb, quality_scores
+    global engine, context_model, content_model_cb, quality_scores
     try:
         import pandas as pd
         from model_metrics import save_metrics, compare_algorithms
         from poi_repository import fetch_real_interactions, fetch_evaluation_scores
 
-        # Todo lo que muta engine/context_model/lightfm_model/content_model_cb
+        # Todo lo que muta engine/context_model/content_model_cb
         # EN VIVO (in-place, no reasignación de referencia) va bajo _models_lock.
         # Antes el lock solo protegía la lectura (snapshot de referencias en
         # /recommend), pero como el retrain modifica los mismos objetos en
@@ -1180,35 +1146,14 @@ def _run_full_training():
                 # ── 1c. Rest-Mex ya incluido en seed_pois_mexico.py ──────────────────
                 restmex_biz = None
 
-            # ── 2. Rebuild Pearson + SVD matrix ──────────────────────────────────
-            logger.info("[train] Actualizando matriz de Pearson + SVD...")
+            # ── 2. Rebuild Pearson + KNN matrix ──────────────────────────────────
+            logger.info("[train] Actualizando matriz de Pearson + KNN...")
             engine.prepare_pearson_matrix()
 
-            # ── 3. Retrain RF ────────────────────────────────────────────────────
-            logger.info("[train] Reentrenando Random Forest...")
-            context_model.train(engine.train_data, df_biz_extra=restmex_biz)
-
-            # ── 4b. Retrain LightFM ──────────────────────────────────────────────
-            # Si LightFM falló al cargar en el boot (pickle incompatible, archivo
-            # faltante, etc.) queda en None — sin este fallback, el reentrenamiento
-            # nocturno lo saltaba para siempre porque solo reentrenaba una instancia
-            # que ya existiera. Se crea una instancia nueva aquí mismo si hace falta,
-            # así el sistema se autorecupera en el siguiente ciclo de entrenamiento.
-            if lightfm_model is None:
-                try:
-                    from lightfm_model import SmarturLightFMModel
-                    lightfm_model = SmarturLightFMModel()
-                    logger.info("[train] LightFM estaba caído — instancia nueva creada para reintentar.")
-                except Exception as lfm_init_err:
-                    logger.warning(f"[train] No se pudo instanciar LightFM: {lfm_init_err}")
-                    lightfm_model = None
-
-            if lightfm_model is not None:
-                logger.info("[train] Reentrenando LightFM...")
-                try:
-                    lightfm_model.train(engine.train_data, context_model.df_biz)
-                except Exception as lfm_err:
-                    logger.warning(f"[train] LightFM reentrenamiento falló: {lfm_err}")
+            # ── 3. PreferenceContextModel ────────────────────────────────────────
+            # El entrenamiento contextual activo se ejecuta en train_pipeline y
+            # se carga como artefacto versionado; el adaptador no entrena RF.
+            logger.info("[train] RF/LightFM/SVD retirados del reentrenamiento activo")
 
             # ── 4c. Refit ContentModel ───────────────────────────────────────────
             if content_model_cb is not None:
@@ -1250,7 +1195,6 @@ def _run_full_training():
             from evaluate import evaluar_ranking, evaluar_ranking_local
             ranking = evaluar_ranking_local(
                 context_model=context_model,
-                lightfm_model=lightfm_model,
                 content_model=content_model_cb,
                 k=5,
             )

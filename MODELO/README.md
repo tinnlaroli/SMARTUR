@@ -1,10 +1,10 @@
 # SMARTUR - Sistema de Recomendación Híbrido (v4 True ML Contextual)
 
-SMARTUR es un sistema de recomendación híbrido de grado industrial que combina **Filtrado Colaborativo (Pearson + KNN)** con una arquitectura **True Machine Learning Contextual (Random Forest de Interacciones Cruzadas)** para generar sugerencias personalizadas hiper-precisas usando datos turísticos mexicanos (REST-MEX 2025/2022 + POIs curados de Puebla y Veracruz).
+SMARTUR combina un modelo ML contextual de preferencias declaradas, **Filtrado Colaborativo (Pearson + KNN)** y contenido TF-IDF para generar sugerencias personalizadas con datos turísticos mexicanos.
 
 ## Novedades de la versión v4
 
-- **Generación de Contextos Sintéticos**: El Random Forest ya no usa reglas estáticas (sistemas expertos). Ahora entrena simulando millones de perfiles de turistas virtuales, descubriendo por sí solo el impacto de buscar "restaurantes caros para turistas solos" vs "lugares con rampa para familias".
+- **Modelo contextual**: `PreferenceContextModel` aprende la relación entre preferencias declaradas y atributos de cada lugar; el bootstrap sintético se marca explícitamente y no representa usuarios reales.
 - **Filtros de Poda Duros**: Restricciones infalibles para cuando el turista pide un hotel (`needs_hotel`) o pide que no haya lugares de comida (`pref_food=false`).
 - **Nuevos Metadatos de Yelp**: Extrae nativamente `GoodForKids` y determina el ambiente (`Ambience` romántico/íntimo).
 - **Datos Mexicanos**: El dataset por defecto ahora es `data_reviews_mexico.csv` / `data_negocios_mexico.csv` con 248K reseñas de REST-MEX 2025/2022 + 54 POIs curados de Puebla y Veracruz. Yelp disponible como fallback via `SmarturEngine(data_source='yelp')`.
@@ -18,7 +18,8 @@ MODELO/
 ├── src/                     # Motor de recomendación
 │   ├── engine.py            # Pearson + KNN (matriz de utilidad). data_source='mexico' por defecto
 │   ├── cf.py                # Predicción CF por vecinos
-│   ├── rf_model.py          # Cerebro ML (Simulador Sintético + RF Cruzado)
+│   ├── preference_model.py  # Modelo ML contextual de preferencias
+│   ├── catalog_context.py   # Normalización de POIs, sin modelo predictivo
 │   ├── context_encoder.py   # Transformador JSON React -> Vector Numérico
 │   ├── fusion.py            # Filtros Duros de Poda y Combinación Híbrida 
 │   ├── evaluate.py          # Evaluación RMSE/MAE + Ranking Metrics (NDCG, Precision)
@@ -48,7 +49,7 @@ python descargar_gmaps.py
 python pre_procesamiento_mexico.py  # re-ejecutar para fusionar GMaps
 
 # Levantar el servidor 
-# (Entrenará automáticamente el Random Forest v4 si no detecta el pre-compilado en /models)
+# Carga el modelo contextual si existe; ejecuta train_pipeline.py --promote para generarlo
 python api.py
 ```
 

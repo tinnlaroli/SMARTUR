@@ -7,19 +7,16 @@ Fase A (Retrieval):
   3. Filtro suave: prioriza categorías según tiposTurismo
 
 Fase B (Ranking) — 4 señales:
-  - CF/SVD Pearson (warm users only)
+  - CF Pearson + KNN (warm users only)
   - PreferenceContextModel ML contextual [preferencias declaradas + item]
-  - RF contextual [Item + User + Match features] (fallback)
-  - LightFM WARP (cold-start + warm via feature embeddings)
-  - ContentModel TF-IDF (fallback cuando LightFM no disponible)
+  - PreferenceContextModel ML contextual [preferencias + atributos]
+  - ContentModel TF-IDF (señal auxiliar de contenido)
 
 Blending:
-  Cold-start bootstrap: ContentModel + RF + preferencias declaradas
-  Cold-start validado:  0.70 LightFM + 0.30 RF
-  Warm user validado:   0.40 LightFM + 0.35 CF + 0.25 RF
+  Cold-start: preferencias declaradas + PreferenceContextModel + contenido
+  Warm user: preferencias declaradas + PreferenceContextModel + CF-KNN
 """
 
-import os
 import numpy as np
 import pandas as pd
 
@@ -37,7 +34,7 @@ _ALTAS_MONTANAS_LON = -97.05
 # preferencia DOMINA — es la única señal que discrimina cuando CF/RF aún no
 # aprendieron nada (todos devuelven un valor plano). Conforme se acumulan
 # interacciones reales (data_warmth→1), la preferencia baja a su peso "maduro"
-# y los modelos aprendidos (CF/RF/LightFM) toman el control. Todo automático,
+# y los modelos aprendidos (Preference ML/CF) toman el control. Todo automático,
 # sin ajustar pesos a mano.
 #   pref_weight = COLD - (COLD - WARM) * data_warmth
 PREF_WEIGHT_COLD = 0.85   # frío: preferencia declarada manda (validado en 3 semillas)
@@ -49,19 +46,15 @@ PREFERENCE_BOOST_WEIGHT = PREF_WEIGHT_WARM
 
 
 # ── Pesos del blend de servicio (bloque de modelos aprendidos) ──────────────
-# El Random Forest es, de forma CONSISTENTE, el peor estimador de rating: tanto
-# en datos reales (RMSE 2.227 vs item_mean 0.883) como en el experimento
-# sintético con estructura latente aprendible a propósito (item_mean 1.067 <
-# CF 1.174 < RF 1.603, ver synthetic_persona_validation.py). Ni siquiera cuando
-# hay estructura que aprender el RF/CF superan a un simple promedio. Por eso su
-# peso en la recomendación SERVIDA se redujo a favor de LightFM (basado en
-# features, el mejor en arranque en frío) y CF. Los tres modelos siguen
-# construyéndose, entrenándose, evaluándose y comparándose en el dashboard
-# (requisito académico intacto); esto solo ajusta cuánto influye cada uno en el
-# score final que ve el usuario.
-LFM_W_COLD, RF_W_COLD             = 0.70, 0.30         # antes 0.60 / 0.40
-LFM_W_WARM, CF_W_WARM, RF_W_WARM  = 0.40, 0.35, 0.25   # antes 0.30 / 0.30 / 0.40
-RF_W_MAX_NOLFM                    = 0.50               # tope al RF sin LightFM (antes ~0.94)
+# RF y LightFM fueron retirados del flujo servido. El score contextual activo
+# lo produce PreferenceContextModel y se combina con CF-KNN/contenido.
+# Alias históricos para que herramientas externas antiguas puedan importar el
+# módulo mientras migran; no se leen durante el ranking.
+LFM_W_COLD, RF_W_COLD = 0.70, 0.30
+LFM_W_WARM, CF_W_WARM, RF_W_WARM = 0.40, 0.35, 0.25
+RF_W_MAX_NOLFM = 0.50
+# Pesos históricos LightFM/RF eliminados. El score contextual activo se mezcla
+# con CF-KNN y con la coincidencia declarada de preferencias.
 
 
 def _preference_weight(data_warmth: float) -> float:
@@ -345,8 +338,8 @@ def _resolve_cf_score(
     interacciones ya se mezclan al entrenamiento del engine.
 
     Returns:
-        (score, signal) donde signal ∈ {'knn','svd','quality_proxy','global_mean'}
-        — 'knn'/'svd' significan que el CF realmente aportó.
+        (score, signal) donde signal ∈ {'knn','quality_proxy','global_mean'}
+        — 'knn' significa que el CF realmente aportó.
     """
     if engine is not None and biz_id in matrix_col_set:
         cf_pred, cf_source = predict_cf_pearson_with_source(user_id, biz_id, engine)
@@ -373,6 +366,7 @@ def recommend_hybrid(
     user_id, engine, context_model,
     alpha=0.4, context=None, top_n=5,
     lightfm_model=None, content_model=None, preference_model=None,
+    # lightfm_model se conserva solo por compatibilidad con integraciones antiguas.
     quality_scores=None, data_warmth=0.0,
 ):
     """
@@ -380,11 +374,11 @@ def recommend_hybrid(
 
     Modo producción (local POIs disponibles):
       - Candidatos: SOLO POIs de la BD local (Altas Montañas, Veracruz)
-      - Ranking: LightFM + RF (cold-start); LightFM + CF + RF (warm)
+      - Ranking: PreferenceContextModel + CF-KNN + contenido
 
     Modo desarrollo/fallback (sin BD local):
       - Candidatos: 200 negocios Yelp vía KNN
-      - Ranking: α × CF + (1-α) × RF (+ LightFM si disponible)
+      - Ranking: PreferenceContextModel + CF-KNN + contenido
     """
     # ── Fase A: Retrieval ────────────────────────────────────────────────
     try:
@@ -395,8 +389,8 @@ def recommend_hybrid(
 
     if not local_biz.empty:
         # Producción: POIs locales como pool exclusivo.
-        # Usamos un alpha reducido (no cero) para que la señal latente de CF/SVD
-        # siga contribuyendo al score final, especialmente con el fallback SVD.
+        # Usamos un alpha reducido para que CF-KNN contribuya cuando existe
+        # historial real; en frío domina la preferencia declarada.
         local_biz = context_model._add_category_features(local_biz)
         biz_candidates = local_biz
         try:
@@ -475,31 +469,12 @@ def recommend_hybrid(
         except Exception:
             pass  # explanation tags gracefully degrade without distance
 
-    # ── LightFM or ContentModel scores ───────────────────────────────────
-    # Determine cold-start status for blending weights
-    is_cold_start = str(user_id) not in (
-        getattr(lightfm_model, '_known_users', set()) if lightfm_model else set()
-    ) and str(user_id) not in (getattr(engine, 'user_index', {}) or {})
-
-    # Un embedding LightFM entrenado únicamente con personas sintéticas no
-    # debe dominar las recomendaciones de usuarios reales desconocidos. En
-    # bootstrap usamos TF-IDF + RF + preferencias declaradas; conservamos el
-    # artefacto LightFM para activarlo después de recolectar comportamiento
-    # real y validarlo contra esta línea base.
-    bootstrap_mode = os.environ.get('SMARTUR_SYNTH_TRAINING', '').strip().lower() in {
-        '1', 'true', 'yes', 'on', 'y', 't'
-    }
-    if lightfm_model is not None and getattr(lightfm_model, 'is_fitted', False) and not bootstrap_mode:
-        lfm_scores  = lightfm_model.predict(str(user_id), final_ids, user_context=context)
-        lfm_map     = dict(zip(final_ids, lfm_scores))
-        use_content = False
-    elif content_model is not None and getattr(content_model, 'is_fitted', False):
+    # Señal auxiliar de contenido TF-IDF. LightFM ya no forma parte del flujo.
+    if content_model is not None and getattr(content_model, 'is_fitted', False):
         cb_scores  = content_model.score(final_ids, user_context=context)
         lfm_map    = dict(zip(final_ids, cb_scores))
-        use_content = True
     else:
         lfm_map     = {}
-        use_content = False
 
     recommendations = []
 
@@ -540,19 +515,12 @@ def recommend_hybrid(
         score_lfm = lfm_map.get(biz_id, 3.0)
         cats      = biz_cat_lookup.get(biz_id, '')
 
-        # Blending weights (RF de-ponderado — ver constantes arriba):
-        #   Cold-start user -> LightFM (feature-based) domina, RF de apoyo
-        #   Warm user       -> LightFM + CF por delante, RF de apoyo
+        # El bloque aprendido combina contenido (si está disponible), CF-KNN y
+        # el modelo contextual ML. El antiguo RF/LightFM ya no interviene.
         if lfm_map:
-            if is_cold_start:
-                final_score = LFM_W_COLD * score_lfm + RF_W_COLD * score_context
-            else:
-                final_score = LFM_W_WARM * score_lfm + CF_W_WARM * score_cf + RF_W_WARM * score_context
+            final_score = 0.20 * score_lfm + 0.30 * score_cf + 0.50 * score_context
         else:
-            # LightFM not available -> classic blend, pero con tope al RF para no
-            # dejar que el peor estimador domine (antes llegaba a ~0.94).
-            rf_w = min(RF_W_MAX_NOLFM, 1 - effective_alpha)
-            final_score = ((1 - rf_w) * score_cf) + (rf_w * score_context)
+            final_score = 0.35 * score_cf + 0.65 * score_context
 
         # Boost de preferencia declarada (perfil real del usuario), no de lo
         # que CF/RF aprendieron de calificaciones. Nunca excluye candidatos —
@@ -591,7 +559,7 @@ def recommend_hybrid(
             'category':    str(cats),
             'score':       float(round(final_score, 3)),
             'pred_cf':     float(round(score_cf, 3)),
-            # De dónde salió pred_cf: 'knn'/'svd' = CF real aportó;
+            # De dónde salió pred_cf: 'knn' = CF real aportó;
             # 'quality_proxy'/'global_mean' = CF aún sin señal (esperando
             # interacciones reales sobre este POI). Permite ver en /metrics
             # cuándo el CF-KNN por fin despierta, sin adivinar.

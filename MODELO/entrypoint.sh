@@ -15,9 +15,7 @@ for f in data_reviews_mexico.csv data_negocios_mexico.csv; do
     fi
 done
 
-for f in rf_model.joblib rf_context_yelp.joblib gbm_context_yelp.joblib \
-          scalers_and_encoders.pkl user_cog_df.csv user_cog_sim.npy users_list.npy \
-          algorithm_metrics.json; do
+for f in preference_context_model.joblib algorithm_metrics.json; do
     if [ ! -f "$MODELS/$f" ] && [ -f "$SEED_MODELS/$f" ]; then
         echo "[entrypoint] Copiando $f al volumen..."
         cp "$SEED_MODELS/$f" "$MODELS/$f"
