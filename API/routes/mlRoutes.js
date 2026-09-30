@@ -57,8 +57,24 @@ router.get('/ml/health', verifyToken, async (req, res) => {
             ),
         ]);
 
+        // El MODELO es la fuente de verdad de las métricas del artefacto
+        // actualmente cargado. La fila de PostgreSQL puede pertenecer a una
+        // generación anterior (por ejemplo, antes del bootstrap sintético),
+        // así que solo se usa como respaldo si el servicio no responde.
+        let latestMetrics = metricsRes.rows[0]?.metrics_json ?? null;
+        try {
+            const modeloMetrics = await fetch(`${MODELO_URL}/metrics`, {
+                signal: AbortSignal.timeout(5_000),
+            });
+            if (modeloMetrics.ok) {
+                latestMetrics = await modeloMetrics.json();
+            }
+        } catch (metricsErr) {
+            console.warn('[ml/health] modelo metrics fallback:', metricsErr.message);
+        }
+
         res.json({
-            latest_metrics: metricsRes.rows[0]?.metrics_json ?? null,
+            latest_metrics: latestMetrics,
             daily_sessions: sessionsRes.rows,
             ctr_30d: feedbackRes.rows[0] ?? { total: 0, clicked: 0 },
         });
