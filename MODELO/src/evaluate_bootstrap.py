@@ -133,7 +133,16 @@ def run(n_personas=None, seed=42, k=10):
             metric: float(np.mean([r[metric] for r in rows])) if rows else 0.0
             for metric in ("ndcg", "recall", "hit_rate")
         }
-    out = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "bootstrap_ranking_metrics.json"))
+    requested_personas = n_personas or synth_n_personas()
+    # El reporte promovido es exclusivamente la corrida oficial reproducible.
+    # Las auditorías con otras semillas/tamaños deben quedar separadas para no
+    # sobrescribir por accidente las métricas que consume el dashboard.
+    if requested_personas == synth_n_personas() and seed == 42 and k == 10:
+        filename = "bootstrap_ranking_metrics.json"
+    else:
+        filename = f"bootstrap_ranking_metrics_audit_{requested_personas}_{seed}_k{k}.json"
+    out = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", filename))
+    result["metrics_path"] = filename
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(result, fh, indent=2, ensure_ascii=False)
     print(json.dumps(result, indent=2, ensure_ascii=False))
