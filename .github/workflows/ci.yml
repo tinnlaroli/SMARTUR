@@ -41,18 +41,22 @@ jobs:
               - 'API/**'
               - 'docker-compose.yml'
               - '.env.example'
+              - '.github/workflows/deploy.yml'
             plataforma:
               - 'PLATAFORMA/**'
               - 'docker-compose.yml'
               - '.env.example'
+              - '.github/workflows/deploy.yml'
             landing:
               - 'LANDING/**'
               - 'docker-compose.yml'
               - '.env.example'
+              - '.github/workflows/deploy.yml'
             modelo:
               - 'MODELO/**'
               - 'docker-compose.yml'
               - '.env.example'
+              - '.github/workflows/deploy.yml'
             db:
               - 'API/bd.sql'
               - 'API/config/db.js'

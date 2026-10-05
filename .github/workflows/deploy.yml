@@ -35,6 +35,8 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/SMARTUR
+            DEPLOY_STATE=/opt/SMARTUR/.last-deployed-sha
+            LAST_DEPLOYED=$(cat "$DEPLOY_STATE" 2>/dev/null || true)
 
             # ── 0) Modo de despliegue ──────────────────────────────
             #   build → construye en el VPS (comportamiento actual).
@@ -68,13 +70,13 @@ jobs:
             #     Compara el último commit; si no se puede calcular,
             #     reconstruye todo (fallback seguro). Un cambio en
             #     docker-compose.yml afecta a todos.
-            PREV=$(git rev-parse origin/main~1 2>/dev/null || true)
+            CURRENT=$(git rev-parse origin/main)
             SERVICES=()
-            if [ -z "$PREV" ]; then
-              echo "⚠ No hay commit previo (rama nueva) → despliega todo"
+            if [ -z "$LAST_DEPLOYED" ] || ! git cat-file -e "$LAST_DEPLOYED^{commit}" 2>/dev/null; then
+              echo "⚠ No hay SHA de deploy exitoso → despliega todos los servicios"
               SERVICES=(api plataforma landing modelo)
             else
-              CHANGED=$(git diff --name-only "$PREV" origin/main 2>/dev/null || true)
+              CHANGED=$(git diff --name-only "$LAST_DEPLOYED" "$CURRENT" 2>/dev/null || true)
               if [ -z "$CHANGED" ]; then
                 echo "ℹ Sin cambios en la app → solo recarga nginx y valida salud"
               else
@@ -158,5 +160,9 @@ jobs:
             docker image prune -f
             docker builder prune -af --filter until=72h
             docker volume prune -f
+
+            # Persistir el SHA solo después de completar health checks y schema.
+            printf '%s\n' "$CURRENT" > "$DEPLOY_STATE.tmp"
+            mv "$DEPLOY_STATE.tmp" "$DEPLOY_STATE"
 
             echo "✓ Deploy completado: $(date)"
