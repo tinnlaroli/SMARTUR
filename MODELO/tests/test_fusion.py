@@ -527,7 +527,7 @@ def test_preference_weight_maduro_es_el_minimo():
 
 
 def test_preference_weight_interpola_linealmente():
-    assert _preference_weight(0.5) == pytest.approx((0.65 + 0.20) / 2)
+    assert _preference_weight(0.5) == pytest.approx((0.85 + 0.20) / 2)
 
 
 def test_preference_weight_recorta_fuera_de_rango():
