@@ -9,6 +9,10 @@ const buildFormData = (data: CreatePOIDTO | UpdatePOIDTO): FormData => {
             if (value instanceof File) fd.append('image', value);
             return;
         }
+        if (key === 'wellness_dimensions' && Array.isArray(value)) {
+            fd.append(key, JSON.stringify(value));
+            return;
+        }
         fd.append(key, String(value));
     });
     return fd;

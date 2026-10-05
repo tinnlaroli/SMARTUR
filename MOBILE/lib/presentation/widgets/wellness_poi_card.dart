@@ -1,46 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../data/services/wellness_service.dart';
 
-/// Colores y labels para cada modo de viaje (nunca mostrar nombre técnico interno)
-const _modoColors = {
-  'modo_calma':        Color(0xFF10B981),  // verde-esmeralda
-  'modo_restauracion': Color(0xFF3B82F6),  // azul
-  'modo_equilibrio':   Color(0xFF8B5CF6),  // lavanda
+const _accent = Color(0xFF16845B);
+
+const _dimensionLabels = {
+  'physical': 'Física', 'mental': 'Mental', 'emotional': 'Emocional',
+  'spiritual': 'Espiritual', 'social': 'Social', 'environmental': 'Ambiental',
 };
 
-const _modoLabels = {
-  'modo_calma':        'Modo Calma',
-  'modo_restauracion': 'Modo Restauración',
-  'modo_equilibrio':   'Modo Equilibrio',
-};
-
-const _modoIcons = {
-  'modo_calma':        Icons.spa_outlined,
-  'modo_restauracion': Icons.water_outlined,
-  'modo_equilibrio':   Icons.self_improvement_outlined,
-};
-
-/// Card de destino wellness con badge de validación, barras de dimensiones
-/// y chip de modo de viaje compatible.
+/// Card de destino con aprobación interna SMARTUR y dimensiones coincidentes.
 class WellnessPoiCard extends StatelessWidget {
   final WellnessDestination destination;
-  final String modoViaje;
   final VoidCallback? onTap;
 
   const WellnessPoiCard({
     super.key,
     required this.destination,
-    required this.modoViaje,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final modoColor = _modoColors[modoViaje] ?? const Color(0xFF10B981);
-    final modoLabel = _modoLabels[modoViaje] ?? modoViaje;
-    final modoIcon  = _modoIcons[modoViaje] ?? Icons.spa_outlined;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -73,7 +54,7 @@ class WellnessPoiCard extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: modoColor.withValues(alpha: 0.12),
+                      color: _accent.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -82,7 +63,7 @@ class WellnessPoiCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: modoColor,
+                          color: _accent,
                         ),
                       ),
                     ),
@@ -111,7 +92,7 @@ class WellnessPoiCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Match percentage
+                  // Share of the user's selected dimensions represented by this place.
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -120,11 +101,11 @@ class WellnessPoiCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: modoColor,
+                        color: _accent,
                         ),
                       ),
                       Text(
-                        'compatibilidad',
+                        'dimensiones coincidentes',
                         style: TextStyle(
                           fontSize: 10,
                           color: scheme.onSurface.withValues(alpha: 0.45),
@@ -154,7 +135,7 @@ class WellnessPoiCard extends StatelessWidget {
                     const Icon(Icons.verified_outlined, size: 12, color: Color(0xFF22C55E)),
                     const SizedBox(width: 4),
                     const Text(
-                      'Lugar de Bienestar Validado',
+                      'Aprobado por SMARTUR',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -166,34 +147,16 @@ class WellnessPoiCard extends StatelessWidget {
               ),
             ),
 
-            // ── Dimension bars ──────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Column(
-                children: [
-                  _DimensionBar(
-                    label: 'Tranquilidad',
-                    icon: Icons.nature_outlined,
-                    value: destination.nivelAislamiento,
-                    color: modoColor,
-                  ),
-                  const SizedBox(height: 6),
-                  _DimensionBar(
-                    label: 'Relajación',
-                    icon: Icons.water_drop_outlined,
-                    value: destination.restauracionPasiva,
-                    color: modoColor,
-                  ),
-                  const SizedBox(height: 6),
-                  _DimensionBar(
-                    label: 'Ritmo suave',
-                    icon: Icons.nights_stay_outlined,
-                    value: 1.0 - destination.demandaFisica,
-                    color: modoColor,
-                  ),
-                ],
+            if (destination.wellnessDimensions.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Wrap(spacing: 6, runSpacing: 6, children: destination.wellnessDimensions.map((dimension) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(color: _accent.withValues(alpha: .09), borderRadius: BorderRadius.circular(14)),
+                  child: Text(_dimensionLabels[dimension] ?? dimension,
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _accent)),
+                )).toList()),
               ),
-            ),
 
             // ── Description ─────────────────────────────────────────
             if (destination.descripcionBienestar.isNotEmpty)
@@ -212,100 +175,23 @@ class WellnessPoiCard extends StatelessWidget {
                 ),
               ),
 
-            // ── Modo viaje chip ─────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: modoColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(modoIcon, size: 12, color: modoColor),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Ideal para $modoLabel',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: modoColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            if (onTap != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text('Ver detalles', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _accent)),
+                    const SizedBox(width: 3),
+                    const Icon(Icons.chevron_right_rounded, size: 17, color: _accent),
+                  ]),
+                ),
               ),
-            ),
+
+            const SizedBox(height: 14),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _DimensionBar extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final double value;
-  final Color color;
-
-  const _DimensionBar({
-    required this.label,
-    required this.icon,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final pct = (value * 100).toInt();
-
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: color.withValues(alpha: 0.7)),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 80,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: scheme.onSurface.withValues(alpha: 0.65),
-            ),
-          ),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: value.clamp(0.0, 1.0),
-              backgroundColor: color.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 32,
-          child: Text(
-            '$pct%',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

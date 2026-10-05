@@ -1,6 +1,27 @@
 import pool from '../config/db.js';
 import cloudinary from '../config/cloudinary.js';
 
+const WELLNESS_DIMENSIONS = new Set(['physical', 'mental', 'emotional', 'spiritual', 'social', 'environmental']);
+const WELLNESS_CATEGORIES = new Set(['Termal', 'Spa', 'Naturaleza', 'Movimiento', 'Cultural', 'Gastronomía saludable', 'Comunidad', 'Retiro', 'Otro']);
+
+function parseWellnessDimensions(value) {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string') return [];
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function validWellnessSubmission(category, dimensions, evidence) {
+    return typeof category === 'string' && WELLNESS_CATEGORIES.has(category.trim()) &&
+        Array.isArray(dimensions) && dimensions.length > 0 && dimensions.length <= 6 &&
+        new Set(dimensions).size === dimensions.length && dimensions.every((item) => WELLNESS_DIMENSIONS.has(item)) &&
+        typeof evidence === 'string' && evidence.trim().length >= 50 && evidence.trim().length <= 1000;
+}
+
 function uploadToCloudinary(buffer, folder) {
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
@@ -245,6 +266,12 @@ class PointOfInterestController {
             const longitude = parseNumber(req.body?.longitude, null);
             const idLocation = parseNumber(req.body?.id_location, null);
             const description = String(req.body?.description || '').trim() || null;
+            const isWellness = parseBoolean(req.body?.is_wellness, false);
+            const wellnessDimensions = parseWellnessDimensions(req.body?.wellness_dimensions);
+            const wellnessEvidence = String(req.body?.wellness_evidence || '').trim() || null;
+            if (isWellness && !validWellnessSubmission(req.body?.categoria_wellness, wellnessDimensions, wellnessEvidence)) {
+                return res.status(400).json({ message: 'Completa la categoría, dimensiones y evidencia wellness antes de enviar.' });
+            }
 
             let image_url = null;
             if (req.file) {
@@ -253,8 +280,10 @@ class PointOfInterestController {
 
             const result = await pool.query(
                 `INSERT INTO point_of_interest
-                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, is_active)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE)
+                (name, categories_raw, categories_mapped, price_level, is_accessible, outdoor, latitude, longitude, id_location, description, image_url, is_active,
+                 is_wellness, wellness_status, categoria_wellness, nivel_aislamiento, restauracion_pasiva, demanda_fisica,
+                 descripcion_bienestar, wellness_dimensions, wellness_evidence)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,TRUE,$12,$13,$14,$15,$16,$17,$18,$19,$20)
                 RETURNING *`,
                 [
                     name,
@@ -268,6 +297,15 @@ class PointOfInterestController {
                     idLocation,
                     description,
                     image_url,
+                    isWellness,
+                    isWellness ? 'pending' : null,
+                    isWellness ? String(req.body.categoria_wellness).trim() : null,
+                    isWellness ? parseNumber(req.body.nivel_aislamiento, 0.5) : null,
+                    isWellness ? parseNumber(req.body.restauracion_pasiva, 0.5) : null,
+                    isWellness ? parseNumber(req.body.demanda_fisica, 0.3) : null,
+                    isWellness ? (String(req.body.descripcion_bienestar || '').trim() || null) : null,
+                    isWellness ? wellnessDimensions : [],
+                    isWellness ? wellnessEvidence : null,
                 ]
             );
 
@@ -346,11 +384,30 @@ class PointOfInterestController {
 
             if (req.body?.is_wellness !== undefined) {
                 updates.push(`is_wellness = $${idx++}`);
-                values.push(parseBoolean(req.body.is_wellness, false));
+                const enabled = parseBoolean(req.body.is_wellness, false);
+                values.push(enabled);
                 if (parseBoolean(req.body.is_wellness, false)) {
                     updates.push(`wellness_status = $${idx++}`);
-                    values.push('approved');
+                    values.push('pending');
+                } else {
+                    updates.push(`wellness_status = $${idx++}`);
+                    values.push(null);
                 }
+            }
+
+            if (req.body?.wellness_dimensions !== undefined) {
+                const dimensions = parseWellnessDimensions(req.body.wellness_dimensions);
+                if (dimensions.length !== (Array.isArray(req.body.wellness_dimensions) ? req.body.wellness_dimensions.length : dimensions.length) ||
+                    dimensions.some((dimension) => !WELLNESS_DIMENSIONS.has(dimension)) || new Set(dimensions).size !== dimensions.length) {
+                    return res.status(400).json({ message: 'wellness_dimensions debe contener dimensiones válidas.' });
+                }
+                updates.push(`wellness_dimensions = $${idx++}`);
+                values.push(dimensions);
+            }
+
+            if (req.body?.wellness_evidence !== undefined) {
+                updates.push(`wellness_evidence = $${idx++}`);
+                values.push(String(req.body.wellness_evidence).trim() || null);
             }
 
             if (req.body?.categoria_wellness !== undefined) {
@@ -379,6 +436,17 @@ class PointOfInterestController {
             if (req.body?.descripcion_bienestar !== undefined) {
                 updates.push(`descripcion_bienestar = $${idx++}`);
                 values.push(String(req.body.descripcion_bienestar).trim() || null);
+            }
+
+            const requestedWellness = req.body?.is_wellness !== undefined
+                ? parseBoolean(req.body.is_wellness, false)
+                : undefined;
+            if (requestedWellness) {
+                const dimensions = parseWellnessDimensions(req.body?.wellness_dimensions);
+                const evidence = String(req.body?.wellness_evidence || '').trim();
+                if (!validWellnessSubmission(req.body?.categoria_wellness, dimensions, evidence)) {
+                    return res.status(400).json({ message: 'Completa la categoría, dimensiones válidas y evidencia verificable (mínimo 50 caracteres) para proponer un lugar wellness.' });
+                }
             }
 
             if (req.file) {

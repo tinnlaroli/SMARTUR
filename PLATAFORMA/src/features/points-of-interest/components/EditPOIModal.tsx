@@ -7,6 +7,7 @@ import type { POI, UpdatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { POI_CATEGORY_PRESETS, categoryIdFromRaw } from './poiCategories';
 import WellnessPlaceFields from './WellnessPlaceFields';
+import { isWellnessEvidenceComplete } from './wellnessEvidence';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -41,9 +42,11 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
 
     const [isWellness, setIsWellness] = useState(poi.is_wellness ?? false);
     const [categoriaWellness, setCategoriaWellness] = useState(poi.categoria_wellness ?? '');
+    const [wellnessDimensions, setWellnessDimensions] = useState<string[]>(poi.wellness_dimensions ?? []);
+    const [wellnessEvidence, setWellnessEvidence] = useState(poi.wellness_evidence ?? '');
     const [nivelAislamiento, setNivelAislamiento] = useState(poi.nivel_aislamiento ?? 0.5);
     const [restauracionPasiva, setRestauracionPasiva] = useState(poi.restauracion_pasiva ?? 0.5);
-    const [demandaFisica, setDemandaFisica] = useState(poi.demanda_fisica ?? 0.3);
+    const [demandaFisica, setDemandaFisica] = useState(poi.demanda_fisica ?? 0.5);
     const [descripcionBienestar, setDescripcionBienestar] = useState(poi.descripcion_bienestar ?? '');
 
     useEffect(() => {
@@ -58,6 +61,10 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) { setError(t('validation.nameRequired')); return; }
+        if (isWellness && (!categoriaWellness || !isWellnessEvidenceComplete(wellnessEvidence, wellnessDimensions))) {
+            setError('Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.');
+            return;
+        }
         setSubmitting(true);
         const ok = await onSubmit(poi.id, {
             name: name.trim(),
@@ -68,6 +75,8 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
             is_wellness: isWellness,
             ...(isWellness && {
                 categoria_wellness: categoriaWellness || undefined,
+                wellness_dimensions: wellnessDimensions,
+                wellness_evidence: wellnessEvidence.trim(),
                 nivel_aislamiento: nivelAislamiento,
                 restauracion_pasiva: restauracionPasiva,
                 demanda_fisica: demandaFisica,
@@ -169,14 +178,18 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
                         values={{
                             isWellness,
                             categoriaWellness,
-                            nivelAislamiento,
-                            restauracionPasiva,
+                            wellnessDimensions,
+                            wellnessEvidence,
                             demandaFisica,
                             descripcionBienestar,
+                            nivelAislamiento,
+                            restauracionPasiva,
                         }}
                         onChange={(patch) => {
                             if (patch.isWellness !== undefined) setIsWellness(patch.isWellness);
                             if (patch.categoriaWellness !== undefined) setCategoriaWellness(patch.categoriaWellness);
+                            if (patch.wellnessDimensions !== undefined) setWellnessDimensions(patch.wellnessDimensions);
+                            if (patch.wellnessEvidence !== undefined) setWellnessEvidence(patch.wellnessEvidence);
                             if (patch.nivelAislamiento !== undefined) setNivelAislamiento(patch.nivelAislamiento);
                             if (patch.restauracionPasiva !== undefined) setRestauracionPasiva(patch.restauracionPasiva);
                             if (patch.demandaFisica !== undefined) setDemandaFisica(patch.demandaFisica);

@@ -4,6 +4,50 @@ import pool from '../config/db.js';
 import AdminChangeLog from '../models/adminChangeLogModel.js';
 import { sendFcmToUser } from '../services/fcmService.js';
 
+const WELLNESS_DIMENSIONS = new Set(['physical', 'mental', 'emotional', 'spiritual', 'social', 'environmental']);
+const WELLNESS_CATEGORIES = new Set(['Termal', 'Spa', 'Naturaleza', 'Movimiento', 'Cultural', 'Gastronomía saludable', 'Comunidad', 'Retiro', 'Otro']);
+
+function parseBoolean(value, fallback = false) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+        if (value.toLowerCase() === 'true') return true;
+        if (value.toLowerCase() === 'false') return false;
+    }
+    return fallback;
+}
+
+function parseDimensions(value) {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string') return [];
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function validateWellness(payload) {
+    const enabled = parseBoolean(payload.is_wellness, false);
+    payload.is_wellness = enabled;
+    if (!enabled) return null;
+    const dimensions = parseDimensions(payload.wellness_dimensions);
+    const evidence = String(payload.wellness_evidence || '').trim();
+    if (!WELLNESS_CATEGORIES.has(String(payload.categoria_wellness || '').trim()) || dimensions.length < 1 || dimensions.length > 6 ||
+        new Set(dimensions).size !== dimensions.length || dimensions.some((item) => !WELLNESS_DIMENSIONS.has(item)) ||
+        evidence.length < 50 || evidence.length > 1000) {
+        return 'Completa una categoría válida, dimensiones válidas y evidencia verificable de 50 a 1000 caracteres para proponer un servicio wellness.';
+    }
+    const demand = Number(payload.demanda_fisica ?? 0.5);
+    if (!Number.isFinite(demand) || demand < 0 || demand > 1) return 'demanda_fisica debe estar entre 0 y 1.';
+    payload.wellness_dimensions = dimensions;
+    payload.wellness_evidence = evidence;
+    payload.demanda_fisica = demand;
+    payload.categoria_wellness = String(payload.categoria_wellness).trim();
+    payload.descripcion_bienestar = String(payload.descripcion_bienestar || '').trim() || null;
+    return null;
+}
+
 const SERVICE_FIELD_LABELS = {
     name:         'Nombre',
     description:  'Descripción',
@@ -74,6 +118,13 @@ class TouristServicesController {
                     id_evaluation: service.id_evaluation,
                     total_score: service.total_score,
                     image_url: service.image_url || null,
+                    is_wellness: service.is_wellness,
+                    wellness_status: service.wellness_status,
+                    categoria_wellness: service.categoria_wellness,
+                    wellness_dimensions: service.wellness_dimensions || [],
+                    wellness_evidence: service.wellness_evidence,
+                    demanda_fisica: service.demanda_fisica,
+                    descripcion_bienestar: service.descripcion_bienestar,
                     created_at: service.created_at,
                 })),
             });
@@ -108,6 +159,13 @@ class TouristServicesController {
                     id_evaluation: service.id_evaluation,
                     total_score: service.total_score,
                     image_url: service.image_url || null,
+                    is_wellness: service.is_wellness,
+                    wellness_status: service.wellness_status,
+                    categoria_wellness: service.categoria_wellness,
+                    wellness_dimensions: service.wellness_dimensions || [],
+                    wellness_evidence: service.wellness_evidence,
+                    demanda_fisica: service.demanda_fisica,
+                    descripcion_bienestar: service.descripcion_bienestar,
                     created_at: service.created_at,
                 },
             });
@@ -131,6 +189,8 @@ class TouristServicesController {
             }
 
             const payload = { ...req.body };
+            const wellnessError = validateWellness(payload);
+            if (wellnessError) return res.status(400).json({ message: wellnessError });
 
             if (req.file?.buffer) {
                 const uploaded = await uploadImageToCloudinary(req.file.buffer);
@@ -151,6 +211,13 @@ class TouristServicesController {
                     service_type: service.service_type,
                     active: service.active,
                     image_url: service.image_url || null,
+                    is_wellness: service.is_wellness,
+                    wellness_status: service.wellness_status,
+                    categoria_wellness: service.categoria_wellness,
+                    wellness_dimensions: service.wellness_dimensions || [],
+                    wellness_evidence: service.wellness_evidence,
+                    demanda_fisica: service.demanda_fisica,
+                    descripcion_bienestar: service.descripcion_bienestar,
                     created_at: service.created_at,
                 },
             });
@@ -167,6 +234,13 @@ class TouristServicesController {
         try {
             const isAdmin = req.user?.role_id === 1;
             const payload = { ...req.body };
+            if (payload.is_wellness !== undefined) {
+                const wellnessError = validateWellness(payload);
+                if (wellnessError) return res.status(400).json({ message: wellnessError });
+            } else if (payload.wellness_dimensions !== undefined) {
+                payload.wellness_dimensions = parseDimensions(payload.wellness_dimensions);
+                if (!Array.isArray(payload.wellness_dimensions)) return res.status(400).json({ message: 'wellness_dimensions debe ser una lista.' });
+            }
 
             if (req.file?.buffer) {
                 const uploaded = await uploadImageToCloudinary(req.file.buffer);
@@ -240,6 +314,13 @@ class TouristServicesController {
                     price_from: service.price_from ?? null,
                     price_to: service.price_to ?? null,
                     currency: service.currency ?? 'MXN',
+                    is_wellness: service.is_wellness,
+                    wellness_status: service.wellness_status,
+                    categoria_wellness: service.categoria_wellness,
+                    wellness_dimensions: service.wellness_dimensions || [],
+                    wellness_evidence: service.wellness_evidence,
+                    demanda_fisica: service.demanda_fisica,
+                    descripcion_bienestar: service.descripcion_bienestar,
                     created_at: service.created_at,
                 },
             });

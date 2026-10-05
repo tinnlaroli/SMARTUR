@@ -903,6 +903,31 @@ CREATE TABLE IF NOT EXISTS wellness_recommendation_session (
   created_at        TIMESTAMP DEFAULT NOW()
 );
 
+-- Welltur preference profiles are kept separate from the legacy stress screener.
+-- They capture explicit trip intent and must never be interpreted as health data.
+CREATE TABLE IF NOT EXISTS wellness_preference_assessment (
+  preference_assessment_id SERIAL PRIMARY KEY,
+  user_id             INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  wellness_dimensions TEXT[] NOT NULL CHECK (cardinality(wellness_dimensions) BETWEEN 1 AND 3),
+  activity_level      VARCHAR(20) NOT NULL CHECK (activity_level IN ('low','moderate','high')),
+  region_filter       VARCHAR(100),
+  consent_given       BOOLEAN NOT NULL CHECK (consent_given = TRUE),
+  consent_at          TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at          TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_wellness_preference_dimensions CHECK (
+    wellness_dimensions <@ ARRAY['physical','mental','emotional','spiritual','social','environmental']::TEXT[]
+  )
+);
+
+ALTER TABLE wellness_recommendation_session
+  ADD COLUMN IF NOT EXISTS preference_assessment_id INT
+    REFERENCES wellness_preference_assessment(preference_assessment_id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_wellness_pref_user_created
+  ON wellness_preference_assessment(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wellness_session_preference
+  ON wellness_recommendation_session(preference_assessment_id);
+
 CREATE INDEX IF NOT EXISTS idx_wellness_session_user       ON wellness_recommendation_session (user_id);
 CREATE INDEX IF NOT EXISTS idx_wellness_session_assessment ON wellness_recommendation_session (assessment_id);
 CREATE INDEX IF NOT EXISTS idx_wellness_session_modo       ON wellness_recommendation_session (modo_viaje);
@@ -932,7 +957,9 @@ ALTER TABLE tourist_service
   ADD COLUMN IF NOT EXISTS descripcion_bienestar    TEXT,
   ADD COLUMN IF NOT EXISTS wellness_admin_notes     TEXT,
   ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
-  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL;
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS wellness_dimensions     TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT;
 
 ALTER TABLE point_of_interest
   ADD COLUMN IF NOT EXISTS is_wellness             BOOLEAN DEFAULT FALSE,
@@ -945,7 +972,9 @@ ALTER TABLE point_of_interest
   ADD COLUMN IF NOT EXISTS descripcion_bienestar    TEXT,
   ADD COLUMN IF NOT EXISTS wellness_admin_notes     TEXT,
   ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
-  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL;
+  ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS wellness_dimensions     TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT;
 
 ALTER TABLE traveler_profile
   ADD COLUMN IF NOT EXISTS wellness_consent    BOOLEAN DEFAULT FALSE,
@@ -963,6 +992,16 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_wellness_status') THEN
     ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_wellness_status
       CHECK (wellness_status IN ('pending','approved','rejected') OR wellness_status IS NULL);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_poi_wellness_dimensions') THEN
+    ALTER TABLE point_of_interest ADD CONSTRAINT chk_poi_wellness_dimensions
+      CHECK (wellness_dimensions <@ ARRAY['physical','mental','emotional','spiritual','social','environmental']::TEXT[]);
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_wellness_dimensions') THEN
+    ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_wellness_dimensions
+      CHECK (wellness_dimensions <@ ARRAY['physical','mental','emotional','spiritual','social','environmental']::TEXT[]);
   END IF;
 END $$;
 

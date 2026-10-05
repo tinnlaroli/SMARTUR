@@ -8,6 +8,7 @@ import type { CreatePOIDTO } from '../types/types';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { POI_CATEGORY_PRESETS } from './poiCategories';
 import WellnessPlaceFields from './WellnessPlaceFields';
+import { isWellnessEvidenceComplete } from './wellnessEvidence';
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-500 disabled:opacity-50';
@@ -35,9 +36,11 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isWellness, setIsWellness] = useState(false);
     const [categoriaWellness, setCategoriaWellness] = useState('');
+    const [wellnessDimensions, setWellnessDimensions] = useState<string[]>([]);
+    const [wellnessEvidence, setWellnessEvidence] = useState('');
     const [nivelAislamiento, setNivelAislamiento] = useState(0.5);
     const [restauracionPasiva, setRestauracionPasiva] = useState(0.5);
-    const [demandaFisica, setDemandaFisica] = useState(0.3);
+    const [demandaFisica, setDemandaFisica] = useState(0.5);
     const [descripcionBienestar, setDescripcionBienestar] = useState('');
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +63,10 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
         e.preventDefault();
         if (!name.trim()) { setError(t('validation.nameRequired')); return; }
         if (!idLocation) { setError(t('validation.locationRequired')); return; }
+        if (isWellness && (!categoriaWellness || !isWellnessEvidenceComplete(wellnessEvidence, wellnessDimensions))) {
+            setError('Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.');
+            return;
+        }
         setSubmitting(true);
         const ok = await onSubmit({
             name: name.trim(),
@@ -71,6 +78,8 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
             is_wellness: isWellness,
             ...(isWellness && {
                 categoria_wellness: categoriaWellness || undefined,
+                wellness_dimensions: wellnessDimensions,
+                wellness_evidence: wellnessEvidence.trim(),
                 nivel_aislamiento: nivelAislamiento,
                 restauracion_pasiva: restauracionPasiva,
                 demanda_fisica: demandaFisica,
@@ -188,14 +197,18 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                         values={{
                             isWellness,
                             categoriaWellness,
-                            nivelAislamiento,
-                            restauracionPasiva,
+                            wellnessDimensions,
+                            wellnessEvidence,
                             demandaFisica,
                             descripcionBienestar,
+                            nivelAislamiento,
+                            restauracionPasiva,
                         }}
                         onChange={(patch) => {
                             if (patch.isWellness !== undefined) setIsWellness(patch.isWellness);
                             if (patch.categoriaWellness !== undefined) setCategoriaWellness(patch.categoriaWellness);
+                            if (patch.wellnessDimensions !== undefined) setWellnessDimensions(patch.wellnessDimensions);
+                            if (patch.wellnessEvidence !== undefined) setWellnessEvidence(patch.wellnessEvidence);
                             if (patch.nivelAislamiento !== undefined) setNivelAislamiento(patch.nivelAislamiento);
                             if (patch.restauracionPasiva !== undefined) setRestauracionPasiva(patch.restauracionPasiva);
                             if (patch.demandaFisica !== undefined) setDemandaFisica(patch.demandaFisica);

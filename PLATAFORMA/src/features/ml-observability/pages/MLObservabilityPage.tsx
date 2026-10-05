@@ -1,7 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useMLHealth } from '../hooks/useMLHealth';
 import { mlApi, type ModelStatus, type SchedulerConfig, type ExtendedStats, type CrossValidationResult } from '../api/mlApi';
-import { api } from '../../../shared/api/axiosClient';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
@@ -40,41 +39,7 @@ function SectionDivider({ label, color }: { label: string; color: string }) {
 }
 
 // ── Métricas del clasificador Wellness (movido desde Filtro de Aprobación) ──
-interface WellnessClassifierMetrics {
-    accuracy: number | null;
-    macro_f1: number | null;
-    trained_at: string | null;
-    n_samples: number | null;
-    dataset: string;
-    classification_report: Record<string, unknown>;
-}
-
-interface WellnessMetricsResponse {
-    classifier: WellnessClassifierMetrics;
-    disclaimer: string;
-}
-
 function WellnessMetricsCard() {
-    const [data, setData] = useState<WellnessMetricsResponse | null>(null);
-    const [err, setErr] = useState<string | null>(null);
-
-    useEffect(() => {
-        api.get<WellnessMetricsResponse>('/ml/wellness/metrics')
-            .then(r => setData(r.data))
-            .catch((e) => {
-                // Antes cualquier fallo (permiso, red, servidor) mostraba el
-                // mismo texto genérico "modelo no entrenado" — imposible
-                // distinguir un 403 de un modelo realmente sin entrenar.
-                const status = e?.response?.status;
-                if (status === 403) setErr('No tienes permiso para ver estas métricas.');
-                else if (status === 404) setErr('Modelo no entrenado aún — ejecuta el entrenamiento desde la terminal.');
-                else setErr(`No se pudieron cargar las métricas (${status ?? 'error de red'}).`);
-            });
-    }, []);
-
-    const fmt = (v: number | null) => v != null ? (v * 100).toFixed(1) + '%' : '—';
-    const fmtDate = (s: string | null) => s ? new Date(s).toLocaleDateString('es-MX', { dateStyle: 'medium' }) : '—';
-
     return (
         <div
             className="rounded-2xl border p-4"
@@ -83,50 +48,19 @@ function WellnessMetricsCard() {
             <div className="flex items-center gap-2 mb-3">
                 <BarChart2 className="size-4" style={{ color: DASHBOARD_COLORS.success }} />
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                    Métricas del Clasificador Wellness
+                    Evaluación de recomendaciones Wellness
                 </p>
             </div>
 
-            {err ? (
-                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                    <AlertCircle className="size-3.5 shrink-0" />
-                    {err}
-                </div>
-            ) : !data ? (
-                <div className="h-8 flex items-center">
-                    <Loader2 className="size-4 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
-                </div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-3 gap-3 mb-3">
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Accuracy</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: DASHBOARD_COLORS.success }}>
-                                {fmt(data.classifier.accuracy)}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Macro F1</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: CYAN }}>
-                                {fmt(data.classifier.macro_f1)}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border px-3 py-2 text-center" style={{ borderColor: 'var(--color-border)' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--color-text-alt)' }}>Muestras</p>
-                            <p className="text-lg font-extrabold tabular-nums" style={{ color: 'var(--color-text)' }}>
-                                {data.classifier.n_samples?.toLocaleString('es-MX') ?? '—'}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-1.5 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                        <AlertCircle className="size-3 mt-0.5 shrink-0" />
-                        <span>
-                            Entrenado {fmtDate(data.classifier.trained_at)} sobre datos {data.classifier.dataset}.{' '}
-                            {data.disclaimer}
-                        </span>
-                    </div>
-                </>
-            )}
+            <div className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                <p>
+                    No hay métricas válidas de eficacia todavía. Las cifras anteriores provenían de etiquetas
+                    sintéticas de estrés sin instrumento validado y fueron retiradas. El sistema actual ordena
+                    lugares aprobados según preferencias declaradas; esta pantalla no representa una evaluación
+                    clínica ni demuestra que un destino reduzca el estrés.
+                </p>
+            </div>
         </div>
     );
 }

@@ -3,6 +3,8 @@ import { Leaf, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2 } from 'luc
 import { api } from '../../../shared/api/axiosClient';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useAdminBadges } from '../../dashboard/context/AdminBadgesContext';
+import { WELLNESS_CATEGORIES, WELLNESS_DIMENSIONS, WELLNESS_PHYSICAL_EFFORT_LEVELS } from '../../points-of-interest/components/WellnessPlaceFields';
+import { isWellnessEvidenceComplete, parseWellnessEvidence, serializeWellnessEvidence } from '../../points-of-interest/components/wellnessEvidence';
 
 interface WellnessPendingItem {
     id: number;
@@ -14,44 +16,9 @@ interface WellnessPendingItem {
     restauracion_pasiva?: number;
     demanda_fisica?: number;
     descripcion_bienestar?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
     wellness_status: string;
-}
-
-const WELLNESS_CATEGORIES = [
-    'Termal', 'Spa', 'Bosque', 'Montaña', 'Lago',
-    'Retiro_Silencio', 'Ecoturismo_Activo', 'Parque',
-];
-
-function DimensionSlider({
-    label,
-    hint,
-    value,
-    onChange,
-}: {
-    label: string;
-    hint: string;
-    value: number;
-    onChange: (v: number) => void;
-}) {
-    return (
-        <div>
-            <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
-                    {label}
-                </span>
-                <span className="text-xs font-mono tabular-nums" style={{ color: 'var(--color-text-alt)' }}>
-                    {value.toFixed(2)}
-                </span>
-            </div>
-            <input
-                type="range" min={0} max={1} step={0.05}
-                value={value}
-                onChange={e => onChange(parseFloat(e.target.value))}
-                className="w-full accent-green-500 h-1.5 cursor-pointer"
-            />
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-alt)' }}>{hint}</p>
-        </div>
-    );
 }
 
 function WellnessReviewCard({
@@ -67,19 +34,43 @@ function WellnessReviewCard({
     const [submitting, setSubmitting] = useState(false);
     const [notes, setNotes] = useState('');
     const [categoria, setCategoria] = useState(item.categoria_wellness ?? '');
-    const [aislamiento, setAislamiento] = useState(item.nivel_aislamiento ?? 0.5);
-    const [restauracion, setRestauracion] = useState(item.restauracion_pasiva ?? 0.5);
     const [demanda, setDemanda] = useState(item.demanda_fisica ?? 0.5);
+    const [dimensions, setDimensions] = useState<string[]>(item.wellness_dimensions ?? []);
+    const [evidence, setEvidence] = useState(item.wellness_evidence ?? '');
+    const evidenceRecord = parseWellnessEvidence(evidence);
+    const selectedEffort = WELLNESS_PHYSICAL_EFFORT_LEVELS.reduce((nearest, level) =>
+        Math.abs(level.value - demanda) < Math.abs(nearest.value - demanda) ? level : nearest,
+    );
+    const [formError, setFormError] = useState('');
+
+    const updateEvidence = (patch: Partial<typeof evidenceRecord>) => {
+        setEvidence(serializeWellnessEvidence({ ...evidenceRecord, ...patch }));
+    };
+    const toggleDimension = (key: string) => {
+        const next = dimensions.includes(key) ? dimensions.filter((d) => d !== key) : [...dimensions, key];
+        setDimensions(next);
+        if (!next.includes(key)) {
+            const nextEvidence = { ...evidenceRecord.dimensions };
+            delete nextEvidence[key];
+            setEvidence(serializeWellnessEvidence({ ...evidenceRecord, dimensions: nextEvidence }));
+        }
+    };
 
     const submit = async (action: 'approved' | 'rejected') => {
+        if (action === 'approved' && (!categoria || !isWellnessEvidenceComplete(evidence, dimensions))) {
+            setFormError('Para aprobar, registra una fuente verificable y evidencia para cada dimensión seleccionada.');
+            setExpanded(true);
+            return;
+        }
+        setFormError('');
         setSubmitting(true);
         try {
             await api.patch(`/ml/wellness/review/${item.type}/${item.id}`, {
                 action,
-                nivel_aislamiento:  aislamiento,
-                restauracion_pasiva: restauracion,
                 demanda_fisica:     demanda,
                 categoria_wellness: categoria || undefined,
+                wellness_dimensions: dimensions,
+                wellness_evidence: evidence.trim(),
                 admin_notes:        notes || undefined,
             });
             toast.success(
@@ -138,23 +129,26 @@ function WellnessReviewCard({
                 </button>
             </div>
 
-            {/* Proposed values (always visible) */}
-            <div className="px-4 pb-3 grid grid-cols-3 gap-2">
-                {[
-                    { label: 'Aislamiento', v: item.nivel_aislamiento },
-                    { label: 'Restauración', v: item.restauracion_pasiva },
-                    { label: 'Demanda física', v: item.demanda_fisica },
-                ].map(({ label, v }) => (
-                    <div key={label} className="rounded-xl px-3 py-2 text-center"
-                        style={{ background: 'var(--color-bg-alt)' }}>
-                        <p className="text-[10px] mb-0.5" style={{ color: 'var(--color-text-alt)' }}>{label}</p>
-                        <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
-                            {v != null ? (v * 10).toFixed(0) : '—'}
-                        </p>
-                        <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>/ 10</p>
-                    </div>
-                ))}
+            <div className="px-4 pb-3">
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Dimensiones propuestas</p>
+                <p className="text-xs" style={{ color: 'var(--color-text)' }}>
+                    {(item.wellness_dimensions ?? []).length
+                        ? (item.wellness_dimensions ?? []).map((key) => WELLNESS_DIMENSIONS.find((d) => d.key === key)?.label ?? key).join(' · ')
+                        : 'El prestador aún no propuso dimensiones.'}
+                </p>
             </div>
+
+            {item.wellness_evidence && (
+                <div className="px-4 pb-3">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Fuente de la propuesta</p>
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>{parseWellnessEvidence(item.wellness_evidence).source || 'Sin fuente registrada.'}</p>
+                    {Object.entries(parseWellnessEvidence(item.wellness_evidence).dimensions).map(([key, detail]) => (
+                        <p key={key} className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            <strong>{WELLNESS_DIMENSIONS.find((dimension) => dimension.key === key)?.label ?? key}:</strong> {detail}
+                        </p>
+                    ))}
+                </div>
+            )}
 
             {item.descripcion_bienestar && (
                 <div className="px-4 pb-3">
@@ -169,13 +163,22 @@ function WellnessReviewCard({
                 <div className="px-4 pb-4 border-t pt-4 space-y-4"
                     style={{ borderColor: 'var(--color-border)' }}>
                     <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
-                        Ajustar dimensiones
+                        Revisión de la propuesta
                     </p>
+                    <div className="rounded-xl border px-3 py-2.5 text-xs leading-relaxed" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
+                        <p className="mb-1 font-semibold" style={{ color: 'var(--color-text)' }}>Antes de aprobar, confirma:</p>
+                        <ul className="list-disc space-y-1 pl-4">
+                            <li>La actividad o servicio está descrito de forma concreta y aparece en una fuente o en una observación fechada.</li>
+                            <li>Cada dimensión seleccionada corresponde a algo que la persona realmente puede hacer o vivir.</li>
+                            <li>La aprobación clasifica una experiencia de SMARTUR; no certifica calidad GWI ni un beneficio clínico.</li>
+                        </ul>
+                        <p className="mt-2">Que los campos estén completos solo indica que se capturó la información mínima; revisa la fuente y la relación de cada actividad antes de decidir.</p>
+                    </div>
 
                     {/* Category */}
                     <div>
                         <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-alt)' }}>
-                            Categoría wellness
+                            Tipo de experiencia en SMARTUR
                         </label>
                         <select
                             value={categoria}
@@ -184,31 +187,67 @@ function WellnessReviewCard({
                             style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
                         >
                             <option value="">Sin categoría</option>
-                            {WELLNESS_CATEGORIES.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
+                            {WELLNESS_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
 
-                    {/* Sliders */}
+                    <fieldset>
+                        <legend className="mb-2 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                            Dimensiones relacionadas con la actividad (marcar solo las sustentadas)
+                        </legend>
+                        <div className="space-y-2">
+                            {WELLNESS_DIMENSIONS.map(({ key, label, description }) => (
+                                <label key={key} className="flex cursor-pointer items-start gap-2 rounded-xl border p-3" style={{ borderColor: 'var(--color-border)' }}>
+                                    <input type="checkbox" checked={dimensions.includes(key)} onChange={() => toggleDimension(key)} className="mt-0.5 size-4 accent-emerald-600" />
+                                    <span>
+                                        <span className="block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</span>
+                                        <span className="block text-[11px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>{description}</span>
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </fieldset>
+
                     <div className="space-y-3">
-                        <DimensionSlider
-                            label="Nivel de aislamiento"
-                            hint="0 = centro urbano · 1 = muy alejado"
-                            value={aislamiento}
-                            onChange={setAislamiento}
-                        />
-                        <DimensionSlider
-                            label="Restauración pasiva"
-                            hint="0 = activo/estimulante · 1 = muy relajante"
-                            value={restauracion}
-                            onChange={setRestauracion}
-                        />
-                        <DimensionSlider
-                            label="Demanda física"
-                            hint="0 = sin esfuerzo · 1 = alta exigencia"
-                            value={demanda}
-                            onChange={setDemanda}
-                        />
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Fuente de verificación (10–180 caracteres)</label>
+                            <input maxLength={180} value={evidenceRecord.source} onChange={e => updateEvidence({ source: e.target.value })}
+                                placeholder="URL/documento o visita: lugar y fecha"
+                                className="w-full rounded-xl border px-3 py-2 text-sm"
+                                style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }} />
+                        </div>
+                        {dimensions.map((key) => {
+                            const dimension = WELLNESS_DIMENSIONS.find((entry) => entry.key === key);
+                            return <div key={key}>
+                                <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                                    Evidencia para {dimension?.label ?? key} (12–80 caracteres)
+                                </label>
+                                <textarea rows={2} maxLength={80} value={evidenceRecord.dimensions[key] ?? ''}
+                                    onChange={e => updateEvidence({ dimensions: { ...evidenceRecord.dimensions, [key]: e.target.value } })}
+                                    placeholder="Actividad concreta y relación observable con esta dimensión"
+                                    className="w-full resize-y rounded-xl border px-3 py-2 text-sm"
+                                    style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }} />
+                            </div>;
+                        })}
+                        <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                            Registro {evidence.length}/1000 caracteres{isWellnessEvidenceComplete(evidence, dimensions) ? ' · campos listos para revisión interna' : ' · falta información'}
+                        </p>
                     </div>
+
+                    <div>
+                        <label htmlFor={`wellness-effort-${item.id}`} className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Esfuerzo físico aproximado</label>
+                        <select id={`wellness-effort-${item.id}`} value={selectedEffort.value} onChange={e => setDemanda(Number(e.target.value))}
+                            className="w-full rounded-lg border px-3 py-2 text-sm"
+                            style={{ background: 'var(--color-bg)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}>
+                            {WELLNESS_PHYSICAL_EFFORT_LEVELS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+                        </select>
+                        <p className="mt-1 text-[10px]" style={{ color: 'var(--color-text-alt)' }}>{selectedEffort.detail} Este dato solo desempata lugares con igual coincidencia.</p>
+                    </div>
+
+                    <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-100">
+                        El marco de GWI orienta la clasificación, pero no es una rúbrica ni certificación de GWI. La aprobación es una revisión interna de SMARTUR.
+                    </p>
+                    {formError && <p role="alert" className="text-xs font-medium text-red-600">{formError}</p>}
 
                     {/* Admin notes */}
                     <div>
@@ -229,12 +268,12 @@ function WellnessReviewCard({
                     <div className="flex gap-2 pt-1">
                         <button
                             onClick={() => submit('approved')}
-                            disabled={submitting}
+                            disabled={submitting || !categoria || !isWellnessEvidenceComplete(evidence, dimensions)}
                             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                             style={{ background: '#22c55e' }}
                         >
                             {submitting ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
-                            Aprobar como Bienestar
+                            Aprobar lugar wellness
                         </button>
                         <button
                             onClick={() => submit('rejected')}

@@ -9,6 +9,8 @@ import type { Location } from '../../locations/types/types';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
+import WellnessPlaceFields, { type WellnessPlaceValues } from '../../points-of-interest/components/WellnessPlaceFields';
+import { isWellnessEvidenceComplete } from '../../points-of-interest/components/wellnessEvidence';
 
 const SERVICE_TYPE_KEYS = ['tour', 'hotel', 'restaurant', 'transporte'] as const;
 
@@ -35,6 +37,10 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
     });
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
+    const [wellness, setWellness] = useState<WellnessPlaceValues>({
+        isWellness: false, categoriaWellness: '', wellnessDimensions: [], wellnessEvidence: '',
+        demandaFisica: 0.3, descripcionBienestar: '', nivelAislamiento: 0.5, restauracionPasiva: 0.5,
+    });
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -99,9 +105,20 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors = validate();
+        if (wellness.isWellness && (!wellness.categoriaWellness || !isWellnessEvidenceComplete(wellness.wellnessEvidence, wellness.wellnessDimensions))) {
+            newErrors.wellness = 'Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.';
+        }
         if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
         const payload = {
             ...formData,
+            is_wellness: wellness.isWellness,
+            ...(wellness.isWellness ? {
+                categoria_wellness: wellness.categoriaWellness,
+                wellness_dimensions: wellness.wellnessDimensions,
+                wellness_evidence: wellness.wellnessEvidence.trim(),
+                demanda_fisica: wellness.demandaFisica,
+                descripcion_bienestar: wellness.descripcionBienestar.trim(),
+            } : {}),
             ...(lat !== 0 || lng !== 0 ? { latitude: lat, longitude: lng } : {}),
         };
         const success = await onSubmit(payload);
@@ -270,6 +287,9 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
                             <p className="mt-1 text-xs text-zinc-400">{lat.toFixed(6)}, {lng.toFixed(6)}</p>
                         )}
                     </div>
+
+                    <WellnessPlaceFields values={wellness} onChange={(patch) => setWellness((current) => ({ ...current, ...patch }))} />
+                    {errors.wellness && <p role="alert" className="text-xs text-red-600">{errors.wellness}</p>}
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                         <button

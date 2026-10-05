@@ -16,6 +16,10 @@ const buildFormData = (data: CreateTouristServiceDTO | UpdateTouristServiceDTO) 
             if (value instanceof File) formData.append('image', value);
             return;
         }
+        if (key === 'wellness_dimensions' && Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+            return;
+        }
         formData.append(key, String(value));
     });
 

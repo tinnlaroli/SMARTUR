@@ -35,6 +35,9 @@ class DetailViewPage extends StatefulWidget {
   /// Used when the caller provides its own fixed overlay (e.g. swipe view).
   final bool showTopButtons;
 
+  /// Hides an external/catalog score when the caller has no reliable rating.
+  final bool showRatingPill;
+
   // ── Campos de servicio (opcionales — solo para svc_* placeIds) ──
   final double? priceFrom;
   final double? priceTo;
@@ -56,6 +59,7 @@ class DetailViewPage extends StatefulWidget {
     this.lat,
     this.lon,
     this.showTopButtons = true,
+    this.showRatingPill = true,
     this.priceFrom,
     this.priceTo,
     this.currency,
@@ -448,6 +452,7 @@ class _DetailViewPageState extends State<DetailViewPage>
                       title: widget.title,
                       locationLine: widget.locationLine,
                       rating: widget.rating,
+                      showRatingPill: widget.showRatingPill,
                       subtitle: widget.subtitle,
                       userRating: _kind != null && _pid != null ? _userRating : null,
                       ratingBusy: _ratingBusy,
@@ -535,6 +540,7 @@ class _BottomContent extends StatelessWidget {
   final String title;
   final String locationLine;
   final double rating;
+  final bool showRatingPill;
   final String subtitle;
   final int? userRating;
   final bool ratingBusy;
@@ -556,6 +562,7 @@ class _BottomContent extends StatelessWidget {
     required this.title,
     required this.locationLine,
     required this.rating,
+    this.showRatingPill = true,
     required this.subtitle,
     required this.userRating,
     required this.ratingBusy,
@@ -635,8 +642,10 @@ class _BottomContent extends StatelessWidget {
               // Rating + location + directions row
               Row(
                 children: [
-                  _RatingPill(rating: rating),
-                  const SizedBox(width: 8),
+                  if (showRatingPill) ...[
+                    _RatingPill(rating: rating),
+                    const SizedBox(width: 8),
+                  ],
                   _DirectionsChip(lat: lat, lon: lon, placeName: title),
                   const SizedBox(width: 8),
                   Expanded(
@@ -1297,5 +1306,3 @@ class _RatingTab extends StatelessWidget {
       );
   }
 }
-
-

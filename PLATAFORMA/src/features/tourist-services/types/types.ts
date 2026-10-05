@@ -15,6 +15,13 @@ export interface TouristService {
     price_to?: number | null;
     currency?: string | null;
     created_at: string;
+    is_wellness?: boolean;
+    wellness_status?: string | null;
+    categoria_wellness?: string | null;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string | null;
+    demanda_fisica?: number | null;
+    descripcion_bienestar?: string | null;
 }
 
 export interface CreateTouristServiceDTO {
@@ -25,6 +32,12 @@ export interface CreateTouristServiceDTO {
     service_type: string;
     active?: boolean;
     image?: File | null;
+    is_wellness?: boolean;
+    categoria_wellness?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
+    demanda_fisica?: number;
+    descripcion_bienestar?: string;
 }
 
 export interface UpdateTouristServiceDTO {
@@ -38,6 +51,12 @@ export interface UpdateTouristServiceDTO {
     price_to?: number | null;
     currency?: string;
     image?: File | null;
+    is_wellness?: boolean;
+    categoria_wellness?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
+    demanda_fisica?: number;
+    descripcion_bienestar?: string;
 }
 
 export interface TouristServiceResponse {

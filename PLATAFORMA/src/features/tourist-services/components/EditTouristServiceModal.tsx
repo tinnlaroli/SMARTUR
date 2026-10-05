@@ -5,6 +5,8 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { getDashboardText } from '../../../shared/i18n/dashboardLocale';
 import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { api } from '../../../shared/api/axiosClient';
+import WellnessPlaceFields, { type WellnessPlaceValues } from '../../points-of-interest/components/WellnessPlaceFields';
+import { isWellnessEvidenceComplete } from '../../points-of-interest/components/wellnessEvidence';
 
 const SERVICE_TYPE_KEYS = ['tour', 'hotel', 'restaurant', 'transporte'] as const;
 
@@ -36,6 +38,15 @@ export default function EditTouristServiceModal({ onClose, onSubmit, service }: 
     const [imagePreview, setImagePreview] = useState<string | null>(service.image_url ?? null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [locations, setLocations] = useState<Location[]>([]);
+    const [wellness, setWellness] = useState<WellnessPlaceValues>({
+        isWellness: service.is_wellness ?? false,
+        categoriaWellness: service.categoria_wellness ?? '',
+        wellnessDimensions: service.wellness_dimensions ?? [],
+        wellnessEvidence: service.wellness_evidence ?? '',
+        demandaFisica: service.demanda_fisica ?? 0.3,
+        descripcionBienestar: service.descripcion_bienestar ?? '',
+        nivelAislamiento: 0.5, restauracionPasiva: 0.5,
+    });
 
     useEffect(() => {
         api.get('/locations', { params: { limit: 100 } })
@@ -68,8 +79,21 @@ export default function EditTouristServiceModal({ onClose, onSubmit, service }: 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors = validate();
+        if (wellness.isWellness && (!wellness.categoriaWellness || !isWellnessEvidenceComplete(wellness.wellnessEvidence, wellness.wellnessDimensions))) {
+            newErrors.wellness = 'Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.';
+        }
         if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
-        const success = await onSubmit(service.id, formData);
+        const success = await onSubmit(service.id, {
+            ...formData,
+            is_wellness: wellness.isWellness,
+            ...(wellness.isWellness ? {
+                categoria_wellness: wellness.categoriaWellness,
+                wellness_dimensions: wellness.wellnessDimensions,
+                wellness_evidence: wellness.wellnessEvidence.trim(),
+                demanda_fisica: wellness.demandaFisica,
+                descripcion_bienestar: wellness.descripcionBienestar.trim(),
+            } : {}),
+        });
         if (success) onClose();
     };
 
@@ -267,6 +291,9 @@ export default function EditTouristServiceModal({ onClose, onSubmit, service }: 
                             </div>
                         )}
                     </div>
+
+                    <WellnessPlaceFields values={wellness} onChange={(patch) => setWellness((current) => ({ ...current, ...patch }))} />
+                    {errors.wellness && <p role="alert" className="text-xs text-red-600">{errors.wellness}</p>}
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                         <button

@@ -103,21 +103,30 @@ class TouristServices {
     static async create(data) {
         const {
             name, description, id_company, id_location, service_type, active, image_url,
-            price_from, price_to, currency, operating_hours, capacity, duration_minutes, contact_phone
+            price_from, price_to, currency, operating_hours, capacity, duration_minutes, contact_phone,
+            is_wellness, categoria_wellness, wellness_dimensions, wellness_evidence,
+            demanda_fisica, descripcion_bienestar
         } = data;
 
         const result = await pool.query(
             `INSERT INTO tourist_service
                (name, description, id_company, id_location, service_type, active, image_url,
                 price_from, price_to, currency, operating_hours, capacity, duration_minutes, contact_phone,
-                status)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending_review')
+                status, is_wellness, wellness_status, categoria_wellness, wellness_dimensions,
+                wellness_evidence, demanda_fisica, descripcion_bienestar)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending_review', $15, $16, $17, $18, $19, $20, $21)
              RETURNING *`,
             [
                 name, description, id_company, id_location, service_type, active ?? true, image_url || null,
                 price_from || null, price_to || null, currency || 'MXN',
                 operating_hours ? JSON.stringify(operating_hours) : null,
-                capacity || null, duration_minutes || null, contact_phone || null
+                capacity || null, duration_minutes || null, contact_phone || null,
+                is_wellness ?? false, is_wellness ? 'pending' : null,
+                is_wellness ? categoria_wellness : null,
+                is_wellness ? (wellness_dimensions || []) : [],
+                is_wellness ? wellness_evidence : null,
+                is_wellness ? (demanda_fisica ?? 0.5) : null,
+                is_wellness ? (descripcion_bienestar || null) : null
             ]
         );
 
@@ -127,7 +136,9 @@ class TouristServices {
     static async update(id_service, data) {
         const {
             name, description, id_company, id_location, service_type, active, image_url,
-            price_from, price_to, currency, operating_hours, capacity, duration_minutes, contact_phone
+            price_from, price_to, currency, operating_hours, capacity, duration_minutes, contact_phone,
+            is_wellness, categoria_wellness, wellness_dimensions, wellness_evidence,
+            demanda_fisica, descripcion_bienestar
         } = data;
 
         const fields = [];
@@ -179,6 +190,22 @@ class TouristServices {
         if (capacity !== undefined)         { fields.push(`capacity = $${index++}`);         values.push(capacity); }
         if (duration_minutes !== undefined)  { fields.push(`duration_minutes = $${index++}`); values.push(duration_minutes); }
         if (contact_phone !== undefined)     { fields.push(`contact_phone = $${index++}`);    values.push(contact_phone); }
+        if (is_wellness !== undefined) {
+            fields.push(`is_wellness = $${index++}`); values.push(is_wellness);
+            fields.push(`wellness_status = $${index++}`); values.push(is_wellness ? 'pending' : null);
+            if (!is_wellness) {
+                fields.push(`wellness_dimensions = $${index++}`); values.push([]);
+                fields.push(`wellness_evidence = $${index++}`); values.push(null);
+                fields.push(`categoria_wellness = $${index++}`); values.push(null);
+                fields.push(`demanda_fisica = $${index++}`); values.push(null);
+                fields.push(`descripcion_bienestar = $${index++}`); values.push(null);
+            }
+        }
+        if (categoria_wellness !== undefined) { fields.push(`categoria_wellness = $${index++}`); values.push(categoria_wellness); }
+        if (wellness_dimensions !== undefined) { fields.push(`wellness_dimensions = $${index++}`); values.push(wellness_dimensions); }
+        if (wellness_evidence !== undefined) { fields.push(`wellness_evidence = $${index++}`); values.push(wellness_evidence); }
+        if (demanda_fisica !== undefined) { fields.push(`demanda_fisica = $${index++}`); values.push(demanda_fisica); }
+        if (descripcion_bienestar !== undefined) { fields.push(`descripcion_bienestar = $${index++}`); values.push(descripcion_bienestar); }
 
         if (fields.length === 0) {
             return null;

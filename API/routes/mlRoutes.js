@@ -2,8 +2,11 @@ import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/rbacMiddleware.js';
 import db from '../config/db.js';
+import { hasCompleteWellnessEvidence } from '../utils/wellnessEvidence.js';
 
 const router = express.Router();
+const WELLNESS_DIMENSIONS = new Set(['physical', 'mental', 'emotional', 'spiritual', 'social', 'environmental']);
+const WELLNESS_CATEGORIES = new Set(['Termal', 'Spa', 'Naturaleza', 'Movimiento', 'Cultural', 'Gastronomía saludable', 'Comunidad', 'Retiro', 'Otro']);
 
 const MODELO_URL = process.env.MODELO_URL || 'http://modelo:8000';
 
@@ -463,82 +466,140 @@ router.get('/ml/extended-stats', verifyToken, requireRole([1, 4]), async (req, r
 
 // ─── WellTur: Wellness Tourism Routes ────────────────────────────────────────
 
+// Retain an explicit response for clients with an older build. These custom
+// questions and their synthetic target labels were never psychometrically validated.
+router.post('/ml/wellness/assess', verifyToken, (_req, res) => res.status(410).json({
+    message: 'La evaluación de estrés fue retirada porque no estaba validada. Usa /api/v2/ml/wellness/recommend para elegir preferencias de viaje.',
+}));
+
 /**
- * POST /api/v2/ml/wellness/assess
- * Clasifica el perfil de vitalidad del usuario (Q1-Q4) y retorna Top-N destinos wellness.
- * Persiste el assessment y la sesión en BD.
- * Body: { q1, q2, q3, q4, top_n?, user_preferences?, region_filter? }
+ * Preference-first Welltur flow. Candidate places always come from active,
+ * admin-approved SMARTUR records; MODELO never reads the static wellness CSV.
  */
-router.post('/ml/wellness/assess', verifyToken, async (req, res) => {
+router.post('/ml/wellness/recommend', verifyToken, async (req, res) => {
     const userId = req.user.id;
-    const { q1, q2, q3, q4, top_n = 3, user_preferences = null, region_filter = null, consent_given } = req.body ?? {};
+    const { preferences = {}, top_n = 3, consent_given } = req.body ?? {};
+    if (!preferences || typeof preferences !== 'object' || Array.isArray(preferences)) {
+        return res.status(400).json({ message: 'preferences debe ser un objeto válido.' });
+    }
+    const allowedActivity = new Set(['low', 'moderate', 'high']);
+    const dimensions = preferences.wellness_dimensions;
+    const activity = preferences.activity_level;
+    const regionFilter = typeof preferences.region_filter === 'string' ? preferences.region_filter.trim() : '';
+    if (preferences.region_filter != null && typeof preferences.region_filter !== 'string') {
+        return res.status(400).json({ message: 'region_filter debe ser texto.' });
+    }
+    if (regionFilter.length > 100) {
+        return res.status(400).json({ message: 'region_filter no debe superar 100 caracteres.' });
+    }
 
-    if (!consent_given) {
-        return res.status(400).json({ message: 'Se requiere consentimiento explícito (consent_given: true).' });
+    if (typeof consent_given !== 'boolean') {
+        return res.status(400).json({ message: 'Indica si deseas guardar tus preferencias en el historial.' });
     }
-    if ([q1, q2, q3, q4].some(v => v == null || isNaN(Number(v)))) {
-        return res.status(400).json({ message: 'q1, q2, q3 y q4 son requeridos (1-4).' });
+    if (!Array.isArray(dimensions) || dimensions.length < 1 || dimensions.length > 3 ||
+        new Set(dimensions).size !== dimensions.length || dimensions.some((d) => !WELLNESS_DIMENSIONS.has(d))) {
+        return res.status(400).json({ message: 'Elige entre una y tres dimensiones válidas.' });
     }
-    for (const [name, v] of [['q1', q1], ['q2', q2], ['q3', q3], ['q4', q4]]) {
-        const n = Number(v);
-        if (n < 1 || n > 4) return res.status(400).json({ message: `${name} debe estar entre 1 y 4.` });
+    if (!allowedActivity.has(activity)) {
+        return res.status(400).json({ message: 'El nivel de actividad no es válido.' });
+    }
+    const topN = Number(top_n);
+    if (!Number.isInteger(topN) || topN < 1 || topN > 10) {
+        return res.status(400).json({ message: 'top_n debe ser un entero entre 1 y 10.' });
     }
 
+    let client;
     try {
-        // 1. Proxy al modelo Python
-        const modeloRes = await fetch(`${MODELO_URL}/wellness/assess`, {
+        const { rows: catalogRows } = await db.query(
+            `SELECT 'poi:' || p.id::text AS id_destino,
+                    p.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    p.categoria_wellness, p.wellness_dimensions,
+                    p.demanda_fisica,
+                    p.descripcion_bienestar, p.image_url,
+                    COALESCE(p.latitude, l.latitude) AS lat,
+                    COALESCE(p.longitude, l.longitude) AS lon
+               FROM point_of_interest p
+               LEFT JOIN location l ON l.id_location = p.id_location
+              WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
+                AND p.is_active = TRUE AND p.validation_status = 'active'
+                AND l.is_active = TRUE
+                AND NULLIF(BTRIM(p.categoria_wellness), '') IS NOT NULL
+                AND cardinality(p.wellness_dimensions) > 0
+                AND NULLIF(BTRIM(p.wellness_evidence), '') IS NOT NULL
+             UNION ALL
+             SELECT 'service:' || s.id_service::text AS id_destino,
+                    s.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    s.categoria_wellness, s.wellness_dimensions,
+                    s.demanda_fisica,
+                    s.descripcion_bienestar, s.image_url, l.latitude AS lat, l.longitude AS lon
+               FROM tourist_service s
+               LEFT JOIN location l ON l.id_location = s.id_location
+              WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
+                AND s.active = TRUE AND s.status = 'active'
+                AND l.is_active = TRUE
+                AND NULLIF(BTRIM(s.categoria_wellness), '') IS NOT NULL
+                AND cardinality(s.wellness_dimensions) > 0
+                AND NULLIF(BTRIM(s.wellness_evidence), '') IS NOT NULL
+              ORDER BY nombre_lugar
+              LIMIT 1000`,
+        );
+
+        const preferencesForModel = {
+            wellness_dimensions: dimensions,
+            activity_level: activity,
+            region_filter: regionFilter || null,
+        };
+        const modeloRes = await fetch(`${MODELO_URL}/wellness/recommend`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ q1: +q1, q2: +q2, q3: +q3, q4: +q4, top_n: +top_n, user_preferences, region_filter }),
+            body: JSON.stringify({ preferences: preferencesForModel, destinations: catalogRows, top_n: topN }),
             signal: AbortSignal.timeout(15_000),
         });
-
         if (!modeloRes.ok) {
             const detail = await modeloRes.text().catch(() => '');
-            return res.status(502).json({ message: 'Servicio wellness no disponible.', detail });
+            return res.status(502).json({ message: 'Servicio de recomendaciones wellness no disponible.', detail });
         }
-
         const data = await modeloRes.json();
 
-        // 2. Persistir assessment con consentimiento explícito
-        const { rows: assessRows } = await db.query(
-            `INSERT INTO stress_assessment
-               (user_id, q1_energia, q2_tension, q3_rumiacion, q4_activacion,
-                modo_viaje, perfil_interno, confianza_ml, metodo_decision,
-                consent_given, consent_at)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,TRUE,NOW())
-             RETURNING assessment_id`,
-            [
-                userId, +q1, +q2, +q3, +q4,
-                data.modo_viaje,
-                data.perfil_interno,
-                data.confianza,
-                data.metodo,
-            ],
-        );
-        const assessmentId = assessRows[0]?.assessment_id;
+        // A recommendation can be requested without retaining a preference
+        // assessment or recommendation session. Only explicit opt-in creates
+        // persistent history; transient request data is still processed to rank.
+        if (!consent_given) return res.json(data);
 
-        // 3. Persistir sesión de recomendación wellness (tabla separada del motor ML existente)
-        const recIds = (data.destinations ?? []).map(d => d.id_destino);
-        const { rows: sessRows } = await db.query(
+        client = await db.connect();
+        await client.query('BEGIN');
+        const { rows: assessmentRows } = await client.query(
+            `INSERT INTO wellness_preference_assessment
+               (user_id, wellness_dimensions, activity_level, region_filter, consent_given)
+             VALUES ($1,$2,$3,$4,TRUE)
+             RETURNING preference_assessment_id`,
+            [userId, dimensions, activity, regionFilter || null],
+        );
+        const preferenceId = assessmentRows[0].preference_assessment_id;
+        const recIds = (data.destinations ?? []).map((d) => d.id_destino);
+        const { rows: sessionRows } = await client.query(
             `INSERT INTO wellness_recommendation_session
-               (user_id, assessment_id, modo_viaje, recommended_ids, top_n)
-             VALUES ($1,$2,$3,$4,$5)
+               (user_id, preference_assessment_id, modo_viaje, recommended_ids, top_n, algorithm_version)
+             VALUES ($1,$2,$3,$4,$5,'preferences-v1')
              RETURNING session_id`,
-            [userId, assessmentId, data.modo_viaje, JSON.stringify(recIds), +top_n],
+            [userId, preferenceId, data.modo_viaje, JSON.stringify(recIds), topN],
         );
-
-        res.json({
+        await client.query('COMMIT');
+        return res.json({
             ...data,
-            assessment_id: assessmentId,
-            session_id: sessRows[0]?.session_id,
+            assessment_id: preferenceId,
+            preference_assessment_id: preferenceId,
+            session_id: sessionRows[0].session_id,
         });
     } catch (err) {
+        if (client) await client.query('ROLLBACK').catch(() => {});
         if (err.name === 'TimeoutError' || err.name === 'AbortError') {
-            return res.status(504).json({ message: 'El servicio wellness tardó demasiado.' });
+            return res.status(504).json({ message: 'La recomendación wellness tardó demasiado.' });
         }
-        console.error('[wellness/assess] error:', err.message);
-        res.status(500).json({ message: 'Error al procesar evaluación wellness.' });
+        console.error('[wellness/recommend] error:', err.message);
+        return res.status(500).json({ message: 'Error al generar recomendaciones wellness.' });
+    } finally {
+        client?.release();
     }
 });
 
@@ -554,20 +615,32 @@ router.post('/ml/wellness/satisfaction', verifyToken, async (req, res) => {
     if (!session_id || fit_rating == null) {
         return res.status(400).json({ message: 'session_id y fit_rating son requeridos.' });
     }
-    const rating = parseInt(fit_rating, 10);
-    if (rating < 1 || rating > 5) {
+    const sessionId = Number(session_id);
+    if (!Number.isSafeInteger(sessionId) || sessionId < 1) {
+        return res.status(400).json({ message: 'session_id no es válido.' });
+    }
+    const rating = Number(fit_rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
         return res.status(400).json({ message: 'fit_rating debe estar entre 1 y 5.' });
+    }
+    if (feedback_text != null && (typeof feedback_text !== 'string' || feedback_text.length > 1000)) {
+        return res.status(400).json({ message: 'feedback_text debe ser texto de hasta 1000 caracteres.' });
     }
 
     try {
-        await db.query(
+        const { rows } = await db.query(
             `INSERT INTO wellness_satisfaction (session_id, user_id, fit_rating, feedback_text)
-             VALUES ($1,$2,$3,$4)
+             SELECT s.session_id, $1, $3, $4
+               FROM wellness_recommendation_session s
+              WHERE s.session_id = $2 AND s.user_id = $1
              ON CONFLICT (session_id) DO UPDATE
                SET fit_rating = EXCLUDED.fit_rating,
-                   feedback_text = EXCLUDED.feedback_text`,
-            [+session_id, userId, rating, feedback_text],
+                   feedback_text = EXCLUDED.feedback_text
+             WHERE wellness_satisfaction.user_id = EXCLUDED.user_id
+             RETURNING sat_id`,
+            [userId, sessionId, rating, feedback_text],
         );
+        if (!rows.length) return res.status(404).json({ message: 'Sesión de recomendación no encontrada.' });
         res.json({ ok: true });
     } catch (err) {
         console.error('[wellness/satisfaction] error:', err.message);
@@ -583,15 +656,29 @@ router.get('/ml/wellness/history/me', verifyToken, async (req, res) => {
     const userId = req.user.id;
     try {
         const { rows } = await db.query(
-            `SELECT a.assessment_id, a.modo_viaje, a.confianza_ml, a.created_at,
-                    s.session_id, s.recommended_ids,
-                    sat.fit_rating
-             FROM stress_assessment a
-             LEFT JOIN wellness_recommendation_session s ON s.assessment_id = a.assessment_id
-             LEFT JOIN wellness_satisfaction sat ON sat.session_id = s.session_id
-             WHERE a.user_id = $1
-             ORDER BY a.created_at DESC
-             LIMIT 10`,
+            `WITH history AS (
+                SELECT COALESCE(a.assessment_id, p.preference_assessment_id) AS assessment_id,
+                       p.preference_assessment_id, s.modo_viaje, a.confianza_ml,
+                       COALESCE(p.created_at, a.created_at, s.created_at) AS created_at,
+                       s.session_id, s.recommended_ids, sat.fit_rating,
+                       p.wellness_dimensions, p.activity_level, p.region_filter
+                  FROM wellness_recommendation_session s
+                  LEFT JOIN stress_assessment a ON a.assessment_id = s.assessment_id
+                  LEFT JOIN wellness_preference_assessment p ON p.preference_assessment_id = s.preference_assessment_id
+                  LEFT JOIN wellness_satisfaction sat ON sat.session_id = s.session_id
+                 WHERE s.user_id = $1
+                UNION ALL
+                SELECT a.assessment_id, NULL::INT, a.modo_viaje, a.confianza_ml, a.created_at,
+                       NULL::INT, NULL::JSONB, NULL::SMALLINT,
+                       NULL::TEXT[], NULL::VARCHAR, NULL::VARCHAR
+                  FROM stress_assessment a
+                 WHERE a.user_id = $1
+                   AND NOT EXISTS (
+                       SELECT 1 FROM wellness_recommendation_session s
+                        WHERE s.assessment_id = a.assessment_id
+                   )
+             )
+             SELECT * FROM history ORDER BY created_at DESC LIMIT 10`,
             [userId],
         );
         res.json(rows);
@@ -607,12 +694,21 @@ router.get('/ml/wellness/history/me', verifyToken, async (req, res) => {
  */
 router.delete('/ml/wellness/history/me', verifyToken, async (req, res) => {
     const userId = req.user.id;
+    let client;
     try {
-        await db.query('DELETE FROM stress_assessment WHERE user_id = $1', [userId]);
+        client = await db.connect();
+        await client.query('BEGIN');
+        await client.query('DELETE FROM wellness_recommendation_session WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM wellness_preference_assessment WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM stress_assessment WHERE user_id = $1', [userId]);
+        await client.query('COMMIT');
         res.json({ ok: true, message: 'Historial de bienestar eliminado.' });
     } catch (err) {
+        if (client) await client.query('ROLLBACK').catch(() => {});
         console.error('[wellness/history/delete] error:', err.message);
         res.status(500).json({ message: 'Error al eliminar historial.' });
+    } finally {
+        client?.release();
     }
 });
 
@@ -646,7 +742,7 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
                 `SELECT ts.id_service AS id, ts.name, ts.is_wellness,
                         ts.wellness_status, ts.categoria_wellness,
                         ts.nivel_aislamiento, ts.restauracion_pasiva, ts.demanda_fisica,
-                        ts.descripcion_bienestar,
+                        ts.descripcion_bienestar, ts.wellness_dimensions, ts.wellness_evidence,
                         c.name AS empresa,
                         'service' AS type
                  FROM tourist_service ts
@@ -656,8 +752,9 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
             ),
             db.query(
                 `SELECT id AS id, name, is_wellness, wellness_status,
-                        categoria_wellness, nivel_aislamiento, restauracion_pasiva,
-                        demanda_fisica, descripcion_bienestar, 'poi' AS type
+                         categoria_wellness, nivel_aislamiento, restauracion_pasiva,
+                         demanda_fisica, descripcion_bienestar, wellness_dimensions,
+                         wellness_evidence, 'poi' AS type
                  FROM point_of_interest
                  WHERE wellness_status = 'pending'
                  ORDER BY id DESC`,
@@ -685,6 +782,8 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
         restauracion_pasiva,
         demanda_fisica,
         categoria_wellness,
+        wellness_dimensions,
+        wellness_evidence,
         admin_notes,
     } = req.body ?? {};
 
@@ -693,6 +792,20 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
     }
     if (!['service', 'poi'].includes(type)) {
         return res.status(400).json({ message: 'type debe ser "service" o "poi".' });
+    }
+
+    if (action === 'approved') {
+        if (!Array.isArray(wellness_dimensions) || wellness_dimensions.length === 0 ||
+            new Set(wellness_dimensions).size !== wellness_dimensions.length ||
+            wellness_dimensions.some((dimension) => !WELLNESS_DIMENSIONS.has(dimension))) {
+            return res.status(400).json({ message: 'Selecciona al menos una dimensión GWI válida para el lugar.' });
+        }
+        if (!hasCompleteWellnessEvidence(wellness_evidence, wellness_dimensions)) {
+            return res.status(400).json({ message: 'Registra una fuente y evidencia concreta para cada dimensión seleccionada.' });
+        }
+        if (typeof categoria_wellness !== 'string' || !WELLNESS_CATEGORIES.has(categoria_wellness.trim())) {
+            return res.status(400).json({ message: 'Selecciona una categoría válida de experiencia wellness.' });
+        }
     }
 
     const table = type === 'service' ? 'tourist_service' : 'point_of_interest';
@@ -705,12 +818,18 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
         // viniendo de la whitelist ya validada arriba (type), nunca de input crudo.
         const sets = ['wellness_status = $1', 'wellness_reviewed_at = NOW()', 'wellness_reviewed_by = $2'];
         const values = [action, req.user.id];
+        values.push(action === 'approved');
+        sets.push(`is_wellness = $${values.length}`);
 
         if (admin_notes != null) {
             values.push(admin_notes);
             sets.push(`wellness_admin_notes = $${values.length}`);
         }
         if (action === 'approved') {
+            values.push(wellness_dimensions);
+            sets.push(`wellness_dimensions = $${values.length}`);
+            values.push(wellness_evidence.trim());
+            sets.push(`wellness_evidence = $${values.length}`);
             for (const [col, raw] of [
                 ['nivel_aislamiento', nivel_aislamiento],
                 ['restauracion_pasiva', restauracion_pasiva],
@@ -718,8 +837,8 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
             ]) {
                 if (raw == null) continue;
                 const num = parseFloat(raw);
-                if (Number.isNaN(num)) {
-                    return res.status(400).json({ message: `${col} debe ser numérico.` });
+                if (Number.isNaN(num) || num < 0 || num > 1) {
+                    return res.status(400).json({ message: `${col} debe estar entre 0 y 1.` });
                 }
                 values.push(num);
                 sets.push(`${col} = $${values.length}`);
@@ -728,7 +847,6 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
                 values.push(categoria_wellness);
                 sets.push(`categoria_wellness = $${values.length}`);
             }
-            sets.push('is_wellness = TRUE');
         }
 
         values.push(parseInt(id, 10));
@@ -752,7 +870,7 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
         try { return (await db.query(sql)).rows; }
         catch { return fallback; }
     };
-    const [counts, modeDist, satisfaction] = await Promise.all([
+    const [counts, preferenceDimensions, satisfaction] = await Promise.all([
         safeQ(
             `SELECT
                COUNT(*) FILTER (WHERE wellness_status='pending')::int  AS pending,
@@ -766,10 +884,11 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
             [{ pending: 0, approved: 0, rejected: 0 }],
         ),
         safeQ(
-            `SELECT modo_viaje, COUNT(*)::int AS count
-             FROM stress_assessment
-             WHERE created_at > NOW() - INTERVAL '30 days'
-             GROUP BY modo_viaje ORDER BY count DESC`,
+            `SELECT dimension, COUNT(*)::int AS count
+             FROM wellness_preference_assessment a
+             CROSS JOIN LATERAL unnest(a.wellness_dimensions) AS dims(dimension)
+             WHERE a.created_at > NOW() - INTERVAL '30 days'
+             GROUP BY dimension ORDER BY count DESC`,
             [],
         ),
         safeQ(
@@ -781,29 +900,17 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
     ]);
     res.json({
         service_counts: counts[0] ?? { pending: 0, approved: 0, rejected: 0 },
-        modo_distribution: modeDist,
+        // Keep the legacy key empty so old consumers do not see synthetic stress labels.
+        modo_distribution: [],
+        preference_dimension_distribution: preferenceDimensions,
         satisfaction: satisfaction[0] ?? { avg_rating: null, responses: 0 },
     });
 });
 
-// ── GET /api/v2/ml/wellness/metrics ──────────────────────────────────────────
-/**
- * Proxy a MODELO /wellness/metrics — clasificador accuracy/F1.
- * Solo admin y turismólogos.
- */
-router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 4]), async (req, res) => {
-    try {
-        const resp = await fetch(`${MODELO_URL}/wellness/metrics`);
-        if (resp.status === 404) {
-            return res.status(404).json({ error: 'Modelo no entrenado aún. Ejecuta /ml/wellness/train primero.' });
-        }
-        if (!resp.ok) throw new Error(`MODELO responded ${resp.status}`);
-        const data = await resp.json();
-        res.json(data);
-    } catch (err) {
-        console.error('[wellness-metrics]', err.message);
-        res.status(503).json({ error: 'No se pudo obtener métricas del modelo', detail: err.message });
-    }
-});
+// Legacy synthetic-label metrics are deliberately unavailable: they do not
+// measure stress or recommendation relevance.
+router.get('/ml/wellness/metrics', verifyToken, requireRole([1, 4]), (_req, res) => res.status(410).json({
+    message: 'No existen métricas válidas de eficacia wellness. Las métricas anteriores se basaban en etiquetas sintéticas no validadas.',
+}));
 
 export default router;

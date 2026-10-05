@@ -7,6 +7,8 @@ export interface POI {
     categories_raw?: string | null;
     is_wellness?: boolean;
     wellness_status?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
     categoria_wellness?: string;
     nivel_aislamiento?: number;
     restauracion_pasiva?: number;
@@ -24,6 +26,8 @@ export interface CreatePOIDTO {
     longitude?: number;
     is_wellness?: boolean;
     categoria_wellness?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
     nivel_aislamiento?: number;
     restauracion_pasiva?: number;
     demanda_fisica?: number;
@@ -38,6 +42,8 @@ export interface UpdatePOIDTO {
     image?: File | null;
     is_wellness?: boolean;
     categoria_wellness?: string;
+    wellness_dimensions?: string[];
+    wellness_evidence?: string;
     nivel_aislamiento?: number;
     restauracion_pasiva?: number;
     demanda_fisica?: number;

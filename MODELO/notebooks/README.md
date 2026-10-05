@@ -17,6 +17,8 @@ Orden recomendado:
    mezcla híbrida.
 6. `06_evaluacion_temporal.ipynb`: split temporal, Recall/NDCG/HitRate,
    cobertura, diversidad y análisis de errores.
+7. `07_auditoria_catalogo_wellness.ipynb`: calidad del catálogo wellness local,
+   cobertura de atributos y límites de uso; no entrena ni simula usuarios.
 
 El comando ejecutable para bootstrap es:
 

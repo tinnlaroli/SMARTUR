@@ -1457,27 +1457,26 @@ class WellnessDestinationItem(BaseModel):
     estado: str
     categoria_wellness: str
     match_pct: float
-    beneficio_optimo_pct: float
-    alineacion_pct: float
-    wellness_sentiment_score: float
     rank: int
-    nivel_aislamiento: float
-    restauracion_pasiva: float
-    demanda_fisica: float
+    demanda_fisica: Optional[float] = None
+    wellness_dimensions: List[str] = Field(default_factory=list)
+    image_url: Optional[str] = None
     lat: Optional[float] = None
     lon: Optional[float] = None
     descripcion_bienestar: str
-    beneficio_descripcion: str
 
 
-class WellnessAssessmentResponse(BaseModel):
-    perfil_interno: str
-    modo_viaje: str          # 'modo_calma' | 'modo_restauracion' | 'modo_equilibrio'
-    modo_viaje_label: str    # 'Modo Calma' | 'Modo Restauración' | 'Modo Equilibrio'
+class WellnessRecommendationResponse(BaseModel):
+    modo_viaje: str
+    modo_viaje_label: str
     modo_viaje_description: str
-    confianza: float
-    metodo: str
     destinations: List[WellnessDestinationItem]
+
+
+class WellnessPreferenceRequest(BaseModel):
+    preferences: Dict[str, Any]
+    destinations: List[Dict[str, Any]] = Field(default_factory=list)
+    top_n: int = Field(default=3, ge=1, le=10)
 
 
 _wellness_destinations_cache: Optional[Any] = None
@@ -1496,80 +1495,46 @@ def _get_wellness_destinations():
     return _wellness_destinations_cache
 
 
-@app.post("/wellness/assess", response_model=WellnessAssessmentResponse)
-def wellness_assess(payload: WellnessAssessmentRequest):
-    """
-    Clasifica el perfil de vitalidad del usuario (Q1-Q4) y retorna
-    las top-N recomendaciones de destinos wellness.
-    Nunca expone el nombre técnico interno en modo_viaje.
-    """
+@app.post("/wellness/assess")
+def wellness_assess_retired():
+    """Legacy stress classification is disabled; its training labels were synthetic."""
+    raise HTTPException(
+        status_code=410,
+        detail="La clasificación de estrés fue retirada por falta de validación. Usa /wellness/recommend con preferencias de viaje.",
+    )
+
+
+@app.post("/wellness/recommend", response_model=WellnessRecommendationResponse)
+def wellness_recommend_from_preferences(payload: WellnessPreferenceRequest):
+    """Rank only the approved catalog supplied by the SMARTUR API."""
+    from wellness_preference_ranker import recommend_from_preferences
+
+    if len(payload.destinations) > 1000:
+        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
     try:
-        from wellness_classifier import (
-            get_classifier,
-            MODO_VIAJE_LABELS,
-            MODO_VIAJE_DESCRIPTION,
+        recs = recommend_from_preferences(
+            payload.destinations, payload.preferences, top_n=payload.top_n
         )
-        from wellness_matchmaker import recommend_wellness
-
-        clf = get_classifier()
-        perfil, modo, proba_map, confianza, metodo = clf.predict(
-            payload.q1, payload.q2, payload.q3, payload.q4
+        return WellnessRecommendationResponse(
+            modo_viaje="preferencias_wellness",
+            modo_viaje_label="Lugares según tus preferencias",
+            modo_viaje_description="Coincidencias según las dimensiones que elegiste; el ritmo físico solo desempata lugares con igual coincidencia.",
+            destinations=[WellnessDestinationItem(**item) for item in recs],
         )
-
-        destinations_df = _get_wellness_destinations()
-        recs = recommend_wellness(
-            destinations=destinations_df,
-            perfil=perfil,
-            q1=payload.q1,
-            q2=payload.q2,
-            q3=payload.q3,
-            q4=payload.q4,
-            top_n=payload.top_n,
-            stress_confidence=confianza,
-            user_preferences=payload.user_preferences,
-            region_filter=payload.region_filter,
-        )
-
-        return WellnessAssessmentResponse(
-            perfil_interno=perfil,
-            modo_viaje=modo,
-            modo_viaje_label=MODO_VIAJE_LABELS.get(modo, modo),
-            modo_viaje_description=MODO_VIAJE_DESCRIPTION.get(modo, ""),
-            confianza=round(confianza, 3),
-            metodo=metodo,
-            destinations=[WellnessDestinationItem(**r) for r in recs],
-        )
-    except Exception as e:
-        logger.error(f"[wellness] Error en assessment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("[wellness/recommend] Error al ordenar el catálogo aprobado")
+        raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones.") from exc
 
 
 @app.get("/wellness/destinations")
-def wellness_destinations(
-    estado: Optional[str] = Query(None),
-    categoria: Optional[str] = Query(None),
-    approved_only: bool = Query(True),
-):
-    """
-    Lista destinos wellness disponibles en el catálogo.
-    Si approved_only=True, solo retorna los aprobados por el admin.
-    """
-    try:
-        df = _get_wellness_destinations()
-        if df.empty:
-            return {"destinations": []}
-
-        if estado:
-            df = df[df.get("estado", "").str.lower() == estado.lower()]
-        if categoria:
-            cat_col = "categoria_wellness" if "categoria_wellness" in df.columns else "categoria_principal"
-            df = df[df[cat_col].str.lower() == categoria.lower()]
-        if approved_only and "wellness_status" in df.columns:
-            df = df[df["wellness_status"] == "approved"]
-
-        return {"destinations": df.to_dict(orient="records"), "total": len(df)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def wellness_destinations_retired():
+    """The static CSV is not the approved SMARTUR catalog and is no longer served."""
+    raise HTTPException(
+        status_code=410,
+        detail="El catálogo estático fue retirado. El catálogo válido proviene de lugares activos y aprobados en SMARTUR.",
+    )
 
 
 @app.get("/wellness/pending-count")
@@ -1604,46 +1569,21 @@ def wellness_pending_count():
 
 
 @app.post("/wellness/train")
-def wellness_train(background_tasks: BackgroundTasks):
-    """Re-entrena el clasificador de perfil wellness en background."""
-    def _train():
-        try:
-            from wellness_classifier import WellnessProfileClassifier
-            clf = WellnessProfileClassifier()
-            metrics = clf.train()
-            logger.info(f"[wellness-train] Completado: accuracy={metrics.get('accuracy', '?'):.3f}")
-        except Exception as e:
-            logger.error(f"[wellness-train] Error: {e}")
-
-    background_tasks.add_task(_train)
-    return {"ok": True, "message": "Entrenamiento wellness iniciado en background"}
+def wellness_train_retired():
+    """Synthetic-label wellness training is disabled until valid labels exist."""
+    raise HTTPException(
+        status_code=410,
+        detail="Entrenamiento retirado: no hay etiquetas wellness validadas. La recomendación vigente usa preferencias y contenido.",
+    )
 
 
 @app.get("/wellness/metrics")
-def wellness_metrics():
-    """Devuelve métricas del clasificador wellness guardadas en meta.json."""
-    meta_path = Path("../models/wellness/wellness_profile.meta.json")
-    if not meta_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="Modelo no entrenado aún. Ejecuta POST /wellness/train primero.",
-        )
-    with open(meta_path, encoding="utf-8") as f:
-        meta = json.load(f)
-    return {
-        "classifier": {
-            "accuracy": meta.get("accuracy"),
-            "macro_f1": meta.get("macro_f1"),
-            "classification_report": meta.get("classification_report", {}),
-            "trained_at": meta.get("trained_at"),
-            "n_samples": meta.get("n_samples"),
-            "dataset": meta.get("dataset", "synthetic"),
-        },
-        "disclaimer": (
-            "Métricas generadas sobre datos sintéticos (5,000 registros ATARAXIA). "
-            "No reflejan desempeño con usuarios reales hasta acumular feedback de fit_rating."
-        ),
-    }
+def wellness_metrics_retired():
+    """Do not publish scores that only measure unvalidated synthetic labels."""
+    raise HTTPException(
+        status_code=410,
+        detail="No existen métricas válidas de eficacia wellness. Las cifras anteriores medían etiquetas sintéticas no validadas.",
+    )
 
 
 if __name__ == "__main__":
