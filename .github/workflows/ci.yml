@@ -56,6 +56,7 @@ jobs:
             db:
               - 'API/bd.sql'
               - 'API/config/db.js'
+              - '.github/workflows/ci.yml'
 
   # ─────────────────────────────────────────────────────────────
   # DB — verifica que bd.sql construye el esquema completo en una
@@ -94,8 +95,8 @@ jobs:
           TABLES=$(psql -h localhost -U postgres -d smartur -tAc \
             "SELECT count(*) FROM pg_tables WHERE schemaname='public'")
           echo "N tablas = $TABLES"
-          [ "$TABLES" = "56" ] || { echo "FAIL: se esperaban 56 tablas, hay $TABLES"; exit 1; }
-          echo "OK: bd.sql importa sin errores y produce 56 tablas + 1 vista"
+          [ "$TABLES" = "57" ] || { echo "FAIL: se esperaban 57 tablas, hay $TABLES"; exit 1; }
+          echo "OK: bd.sql importa sin errores y produce 57 tablas + 1 vista"
         env:
           PGPASSWORD: postgres
 

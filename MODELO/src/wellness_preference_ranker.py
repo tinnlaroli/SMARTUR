@@ -51,7 +51,7 @@ def recommend_from_preferences(
     if region:
         candidates = [d for d in destinations if _normalize(d.get("estado")) == region]
 
-    ranked: list[tuple[float, float | None, dict[str, Any], float | None]] = []
+    ranked: list[tuple[float, float | None, dict[str, Any], float | None, set[str]]] = []
     for destination in candidates:
         dimensions = set(destination.get("wellness_dimensions") or []) & WELLNESS_DIMENSIONS
         if not dimensions:
@@ -65,7 +65,7 @@ def recommend_from_preferences(
             if demand is not None
             else None
         )
-        ranked.append((overlap, activity_fit, destination, demand))
+        ranked.append((overlap, activity_fit, destination, demand, dimensions))
 
     ranked.sort(key=lambda pair: (
         -pair[0],
@@ -73,7 +73,7 @@ def recommend_from_preferences(
         _normalize(pair[2].get("nombre_lugar")),
     ))
     results = []
-    for rank, (overlap, activity_fit, item, demand) in enumerate(ranked[:top_n], start=1):
+    for rank, (overlap, activity_fit, item, demand, dimensions) in enumerate(ranked[:top_n], start=1):
         results.append({
             "id_destino": str(item["id_destino"]),
             "nombre_lugar": str(item.get("nombre_lugar") or ""),

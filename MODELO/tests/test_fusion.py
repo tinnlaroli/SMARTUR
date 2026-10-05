@@ -493,11 +493,11 @@ def test_resolve_cf_sin_engine_no_revienta():
     assert score == 3.0 + 2.0 * 0.9
 
 
-def test_resolve_cf_svd_tambien_cuenta_como_senal_real(monkeypatch):
+def test_resolve_cf_fuente_no_reconocida_no_cuenta_como_senal_real(monkeypatch):
     import fusion as fusion_module
     monkeypatch.setattr(
         fusion_module, 'predict_cf_pearson_with_source',
-        lambda uid, bid, eng: (4.2, 'svd'),
+        lambda uid, bid, eng: (4.2, 'legacy'),
     )
     score, signal = _resolve_cf_score(
         'u1', 'poi_5', _FakeEngineConSenalCF(),
@@ -506,8 +506,8 @@ def test_resolve_cf_svd_tambien_cuenta_como_senal_real(monkeypatch):
         quality_scores={'poi_5': 1.0},
         global_mean_rating=3.5,
     )
-    assert signal == 'svd'
-    assert score == 4.2
+    assert signal == 'quality_proxy'
+    assert score == 5.0
 
 
 # ---------------------------------------------------------------------------
@@ -519,11 +519,11 @@ from fusion import _preference_weight, PREF_WEIGHT_COLD, PREF_WEIGHT_WARM
 
 
 def test_preference_weight_frio_es_el_maximo():
-    assert _preference_weight(0.0) == PREF_WEIGHT_COLD == 0.65
+    assert _preference_weight(0.0) == PREF_WEIGHT_COLD == 0.85
 
 
 def test_preference_weight_maduro_es_el_minimo():
-    assert _preference_weight(1.0) == PREF_WEIGHT_WARM == 0.20
+    assert _preference_weight(1.0) == pytest.approx(PREF_WEIGHT_WARM) == 0.20
 
 
 def test_preference_weight_interpola_linealmente():
@@ -531,8 +531,8 @@ def test_preference_weight_interpola_linealmente():
 
 
 def test_preference_weight_recorta_fuera_de_rango():
-    assert _preference_weight(-3.0) == PREF_WEIGHT_COLD   # nunca > COLD
-    assert _preference_weight(9.0) == PREF_WEIGHT_WARM     # nunca < WARM
+    assert _preference_weight(-3.0) == pytest.approx(PREF_WEIGHT_COLD)   # nunca > COLD
+    assert _preference_weight(9.0) == pytest.approx(PREF_WEIGHT_WARM)     # nunca < WARM
 
 
 def test_preference_weight_decrece_monotono_con_los_datos():

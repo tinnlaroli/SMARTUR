@@ -49,7 +49,7 @@ def test_cold_start_total_incrementa_fallback_mean():
     assert result == 4.0  # media de [3, 4, 5]
     assert stats['fallback_mean'] == 1
     assert stats['knn'] == 0
-    assert stats['svd'] == 0
+    assert 'svd' not in stats
     assert stats['total'] == 1
     assert stats['fallback_rate'] == 1.0
 
@@ -104,4 +104,4 @@ def test_real_signal_sources_no_incluye_el_relleno():
     fueran señal colaborativa — justo el bug que este arreglo resuelve."""
     assert 'fallback_mean' not in REAL_SIGNAL_SOURCES
     assert 'knn' in REAL_SIGNAL_SOURCES
-    assert 'svd' in REAL_SIGNAL_SOURCES
+    assert REAL_SIGNAL_SOURCES == ('knn',)

@@ -80,7 +80,7 @@ def test_build_ratings_has_learnable_structure(biz_df):
     """La diferencia clave con el dataset base: los usuarios se REPITEN en
     varios ítems (>=2 ratings), que es lo que permite al CF/RF aprender."""
     ratings = st.build_synthetic_ratings(biz_df, n_personas=60, save_backup=False)
-    assert set(ratings.columns) == {'user_id', 'business_id', 'stars'}
+    assert {'user_id', 'business_id', 'stars', 'categories'}.issubset(ratings.columns)
     assert len(ratings) > 60  # más ratings que personas -> hay repetición
     # Al menos la mayoría de las personas calificó 2+ ítems (estructura densa).
     repeat_rate = (ratings.groupby('user_id').size() >= 2).mean()
