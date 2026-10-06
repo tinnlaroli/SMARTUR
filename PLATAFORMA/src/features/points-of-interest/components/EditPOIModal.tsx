@@ -62,7 +62,7 @@ export default function EditPOIModal({ poi, onClose, onSubmit }: Props) {
         e.preventDefault();
         if (!name.trim()) { setError(t('validation.nameRequired')); return; }
         if (isWellness && (!categoriaWellness || !isWellnessEvidenceComplete(wellnessEvidence, wellnessDimensions))) {
-            setError('Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.');
+            setError('Completa la categoría, indica dónde comprobaste la actividad y describe cómo respalda cada dimensión marcada.');
             return;
         }
         setSubmitting(true);

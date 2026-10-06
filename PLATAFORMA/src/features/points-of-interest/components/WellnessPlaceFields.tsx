@@ -135,10 +135,10 @@ export default function WellnessPlaceFields({ values, onChange }: Props) {
                     <div className="space-y-3">
                         <div>
                             <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                                Fuente de verificación <span className="font-normal">(10–180 caracteres)</span>
+                                ¿Dónde comprobaste que ofrecen esta actividad? <span className="font-normal">(10–180 caracteres)</span>
                             </label>
                             <p className="mb-1 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                                Escribe una URL/documento o dónde y cuándo observaste la actividad. No afirmes beneficios clínicos.
+                                Anota el enlace o documento que consultaste. Si lo comprobaste en persona, escribe el lugar y la fecha. Ej.: “Sitio oficial del establecimiento, consultado el dd/mm/aaaa” o “Visita al lugar, localidad, dd/mm/aaaa”. Abajo describe la actividad concreta; no afirmes que trata o cura problemas de salud.
                             </p>
                             <input
                                 required
@@ -146,7 +146,7 @@ export default function WellnessPlaceFields({ values, onChange }: Props) {
                                 maxLength={180}
                                 value={evidence.source}
                                 onChange={(e) => updateEvidence({ source: e.target.value })}
-                                placeholder="URL o nombre del documento y fecha de consulta"
+                                placeholder="Enlace o documento consultado, o lugar y fecha de la visita"
                                 className={inputClass}
                                 style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
                             />

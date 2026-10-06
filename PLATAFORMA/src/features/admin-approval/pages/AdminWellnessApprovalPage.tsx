@@ -58,7 +58,7 @@ function WellnessReviewCard({
 
     const submit = async (action: 'approved' | 'rejected') => {
         if (action === 'approved' && (!categoria || !isWellnessEvidenceComplete(evidence, dimensions))) {
-            setFormError('Para aprobar, registra una fuente verificable y evidencia para cada dimensión seleccionada.');
+            setFormError('Indica dónde se verificó la actividad y describe cómo respalda cada dimensión seleccionada.');
             setExpanded(true);
             return;
         }
@@ -210,9 +210,12 @@ function WellnessReviewCard({
 
                     <div className="space-y-3">
                         <div>
-                            <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Fuente de verificación (10–180 caracteres)</label>
+                            <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>¿Dónde se comprobó que ofrecen esta actividad? (10–180 caracteres)</label>
+                            <p className="mb-1 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                                Enlace o documento consultado; si fue una visita, indica lugar y fecha. Ej.: “Sitio oficial, consultado el dd/mm/aaaa” o “Visita al lugar, localidad, dd/mm/aaaa”. La evidencia debe describir la actividad, no prometer efectos médicos.
+                            </p>
                             <input maxLength={180} value={evidenceRecord.source} onChange={e => updateEvidence({ source: e.target.value })}
-                                placeholder="URL/documento o visita: lugar y fecha"
+                                placeholder="Enlace o documento consultado, o lugar y fecha de la visita"
                                 className="w-full rounded-xl border px-3 py-2 text-sm"
                                 style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }} />
                         </div>

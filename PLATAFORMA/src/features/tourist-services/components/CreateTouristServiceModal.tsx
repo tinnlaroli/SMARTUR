@@ -106,7 +106,7 @@ export default function CreateTouristServiceModal({ onClose, onSubmit }: Props) 
         e.preventDefault();
         const newErrors = validate();
         if (wellness.isWellness && (!wellness.categoriaWellness || !isWellnessEvidenceComplete(wellness.wellnessEvidence, wellness.wellnessDimensions))) {
-            newErrors.wellness = 'Completa la categoría y la evidencia de la fuente y de cada dimensión marcada.';
+            newErrors.wellness = 'Completa la categoría, indica dónde comprobaste la actividad y describe cómo respalda cada dimensión marcada.';
         }
         if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
         const payload = {
