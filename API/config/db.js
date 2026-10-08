@@ -35,7 +35,7 @@ pool.on('connect', (client) => {
     client.query("SET client_encoding TO 'UTF8'").catch(() => {});
 });
 
-pool.connect()
+pool.query('SELECT 1')
     .then(() => console.log('PostgreSQL conectado'))
     .catch((err) => console.error('Error conectando DB:', err));
 

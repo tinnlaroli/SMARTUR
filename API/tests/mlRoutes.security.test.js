@@ -260,6 +260,76 @@ describe('mlRoutes security rules', () => {
         expect(pool.query).toHaveBeenCalledOnce();
     });
 
+    it('validates M/W preferences before querying the catalogue', async () => {
+        const res = await request('/ml/wellness/recommend-mw', {
+            method: 'POST',
+            body: { preferences: { motive_priorities: ['M1', 'M1'] }, consent_given: false },
+        });
+        expect(res.status).toBe(400);
+        expect(pool.query).not.toHaveBeenCalled();
+        expect(globalThis.fetch).not.toHaveBeenCalled();
+    });
+
+    it('sends only M/W-reviewed catalogue records and does not persist without consent', async () => {
+        const catalog = [{
+            id_destino: 'poi:18',
+            nombre_lugar: 'Sendero del bosque',
+            estado: 'Veracruz',
+            categoria_wellness: 'Naturaleza',
+            wellness_motives: ['M3'],
+            wellness_modalities: ['W2'],
+            wellness_mw_evidence: { M3: 'El sitio oficial describe el entorno del sendero.', W2: 'La ficha confirma el recorrido al aire libre.' },
+            wellness_mw_reviewed_at: '2026-10-08T00:00:00.000Z',
+            wellness_status: 'approved',
+            is_wellness: true,
+            is_accessible: true,
+            demanda_fisica: 0.5,
+        }];
+        pool.query.mockResolvedValueOnce({ rows: catalog });
+        globalThis.fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                algorithm: 'explicit_mw_content_baseline_v1',
+                ml_status: 'not_trained_on_real_traveler_feedback',
+                destinations: [{ id_destino: 'poi:18', match_pct: 100, rank: 1 }],
+            }),
+        });
+        const res = await request('/ml/wellness/recommend-mw', {
+            method: 'POST',
+            userId: 12,
+            body: {
+                preferences: { motive_priorities: ['M3'], modality_preferences: ['W2'], max_effort: 2, needs_accessible: true },
+                top_n: 5,
+                consent_given: false,
+            },
+        });
+        const payload = await res.json();
+        const modelRequest = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
+        expect(res.status).toBe(200);
+        expect(payload.algorithm).toBe('explicit_mw_content_baseline_v1');
+        expect(payload).not.toHaveProperty('session_id');
+        expect(pool.query.mock.calls[0][0]).toContain('wellness_mw_reviewed_at IS NOT NULL');
+        expect(modelRequest.preferences).toEqual({
+            motive_priorities: ['M3'],
+            modality_preferences: ['W2'],
+            max_effort: 2,
+            needs_accessible: true,
+            region_filter: null,
+        });
+        expect(pool.connect).not.toHaveBeenCalled();
+    });
+
+    it('rejects M/W feedback for a recommendation not owned by the caller', async () => {
+        pool.query.mockResolvedValueOnce({ rows: [] });
+        const res = await request('/ml/wellness/item-feedback', {
+            method: 'POST',
+            userId: 12,
+            body: { session_id: 99, item_id: 'poi:18', event_type: 'saved' },
+        });
+        expect(res.status).toBe(404);
+        expect(pool.query.mock.calls[0][0]).toContain('s.user_id = $2');
+    });
+
     it('requires an explicit history choice before processing preferences', async () => {
         const res = await request('/ml/wellness/recommend', {
             method: 'POST',

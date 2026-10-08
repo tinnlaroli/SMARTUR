@@ -18,7 +18,39 @@ interface WellnessPendingItem {
     descripcion_bienestar?: string;
     wellness_dimensions?: string[];
     wellness_evidence?: string;
+    wellness_motives?: string[];
+    wellness_modalities?: string[];
+    wellness_mw_evidence?: Record<string, string>;
     wellness_status: string;
+}
+
+const WELLTUR_MOTIVES = [
+    ['M1', 'Descansar o hacer una pausa'],
+    ['M2', 'Mantenerme activo/a o buscar vitalidad física'],
+    ['M3', 'Contacto con naturaleza o entorno'],
+    ['M4', 'Aprender sobre una práctica o tema'],
+    ['M5', 'Compartir o conectar con otras personas'],
+    ['M6', 'Probar algo nuevo o diferente'],
+    ['M7', 'Dedicar tiempo al autocuidado'],
+    ['M8', 'Elegir alimentos o bebidas de interés'],
+    ['M9', 'Atención plena o reflexión personal'],
+] as const;
+
+const WELLTUR_MODALITIES = [
+    ['W1', 'Pausa y descanso'],
+    ['W2', 'Naturaleza y aire libre'],
+    ['W3', 'Movimiento'],
+    ['W4', 'Práctica mente-cuerpo'],
+    ['W5', 'Experiencia culinaria'],
+    ['W6', 'Aprendizaje'],
+    ['W7', 'Autocuidado'],
+] as const;
+
+function isMWEvidenceComplete(motives: string[], modalities: string[], evidence: Record<string, string>) {
+    const selected = [...motives, ...modalities];
+    return selected.length === Object.keys(evidence).length && selected.every((code) =>
+        typeof evidence[code] === 'string' && evidence[code].trim().length >= 10 && evidence[code].trim().length <= 180,
+    );
 }
 
 function WellnessReviewCard({
@@ -37,6 +69,9 @@ function WellnessReviewCard({
     const [demanda, setDemanda] = useState(item.demanda_fisica ?? 0.5);
     const [dimensions, setDimensions] = useState<string[]>(item.wellness_dimensions ?? []);
     const [evidence, setEvidence] = useState(item.wellness_evidence ?? '');
+    const [mwMotives, setMwMotives] = useState<string[]>(item.wellness_motives ?? []);
+    const [mwModalities, setMwModalities] = useState<string[]>(item.wellness_modalities ?? []);
+    const [mwEvidence, setMwEvidence] = useState<Record<string, string>>(item.wellness_mw_evidence ?? {});
     const evidenceRecord = parseWellnessEvidence(evidence);
     const selectedEffort = WELLNESS_PHYSICAL_EFFORT_LEVELS.reduce((nearest, level) =>
         Math.abs(level.value - demanda) < Math.abs(nearest.value - demanda) ? level : nearest,
@@ -56,9 +91,27 @@ function WellnessReviewCard({
         }
     };
 
+    const toggleMwCode = (code: string, axis: 'motive' | 'modality') => {
+        const current = axis === 'motive' ? mwMotives : mwModalities;
+        const setCurrent = axis === 'motive' ? setMwMotives : setMwModalities;
+        const next = current.includes(code) ? current.filter((value) => value !== code) : [...current, code];
+        setCurrent(next);
+        if (!next.includes(code)) {
+            const updated = { ...mwEvidence };
+            delete updated[code];
+            setMwEvidence(updated);
+        }
+    };
+
     const submit = async (action: 'approved' | 'rejected') => {
         if (action === 'approved' && (!categoria || !isWellnessEvidenceComplete(evidence, dimensions))) {
             setFormError('Indica dónde se verificó la actividad y describe cómo respalda cada dimensión seleccionada.');
+            setExpanded(true);
+            return;
+        }
+        if (action === 'approved' && (mwMotives.length > 0 || mwModalities.length > 0) &&
+            !isMWEvidenceComplete(mwMotives, mwModalities, mwEvidence)) {
+            setFormError('Agrega evidencia observable de al menos 10 caracteres para cada etiqueta M/W, o deja ambos ejes sin etiquetas.');
             setExpanded(true);
             return;
         }
@@ -71,6 +124,9 @@ function WellnessReviewCard({
                 categoria_wellness: categoria || undefined,
                 wellness_dimensions: dimensions,
                 wellness_evidence: evidence.trim(),
+                wellness_motives: mwMotives,
+                wellness_modalities: mwModalities,
+                wellness_mw_evidence: mwEvidence,
                 admin_notes:        notes || undefined,
             });
             toast.success(
@@ -208,6 +264,55 @@ function WellnessReviewCard({
                         </div>
                     </fieldset>
 
+                    <section className="space-y-3 rounded-xl border p-3" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="rounded-lg bg-violet-50 px-3 py-2 text-xs leading-relaxed text-violet-950 dark:bg-violet-950/30 dark:text-violet-100">
+                            <strong>Etiquetas de búsqueda M/W (propuesta de investigación).</strong> Son distintas de GWI y no clasifican psicológicamente al viajero. Asigna solo una etiqueta si la ficha demuestra una actividad concreta; cada relación necesita evidencia. Estos criterios aún requieren revisión con viajeros y especialistas.
+                        </div>
+                        <fieldset>
+                            <legend className="mb-2 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Qué podría buscar el viajero (M)</legend>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {WELLTUR_MOTIVES.map(([code, label]) => (
+                                    <label key={code} className="flex items-start gap-2 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--color-border)' }}>
+                                        <input type="checkbox" checked={mwMotives.includes(code)} onChange={() => toggleMwCode(code, 'motive')} className="mt-0.5 size-4 accent-violet-600" />
+                                        <span><strong>{code}</strong> · {label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend className="mb-2 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Cómo prefiere vivirlo (W)</legend>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {WELLTUR_MODALITIES.map(([code, label]) => (
+                                    <label key={code} className="flex items-start gap-2 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--color-border)' }}>
+                                        <input type="checkbox" checked={mwModalities.includes(code)} onChange={() => toggleMwCode(code, 'modality')} className="mt-0.5 size-4 accent-violet-600" />
+                                        <span><strong>{code}</strong> · {label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </fieldset>
+                        {[...mwMotives, ...mwModalities].map((code) => (
+                            <label key={code} className="block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                                Evidencia para {code} (mínimo 10 caracteres)
+                                <textarea
+                                    rows={2}
+                                    maxLength={180}
+                                    value={mwEvidence[code] ?? ''}
+                                    onChange={(event) => setMwEvidence({ ...mwEvidence, [code]: event.target.value })}
+                                    placeholder="Actividad concreta y dónde se comprobó (fuente o visita fechada)"
+                                    className="mt-1 w-full resize-y rounded-xl border px-3 py-2 text-sm font-normal"
+                                    style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
+                                />
+                            </label>
+                        ))}
+                        <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
+                            {mwMotives.length + mwModalities.length === 0
+                                ? 'Puedes aprobar el registro GWI sin asignarle etiquetas M/W.'
+                                : isMWEvidenceComplete(mwMotives, mwModalities, mwEvidence)
+                                    ? 'Etiquetas M/W con evidencia capturada; no implica validación psicométrica.'
+                                    : 'Falta evidencia para una o más etiquetas seleccionadas.'}
+                        </p>
+                    </section>
+
                     <div className="space-y-3">
                         <div>
                             <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>¿Dónde se comprobó que ofrecen esta actividad? (10–180 caracteres)</label>
@@ -271,7 +376,8 @@ function WellnessReviewCard({
                     <div className="flex gap-2 pt-1">
                         <button
                             onClick={() => submit('approved')}
-                            disabled={submitting || !categoria || !isWellnessEvidenceComplete(evidence, dimensions)}
+                            disabled={submitting || !categoria || !isWellnessEvidenceComplete(evidence, dimensions) ||
+                                ((mwMotives.length > 0 || mwModalities.length > 0) && !isMWEvidenceComplete(mwMotives, mwModalities, mwEvidence))}
                             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                             style={{ background: '#22c55e' }}
                         >

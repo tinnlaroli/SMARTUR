@@ -99,8 +99,14 @@ jobs:
           TABLES=$(psql -h localhost -U postgres -d smartur -tAc \
             "SELECT count(*) FROM pg_tables WHERE schemaname='public'")
           echo "N tablas = $TABLES"
-          [ "$TABLES" = "57" ] || { echo "FAIL: se esperaban 57 tablas, hay $TABLES"; exit 1; }
-          echo "OK: bd.sql importa sin errores y produce 57 tablas + 1 vista"
+          [ "$TABLES" -ge "59" ] || { echo "FAIL: se esperaban al menos 59 tablas, hay $TABLES"; exit 1; }
+          MW_TABLES=$(psql -h localhost -U postgres -d smartur -tAc \
+            "SELECT count(*) FROM pg_tables WHERE schemaname='public' AND tablename IN ('wellness_trip_preference_assessment','wellness_recommendation_item_feedback')")
+          [ "$MW_TABLES" = "2" ] || { echo "FAIL: faltan tablas de captura M/W, hay $MW_TABLES de 2"; exit 1; }
+          MW_COLUMNS=$(psql -h localhost -U postgres -d smartur -tAc \
+            "SELECT count(*) FROM information_schema.columns WHERE (table_name IN ('point_of_interest','tourist_service') AND column_name IN ('wellness_motives','wellness_modalities','wellness_mw_evidence','wellness_mw_reviewed_at')) OR (table_name='user' AND column_name='is_seeded')")
+          [ "$MW_COLUMNS" = "9" ] || { echo "FAIL: se esperaban 9 columnas M/W y de procedencia, hay $MW_COLUMNS"; exit 1; }
+          echo "OK: bd.sql instala el esquema y las tablas/columnas M/W con filtro de cuentas semilla"
         env:
           PGPASSWORD: postgres
 

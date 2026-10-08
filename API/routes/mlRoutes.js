@@ -3,10 +3,13 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/rbacMiddleware.js';
 import db from '../config/db.js';
 import { hasCompleteWellnessEvidence } from '../utils/wellnessEvidence.js';
+import { hasCompleteWellnessMWEvidence, WELLTUR_MW_MOTIVES, WELLTUR_MW_MODALITIES } from '../utils/wellnessMWEvidence.js';
 
 const router = express.Router();
 const WELLNESS_DIMENSIONS = new Set(['physical', 'mental', 'emotional', 'spiritual', 'social', 'environmental']);
 const WELLNESS_CATEGORIES = new Set(['Termal', 'Spa', 'Naturaleza', 'Movimiento', 'Cultural', 'Gastronomía saludable', 'Comunidad', 'Retiro', 'Otro']);
+const WELLTUR_MOTIVE_SET = new Set(WELLTUR_MW_MOTIVES);
+const WELLTUR_MODALITY_SET = new Set(WELLTUR_MW_MODALITIES);
 
 const MODELO_URL = process.env.MODELO_URL || 'http://modelo:8000';
 
@@ -604,6 +607,194 @@ router.post('/ml/wellness/recommend', verifyToken, async (req, res) => {
 });
 
 /**
+ * WELLTUR M/W: preferencia contextual del viaje, separada de GWI.
+ * La operación usa un baseline explicable; el ranker aprendido disponible fue
+ * generado solo con datos sintéticos y no se usa para personas/lugares reales.
+ */
+router.post('/ml/wellness/recommend-mw', verifyToken, async (req, res) => {
+    const userId = req.user.id;
+    const { preferences = {}, top_n = 5, consent_given } = req.body ?? {};
+    if (!preferences || typeof preferences !== 'object' || Array.isArray(preferences)) {
+        return res.status(400).json({ message: 'preferences debe ser un objeto válido.' });
+    }
+    const motives = preferences.motive_priorities ?? [];
+    const modalities = preferences.modality_preferences ?? [];
+    if (!Array.isArray(motives) || motives.length > 3 || new Set(motives).size !== motives.length ||
+        motives.some((code) => !WELLTUR_MOTIVE_SET.has(code))) {
+        return res.status(400).json({ message: 'Elige hasta tres prioridades M1–M9 sin repetidas.' });
+    }
+    if (!Array.isArray(modalities) || modalities.length > 3 || new Set(modalities).size !== modalities.length ||
+        modalities.some((code) => !WELLTUR_MODALITY_SET.has(code))) {
+        return res.status(400).json({ message: 'Elige hasta tres modalidades W1–W7 sin repetidas.' });
+    }
+    if (motives.length === 0 && modalities.length === 0) {
+        return res.status(400).json({ message: 'Selecciona al menos una prioridad o modalidad, o continúa con el flujo de exploración.' });
+    }
+    if (typeof consent_given !== 'boolean') {
+        return res.status(400).json({ message: 'Indica si deseas guardar tus respuestas para mejorar la evaluación.' });
+    }
+    const maxEffort = Number(preferences.max_effort ?? 3);
+    if (!Number.isInteger(maxEffort) || maxEffort < 1 || maxEffort > 3) {
+        return res.status(400).json({ message: 'max_effort debe ser 1, 2 o 3.' });
+    }
+    if (preferences.needs_accessible != null && typeof preferences.needs_accessible !== 'boolean') {
+        return res.status(400).json({ message: 'needs_accessible debe ser booleano.' });
+    }
+    const regionFilter = typeof preferences.region_filter === 'string' ? preferences.region_filter.trim() : '';
+    if (preferences.region_filter != null && typeof preferences.region_filter !== 'string') {
+        return res.status(400).json({ message: 'region_filter debe ser texto.' });
+    }
+    if (regionFilter.length > 100) {
+        return res.status(400).json({ message: 'region_filter no debe superar 100 caracteres.' });
+    }
+    const topN = Number(top_n);
+    if (!Number.isInteger(topN) || topN < 1 || topN > 10) {
+        return res.status(400).json({ message: 'top_n debe ser un entero entre 1 y 10.' });
+    }
+
+    let client;
+    try {
+        const { rows: catalogRows } = await db.query(
+            `SELECT 'poi:' || p.id::text AS id_destino,
+                    p.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    p.categoria_wellness, p.wellness_motives, p.wellness_modalities,
+                    p.wellness_mw_evidence, p.wellness_mw_reviewed_at,
+                    p.wellness_status, p.is_wellness, p.is_accessible,
+                    p.demanda_fisica, p.descripcion_bienestar, p.image_url,
+                    COALESCE(p.latitude, l.latitude) AS lat,
+                    COALESCE(p.longitude, l.longitude) AS lon
+               FROM point_of_interest p
+               LEFT JOIN location l ON l.id_location = p.id_location
+              WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
+                AND p.is_active = TRUE AND p.validation_status = 'active'
+                AND l.is_active = TRUE AND p.wellness_mw_reviewed_at IS NOT NULL
+                AND (cardinality(p.wellness_motives) > 0 OR cardinality(p.wellness_modalities) > 0)
+             UNION ALL
+             SELECT 'service:' || s.id_service::text AS id_destino,
+                    s.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    s.categoria_wellness, s.wellness_motives, s.wellness_modalities,
+                    s.wellness_mw_evidence, s.wellness_mw_reviewed_at,
+                    s.wellness_status, s.is_wellness, FALSE AS is_accessible,
+                    s.demanda_fisica, s.descripcion_bienestar, s.image_url,
+                    l.latitude AS lat, l.longitude AS lon
+               FROM tourist_service s
+               LEFT JOIN location l ON l.id_location = s.id_location
+              WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
+                AND s.active = TRUE AND s.status = 'active'
+                AND l.is_active = TRUE AND s.wellness_mw_reviewed_at IS NOT NULL
+                AND (cardinality(s.wellness_motives) > 0 OR cardinality(s.wellness_modalities) > 0)
+              ORDER BY nombre_lugar
+              LIMIT 1000`,
+        );
+        const preferencesForModel = {
+            motive_priorities: motives,
+            modality_preferences: modalities,
+            max_effort: maxEffort,
+            needs_accessible: preferences.needs_accessible === true,
+            region_filter: regionFilter || null,
+        };
+        const modeloRes = await fetch(`${MODELO_URL}/wellness/recommend-mw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferences: preferencesForModel, destinations: catalogRows, top_n: topN }),
+            signal: AbortSignal.timeout(15_000),
+        });
+        if (!modeloRes.ok) {
+            const detail = await modeloRes.text().catch(() => '');
+            return res.status(502).json({ message: 'Servicio de recomendaciones M/W no disponible.', detail });
+        }
+        const data = await modeloRes.json();
+        if (!consent_given) return res.json(data);
+
+        client = await db.connect();
+        await client.query('BEGIN');
+        const { rows: assessmentRows } = await client.query(
+            `INSERT INTO wellness_trip_preference_assessment
+               (user_id, motive_priorities, modality_preferences, max_effort,
+                needs_accessible, region_filter, consent_given)
+             VALUES ($1,$2,$3,$4,$5,$6,TRUE)
+             RETURNING trip_preference_id`,
+            [userId, motives, modalities, maxEffort, preferences.needs_accessible === true, regionFilter || null],
+        );
+        const tripPreferenceId = assessmentRows[0].trip_preference_id;
+        const displayedDestinations = data.destinations ?? [];
+        const recIds = displayedDestinations.map((destination) => destination.id_destino);
+        const { rows: sessionRows } = await client.query(
+            `INSERT INTO wellness_recommendation_session
+               (user_id, trip_preference_id, modo_viaje, recommended_ids, top_n, algorithm_version)
+             VALUES ($1,$2,'preferencias_mw',$3,$4,'mw-content-v1')
+             RETURNING session_id`,
+            [userId, tripPreferenceId, JSON.stringify(recIds), topN],
+        );
+        const sessionId = sessionRows[0].session_id;
+        for (const [index, destination] of displayedDestinations.entries()) {
+            await client.query(
+                `INSERT INTO wellness_recommendation_item_feedback
+                   (session_id, user_id, item_id, event_type, position,
+                    motive_tags_snapshot, modality_tags_snapshot)
+                 VALUES ($1,$2,$3,'impression',$4,$5,$6)
+                 ON CONFLICT (session_id, item_id, event_type) DO NOTHING`,
+                [sessionId, userId, destination.id_destino, index + 1,
+                    destination.place_motives ?? [], destination.place_modalities ?? []],
+            );
+        }
+        await client.query('COMMIT');
+        return res.json({ ...data, trip_preference_id: tripPreferenceId, session_id: sessionId });
+    } catch (err) {
+        if (client) await client.query('ROLLBACK').catch(() => {});
+        if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+            return res.status(504).json({ message: 'La recomendación M/W tardó demasiado.' });
+        }
+        console.error('[wellness/recommend-mw] error:', err.message);
+        return res.status(500).json({ message: 'Error al generar recomendaciones M/W.' });
+    } finally {
+        client?.release();
+    }
+});
+
+/** Voluntary item-level feedback for an M/W recommendation session. */
+router.post('/ml/wellness/item-feedback', verifyToken, async (req, res) => {
+    const userId = req.user.id;
+    const { session_id, item_id, event_type, rating } = req.body ?? {};
+    const sessionId = Number(session_id);
+    if (!Number.isSafeInteger(sessionId) || sessionId < 1 || typeof item_id !== 'string' ||
+        item_id.length < 3 || item_id.length > 100) {
+        return res.status(400).json({ message: 'session_id o item_id no es válido.' });
+    }
+    const allowedEvents = new Set(['opened', 'saved', 'dismissed', 'selected', 'visited', 'rated']);
+    if (!allowedEvents.has(event_type)) {
+        return res.status(400).json({ message: 'event_type no es válido.' });
+    }
+    const itemRating = rating == null ? null : Number(rating);
+    if ((event_type === 'rated' && (!Number.isInteger(itemRating) || itemRating < 1 || itemRating > 5)) ||
+        (event_type !== 'rated' && rating != null)) {
+        return res.status(400).json({ message: 'Solo un evento rated acepta rating de 1 a 5.' });
+    }
+    try {
+        const { rows } = await db.query(
+            `INSERT INTO wellness_recommendation_item_feedback
+               (session_id, user_id, item_id, event_type, position, rating)
+             SELECT s.session_id, s.user_id, $3::text, $4,
+                    shown.ordinal::smallint, $5
+               FROM wellness_recommendation_session s
+               CROSS JOIN LATERAL jsonb_array_elements_text(s.recommended_ids)
+                    WITH ORDINALITY AS shown(item_id, ordinal)
+              WHERE s.session_id = $1 AND s.user_id = $2
+                AND s.trip_preference_id IS NOT NULL AND shown.item_id = $3::text
+             ON CONFLICT (session_id, item_id, event_type) DO UPDATE
+               SET rating = EXCLUDED.rating, created_at = NOW()
+             RETURNING feedback_id`,
+            [sessionId, userId, item_id, event_type, itemRating],
+        );
+        if (rows.length === 0) return res.status(404).json({ message: 'No se encontró esa recomendación para tu sesión.' });
+        return res.json({ ok: true, feedback_id: rows[0].feedback_id });
+    } catch (err) {
+        console.error('[wellness/item-feedback] error:', err.message);
+        return res.status(500).json({ message: 'No se pudo guardar tu opinión sobre el lugar.' });
+    }
+});
+
+/**
  * POST /api/v2/ml/wellness/satisfaction
  * Registra satisfacción post-resultado (feedback loop 1-5).
  * Body: { session_id, fit_rating (1-5), feedback_text? }
@@ -675,8 +866,16 @@ router.get('/ml/wellness/history/me', verifyToken, async (req, res) => {
                  WHERE a.user_id = $1
                    AND NOT EXISTS (
                        SELECT 1 FROM wellness_recommendation_session s
-                        WHERE s.assessment_id = a.assessment_id
+                       WHERE s.assessment_id = a.assessment_id
                    )
+                UNION ALL
+                SELECT t.trip_preference_id, NULL::INT, 'preferencias_mw', NULL::NUMERIC,
+                       COALESCE(t.created_at, s.created_at), s.session_id, s.recommended_ids,
+                       sat.fit_rating, NULL::TEXT[], NULL::VARCHAR, t.region_filter
+                  FROM wellness_trip_preference_assessment t
+                  LEFT JOIN wellness_recommendation_session s ON s.trip_preference_id = t.trip_preference_id
+                  LEFT JOIN wellness_satisfaction sat ON sat.session_id = s.session_id
+                 WHERE t.user_id = $1
              )
              SELECT * FROM history ORDER BY created_at DESC LIMIT 10`,
             [userId],
@@ -699,6 +898,7 @@ router.delete('/ml/wellness/history/me', verifyToken, async (req, res) => {
         client = await db.connect();
         await client.query('BEGIN');
         await client.query('DELETE FROM wellness_recommendation_session WHERE user_id = $1', [userId]);
+        await client.query('DELETE FROM wellness_trip_preference_assessment WHERE user_id = $1', [userId]);
         await client.query('DELETE FROM wellness_preference_assessment WHERE user_id = $1', [userId]);
         await client.query('DELETE FROM stress_assessment WHERE user_id = $1', [userId]);
         await client.query('COMMIT');
@@ -743,6 +943,8 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
                         ts.wellness_status, ts.categoria_wellness,
                         ts.nivel_aislamiento, ts.restauracion_pasiva, ts.demanda_fisica,
                         ts.descripcion_bienestar, ts.wellness_dimensions, ts.wellness_evidence,
+                        ts.wellness_motives, ts.wellness_modalities, ts.wellness_mw_evidence,
+                        ts.wellness_mw_reviewed_at,
                         c.name AS empresa,
                         'service' AS type
                  FROM tourist_service ts
@@ -754,7 +956,8 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
                 `SELECT id AS id, name, is_wellness, wellness_status,
                          categoria_wellness, nivel_aislamiento, restauracion_pasiva,
                          demanda_fisica, descripcion_bienestar, wellness_dimensions,
-                         wellness_evidence, 'poi' AS type
+                         wellness_evidence, wellness_motives, wellness_modalities,
+                         wellness_mw_evidence, wellness_mw_reviewed_at, 'poi' AS type
                  FROM point_of_interest
                  WHERE wellness_status = 'pending'
                  ORDER BY id DESC`,
@@ -784,6 +987,9 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
         categoria_wellness,
         wellness_dimensions,
         wellness_evidence,
+        wellness_motives,
+        wellness_modalities,
+        wellness_mw_evidence,
         admin_notes,
     } = req.body ?? {};
 
@@ -805,6 +1011,22 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
         }
         if (typeof categoria_wellness !== 'string' || !WELLNESS_CATEGORIES.has(categoria_wellness.trim())) {
             return res.status(400).json({ message: 'Selecciona una categoría válida de experiencia wellness.' });
+        }
+    }
+
+    const hasMwReviewFields = Object.hasOwn(req.body ?? {}, 'wellness_motives') ||
+        Object.hasOwn(req.body ?? {}, 'wellness_modalities') ||
+        Object.hasOwn(req.body ?? {}, 'wellness_mw_evidence');
+    const motivesForReview = wellness_motives ?? [];
+    const modalitiesForReview = wellness_modalities ?? [];
+    const mwEvidenceForReview = wellness_mw_evidence ?? {};
+    if (action === 'approved' && hasMwReviewFields) {
+        const noTags = Array.isArray(motivesForReview) && motivesForReview.length === 0 &&
+            Array.isArray(modalitiesForReview) && modalitiesForReview.length === 0 &&
+            mwEvidenceForReview && typeof mwEvidenceForReview === 'object' &&
+            !Array.isArray(mwEvidenceForReview) && Object.keys(mwEvidenceForReview).length === 0;
+        if (!noTags && !hasCompleteWellnessMWEvidence(motivesForReview, modalitiesForReview, mwEvidenceForReview)) {
+            return res.status(400).json({ message: 'Documenta con evidencia observable cada etiqueta M/W que asignes, o deja ambos ejes sin etiquetas.' });
         }
     }
 
@@ -847,6 +1069,18 @@ router.patch('/ml/wellness/review/:type/:id', verifyToken, requireRole([1, 4]), 
                 values.push(categoria_wellness);
                 sets.push(`categoria_wellness = $${values.length}`);
             }
+            if (hasMwReviewFields) {
+                values.push(motivesForReview);
+                sets.push(`wellness_motives = $${values.length}`);
+                values.push(modalitiesForReview);
+                sets.push(`wellness_modalities = $${values.length}`);
+                values.push(JSON.stringify(mwEvidenceForReview));
+                sets.push(`wellness_mw_evidence = $${values.length}::jsonb`);
+                sets.push(`wellness_mw_reviewed_at = ${motivesForReview.length || modalitiesForReview.length ? 'NOW()' : 'NULL'}`);
+            }
+        } else {
+            sets.push("wellness_motives = '{}'::text[]", "wellness_modalities = '{}'::text[]");
+            sets.push("wellness_mw_evidence = '{}'::jsonb", 'wellness_mw_reviewed_at = NULL');
         }
 
         values.push(parseInt(id, 10));
@@ -870,7 +1104,7 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
         try { return (await db.query(sql)).rows; }
         catch { return fallback; }
     };
-    const [counts, preferenceDimensions, satisfaction] = await Promise.all([
+    const [counts, preferenceDimensions, satisfaction, mwCatalog, mwFeedback] = await Promise.all([
         safeQ(
             `SELECT
                COUNT(*) FILTER (WHERE wellness_status='pending')::int  AS pending,
@@ -897,6 +1131,30 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
              WHERE created_at > NOW() - INTERVAL '30 days'`,
             [{ avg_rating: null, responses: 0 }],
         ),
+        safeQ(
+            `SELECT COUNT(*)::int AS reviewed_places,
+                    COUNT(*) FILTER (WHERE cardinality(wellness_motives) > 0)::int AS with_motive_tags,
+                    COUNT(*) FILTER (WHERE cardinality(wellness_modalities) > 0)::int AS with_modality_tags
+               FROM (
+                 SELECT wellness_motives, wellness_modalities FROM tourist_service
+                  WHERE is_wellness=TRUE AND wellness_status='approved' AND wellness_mw_reviewed_at IS NOT NULL
+                 UNION ALL
+                 SELECT wellness_motives, wellness_modalities FROM point_of_interest
+                  WHERE is_wellness=TRUE AND wellness_status='approved' AND wellness_mw_reviewed_at IS NOT NULL
+               ) t`,
+            [{ reviewed_places: 0, with_motive_tags: 0, with_modality_tags: 0 }],
+        ),
+        safeQ(
+            `SELECT COUNT(DISTINCT t.trip_preference_id)::int AS saved_searches_30d,
+                    COUNT(DISTINCT f.feedback_id) FILTER (WHERE f.event_type <> 'impression')::int AS explicit_item_feedback_30d,
+                    COUNT(DISTINCT f.user_id) FILTER (WHERE f.event_type <> 'impression')::int AS feedback_users_30d
+               FROM wellness_trip_preference_assessment t
+               LEFT JOIN wellness_recommendation_session s ON s.trip_preference_id = t.trip_preference_id
+               LEFT JOIN wellness_recommendation_item_feedback f ON f.session_id = s.session_id
+                  AND f.created_at > NOW() - INTERVAL '30 days'
+              WHERE t.created_at > NOW() - INTERVAL '30 days'`,
+            [{ saved_searches_30d: 0, explicit_item_feedback_30d: 0, feedback_users_30d: 0 }],
+        ),
     ]);
     res.json({
         service_counts: counts[0] ?? { pending: 0, approved: 0, rejected: 0 },
@@ -904,6 +1162,8 @@ router.get('/ml/wellness/stats', verifyToken, requireRole([1, 4]), async (req, r
         modo_distribution: [],
         preference_dimension_distribution: preferenceDimensions,
         satisfaction: satisfaction[0] ?? { avg_rating: null, responses: 0 },
+        mw_catalog: mwCatalog[0] ?? { reviewed_places: 0, with_motive_tags: 0, with_modality_tags: 0 },
+        mw_feedback: mwFeedback[0] ?? { saved_searches_30d: 0, explicit_item_feedback_30d: 0, feedback_users_30d: 0 },
     });
 });
 

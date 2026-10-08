@@ -1,3 +1,9 @@
+\set ON_ERROR_STOP on
+SELECT CASE WHEN to_regclass('public.role') IS NULL THEN 'false' ELSE 'true' END AS smartur_existing_schema \gset
+\if :smartur_existing_schema
+\echo 'Existing SMARTUR schema detected; applying additive reconciliation only.'
+BEGIN;
+\else
 BEGIN;
 
 -- ============================================================
@@ -40,6 +46,7 @@ CREATE TABLE "user" (
   bio VARCHAR(300) NULL,
   is_public BOOLEAN NOT NULL DEFAULT TRUE,
   email_verified BOOLEAN DEFAULT FALSE,
+  is_seeded BOOLEAN NOT NULL DEFAULT FALSE,
   email_verification_token VARCHAR(255) NULL,
   email_verification_otp VARCHAR(255) NULL,
   email_verification_expires TIMESTAMP NULL,
@@ -200,6 +207,12 @@ CREATE TABLE company (
 ALTER TABLE "user"
   ADD CONSTRAINT fk_user_company
     FOREIGN KEY (id_company) REFERENCES company(id_company) ON DELETE SET NULL;
+ALTER TABLE "user"
+  ADD COLUMN IF NOT EXISTS is_seeded BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- The built-in tourism account is fixture data and must never train WELLTUR.
+UPDATE "user" SET is_seeded = TRUE
+ WHERE role_id = 2 AND name = 'Foro Gastronómico 2026';
 
 -- FK circular point_of_interest <-> company (se agrega tras definir company)
 ALTER TABLE point_of_interest
@@ -919,9 +932,45 @@ CREATE TABLE IF NOT EXISTS wellness_preference_assessment (
   )
 );
 
+-- WELLTUR M/W: preferencias de búsqueda por viaje. Separadas del marco GWI
+-- y de cualquier evaluación de estrés/salud.
+CREATE TABLE IF NOT EXISTS wellness_trip_preference_assessment (
+  trip_preference_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  motive_priorities TEXT[] NOT NULL DEFAULT '{}',
+  modality_preferences TEXT[] NOT NULL DEFAULT '{}',
+  max_effort SMALLINT NOT NULL DEFAULT 3 CHECK (max_effort BETWEEN 1 AND 3),
+  needs_accessible BOOLEAN NOT NULL DEFAULT FALSE,
+  region_filter VARCHAR(100),
+  consent_given BOOLEAN NOT NULL CHECK (consent_given = TRUE),
+  consent_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  questionnaire_version VARCHAR(20) NOT NULL DEFAULT 'mw-1.5',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_welltur_mw_motives CHECK (
+    cardinality(motive_priorities) <= 3 AND motive_priorities <@ ARRAY[
+      'M1','M2','M3','M4','M5','M6','M7','M8','M9'
+    ]::TEXT[]
+  ),
+  CONSTRAINT chk_welltur_mw_modalities CHECK (
+    cardinality(modality_preferences) <= 3 AND modality_preferences <@ ARRAY[
+      'W1','W2','W3','W4','W5','W6','W7'
+    ]::TEXT[]
+  ),
+  CONSTRAINT chk_welltur_mw_not_empty CHECK (
+    cardinality(motive_priorities) > 0 OR cardinality(modality_preferences) > 0
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_welltur_trip_pref_user_created
+  ON wellness_trip_preference_assessment(user_id, created_at DESC);
+
 ALTER TABLE wellness_recommendation_session
   ADD COLUMN IF NOT EXISTS preference_assessment_id INT
     REFERENCES wellness_preference_assessment(preference_assessment_id) ON DELETE SET NULL;
+
+ALTER TABLE wellness_recommendation_session
+  ADD COLUMN IF NOT EXISTS trip_preference_id INT
+    REFERENCES wellness_trip_preference_assessment(trip_preference_id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_wellness_pref_user_created
   ON wellness_preference_assessment(user_id, created_at DESC);
@@ -945,6 +994,33 @@ CREATE TABLE IF NOT EXISTS wellness_satisfaction (
 CREATE INDEX IF NOT EXISTS idx_wellness_sat_user    ON wellness_satisfaction (user_id);
 CREATE INDEX IF NOT EXISTS idx_wellness_sat_session ON wellness_satisfaction (session_id);
 
+-- Feedback voluntario por experiencia mostrada, señal necesaria para evaluar
+-- ranking de manera offline antes de considerar entrenar un modelo aprendido.
+CREATE TABLE IF NOT EXISTS wellness_recommendation_item_feedback (
+  feedback_id SERIAL PRIMARY KEY,
+  session_id INT NOT NULL REFERENCES wellness_recommendation_session(session_id) ON DELETE CASCADE,
+  user_id INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  item_id VARCHAR(100) NOT NULL,
+  event_type VARCHAR(20) NOT NULL CHECK (event_type IN ('impression','opened','saved','dismissed','selected','visited','rated')),
+  position SMALLINT CHECK (position BETWEEN 1 AND 10),
+  motive_tags_snapshot TEXT[] NOT NULL DEFAULT '{}',
+  modality_tags_snapshot TEXT[] NOT NULL DEFAULT '{}',
+  rating SMALLINT CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_wellness_item_feedback UNIQUE (session_id, item_id, event_type),
+  CONSTRAINT chk_wellness_feedback_tag_snapshot CHECK (
+    motive_tags_snapshot <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+    modality_tags_snapshot <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[]
+  ),
+  CONSTRAINT chk_wellness_item_rating CHECK (
+    (event_type = 'rated' AND rating IS NOT NULL) OR
+    (event_type <> 'rated' AND rating IS NULL)
+  )
+);
+
+CREATE INDEX IF NOT EXISTS idx_wellness_item_feedback_training
+  ON wellness_recommendation_item_feedback(event_type, created_at DESC);
+
 -- Columnas wellness de revisión en servicios y POIs
 ALTER TABLE tourist_service
   ADD COLUMN IF NOT EXISTS is_wellness             BOOLEAN DEFAULT FALSE,
@@ -959,7 +1035,11 @@ ALTER TABLE tourist_service
   ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
   ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS wellness_dimensions     TEXT[] NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT;
+  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_motives        TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_modalities     TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_mw_evidence    JSONB NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS wellness_mw_reviewed_at TIMESTAMP;
 
 ALTER TABLE point_of_interest
   ADD COLUMN IF NOT EXISTS is_wellness             BOOLEAN DEFAULT FALSE,
@@ -974,7 +1054,11 @@ ALTER TABLE point_of_interest
   ADD COLUMN IF NOT EXISTS wellness_reviewed_at     TIMESTAMP,
   ADD COLUMN IF NOT EXISTS wellness_reviewed_by     INT REFERENCES "user"(user_id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS wellness_dimensions     TEXT[] NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT;
+  ADD COLUMN IF NOT EXISTS wellness_evidence       TEXT,
+  ADD COLUMN IF NOT EXISTS wellness_motives        TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_modalities     TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_mw_evidence    JSONB NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS wellness_mw_reviewed_at TIMESTAMP;
 
 ALTER TABLE traveler_profile
   ADD COLUMN IF NOT EXISTS wellness_consent    BOOLEAN DEFAULT FALSE,
@@ -1003,12 +1087,40 @@ BEGIN
     ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_wellness_dimensions
       CHECK (wellness_dimensions <@ ARRAY['physical','mental','emotional','spiritual','social','environmental']::TEXT[]);
   END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_poi_welltur_mw_tags') THEN
+    ALTER TABLE point_of_interest ADD CONSTRAINT chk_poi_welltur_mw_tags CHECK (
+      cardinality(wellness_motives) <= 9 AND
+      wellness_motives <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+      cardinality(wellness_modalities) <= 7 AND
+      wellness_modalities <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[] AND
+      (wellness_mw_reviewed_at IS NULL OR
+        (cardinality(wellness_motives) + cardinality(wellness_modalities) > 0 AND
+         wellness_mw_evidence ?& (wellness_motives || wellness_modalities)))
+    );
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_welltur_mw_tags') THEN
+    ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_welltur_mw_tags CHECK (
+      cardinality(wellness_motives) <= 9 AND
+      wellness_motives <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+      cardinality(wellness_modalities) <= 7 AND
+      wellness_modalities <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[] AND
+      (wellness_mw_reviewed_at IS NULL OR
+        (cardinality(wellness_motives) + cardinality(wellness_modalities) > 0 AND
+         wellness_mw_evidence ?& (wellness_motives || wellness_modalities)))
+    );
+  END IF;
 END $$;
 
 CREATE INDEX IF NOT EXISTS idx_poi_wellness_status
   ON point_of_interest(wellness_status) WHERE wellness_status IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_ts_wellness_status
   ON tourist_service(wellness_status) WHERE wellness_status IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_poi_welltur_mw_reviewed
+  ON point_of_interest(wellness_mw_reviewed_at) WHERE wellness_mw_reviewed_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ts_welltur_mw_reviewed
+  ON tourist_service(wellness_mw_reviewed_at) WHERE wellness_mw_reviewed_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_poi_validation_status ON point_of_interest(validation_status);
 
 -- Conteo de servicios/POIs pendientes de validación wellness (AdminBadgesContext)
@@ -1293,6 +1405,8 @@ INSERT INTO evaluation_subcriterion (id_criterion, description, score, order_ind
   (6, 'Deficiente', 2, 0), (6, 'Regular', 4, 1), (6, 'Bueno', 6, 2), (6, 'Muy bueno', 8, 3), (6, 'Excelente', 10, 4);
 
 -- ============================================================
+\endif
+
 -- RECONCILIACIÓN (paridad con VPS) — idempotente, 100% aditivo.
 -- Estos bloques se pueden re-ejecutar sin errores en BDs existentes.
 -- ============================================================
@@ -1304,6 +1418,107 @@ CREATE TABLE IF NOT EXISTS _schema_migrations (
   applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- WELLTUR M/W: additive schema and provenance guard for existing databases.
+ALTER TABLE "user"
+  ADD COLUMN IF NOT EXISTS is_seeded BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE "user" SET is_seeded = TRUE
+ WHERE role_id = 2 AND name = 'Foro Gastronómico 2026';
+
+CREATE TABLE IF NOT EXISTS wellness_trip_preference_assessment (
+  trip_preference_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  motive_priorities TEXT[] NOT NULL DEFAULT '{}',
+  modality_preferences TEXT[] NOT NULL DEFAULT '{}',
+  max_effort SMALLINT NOT NULL DEFAULT 3 CHECK (max_effort BETWEEN 1 AND 3),
+  needs_accessible BOOLEAN NOT NULL DEFAULT FALSE,
+  region_filter VARCHAR(100),
+  consent_given BOOLEAN NOT NULL CHECK (consent_given = TRUE),
+  consent_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  questionnaire_version VARCHAR(20) NOT NULL DEFAULT 'mw-1.5',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT chk_welltur_mw_motives CHECK (
+    cardinality(motive_priorities) <= 3 AND motive_priorities <@ ARRAY[
+      'M1','M2','M3','M4','M5','M6','M7','M8','M9'
+    ]::TEXT[]
+  ),
+  CONSTRAINT chk_welltur_mw_modalities CHECK (
+    cardinality(modality_preferences) <= 3 AND modality_preferences <@ ARRAY[
+      'W1','W2','W3','W4','W5','W6','W7'
+    ]::TEXT[]
+  ),
+  CONSTRAINT chk_welltur_mw_not_empty CHECK (
+    cardinality(motive_priorities) > 0 OR cardinality(modality_preferences) > 0
+  )
+);
+ALTER TABLE wellness_recommendation_session
+  ADD COLUMN IF NOT EXISTS trip_preference_id INT
+    REFERENCES wellness_trip_preference_assessment(trip_preference_id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_welltur_trip_pref_user_created
+  ON wellness_trip_preference_assessment(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS wellness_recommendation_item_feedback (
+  feedback_id SERIAL PRIMARY KEY,
+  session_id INT NOT NULL REFERENCES wellness_recommendation_session(session_id) ON DELETE CASCADE,
+  user_id INT NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
+  item_id VARCHAR(100) NOT NULL,
+  event_type VARCHAR(20) NOT NULL CHECK (event_type IN ('impression','opened','saved','dismissed','selected','visited','rated')),
+  position SMALLINT CHECK (position BETWEEN 1 AND 10),
+  motive_tags_snapshot TEXT[] NOT NULL DEFAULT '{}',
+  modality_tags_snapshot TEXT[] NOT NULL DEFAULT '{}',
+  rating SMALLINT CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_wellness_item_feedback UNIQUE (session_id, item_id, event_type),
+  CONSTRAINT chk_wellness_feedback_tag_snapshot CHECK (
+    motive_tags_snapshot <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+    modality_tags_snapshot <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[]
+  ),
+  CONSTRAINT chk_wellness_item_rating CHECK (
+    (event_type = 'rated' AND rating IS NOT NULL) OR
+    (event_type <> 'rated' AND rating IS NULL)
+  )
+);
+CREATE INDEX IF NOT EXISTS idx_wellness_item_feedback_training
+  ON wellness_recommendation_item_feedback(event_type, created_at DESC);
+
+ALTER TABLE tourist_service
+  ADD COLUMN IF NOT EXISTS wellness_motives TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_modalities TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_mw_evidence JSONB NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS wellness_mw_reviewed_at TIMESTAMP;
+ALTER TABLE point_of_interest
+  ADD COLUMN IF NOT EXISTS wellness_motives TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_modalities TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS wellness_mw_evidence JSONB NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS wellness_mw_reviewed_at TIMESTAMP;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_poi_welltur_mw_tags') THEN
+    ALTER TABLE point_of_interest ADD CONSTRAINT chk_poi_welltur_mw_tags CHECK (
+      cardinality(wellness_motives) <= 9 AND
+      wellness_motives <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+      cardinality(wellness_modalities) <= 7 AND
+      wellness_modalities <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[] AND
+      (wellness_mw_reviewed_at IS NULL OR
+        (cardinality(wellness_motives) + cardinality(wellness_modalities) > 0 AND
+         wellness_mw_evidence ?& (wellness_motives || wellness_modalities)))
+    );
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ts_welltur_mw_tags') THEN
+    ALTER TABLE tourist_service ADD CONSTRAINT chk_ts_welltur_mw_tags CHECK (
+      cardinality(wellness_motives) <= 9 AND
+      wellness_motives <@ ARRAY['M1','M2','M3','M4','M5','M6','M7','M8','M9']::TEXT[] AND
+      cardinality(wellness_modalities) <= 7 AND
+      wellness_modalities <@ ARRAY['W1','W2','W3','W4','W5','W6','W7']::TEXT[] AND
+      (wellness_mw_reviewed_at IS NULL OR
+        (cardinality(wellness_motives) + cardinality(wellness_modalities) > 0 AND
+         wellness_mw_evidence ?& (wellness_motives || wellness_modalities)))
+    );
+  END IF;
+END $$;
+CREATE INDEX IF NOT EXISTS idx_poi_welltur_mw_reviewed
+  ON point_of_interest(wellness_mw_reviewed_at) WHERE wellness_mw_reviewed_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_ts_welltur_mw_reviewed
+  ON tourist_service(wellness_mw_reviewed_at) WHERE wellness_mw_reviewed_at IS NOT NULL;
 -- Fechas globales de viaje
 ALTER TABLE itinerary
   ADD COLUMN IF NOT EXISTS start_date DATE,
@@ -1387,13 +1602,28 @@ INSERT INTO location (id_location, name, state, municipality, latitude, longitud
   (16, 'Calcahualco',            'Veracruz', 'Calcahualco',           19.121100, -97.084500),
   (17, 'Ixhuatlán del Café',     'Veracruz', 'Ixhuatlán del Café',    19.052097, -96.984579),
   (18, 'Tequila',                'Veracruz', 'Tequila',               18.729980, -97.069910),
-  (19, 'Coscomatepec de Bravo',  'Veracruz', 'Coscomatepec de Bravo', 19.072750, -97.046850);
+  (19, 'Coscomatepec de Bravo',  'Veracruz', 'Coscomatepec de Bravo', 19.072750, -97.046850)
+ON CONFLICT (id_location) DO NOTHING;
+
+-- IDs 12-19 were inserted explicitly above; advance SERIAL before future inserts.
+SELECT setval(
+  pg_get_serial_sequence('public.location','id_location'),
+  COALESCE(MAX(id_location), 1),
+  COUNT(*) > 0
+) FROM location;
 
 -- Cuenta demo del equipo de gastronomía (role 2 turista; Password1a)
-INSERT INTO "user" (name, email, password, role_id, is_active, email_verified) VALUES
+\if :smartur_existing_schema
+\echo 'Skipping the demo tourist account seed on an existing database.'
+\else
+INSERT INTO "user" (name, email, password, role_id, is_active, email_verified, is_seeded) VALUES
   ('Foro Gastronómico 2026', '20233D101094@utcv.edu.mx',
-   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 2, true, true);
+   '$2b$10$HQJ66fgUzg5nFEHnzzYrb.F/UQehNmboHq.FemnPRLUEJ0hLQjthe', 2, true, true, true);
+\endif
 
+\if :smartur_existing_schema
+\echo 'Skipping demo profile, POI, itinerary, and rating seeds for an existing database.'
+\else
 INSERT INTO traveler_profile (user_id, is_active, age_range, interests, activity_level, budget, preferred_place, travel_type, has_visited_before)
 SELECT user_id, true, '18-24', ARRAY['Gastronomía'], 3, 'medio', 'Altas Montañas', 'solo', true
 FROM "user" WHERE email = '20233D101094@utcv.edu.mx';
@@ -1461,4 +1691,5 @@ FROM "user" u JOIN point_of_interest p ON p.name IN (
 WHERE u.email = '20233D101094@utcv.edu.mx'
 ON CONFLICT (user_id, place_kind, place_id) DO NOTHING;
 
+\endif
 COMMIT;

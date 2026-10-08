@@ -1479,6 +1479,12 @@ class WellnessPreferenceRequest(BaseModel):
     top_n: int = Field(default=3, ge=1, le=10)
 
 
+class WellnessMWPreferenceRequest(BaseModel):
+    preferences: Dict[str, Any]
+    destinations: List[Dict[str, Any]] = Field(default_factory=list)
+    top_n: int = Field(default=5, ge=1, le=10)
+
+
 _wellness_destinations_cache: Optional[Any] = None
 
 
@@ -1526,6 +1532,29 @@ def wellness_recommend_from_preferences(payload: WellnessPreferenceRequest):
     except Exception as exc:
         logger.exception("[wellness/recommend] Error al ordenar el catálogo aprobado")
         raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones.") from exc
+
+
+@app.post("/wellness/recommend-mw")
+def wellness_recommend_from_mw_preferences(payload: WellnessMWPreferenceRequest):
+    """Rank the real catalog by reviewed M/W tags; this is a transparent baseline.
+
+    The research-workspace ML artifact is trained only on synthetic data and is
+    deliberately not loaded here. This endpoint collects the real workflow and
+    keeps hard constraints separate from relevance scores.
+    """
+    from wellness_mw_ranker import recommend_from_mw_preferences
+
+    if len(payload.destinations) > 1000:
+        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
+    try:
+        return recommend_from_mw_preferences(
+            payload.destinations, payload.preferences, top_n=payload.top_n
+        )
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("[wellness/recommend-mw] Error al ordenar el catálogo revisado")
+        raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones M/W.") from exc
 
 
 @app.get("/wellness/destinations")

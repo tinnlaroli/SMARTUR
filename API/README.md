@@ -44,6 +44,7 @@ MODELO_URL=http://modelo:8000
 ## Database
 
 Schema lives entirely in `bd.sql` — no separate migration files.
+`bd.sql` is a psql script. On an empty database it bootstraps the schema and sample data; when `public.role` already exists it skips bootstrap/demo inserts and runs the additive reconciliation section. Apply it with the documented `psql` commands (it uses `\gset` and `\if`).
 
 ```bash
 # Apply schema to local Docker container
