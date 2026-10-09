@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Leaf, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Leaf, CheckCircle, XCircle, ChevronDown, ChevronUp, Loader2, MapPin, Search, RotateCcw, AlertTriangle, FileText } from 'lucide-react';
 import { api } from '../../../shared/api/axiosClient';
 import { useToast } from '../../../shared/context/ToastContext';
 import { useAdminBadges } from '../../dashboard/context/AdminBadgesContext';
@@ -22,6 +22,7 @@ interface WellnessPendingItem {
     wellness_modalities?: string[];
     wellness_mw_evidence?: Record<string, string>;
     wellness_status: string;
+    location_state?: string | null;
 }
 
 const WELLTUR_MOTIVES = [
@@ -53,6 +54,12 @@ function isMWEvidenceComplete(motives: string[], modalities: string[], evidence:
     );
 }
 
+function getRequestError(error: unknown, fallback: string) {
+    const candidate = error as { response?: { data?: { message?: unknown } }; message?: string };
+    const message = candidate.response?.data?.message;
+    return typeof message === 'string' && message.trim() ? message : fallback;
+}
+
 function WellnessReviewCard({
     item,
     onRefresh,
@@ -68,7 +75,12 @@ function WellnessReviewCard({
     const [categoria, setCategoria] = useState(item.categoria_wellness ?? '');
     const [demanda, setDemanda] = useState(item.demanda_fisica ?? 0.5);
     const [dimensions, setDimensions] = useState<string[]>(item.wellness_dimensions ?? []);
-    const [evidence, setEvidence] = useState(item.wellness_evidence ?? '');
+    // Legacy/imported catalog evidence is shown as provenance, not prefilled as
+    // the reviewer attestation required by the approval workflow.
+    const initialEvidence = item.wellness_evidence?.startsWith('SMARTUR_WELLNESS_EVIDENCE_V1:')
+        ? item.wellness_evidence
+        : '';
+    const [evidence, setEvidence] = useState(initialEvidence);
     const [mwMotives, setMwMotives] = useState<string[]>(item.wellness_motives ?? []);
     const [mwModalities, setMwModalities] = useState<string[]>(item.wellness_modalities ?? []);
     const [mwEvidence, setMwEvidence] = useState<Record<string, string>>(item.wellness_mw_evidence ?? {});
@@ -104,8 +116,18 @@ function WellnessReviewCard({
     };
 
     const submit = async (action: 'approved' | 'rejected') => {
-        if (action === 'approved' && (!categoria || !isWellnessEvidenceComplete(evidence, dimensions))) {
-            setFormError('Indica dónde se verificó la actividad y describe cómo respalda cada dimensión seleccionada.');
+        if (action === 'approved' && !categoria) {
+            setFormError('Selecciona el tipo de experiencia antes de aprobar.');
+            setExpanded(true);
+            return;
+        }
+        if (action === 'approved' && dimensions.length === 0) {
+            setFormError('Selecciona al menos una dimensión respaldada por la actividad.');
+            setExpanded(true);
+            return;
+        }
+        if (action === 'approved' && !isWellnessEvidenceComplete(evidence, dimensions)) {
+            setFormError('Completa la fuente de verificación y la evidencia concreta para cada dimensión seleccionada.');
             setExpanded(true);
             return;
         }
@@ -136,8 +158,10 @@ function WellnessReviewCard({
             );
             refreshBadges();
             onRefresh();
-        } catch {
-            toast.error('Error al actualizar el estado wellness.');
+        } catch (error) {
+            const message = getRequestError(error, 'No se pudo actualizar el estado de bienestar. Intenta de nuevo.');
+            setFormError(message);
+            toast.error(message);
         } finally {
             setSubmitting(false);
         }
@@ -149,7 +173,7 @@ function WellnessReviewCard({
             style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
         >
             {/* Card header */}
-            <div className="flex items-start justify-between px-4 py-3">
+            <div className="flex items-start justify-between gap-3 px-5 py-4">
                 <div className="flex items-start gap-3">
                     <div
                         className="flex size-9 items-center justify-center rounded-xl shrink-0"
@@ -157,11 +181,11 @@ function WellnessReviewCard({
                     >
                         <Leaf className="size-4" />
                     </div>
-                    <div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                    <div className="min-w-0">
+                        <p className="text-base font-semibold leading-snug" style={{ color: 'var(--color-text)' }}>
                             {item.name}
                         </p>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
                             <span
                                 className="text-[10px] font-medium rounded-full px-2 py-0.5"
                                 style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e' }}
@@ -173,12 +197,25 @@ function WellnessReviewCard({
                                     {item.empresa}
                                 </span>
                             )}
+                            {item.location_state && (
+                                <span className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                                    <MapPin className="size-3.5" />{item.location_state}
+                                </span>
+                            )}
+                            {item.wellness_evidence && !item.wellness_evidence.startsWith('SMARTUR_WELLNESS_EVIDENCE_V1:') && (
+                                <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'rgba(59,130,246,0.10)', color: '#2563eb' }}>
+                                    Catálogo importado · requiere revisión
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
                 <button
+                    type="button"
                     onClick={() => setExpanded(p => !p)}
-                    className="rounded-lg p-1.5 hover:opacity-70 transition-opacity"
+                    aria-expanded={expanded}
+                    aria-label={expanded ? `Contraer revisión de ${item.name}` : `Revisar ${item.name}`}
+                    className="shrink-0 rounded-lg p-2 hover:opacity-70 transition-opacity"
                     style={{ color: 'var(--color-text-alt)' }}
                 >
                     {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -194,7 +231,16 @@ function WellnessReviewCard({
                 </p>
             </div>
 
-            {item.wellness_evidence && (
+            <div className="mx-4 mb-4 rounded-xl border px-3 py-2.5" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Requisitos de aprobación</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                    <span className={categoria ? 'text-emerald-700' : 'text-amber-700'}>{categoria ? 'Listo' : 'Pendiente'} · Tipo de experiencia</span>
+                    <span className={dimensions.length ? 'text-emerald-700' : 'text-amber-700'}>{dimensions.length ? 'Listo' : 'Pendiente'} · Dimensiones</span>
+                    <span className={isWellnessEvidenceComplete(evidence, dimensions) ? 'text-emerald-700' : 'text-amber-700'}>{isWellnessEvidenceComplete(evidence, dimensions) ? 'Listo' : 'Pendiente'} · Fuente y evidencia</span>
+                </div>
+            </div>
+
+            {item.wellness_evidence?.startsWith('SMARTUR_WELLNESS_EVIDENCE_V1:') && (
                 <div className="px-4 pb-3">
                     <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-alt)' }}>Fuente de la propuesta</p>
                     <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>{parseWellnessEvidence(item.wellness_evidence).source || 'Sin fuente registrada.'}</p>
@@ -221,6 +267,14 @@ function WellnessReviewCard({
                     <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-alt)' }}>
                         Revisión de la propuesta
                     </p>
+                    {item.wellness_evidence && !item.wellness_evidence.startsWith('SMARTUR_WELLNESS_EVIDENCE_V1:') && (
+                        <details className="rounded-xl border p-3" style={{ borderColor: 'var(--color-border)' }}>
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
+                                Evidencia importada del catálogo <FileText className="size-3.5 shrink-0" />
+                            </summary>
+                            <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>{item.wellness_evidence}</p>
+                        </details>
+                    )}
                     <div className="rounded-xl border px-3 py-2.5 text-xs leading-relaxed" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
                         <p className="mb-1 font-semibold" style={{ color: 'var(--color-text)' }}>Antes de aprobar, confirma:</p>
                         <ul className="list-disc space-y-1 pl-4">
@@ -323,6 +377,9 @@ function WellnessReviewCard({
                                 placeholder="Enlace o documento consultado, o lugar y fecha de la visita"
                                 className="w-full rounded-xl border px-3 py-2 text-sm"
                                 style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }} />
+                            <p className="mt-1 text-[10px]" style={{ color: evidenceRecord.source.trim().length >= 10 ? '#15803d' : '#b45309' }}>
+                                {evidenceRecord.source.trim().length}/180 caracteres · mínimo 10
+                            </p>
                         </div>
                         {dimensions.map((key) => {
                             const dimension = WELLNESS_DIMENSIONS.find((entry) => entry.key === key);
@@ -376,8 +433,7 @@ function WellnessReviewCard({
                     <div className="flex gap-2 pt-1">
                         <button
                             onClick={() => submit('approved')}
-                            disabled={submitting || !categoria || !isWellnessEvidenceComplete(evidence, dimensions) ||
-                                ((mwMotives.length > 0 || mwModalities.length > 0) && !isMWEvidenceComplete(mwMotives, mwModalities, mwEvidence))}
+                            disabled={submitting}
                             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                             style={{ background: '#22c55e' }}
                         >
@@ -403,14 +459,18 @@ function WellnessReviewCard({
 export default function AdminWellnessApprovalPage() {
     const [items, setItems] = useState<WellnessPendingItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [search, setSearch] = useState('');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'poi' | 'service'>('all');
 
     const load = useCallback(async () => {
         setLoading(true);
+        setLoadError('');
         try {
             const { data } = await api.get<{ items: WellnessPendingItem[] }>('/ml/wellness/pending');
             setItems(data.items ?? []);
-        } catch {
-            setItems([]);
+        } catch (error) {
+            setLoadError(getRequestError(error, 'No se pudo cargar la lista de revisión.'));
         } finally {
             setLoading(false);
         }
@@ -418,11 +478,52 @@ export default function AdminWellnessApprovalPage() {
 
     useEffect(() => { void load(); }, [load]);
 
+    const filteredItems = items.filter((item) => {
+        const matchesType = typeFilter === 'all' || item.type === typeFilter;
+        const query = search.trim().toLocaleLowerCase('es-MX');
+        const matchesSearch = !query || [item.name, item.empresa, item.location_state]
+            .some((value) => value?.toLocaleLowerCase('es-MX').includes(query));
+        return matchesType && matchesSearch;
+    });
+
     return (
-        <div className="space-y-3">
+        <div className="space-y-4">
+            {!loading && !loadError && items.length > 0 && (
+                <div className="flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                    <div>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Revisión de experiencias de bienestar</p>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                            {items.length} pendientes · {items.filter((item) => item.type === 'poi').length} lugares · {items.filter((item) => item.type === 'service').length} servicios
+                        </p>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <label className="relative min-w-56">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" style={{ color: 'var(--color-text-alt)' }} />
+                            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nombre, empresa o estado"
+                                aria-label="Buscar pendientes de bienestar"
+                                className="w-full rounded-xl border py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-emerald-600/30"
+                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)', background: 'var(--color-bg-alt)' }} />
+                        </label>
+                        <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as typeof typeFilter)} aria-label="Filtrar por tipo de registro"
+                            className="rounded-xl border px-3 py-2 text-sm"
+                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)', background: 'var(--color-bg-alt)' }}>
+                            <option value="all">Todos los tipos</option>
+                            <option value="poi">Lugares</option>
+                            <option value="service">Servicios</option>
+                        </select>
+                    </div>
+                </div>
+            )}
             {loading ? (
-                <div className="flex items-center justify-center py-12">
-                    <Loader2 className="size-6 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
+                <div className="space-y-3" aria-label="Cargando pendientes de bienestar" aria-busy="true">
+                    {[0, 1, 2].map((key) => <div key={key} className="h-28 animate-pulse rounded-2xl border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }} />)}
+                </div>
+            ) : loadError ? (
+                <div role="alert" className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3"><AlertTriangle className="mt-0.5 size-5 shrink-0" /><div><p className="font-semibold">No se pudo cargar la bandeja</p><p className="mt-1">{loadError}</p></div></div>
+                    <button type="button" onClick={() => void load()} className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 font-semibold hover:bg-red-100">
+                        <RotateCcw className="size-4" /> Reintentar
+                    </button>
                 </div>
             ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -436,15 +537,20 @@ export default function AdminWellnessApprovalPage() {
                         Sin pendientes de bienestar
                     </p>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Cuando una empresa marque un servicio como wellness, aparecerá aquí para revisión.
+                        Cuando un lugar o servicio se registre para bienestar, aparecerá aquí para revisión interna.
                     </p>
+                </div>
+            ) : filteredItems.length === 0 ? (
+                <div className="rounded-2xl border px-5 py-10 text-center" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>No hay coincidencias</p>
+                    <p className="mt-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>Prueba otro término o cambia el filtro de tipo.</p>
                 </div>
             ) : (
                 <>
                     <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        {items.length} {items.length === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'} — revisa y ajusta las dimensiones antes de aprobar.
+                        Mostrando {filteredItems.length} de {items.length} · verifica la fuente y la actividad antes de aprobar.
                     </p>
-                    {items.map(item => (
+                    {filteredItems.map(item => (
                         <WellnessReviewCard
                             key={`${item.type}-${item.id}`}
                             item={item}

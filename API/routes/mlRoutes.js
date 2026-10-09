@@ -945,10 +945,12 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
                         ts.descripcion_bienestar, ts.wellness_dimensions, ts.wellness_evidence,
                         ts.wellness_motives, ts.wellness_modalities, ts.wellness_mw_evidence,
                         ts.wellness_mw_reviewed_at,
+                        l.state AS location_state,
                         c.name AS empresa,
                         'service' AS type
                  FROM tourist_service ts
                  LEFT JOIN company c ON c.id_company = ts.id_company
+                 LEFT JOIN location l ON l.id_location = ts.id_location
                  WHERE ts.wellness_status = 'pending'
                  ORDER BY ts.id_service DESC`,
             ),
@@ -957,7 +959,9 @@ router.get('/ml/wellness/pending', verifyToken, requireRole([1, 4]), async (req,
                          categoria_wellness, nivel_aislamiento, restauracion_pasiva,
                          demanda_fisica, descripcion_bienestar, wellness_dimensions,
                          wellness_evidence, wellness_motives, wellness_modalities,
-                         wellness_mw_evidence, wellness_mw_reviewed_at, 'poi' AS type
+                         wellness_mw_evidence, wellness_mw_reviewed_at,
+                         (SELECT l.state FROM location l WHERE l.id_location = point_of_interest.id_location) AS location_state,
+                         'poi' AS type
                  FROM point_of_interest
                  WHERE wellness_status = 'pending'
                  ORDER BY id DESC`,
