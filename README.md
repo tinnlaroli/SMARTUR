@@ -2,7 +2,7 @@
 
 <img src="https://img.shields.io/badge/SMARTUR-Turismo%20Inteligente-4F46E5?style=for-the-badge&logoColor=white" alt="SMARTUR" height="40"/>
 
-# SMARTUR — Plataforma de Turismo Inteligente
+# SMARTUR/WELLTUR — Plataforma de Turismo Inteligente
 
 **Monorepo oficial** · Backend · Dashboard Admin · Landing · Motor ML · App Móvil
 
