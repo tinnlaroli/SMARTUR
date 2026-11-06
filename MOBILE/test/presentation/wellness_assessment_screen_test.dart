@@ -22,7 +22,7 @@ Future<void> cargarPantalla(WidgetTester tester) async {
 
 Future<void> empezar(WidgetTester tester) async {
   await cargarPantalla(tester);
-  final startButton = find.text('Empezar · 4 pasos');
+  final startButton = find.text('Empezar · 5 pasos');
   await tester.ensureVisible(startButton);
   await tester.pumpAndSettle();
   await tester.tap(startButton);
@@ -44,16 +44,16 @@ void main() {
     usePhoneViewport(tester);
     await cargarPantalla(tester);
 
-    expect(find.text('Descansa en las Altas Montañas'), findsOneWidget);
+    expect(find.text('Tu viaje de bienestar'), findsOneWidget);
     expect(find.textContaining('no son un diagnóstico'), findsOneWidget);
     expect(find.textContaining('Opcional: guardar esta búsqueda'), findsOneWidget);
-    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 4 pasos')).onPressed, isNotNull);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 5 pasos')).onPressed, isNotNull);
   });
 
   testWidgets('exige responder el cuestionario de estrés o permite omitirlo', (tester) async {
     usePhoneViewport(tester);
     await empezar(tester);
-    expect(find.text('PASO 1 DE 4'), findsOneWidget);
+    expect(find.text('PASO 1 DE 5'), findsOneWidget);
     // Un solo cuestionario: no se pide elegir entre dos.
     expect(find.text('PSS-10 · 10'), findsNothing);
     expect(find.text('Breve · 6'), findsNothing);
@@ -68,7 +68,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
-    expect(find.text('PASO 2 DE 4'), findsOneWidget);
+    expect(find.text('PASO 2 DE 5'), findsOneWidget);
   });
 
   testWidgets('muestra la PSS-10 completa con su aviso de copyright', skip: !_pssDisponible(), (tester) async {
@@ -94,6 +94,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
+    // Paso 2: motivos M (opcionales aquí); paso 3: modalidades W.
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('PASO 3 DE 5'), findsOneWidget);
 
     for (final label in ['Mente-cuerpo', 'Autocuidado', 'Pausa y descanso', 'Movimiento']) {
       await tester.ensureVisible(find.text(label));

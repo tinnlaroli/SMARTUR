@@ -7,7 +7,6 @@ import '../../../data/services/wellness_service.dart';
 import '../explore/detail_view_page.dart';
 import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/wellness_poi_card.dart';
-import 'wellness_trip_preferences_screen.dart';
 import '../../../core/theme/welltur_theme.dart';
 
 /// Preguntas propias de la encuesta WELLTUR (oct-2026). Producen un índice continuo
@@ -21,6 +20,28 @@ const _preguntasEstres = <({String key, String texto, List<String> opciones})>[
   (key: 'p5b', texto: 'En la última semana: nerviosismo o inquietud', opciones: _escalaSemana),
   (key: 'p5c', texto: 'En la última semana: irritabilidad o tensión', opciones: _escalaSemana),
   (key: 'p5d', texto: 'En la última semana: dificultad para concentrarte', opciones: _escalaSemana),
+];
+
+/// Motivos del viaje (protocolo M/W). Se piden junto con la PSS-10 y las modalidades W:
+/// el recomendador pondera las tres cosas en una sola búsqueda.
+const _motivos = <({String key, String title, String subtitle, IconData icon})>[
+  (key: 'M1', title: 'Descansar o hacer una pausa', subtitle: 'Bajar el ritmo o salir de la rutina.', icon: Icons.weekend_outlined),
+  (key: 'M2', title: 'Mantenerme activo/a', subtitle: 'Dedicar tiempo a mi vitalidad física.', icon: Icons.directions_run_outlined),
+  (key: 'M3', title: 'Conectar con la naturaleza', subtitle: 'Un entorno natural o al aire libre.', icon: Icons.park_outlined),
+  (key: 'M4', title: 'Aprender', subtitle: 'Conocer una práctica, oficio o tradición.', icon: Icons.menu_book_outlined),
+  (key: 'M5', title: 'Compartir o conectar', subtitle: 'Convivir con personas o comunidad.', icon: Icons.groups_outlined),
+  (key: 'M6', title: 'Probar algo nuevo', subtitle: 'Una experiencia distinta para mí.', icon: Icons.explore_outlined),
+  (key: 'M7', title: 'Dedicar tiempo al autocuidado', subtitle: 'Una actividad de cuidado personal.', icon: Icons.spa_outlined),
+  (key: 'M8', title: 'Explorar alimentos o bebidas', subtitle: 'Cocina local, café, mercados.', icon: Icons.local_cafe_outlined),
+  (key: 'M9', title: 'Reflexionar o practicar atención plena', subtitle: 'Un momento o práctica personal.', icon: Icons.self_improvement_outlined),
+];
+
+const _estadosMexico = <String>[
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+  'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro',
+  'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz',
+  'Yucatán', 'Zacatecas',
 ];
 
 const _modalidades = <({String key, String title, String subtitle, IconData icon})>[
@@ -71,13 +92,16 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   // Acento de la paleta WELLTUR, legible en modo claro y oscuro.
   Color get _green => WellturPalette.acento(context);
   Color get _onGreen => WellturPalette.sobreAcento(context);
-  static const _pasos = 4; // estrés, modalidades, esfuerzo, región
-  int _step = 0; // 0 intro, 1-4 preguntas, 5 resultados
+  static const _pasos = 5; // estrés, motivos, modalidades, esfuerzo, zona
+  int _step = 0; // 0 intro, 1-5 preguntas, 6 resultados
   bool _consentGiven = false;
   bool _omitirEstres = false;
   final Map<String, int> _respuestas = {};
+  final List<String> _motivosElegidos = [];
   final List<String> _seleccion = [];
   int _maxEffort = 2;
+  // Zona: las Altas Montañas (municipio o toda la región) o todo México (estado o todo el país).
+  bool _todoMexico = false;
   String _region = '';
   bool _loading = false;
   String? _loadError;
@@ -129,17 +153,21 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       final result = await _service.recommendV2(
         stressItems: _omitirEstres || _usarPss ? null : Map.of(_respuestas),
         pssItems: _omitirEstres || !_usarPss ? null : List.generate(10, (i) => _respuestasPss[i]),
+        motives: List.of(_motivosElegidos),
         modalities: List.of(_seleccion),
         maxEffort: _maxEffort,
         saveHistory: _consentGiven,
+        scope: _todoMexico ? 'mexico' : 'altas_montanas',
         regionFilter: _region.isEmpty ? null : _region,
       );
       if (!mounted) return;
       setState(() { _result = result; _loading = false; });
-    } catch (_) {
+    } catch (e, st) {
+      // Se registra el motivo real para poder diagnosticarlo (adb logcat / consola).
+      debugPrint('[welltur] recomendación falló: $e\n$st');
       if (!mounted) return;
       setState(() {
-        _loadError = 'No se pudieron cargar lugares para estos criterios. Inténtalo de nuevo.';
+        _loadError = 'No pudimos conectar con el recomendador. Revisa tu conexión e inténtalo de nuevo.';
         _loading = false;
       });
     }
@@ -206,14 +234,14 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
           decoration: BoxDecoration(color: _green.withValues(alpha: .1), borderRadius: BorderRadius.circular(18)),
           child: Icon(Icons.eco_outlined, color: _green, size: 30)),
         const SizedBox(height: 22),
-        Text('Descansa en las Altas Montañas',
+        Text('Tu viaje de bienestar',
           style: TextStyle(fontSize: 27, height: 1.13, fontWeight: FontWeight.w800, color: scheme.onSurface)),
         const SizedBox(height: 12),
-        Text('Cuéntanos cómo te has sentido y qué buscas; te sugerimos experiencias de negocios locales de la región.',
+        Text('Un solo cuestionario: cómo te has sentido, qué buscas en el viaje y dónde. Te sugerimos experiencias de negocios locales de las Altas Montañas o de todo México.',
           style: TextStyle(fontSize: 15, height: 1.5, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         _infoBox(scheme,
-          'Las preguntas sobre estrés son opcionales y no son un diagnóstico. En nuestra encuesta a 137 personas, quienes reportaron más estrés eligieron más experiencias de relajación; por eso tus respuestas solo ajustan qué tipo de experiencia priorizamos.',
+          'Las preguntas de estrés (PSS-10) son opcionales y no son un diagnóstico. Lo que eliges en el viaje pesa más; el estrés ajusta el orden: en nuestra encuesta (137 personas) y en 6,224 mexicanos del estudio COVIDiSTRESS, a más estrés se prefiere más descansar y convivir.',
           Icons.info_outline_rounded),
         const SizedBox(height: 12),
         InkWell(
@@ -228,11 +256,6 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         ),
         const SizedBox(height: 20),
         _primaryButton('Empezar · $_pasos pasos', _next),
-        const SizedBox(height: 8),
-        // WELLTUR v2 recomienda en las Altas Montañas; para otros estados queda la búsqueda nacional.
-        Center(child: TextButton(
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const WellnessTripPreferencesScreen())),
-          child: Text('¿Viajas a otro estado? Busca en todo México', style: TextStyle(color: _green, fontWeight: FontWeight.w600)))),
       ]),
     ),
   );
@@ -240,20 +263,23 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   Widget _question(ColorScheme scheme) {
     const titles = {
       1: '¿Cómo te has sentido?',
-      2: '¿Qué te gustaría vivir?',
-      3: '¿Cuánto esfuerzo físico?',
-      4: '¿Dónde buscas?',
+      2: '¿Qué buscas en este viaje?',
+      3: '¿Cómo te gustaría vivirlo?',
+      4: '¿Cuánto esfuerzo físico?',
+      5: '¿Dónde buscas?',
     };
-    const hints = {
-      1: 'Seis preguntas breves. Puedes omitirlas.',
-      2: 'Opcional: elige hasta tres, en orden de importancia.',
-      3: 'Ocultaremos experiencias más exigentes que esto.',
-      4: 'Municipio de las Altas Montañas, o toda la región.',
+    final hints = {
+      1: _usarPss ? 'Escala de estrés percibido (PSS-10), 10 preguntas. Puedes omitirla.' : 'Seis preguntas breves. Puedes omitirlas.',
+      2: 'Elige hasta tres, en orden de importancia.',
+      3: 'Opcional: hasta tres formas de experiencia, en orden.',
+      4: 'Primero te mostramos lo que no pida más que esto.',
+      5: 'Las Altas Montañas o cualquier parte de México.',
     };
     final body = switch (_step) {
       1 => _stressQuestions(scheme),
-      2 => _modalityChoices(scheme),
-      3 => _effortChoices(scheme),
+      2 => _motiveChoices(scheme),
+      3 => _modalityChoices(scheme),
+      4 => _effortChoices(scheme),
       _ => _regionChoices(scheme),
     };
     return SafeArea(child: Column(children: [
@@ -269,7 +295,8 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         const SizedBox(height: 6),
         Text(hints[_step]!, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
       ])),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(20, 0, 20, 16), child: body)),
+      // La llave por paso hace que cada paso empiece arriba (no hereda el scroll de la PSS-10).
+      Expanded(child: SingleChildScrollView(key: ValueKey('paso_$_step'), padding: const EdgeInsets.fromLTRB(20, 0, 20, 16), child: body)),
       if (_formError != null) Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: Text(_formError!, style: TextStyle(color: scheme.error, fontSize: 12))),
       Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 18), child: Row(children: [
         Expanded(child: OutlinedButton(onPressed: _back, child: const Text('Atrás'))),
@@ -329,16 +356,22 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
   ]);
 
-  Widget _modalityChoices(ColorScheme scheme) => Column(children: _modalidades.map((m) {
-    final index = _seleccion.indexOf(m.key);
+  Widget _motiveChoices(ColorScheme scheme) => _prioridades(scheme, _motivos, _motivosElegidos);
+
+  Widget _modalityChoices(ColorScheme scheme) => _prioridades(scheme, _modalidades, _seleccion);
+
+  /// Lista de opciones con prioridad (1, 2, 3) para motivos M y modalidades W.
+  Widget _prioridades(ColorScheme scheme, List<({String key, String title, String subtitle, IconData icon})> opciones,
+      List<String> elegidas) => Column(children: opciones.map((m) {
+    final index = elegidas.indexOf(m.key);
     final selected = index >= 0;
     return Padding(padding: const EdgeInsets.only(bottom: 9), child: ListTile(
       onTap: () => setState(() {
         _formError = null;
         if (selected) {
-          _seleccion.remove(m.key);
-        } else if (_seleccion.length < 3) {
-          _seleccion.add(m.key);
+          elegidas.remove(m.key);
+        } else if (elegidas.length < 3) {
+          elegidas.add(m.key);
         } else {
           _formError = 'Puedes elegir hasta tres.';
         }
@@ -366,13 +399,57 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     )).toList());
   }
 
-  Widget _regionChoices(ColorScheme scheme) => Column(children: _regiones.map((r) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: _choiceTile(scheme, r.isEmpty ? 'Toda la región' : r,
-      r.isEmpty ? '57 municipios de las Altas Montañas' : 'Solo experiencias en $r',
-      r.isEmpty ? Icons.map_outlined : Icons.place_outlined,
-      selected: _region == r, onTap: () => setState(() => _region = r)),
-  )).toList());
+  Widget _regionChoices(ColorScheme scheme) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Row(children: [
+      Expanded(child: _zonaChip(scheme, 'Altas Montañas', Icons.landscape_outlined, !_todoMexico,
+        () => setState(() { _todoMexico = false; _region = ''; }))),
+      const SizedBox(width: 10),
+      Expanded(child: _zonaChip(scheme, 'Todo México', Icons.public_outlined, _todoMexico,
+        () => setState(() { _todoMexico = true; _region = ''; }))),
+    ]),
+    const SizedBox(height: 14),
+    if (!_todoMexico)
+      ..._regiones.map((r) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: _choiceTile(scheme, r.isEmpty ? 'Toda la región' : r,
+          r.isEmpty ? '57 municipios de las Altas Montañas, Veracruz' : 'Primero lo de $r',
+          r.isEmpty ? Icons.map_outlined : Icons.place_outlined,
+          selected: _region == r, onTap: () => setState(() => _region = r)),
+      ))
+    else ...[
+      Text('Inventario nacional de bienestar revisado por SMARTUR, más el catálogo de las Altas Montañas.',
+        style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+      const SizedBox(height: 10),
+      DropdownButtonFormField<String>(
+        initialValue: _region,
+        isExpanded: true,
+        decoration: InputDecoration(labelText: 'Estado', border: OutlineInputBorder(borderRadius: BorderRadius.circular(14))),
+        items: [
+          const DropdownMenuItem(value: '', child: Text('Todo México')),
+          ..._estadosMexico.map((e) => DropdownMenuItem(value: e, child: Text(e))),
+        ],
+        onChanged: (v) => setState(() => _region = v ?? ''),
+      ),
+    ],
+  ]);
+
+  Widget _zonaChip(ColorScheme scheme, String label, IconData icon, bool selected, VoidCallback onTap) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+      decoration: BoxDecoration(
+        color: selected ? _green.withValues(alpha: .1) : scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: selected ? _green : scheme.outlineVariant, width: selected ? 1.6 : 1),
+      ),
+      child: Column(children: [
+        Icon(icon, color: selected ? _green : scheme.onSurfaceVariant),
+        const SizedBox(height: 6),
+        Text(label, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, color: selected ? _green : scheme.onSurface)),
+      ]),
+    ),
+  );
 
   Widget _choiceTile(ColorScheme scheme, String title, String subtitle, IconData icon, {required bool selected, required VoidCallback onTap}) =>
       ListTile(onTap: onTap, leading: Icon(icon, color: selected ? _green : scheme.onSurfaceVariant),
@@ -383,7 +460,10 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
 
   Widget _results(ColorScheme scheme) {
     final result = _result!;
-    final elegidas = _seleccion.map((k) => _modalidades.firstWhere((m) => m.key == k).title).join(', ');
+    final elegidas = [
+      ..._motivosElegidos.map((k) => _motivos.firstWhere((m) => m.key == k).title),
+      ..._seleccion.map((k) => _modalidades.firstWhere((m) => m.key == k).title),
+    ].join(', ');
     final mipymes = result.destinations.where((d) => d.esMipyme).length;
     return SafeArea(child: ListView(padding: const EdgeInsets.fromLTRB(0, 14, 0, 28), children: [
       Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Container(
@@ -395,7 +475,8 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
           const SizedBox(height: 5),
           Text([
             if (elegidas.isNotEmpty) 'Buscas: $elegidas',
-            _omitirEstres ? 'Sin preguntas de estrés' : 'Ajustado con tus respuestas de estrés',
+            _omitirEstres ? 'Sin preguntas de estrés' : 'Ajustado con tu PSS-10',
+            _todoMexico ? (_region.isEmpty ? 'Todo México' : _region) : (_region.isEmpty ? 'Altas Montañas' : _region),
             if (result.destinations.isNotEmpty) '$mipymes de ${result.destinations.length} son negocios locales (MiPyME)',
           ].join(' · '), style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
           const SizedBox(height: 8),

@@ -124,13 +124,34 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
 
-        final empezar = find.text('Empezar · 4 pasos');
+        final empezar = find.text('Empezar · 5 pasos');
         await tester.ensureVisible(empezar);
         await tester.pumpAndSettle();
         await tester.tap(empezar);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        expect(find.text('PASO 1 DE 4'), findsOneWidget);
+        expect(find.text('PASO 1 DE 5'), findsOneWidget);
+
+        // Un solo formulario: estrés (omitido) -> motivos M -> modalidades W -> esfuerzo -> zona.
+        await tester.tap(find.text('Prefiero no responder'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continuar'));
+        await tester.pumpAndSettle();
+        expect(find.text('PASO 2 DE 5'), findsOneWidget);
+        expect(find.text('Descansar o hacer una pausa'), findsOneWidget);
+        await tester.tap(find.text('Descansar o hacer una pausa'));
+        await tester.pumpAndSettle();
+        for (final paso in ['PASO 3 DE 5', 'PASO 4 DE 5', 'PASO 5 DE 5']) {
+          await tester.tap(find.text('Continuar'));
+          await tester.pumpAndSettle();
+          expect(find.text(paso), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        }
+        expect(find.text('Altas Montañas'), findsOneWidget);
+        await tester.tap(find.text('Todo México'));
+        await tester.pumpAndSettle();
+        expect(find.text('Estado'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
     }
   });
