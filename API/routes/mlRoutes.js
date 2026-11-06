@@ -519,8 +519,8 @@ router.post('/ml/wellness/recommend', verifyToken, async (req, res) => {
                     p.categoria_wellness, p.wellness_dimensions,
                     p.demanda_fisica,
                     p.descripcion_bienestar, p.image_url,
-                    COALESCE(p.latitude, l.latitude) AS lat,
-                    COALESCE(p.longitude, l.longitude) AS lon
+                    COALESCE(p.latitude, l.latitude)::float8 AS lat,
+                    COALESCE(p.longitude, l.longitude)::float8 AS lon
                FROM point_of_interest p
                LEFT JOIN location l ON l.id_location = p.id_location
               WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
@@ -534,7 +534,7 @@ router.post('/ml/wellness/recommend', verifyToken, async (req, res) => {
                     s.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
                     s.categoria_wellness, s.wellness_dimensions,
                     s.demanda_fisica,
-                    s.descripcion_bienestar, s.image_url, l.latitude AS lat, l.longitude AS lon
+                    s.descripcion_bienestar, s.image_url, l.latitude::float8 AS lat, l.longitude::float8 AS lon
                FROM tourist_service s
                LEFT JOIN location l ON l.id_location = s.id_location
               WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
@@ -661,8 +661,8 @@ router.post('/ml/wellness/recommend-mw', verifyToken, async (req, res) => {
                     p.wellness_mw_evidence, p.wellness_mw_reviewed_at,
                     p.wellness_status, p.is_wellness, p.is_accessible,
                     p.demanda_fisica, p.descripcion_bienestar, p.image_url,
-                    COALESCE(p.latitude, l.latitude) AS lat,
-                    COALESCE(p.longitude, l.longitude) AS lon
+                    COALESCE(p.latitude, l.latitude)::float8 AS lat,
+                    COALESCE(p.longitude, l.longitude)::float8 AS lon
                FROM point_of_interest p
                LEFT JOIN location l ON l.id_location = p.id_location
               WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
@@ -676,7 +676,7 @@ router.post('/ml/wellness/recommend-mw', verifyToken, async (req, res) => {
                     s.wellness_mw_evidence, s.wellness_mw_reviewed_at,
                     s.wellness_status, s.is_wellness, FALSE AS is_accessible,
                     s.demanda_fisica, s.descripcion_bienestar, s.image_url,
-                    l.latitude AS lat, l.longitude AS lon
+                    l.latitude::float8 AS lat, l.longitude::float8 AS lon
                FROM tourist_service s
                LEFT JOIN location l ON l.id_location = s.id_location
               WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
@@ -852,8 +852,8 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
                     p.categoria_wellness, p.wellness_modalities, p.wellness_mw_evidence,
                     p.wellness_status, p.is_wellness, p.is_accessible, p.es_mipyme,
                     p.demanda_fisica, p.descripcion_bienestar, p.image_url,
-                    COALESCE(p.latitude, l.latitude) AS lat,
-                    COALESCE(p.longitude, l.longitude) AS lon
+                    COALESCE(p.latitude, l.latitude)::float8 AS lat,
+                    COALESCE(p.longitude, l.longitude)::float8 AS lon
                FROM point_of_interest p
                LEFT JOIN location l ON l.id_location = p.id_location
               WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
@@ -867,8 +867,8 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
                     s.categoria_wellness, s.wellness_modalities, s.wellness_mw_evidence,
                     s.wellness_status, s.is_wellness, FALSE AS is_accessible, TRUE AS es_mipyme,
                     s.demanda_fisica, s.descripcion_bienestar, s.image_url,
-                    COALESCE(s.latitude, l.latitude) AS lat,
-                    COALESCE(s.longitude, l.longitude) AS lon
+                    COALESCE(s.latitude, l.latitude)::float8 AS lat,
+                    COALESCE(s.longitude, l.longitude)::float8 AS lon
                FROM tourist_service s
                LEFT JOIN location l ON l.id_location = s.id_location
               WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
