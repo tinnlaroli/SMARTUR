@@ -11,11 +11,12 @@ import { deriveTourismTypeId } from '../utils/poiCategory.js';
 class ExploreController {
     static async getHome(req, res) {
         try {
-            const locResult = await Location.findAll(1, 100, '', '');
+            const locResult = await Location.findAll(1, 300, '', '');
             // active=null: mostrar todos los servicios activos e inactivos para que el admin vea
             // lo que agregó. La UI móvil filtra por categoría, no por estado.
             const svcResult = await TouristServices.findAll(1, 500, '', null, null, null, null);
-            const poiResult = await PointOfInterest.findAll(1, 500, '', null, null, null);
+            // El catálogo regional (DENUE) supera los 1,100 lugares: con 500 la app no veía ni la mitad.
+            const poiResult = await PointOfInterest.findAll(1, 5000, '', null, null, null);
 
             // ── Agrupar por ubicación ──────────────────────────────────────
             const ORPHAN_ID = '__orphan__';
@@ -63,6 +64,10 @@ class ExploreController {
                     rating: p.rating != null ? parseFloat(p.rating) : 4.0,
                     latitude: p.latitude != null ? parseFloat(p.latitude) : null,
                     longitude: p.longitude != null ? parseFloat(p.longitude) : null,
+                    // Categoría wellness real (spa, balneario, artesanía, café…) para los filtros de la app.
+                    categoria_wellness: p.categoria_wellness || null,
+                    is_wellness: p.is_wellness === true,
+                    es_mipyme: p.es_mipyme === true,
                 });
             }
 

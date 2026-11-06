@@ -156,6 +156,11 @@ jobs:
             [ "$TABLES" -ge 56 ] || { echo "FAIL: schema incompleto, tablas=$TABLES"; exit 1; }
             echo "✓ Schema activo validado: $TABLES tablas públicas"
 
+            # Catálogo WELLTUR que ve el recomendador (solo informativo, no bloquea).
+            docker exec smartur-postgres psql -U postgres -d smartur -tA -F ' | ' -c \
+              "SELECT 'catalogo_welltur', count(*) FILTER (WHERE p.is_wellness AND p.wellness_status = 'approved' AND p.is_active AND p.validation_status = 'active' AND l.is_active AND p.wellness_mw_reviewed_at IS NOT NULL AND cardinality(p.wellness_modalities) > 0), count(*) FILTER (WHERE p.denue_clee IS NOT NULL AND p.is_active) FROM point_of_interest p LEFT JOIN location l ON l.id_location = p.id_location" \
+              2>/dev/null | sed 's/^/ℹ recomendables | DENUE activos: /' || echo "ℹ catálogo WELLTUR: sin columnas v2 (falta la migración)"
+
             # ── 7) Limpieza (imágenes huérfanas / caché antigua) ───
             docker image prune -f
             docker builder prune -af --filter until=72h

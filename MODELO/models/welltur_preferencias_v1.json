@@ -182,5 +182,12 @@
         "precision@3": 0.5375
       }
     }
+  },
+  "equivalencia_pss10": {
+    "metodo": "equiparación lineal por normas ponderadas por la edad de la encuesta WELLTUR",
+    "media": 18.612,
+    "de": 7.455,
+    "fuente": "COVIDiSTRESS Global Survey, México, 30-may-2020 (doi:10.17605/OSF.IO/Z39US)",
+    "n": 8556
   }
 }

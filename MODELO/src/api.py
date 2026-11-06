@@ -1479,6 +1479,10 @@ class WellnessPreferenceRequest(BaseModel):
     top_n: int = Field(default=3, ge=1, le=10)
 
 
+# El catálogo regional (DENUE 2026) ya supera los 1,100 lugares; el API envía hasta 5,000.
+MAX_DESTINOS_POR_SOLICITUD = 5000
+
+
 class WellnessMWPreferenceRequest(BaseModel):
     preferences: Dict[str, Any]
     destinations: List[Dict[str, Any]] = Field(default_factory=list)
@@ -1515,8 +1519,8 @@ def wellness_recommend_from_preferences(payload: WellnessPreferenceRequest):
     """Rank only the approved catalog supplied by the SMARTUR API."""
     from wellness_preference_ranker import recommend_from_preferences
 
-    if len(payload.destinations) > 1000:
-        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
+    if len(payload.destinations) > MAX_DESTINOS_POR_SOLICITUD:
+        raise HTTPException(status_code=422, detail=f"El catálogo por solicitud no puede superar {MAX_DESTINOS_POR_SOLICITUD} destinos.")
     try:
         recs = recommend_from_preferences(
             payload.destinations, payload.preferences, top_n=payload.top_n
@@ -1544,8 +1548,8 @@ def wellness_recommend_from_mw_preferences(payload: WellnessMWPreferenceRequest)
     """
     from wellness_mw_ranker import recommend_from_mw_preferences
 
-    if len(payload.destinations) > 1000:
-        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
+    if len(payload.destinations) > MAX_DESTINOS_POR_SOLICITUD:
+        raise HTTPException(status_code=422, detail=f"El catálogo por solicitud no puede superar {MAX_DESTINOS_POR_SOLICITUD} destinos.")
     try:
         return recommend_from_mw_preferences(
             payload.destinations, payload.preferences, top_n=payload.top_n
@@ -1562,8 +1566,8 @@ def wellness_recommend_v2(payload: WellnessMWPreferenceRequest):
     """WELLTUR v2: pesos W1-W7 del modelo calibrado con la encuesta real + preferencias + cuota MiPyME."""
     from welltur_ranker_v2 import recomendar
 
-    if len(payload.destinations) > 1000:
-        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
+    if len(payload.destinations) > MAX_DESTINOS_POR_SOLICITUD:
+        raise HTTPException(status_code=422, detail=f"El catálogo por solicitud no puede superar {MAX_DESTINOS_POR_SOLICITUD} destinos.")
     try:
         return recomendar(payload.destinations, payload.preferences, top_n=payload.top_n)
     except (TypeError, ValueError) as exc:

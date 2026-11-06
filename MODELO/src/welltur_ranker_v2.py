@@ -7,7 +7,10 @@
    - `w_usuario`: modalidades que la persona eligió en la app, por prioridad (3, 2, 1).
    - `w = ALFA_USUARIO * w_usuario + (1 - ALFA_USUARIO) * w_modelo` si hay ambos.
 2. Puntaje del lugar: similitud coseno entre los pesos y sus modalidades W revisadas.
-3. Filtros duros: aprobado con evidencia, región, accesibilidad y esfuerzo máximo.
+3. Filtros: aprobado con evidencia (siempre), región, accesibilidad y esfuerzo máximo.
+   Nunca se devuelve una lista vacía: si los lugares que cumplen todo no alcanzan, se
+   relajan por etapas (esfuerzo, luego región, luego accesibilidad) y cada lugar indica su
+   nivel de coincidencia ("alta", "media" o "baja") y el motivo.
 4. Re-ranking: máximo `MAX_POR_CATEGORIA` por categoría y `MAX_POR_MUNICIPIO` por municipio
    (se relajan si no alcanzan los candidatos) y al menos `MIN_MIPYME`
    MiPyMEs en el top cuando existan candidatas.
@@ -71,6 +74,22 @@ def pesos_modelo(artefacto: dict[str, Any], estres_0_100: float | None) -> dict[
     return {w: v / total for w, v in pesos.items()}
 
 
+def estres_desde_pss10(pss10_total: float, artefacto: dict[str, Any] | None = None) -> float:
+    """PSS-10 (0-40) -> índice de estrés de la encuesta (0-100) por equiparación de normas.
+
+    z se calcula con las normas mexicanas de la PSS-10 (COVIDiSTRESS, ponderadas por la edad
+    de la encuesta; ver normas_pss10.py) y se lleva a la media y DE del índice con el que se
+    entrenó el modelo. Sin normas en el artefacto, usa la conversión proporcional.
+    """
+    artefacto = artefacto or cargar_artefacto()
+    normas = artefacto.get("equivalencia_pss10")
+    if not normas:
+        return round(pss10_total / 40 * 100, 1)
+    z = (pss10_total - normas["media"]) / normas["de"]
+    valor = artefacto["estres"]["media"] + z * artefacto["estres"]["de"]
+    return round(min(100.0, max(0.0, valor)), 1)
+
+
 def pesos_usuario(modalidades: list[str]) -> dict[str, float]:
     crudos = {code: 3 - i for i, code in enumerate(modalidades)}
     total = sum(crudos.values()) or 1
@@ -94,6 +113,11 @@ def _validar(preferencias: dict[str, Any], top_n: int) -> tuple[float | None, li
         if isinstance(estres, bool) or not isinstance(estres, (int, float)) or not 0 <= estres <= 100:
             raise ValueError("estres_0_100 debe ser un número entre 0 y 100.")
         estres = float(estres)
+    pss = preferencias.get("pss10_total")
+    if pss is not None:
+        if isinstance(pss, bool) or not isinstance(pss, (int, float)) or not 0 <= pss <= 40:
+            raise ValueError("pss10_total debe ser un número entre 0 y 40.")
+        estres = estres_desde_pss10(float(pss))
     modalidades = preferencias.get("modality_preferences") or []
     if (not isinstance(modalidades, list) or len(modalidades) > 3 or len(set(modalidades)) != len(modalidades)
             or not set(modalidades).issubset(MODALIDADES)):
@@ -157,6 +181,81 @@ def _reordenar(candidatos: list[dict[str, Any]], top_n: int) -> list[dict[str, A
     return elegidos
 
 
+# Etapas de búsqueda: qué filtros se respetan y qué se le dice a la persona al relajarlos.
+ETAPAS = (
+    ("todo", None),
+    ("esfuerzo", "Pide algo más de esfuerzo físico del que indicaste."),
+    ("region", "Está fuera del municipio que elegiste."),
+    ("accesibilidad", "No tenemos confirmada su accesibilidad."),
+)
+
+
+def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list[str]) -> dict[str, Any] | None:
+    """Puntaje y explicación de un lugar aprobado con evidencia; None si no es recomendable."""
+    if lugar.get("is_wellness") is not True or lugar.get("wellness_status") != "approved":
+        return None
+    evidencia = lugar.get("wellness_mw_evidence") or {}
+    lugar_w = [w for w in MODALIDADES if w in set(lugar.get("wellness_modalities") or [])]
+    if not lugar_w or not isinstance(evidencia, dict):
+        return None
+    if any(not isinstance(evidencia.get(w), str) or len(evidencia[w].strip()) < 10 for w in lugar_w):
+        return None
+    aportes = {w: pesos[w] for w in lugar_w}
+    # Similitud coseno con un vector binario de etiquetas: un lugar con muchas
+    # etiquetas no gana solo por acumularlas.
+    puntaje = sum(aportes.values()) / math.sqrt(len(lugar_w))
+    if puntaje <= 0:
+        return None
+    principal = max(aportes, key=aportes.get)
+    # Coincide con lo que la persona pidió (o no pidió nada): alta. Solo por el modelo: media.
+    comparte = not modalidades or bool(set(modalidades) & set(lugar_w))
+    return {
+        "id_destino": str(lugar["id_destino"]),
+        "nombre_lugar": str(lugar.get("nombre_lugar") or ""),
+        "estado": str(lugar.get("estado") or ""),
+        "municipio": str(lugar.get("municipio") or ""),
+        "categoria_wellness": str(lugar.get("categoria_wellness") or "sin_categoria"),
+        "es_mipyme": _es_mipyme(lugar),
+        "score": round(puntaje, 6),
+        "place_modalities": lugar_w,
+        "aporte_por_modalidad": {w: round(v, 4) for w, v in sorted(aportes.items(), key=lambda kv: -kv[1])},
+        "explicacion": f"Porque buscas {NOMBRES_W[principal]}: {evidencia[principal].strip()}",
+        "coincidencia": "alta" if comparte else "media",
+        "motivo_coincidencia": None if comparte else "No es de las modalidades que elegiste; te la sugerimos por tu perfil.",
+        "demanda_fisica": _nivel_esfuerzo(lugar.get("demanda_fisica")),
+        "image_url": lugar.get("image_url"),
+        "lat": lugar.get("lat"),
+        "lon": lugar.get("lon"),
+        "descripcion_bienestar": str(lugar.get("descripcion_bienestar") or ""),
+        "_accesible": lugar.get("is_accessible") is True,
+    }
+
+
+def _cumple(c: dict[str, Any], etapa: int, max_esfuerzo: int, accesible: bool, region: str) -> bool:
+    """¿El candidato pasa los filtros que siguen activos en esta etapa?"""
+    if etapa < 3 and accesible and not c["_accesible"]:
+        return False
+    # "Coscomatepec" también debe encontrar la localidad "Coscomatepec de Bravo".
+    if (etapa < 2 and region and region != _normalizar(c["estado"])
+            and not _normalizar(c["municipio"]).startswith(region)):
+        return False
+    if etapa < 1 and c["demanda_fisica"] is not None and c["demanda_fisica"] > max_esfuerzo:
+        return False
+    return True
+
+
+def _motivos(c: dict[str, Any], max_esfuerzo: int, accesible: bool, region: str) -> list[str]:
+    """Cada filtro pedido que el lugar no cumple, en el orden en que se relajan."""
+    fallas = []
+    if c["demanda_fisica"] is not None and c["demanda_fisica"] > max_esfuerzo:
+        fallas.append(ETAPAS[1][1])
+    if region and region != _normalizar(c["estado"]) and not _normalizar(c["municipio"]).startswith(region):
+        fallas.append(ETAPAS[2][1])
+    if accesible and not c["_accesible"]:
+        fallas.append(ETAPAS[3][1])
+    return fallas
+
+
 def recomendar(destinos: list[dict[str, Any]], preferencias: dict[str, Any], top_n: int = 5,
                artefacto: dict[str, Any] | None = None, alfa: float = ALFA_USUARIO) -> dict[str, Any]:
     estres, modalidades, max_esfuerzo, accesible, region = _validar(preferencias, top_n)
@@ -164,64 +263,50 @@ def recomendar(destinos: list[dict[str, Any]], preferencias: dict[str, Any], top
     artefacto = artefacto or cargar_artefacto()
     pesos = combinar_pesos(estres, modalidades, artefacto, alfa)
 
-    candidatos = []
-    for lugar in destinos:
-        if lugar.get("is_wellness") is not True or lugar.get("wellness_status") != "approved":
-            continue
-        evidencia = lugar.get("wellness_mw_evidence") or {}
-        lugar_w = [w for w in MODALIDADES if w in set(lugar.get("wellness_modalities") or [])]
-        if not lugar_w or not isinstance(evidencia, dict):
-            continue
-        if any(not isinstance(evidencia.get(w), str) or len(evidencia[w].strip()) < 10 for w in lugar_w):
-            continue
-        # "Coscomatepec" también debe encontrar la localidad "Coscomatepec de Bravo".
-        municipio = _normalizar(lugar.get("municipio"))
-        if region and region != _normalizar(lugar.get("estado")) and not municipio.startswith(region):
-            continue
-        if accesible and lugar.get("is_accessible") is not True:
-            continue
-        esfuerzo = _nivel_esfuerzo(lugar.get("demanda_fisica"))
-        if esfuerzo is not None and esfuerzo > max_esfuerzo:
-            continue
-        aportes = {w: pesos[w] for w in lugar_w}
-        # Similitud coseno con un vector binario de etiquetas: un lugar con muchas
-        # etiquetas no gana solo por acumularlas.
-        puntaje = sum(aportes.values()) / math.sqrt(len(lugar_w))
-        if puntaje <= 0:
-            continue
-        principal = max(aportes, key=aportes.get)
-        candidatos.append({
-            "id_destino": str(lugar["id_destino"]),
-            "nombre_lugar": str(lugar.get("nombre_lugar") or ""),
-            "estado": str(lugar.get("estado") or ""),
-            "municipio": str(lugar.get("municipio") or ""),
-            "categoria_wellness": str(lugar.get("categoria_wellness") or "sin_categoria"),
-            "es_mipyme": _es_mipyme(lugar),
-            "score": round(puntaje, 6),
-            "place_modalities": lugar_w,
-            "aporte_por_modalidad": {w: round(v, 4) for w, v in sorted(aportes.items(), key=lambda kv: -kv[1])},
-            "explicacion": f"Porque buscas {NOMBRES_W[principal]}: {evidencia[principal].strip()}",
-            "demanda_fisica": esfuerzo,
-            "image_url": lugar.get("image_url"),
-            "lat": lugar.get("lat"),
-            "lon": lugar.get("lon"),
-            "descripcion_bienestar": str(lugar.get("descripcion_bienestar") or ""),
-        })
+    todos = [c for c in (_candidato(lugar, pesos, modalidades) for lugar in destinos) if c]
+    # Primero lo que coincide con lo pedido; dentro de cada nivel, por puntaje.
+    todos.sort(key=lambda c: (c["coincidencia"] != "alta", -c["score"],
+                              _normalizar(c["nombre_lugar"]), c["id_destino"]))
 
-    candidatos.sort(key=lambda c: (-c["score"], _normalizar(c["nombre_lugar"]), c["id_destino"]))
-    elegidos = _reordenar(candidatos, top_n)
+    elegidos: list[dict[str, Any]] = []
+    usados: set[str] = set()
+    estrictos = 0
+    for etapa, (_, motivo) in enumerate(ETAPAS):
+        if len(elegidos) >= top_n:
+            break
+        nuevos = [c for c in todos
+                  if c["id_destino"] not in usados and _cumple(c, etapa, max_esfuerzo, accesible, region)]
+        if etapa == 0:
+            estrictos = len(nuevos)
+        tanda = _reordenar(nuevos, top_n - len(elegidos))
+        for c in tanda:
+            if etapa > 0:
+                # Todos los filtros que este lugar no cumple, no solo el de la etapa.
+                c["coincidencia"] = "baja"
+                c["motivo_coincidencia"] = " ".join(_motivos(c, max_esfuerzo, accesible, region)) or motivo
+            usados.add(c["id_destino"])
+        elegidos.extend(tanda)
+
     for i, c in enumerate(elegidos, start=1):
         c["rank"] = i
+    for c in todos:
+        c.pop("_accesible", None)
+    aviso = None
+    if any(c["coincidencia"] != "alta" for c in elegidos):
+        aviso = ("No encontramos suficientes lugares que cumplan todo lo que pediste. Te mostramos "
+                 "también opciones con menor relación con tus respuestas; cada una indica por qué.")
     return {
         "algorithm": ALGORITMO,
         "model_version": artefacto["modelo"],
         "model_trained_on": artefacto["fuente"],
         "uses_stress": estres is not None,
+        "estres_0_100_usado": estres,
         "weights": {w: round(v, 4) for w, v in pesos.items()},
         "alpha_user": alfa if modalidades else 0.0,
-        "candidates": len(candidatos),
+        "candidates": estrictos,
         "mipyme_in_top": sum(1 for c in elegidos if c["es_mipyme"]),
         "destinations": elegidos,
+        "aviso_coincidencia": aviso,
         "notice": ("El estrés solo ajusta qué tipo de experiencia se prioriza; no es un diagnóstico "
                    "ni una promesa de beneficio para la salud."),
     }

@@ -140,11 +140,36 @@ Todo se mide **fuera de muestra**, con validación cruzada.
   - se aceptan hasta 2 ítems faltantes, con el promedio de los respondidos × 10;
   - no hay puntos de corte.
 - El total se guarda en `pss10_total` solo con consentimiento.
-- Equivalencia **provisional** a la escala del modelo (porcentaje del máximo) hasta calibrar la PSS-10 contra el índice de la encuesta en el siguiente estudio.
-- En la app, la persona elige entre la versión breve (6 preguntas) y la PSS-10.
-  - Los textos están en `MOBILE/assets/instrumentos/pss10_es_mx.json`. Los copió **textualmente** del instrumento con licencia el script `MODELO/src/extraer_pss10.py`: instrucción, 5 opciones, 10 ítems y aviso de copyright.
-  - Lo cubren las pruebas de widget de Flutter (5/5).
+- **Un solo cuestionario en la app: la PSS-10.** Las 6 preguntas breves solo quedan como respaldo si una compilación no trae el texto licenciado; la persona ya no elige entre dos.
+  - El texto vive en `MOBILE/assets/instrumentos/pss10_es_mx.json`, copiado **textualmente** del instrumento con licencia por `MODELO/src/extraer_pss10.py`. Los repos son públicos: en git va la plantilla vacía y el APK lo recibe desde un secreto de GitHub.
 - Antes del uso electrónico definitivo, la licencia pide enviar capturas de pantalla a Mapi.
+
+## 4h. Datasets de estrés: qué existe y cómo se usó
+**Búsqueda:** OSF, Zenodo, Kaggle, Mendeley Data y literatura de turismo de bienestar.
+
+**Hallazgo honesto:** no existe un dataset público que tenga la PSS-10 **y** preferencias de viaje o de turismo de bienestar. Los que hay miden estrés sin el objetivo que necesita el modelo:
+
+| Dataset | Qué tiene | Sirve para |
+|---|---|---|
+| **COVIDiSTRESS Global Survey** (Yamada et al., 2021, *Scientific Data* 8:3; OSF doi:10.17605/OSF.IO/Z39US) | PSS-10 ítem por ítem, 125,306 personas; **México: 9,169** | Normas mexicanas de la PSS-10 ✅ |
+| Student Stress Monitoring (Kaggle, Bangladesh, 2023) | PSS-10 en 1,100 universitarios | Solo estudiantes de otro país; sin preferencias |
+| Zenodo 5565155 | Estrés y ocio en 205 académicos | Ocio social, no turismo |
+| Estudios de motivación wellness (IJERPH 2023; *Behav. Sci.* 2024) | Encuestas con SEM | Sin datos abiertos; confirman que la **relajación** es la motivación dominante (β = 0.90), igual que nuestro hallazgo |
+
+**Normas mexicanas de la PSS-10** (COVIDiSTRESS, `MODELO/src/normas_pss10.py`, `reports/normas_pss10_mexico.json`):
+- n = 8,556 válidas; α = 0.885; media 17.2 (DE 7.4). El cálculo reproduce exactamente el puntaje publicado por los autores (r = 1.00).
+- Baja con la edad: 20.9 (18–24) → 18.9 (25–34) → 16.5 (35–44) → 14.7 (45–54) → 12.7 (55+).
+- Ponderada con la mezcla de edades de nuestra encuesta: **media 18.6, DE 7.5**.
+
+**Cómo entra la PSS-10 al modelo:** el efecto del estrés se aprendió con el índice de la encuesta (n = 137) y se usa estandarizado. La PSS-10 se lleva a esa misma escala con **equiparación lineal por normas**: z = (PSS-10 − 18.6) / 7.5. Supuesto explícito: misma posición relativa de estrés en ambos instrumentos.
+- Límites: datos de abril–mayo de 2020 (pandemia), muestra en línea y 72 % mujeres; la referencia puede estar algo elevada.
+- **Para entrenar con la PSS-10 de forma directa** hace falta que las mismas personas respondan PSS-10 y preferencias. La app ya lo registra con consentimiento (`pss10_total` + modalidades + calificación de la recomendación): con ≥ 200 respuestas se reentrena y se reemplaza la equiparación.
+
+## 4i. Recomendación siempre disponible
+- Antes, si los filtros (municipio, esfuerzo, accesibilidad) dejaban 0 lugares, la app decía que no había experiencias.
+- Ahora nunca devuelve vacío: primero lo que cumple todo; si no alcanza, relaja por etapas (esfuerzo → municipio → accesibilidad).
+- Cada lugar indica su **coincidencia**: alta (cumple lo pedido), media (no es de tus modalidades; viene por tu perfil) o baja (se relajó un filtro), con el motivo. Arriba se avisa que hay opciones con menor relación.
+- Se corrigió además un límite que dejaba fuera del recomendador y del home a los lugares por encima de los primeros 1,000 (orden alfabético) y 500 (home).
 
 ## 4g. Contexto GWI
 | Dato | Valor | Fuente |

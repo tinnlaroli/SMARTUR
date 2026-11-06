@@ -70,7 +70,42 @@ class WelltuRankerV2Tests(unittest.TestCase):
         destinos = [lugar("poi:1", "Pico", ["W3"], esfuerzo=1.0), lugar("poi:2", "Pendiente", ["W1"], aprobado=False),
                     lugar("poi:3", "Lejos", ["W1"], estado="Puebla"), lugar("poi:4", "Mirador", ["W2"])]
         res = recomendar(destinos, {"max_effort": 2, "region_filter": "veracruz"}, artefacto=ARTEFACTO)
-        self.assertEqual([d["id_destino"] for d in res["destinations"]], ["poi:4"])
+        ids = [d["id_destino"] for d in res["destinations"]]
+        # Lo que cumple todo va primero; lo no aprobado nunca aparece.
+        self.assertEqual(ids[0], "poi:4")
+        self.assertNotIn("poi:2", ids)
+        self.assertEqual(res["candidates"], 1)
+        self.assertEqual(res["destinations"][0]["coincidencia"], "alta")
+
+    def test_nunca_vacio_relaja_con_aviso_y_motivo(self):
+        destinos = [lugar("poi:1", "Pico", ["W3"], esfuerzo=1.0), lugar("poi:3", "Lejos", ["W1"], estado="Puebla")]
+        res = recomendar(destinos, {"max_effort": 1, "region_filter": "veracruz"}, artefacto=ARTEFACTO)
+        por_id = {d["id_destino"]: d for d in res["destinations"]}
+        self.assertEqual(set(por_id), {"poi:1", "poi:3"})
+        self.assertEqual(res["candidates"], 0)
+        self.assertIsNotNone(res["aviso_coincidencia"])
+        self.assertEqual(por_id["poi:1"]["coincidencia"], "baja")
+        self.assertIn("esfuerzo", por_id["poi:1"]["motivo_coincidencia"])
+        self.assertIn("municipio", por_id["poi:3"]["motivo_coincidencia"])
+        # Relajar el esfuerzo va antes que salir de la región.
+        self.assertLess(por_id["poi:1"]["rank"], por_id["poi:3"]["rank"])
+
+    def test_modalidad_no_elegida_es_coincidencia_media_y_va_despues(self):
+        destinos = [lugar("poi:1", "Mirador", ["W1"]), lugar("poi:2", "Cocina", ["W5"])]
+        res = recomendar(destinos, {"modality_preferences": ["W5"]}, artefacto=ARTEFACTO)
+        self.assertEqual([d["id_destino"] for d in res["destinations"]], ["poi:2", "poi:1"])
+        self.assertEqual([d["coincidencia"] for d in res["destinations"]], ["alta", "media"])
+        self.assertIsNotNone(res["aviso_coincidencia"])
+
+    def test_pss10_se_equipara_con_normas(self):
+        from welltur_ranker_v2 import estres_desde_pss10
+        artefacto = {**ARTEFACTO, "estres": {"media": 50.0, "de": 20.0},
+                     "equivalencia_pss10": {"media": 18.0, "de": 8.0}}
+        self.assertEqual(estres_desde_pss10(18.0, artefacto), 50.0)  # en la media de las normas
+        self.assertEqual(estres_desde_pss10(26.0, artefacto), 70.0)  # +1 DE
+        self.assertEqual(estres_desde_pss10(40.0, artefacto), 100.0)  # recortado a 0-100
+        sin_normas = {**ARTEFACTO, "estres": {"media": 50.0, "de": 20.0}}
+        self.assertEqual(estres_desde_pss10(20.0, sin_normas), 50.0)  # proporcional
 
     def test_municipio_filtrado_respeta_categoria_y_no_repite_nombres(self):
         destinos = [lugar(f"service:{i}", "Café 88", ["W5", "W1"], categoria="Gastronomia", mipyme=True) for i in range(2)]

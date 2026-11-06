@@ -544,7 +544,7 @@ router.post('/ml/wellness/recommend', verifyToken, async (req, res) => {
                 AND cardinality(s.wellness_dimensions) > 0
                 AND NULLIF(BTRIM(s.wellness_evidence), '') IS NOT NULL
               ORDER BY nombre_lugar
-              LIMIT 1000`,
+              LIMIT 5000`,
         );
 
         const preferencesForModel = {
@@ -684,7 +684,7 @@ router.post('/ml/wellness/recommend-mw', verifyToken, async (req, res) => {
                 AND l.is_active = TRUE AND s.wellness_mw_reviewed_at IS NOT NULL
                 AND (cardinality(s.wellness_motives) > 0 OR cardinality(s.wellness_modalities) > 0)
               ORDER BY nombre_lugar
-              LIMIT 1000`,
+              LIMIT 5000`,
         );
         const preferencesForModel = {
             motive_priorities: motives,
@@ -811,10 +811,9 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
         if (pssTotal == null) {
             return res.status(400).json({ message: 'PSS-10 incompleta (máximo 2 ítems sin responder) o fuera de rango.' });
         }
-        // Equivalencia provisional a la escala 0-100 del modelo (porcentaje del máximo) hasta
-        // calibrar PSS-10 contra el índice de la encuesta en el siguiente estudio.
-        stressIndex = Math.round((pssTotal / 40) * 1000) / 10;
-        stressSource = 'pss10_provisional';
+        // MODELO lleva la PSS-10 a la escala del modelo con normas mexicanas (COVIDiSTRESS,
+        // ponderadas por la edad de la encuesta); el valor equivalente vuelve en la respuesta.
+        stressSource = 'pss10_normas_mx';
     } else if (stressItems != null) {
         stressIndex = stressIndexFromItems(stressItems);
         if (stressIndex == null) {
@@ -877,11 +876,12 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
                 AND l.is_active = TRUE AND s.wellness_mw_reviewed_at IS NOT NULL
                 AND cardinality(s.wellness_modalities) > 0
               ORDER BY nombre_lugar
-              LIMIT 1000`,
+              LIMIT 5000`,
         );
         const preferencesForModel = {
             modality_preferences: modalities,
-            estres_0_100: stressIndex,
+            estres_0_100: pssTotal == null ? stressIndex : null,
+            pss10_total: pssTotal,
             max_effort: maxEffort,
             needs_accessible: preferences.needs_accessible === true,
             region_filter: regionFilter || null,
@@ -897,6 +897,7 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
             return res.status(502).json({ message: 'Servicio de recomendaciones WELLTUR no disponible.', detail });
         }
         const data = await modeloRes.json();
+        if (pssTotal != null && typeof data.estres_0_100_usado === 'number') stressIndex = data.estres_0_100_usado;
         const stressInfo = { estres_0_100: stressIndex, pss10_total: pssTotal, estres_fuente: stressSource };
         if (!consent_given) return res.json({ ...data, ...stressInfo });
         if (modalities.length === 0 && stressIndex == null) return res.json(data);

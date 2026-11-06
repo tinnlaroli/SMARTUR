@@ -1,0 +1,47 @@
+{
+  "fuente": "COVIDiSTRESS Global Survey, México, 30-may-2020 (doi:10.17605/OSF.IO/Z39US)",
+  "n_mexico": 8556,
+  "alfa_cronbach": 0.885,
+  "media_general": 17.249,
+  "de_general": 7.362,
+  "por_grupo_edad": {
+    "De 18 a 24 años": {
+      "n": 1706,
+      "media": 20.902,
+      "de": 7.041
+    },
+    "De 25 a 34 años": {
+      "n": 2574,
+      "media": 18.872,
+      "de": 7.031
+    },
+    "De 35 a 44 años": {
+      "n": 1715,
+      "media": 16.459,
+      "de": 6.916
+    },
+    "De 45 a 54 años": {
+      "n": 1316,
+      "media": 14.651,
+      "de": 6.455
+    },
+    "55 años o más": {
+      "n": 1245,
+      "media": 12.724,
+      "de": 6.354
+    }
+  },
+  "pesos_edad_encuesta": {
+    "De 18 a 24 años": 0.5474,
+    "De 25 a 34 años": 0.0949,
+    "De 35 a 44 años": 0.1387,
+    "De 45 a 54 años": 0.1606,
+    "55 años o más": 0.0584
+  },
+  "equivalencia": {
+    "metodo": "equiparación lineal por normas ponderadas por la edad de la encuesta WELLTUR",
+    "media": 18.612,
+    "de": 7.455
+  },
+  "advertencia": "Datos de abril-mayo de 2020 (pandemia), muestra en línea no probabilística y 72 % mujeres: el estrés de referencia puede estar algo elevado."
+}

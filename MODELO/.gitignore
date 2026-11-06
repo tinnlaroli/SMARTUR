@@ -64,3 +64,4 @@ data/yelp_academic_dataset_review.json
 # Respuestas crudas de encuesta (solo se versiona la versión anonimizada)
 data/encuesta/raw/
 data/encuesta/encuesta_limpia.csv
+data/externos/
