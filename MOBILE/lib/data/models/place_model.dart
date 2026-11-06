@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 enum PlaceCategory {
+  wellness(Icons.spa_rounded, 'Bienestar', Color(0xFF587C68)),
+  nature(Icons.water_rounded, 'Naturaleza y balnearios', Color(0xFF2F8F83)),
   hotels(Icons.hotel_rounded, 'Hotelería', Color(0xFF4DB9CA)),
-  restaurants(Icons.restaurant_rounded, 'Restaurantes', Color(0xFFFF7D1F)),
-  museums(Icons.museum_rounded, 'Museos', Color(0xFF984EFD)),
+  restaurants(Icons.restaurant_rounded, 'Restaurantes y café', Color(0xFFFF7D1F)),
+  museums(Icons.museum_rounded, 'Museos y cultura', Color(0xFF984EFD)),
+  crafts(Icons.palette_rounded, 'Artesanía', Color(0xFFC97E5D)),
   adventures(Icons.terrain_rounded, 'Aventuras', Color(0xFF9CCC44));
 
   final IconData icon;

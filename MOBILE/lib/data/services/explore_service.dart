@@ -23,11 +23,61 @@ class ExploreService {
     }
   }
 
+  /// Categoría wellness del catálogo (DENUE y lugares revisados) -> filtro de la app.
+  /// Devuelve null si el lugar no la tiene; entonces se usa el tipo de turismo.
+  static PlaceCategory? _categoryFromWellness(String? categoria) {
+    switch (categoria) {
+      case 'Spa_Temazcal':
+      case 'Mente_Cuerpo':
+        return PlaceCategory.wellness;
+      case 'Naturaleza':
+      case 'Balneario':
+        return PlaceCategory.nature;
+      case 'Naturaleza_Aventura':
+        return PlaceCategory.adventures;
+      case 'Hospedaje':
+      case 'Hospedaje_Naturaleza':
+        return PlaceCategory.hotels;
+      case 'Gastronomia':
+      case 'Cafe_de_Altura':
+        return PlaceCategory.restaurants;
+      case 'Cultura':
+        return PlaceCategory.museums;
+      case 'Artesania':
+        return PlaceCategory.crafts;
+      default:
+        return null;
+    }
+  }
+
   /// Mapea service_type a categoría. Nunca devuelve null — usa museums como fallback
   /// para que ningún servicio se descarte silenciosamente de la UI.
   static PlaceCategory _categoryFromServiceType(String? type) {
     if (type == null) return PlaceCategory.museums;
     final lower = type.toLowerCase();
+    if (lower.contains('spa') ||
+        lower.contains('temazcal') ||
+        lower.contains('masaje') ||
+        lower.contains('yoga') ||
+        lower.contains('medita') ||
+        lower.contains('bienestar') ||
+        lower.contains('wellness') ||
+        lower.contains('holíst') ||
+        lower.contains('holist')) {
+      return PlaceCategory.wellness;
+    }
+    // Antes que restaurantes: "barro" contiene "bar".
+    if (lower.contains('artesan')) {
+      return PlaceCategory.crafts;
+    }
+    if (lower.contains('balneario') ||
+        lower.contains('cascada') ||
+        lower.contains('termal') ||
+        lower.contains('río') ||
+        lower.contains('jardín bot') ||
+        lower.contains('jardin bot')) {
+      return PlaceCategory.nature;
+    }
     if (lower.contains('hotel') ||
         lower.contains('hospedaje') ||
         lower.contains('alojamiento') ||
@@ -193,7 +243,8 @@ class ExploreService {
   }
 
   static Place _placeFromPoi(Map<String, dynamic> p, String cityName) {
-    final cat = _categoryFromPoiType(p['id_type'] as int?);
+    final cat = _categoryFromWellness(p['categoria_wellness'] as String?) ??
+        _categoryFromPoiType(p['id_type'] as int?);
     final lat = p['latitude'] != null ? _toDouble(p['latitude']) : null;
     final lon = p['longitude'] != null ? _toDouble(p['longitude']) : null;
     final rawUrl = (p['image_url'] as String?) ?? '';
@@ -247,6 +298,12 @@ class ExploreService {
         return _imgCascada;
       case PlaceCategory.museums:
         return _imgMuseoXal;
+      case PlaceCategory.wellness:
+        return _fallbackForCity(city);
+      case PlaceCategory.nature:
+        return _imgCascada;
+      case PlaceCategory.crafts:
+        return _imgXico;
     }
   }
 

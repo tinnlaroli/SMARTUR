@@ -50,14 +50,19 @@ void main() {
     expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 4 pasos')).onPressed, isNotNull);
   });
 
-  testWidgets('exige las seis preguntas breves o permite omitirlas', (tester) async {
+  testWidgets('exige responder el cuestionario de estrés o permite omitirlo', (tester) async {
     usePhoneViewport(tester);
     await empezar(tester);
     expect(find.text('PASO 1 DE 4'), findsOneWidget);
+    // Un solo cuestionario: no se pide elegir entre dos.
+    expect(find.text('PSS-10 · 10'), findsNothing);
+    expect(find.text('Breve · 6'), findsNothing);
 
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Responde las seis preguntas'), findsOneWidget);
+    // PSS-10 cuando la compilación trae su texto; si no, las seis preguntas breves.
+    expect(find.textContaining(_pssDisponible() ? 'al menos 8 de las 10' : 'Responde las seis preguntas'),
+        findsOneWidget);
 
     await tester.tap(find.text('Prefiero no responder'));
     await tester.pumpAndSettle();
@@ -69,10 +74,6 @@ void main() {
   testWidgets('muestra la PSS-10 completa con su aviso de copyright', skip: !_pssDisponible(), (tester) async {
     usePhoneViewport(tester);
     await empezar(tester);
-
-    expect(find.text('PSS-10 · 10'), findsOneWidget);
-    await tester.tap(find.text('PSS-10 · 10'));
-    await tester.pumpAndSettle();
 
     for (var i = 1; i <= 10; i++) {
       final item = find.textContaining(RegExp('^$i\\. Durante el último mes'));

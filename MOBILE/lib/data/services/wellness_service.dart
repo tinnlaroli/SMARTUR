@@ -19,6 +19,10 @@ class WellnessDestination {
   final String explicacion;
   final bool esMipyme;
 
+  /// "alta": cumple lo que pediste; "media": no es de tus modalidades; "baja": se relajó un filtro.
+  final String coincidencia;
+  final String? motivoCoincidencia;
+
   /// Canonical reference consumed by DetailViewPage and existing place tracking.
   String? get detailPagePlaceId {
     final separator = idDestino.indexOf(':');
@@ -45,6 +49,8 @@ class WellnessDestination {
     this.municipio = '',
     this.explicacion = '',
     this.esMipyme = false,
+    this.coincidencia = 'alta',
+    this.motivoCoincidencia,
   });
 
   factory WellnessDestination.fromJson(Map<String, dynamic> j) {
@@ -63,6 +69,8 @@ class WellnessDestination {
       municipio:              j['municipio'] as String? ?? '',
       explicacion:            j['explicacion'] as String? ?? '',
       esMipyme:               j['es_mipyme'] as bool? ?? false,
+      coincidencia:           j['coincidencia'] as String? ?? 'alta',
+      motivoCoincidencia:     j['motivo_coincidencia'] as String?,
     );
   }
 }
@@ -74,11 +82,15 @@ class WellnessRecommendationResult {
   final List<WellnessDestination> destinations;
   final int? sessionId;
 
+  /// Presente cuando se incluyeron lugares con menor relación con tus respuestas.
+  final String? avisoCoincidencia;
+
   const WellnessRecommendationResult({
     required this.title,
     required this.description,
     required this.destinations,
     this.sessionId,
+    this.avisoCoincidencia,
   });
 
   factory WellnessRecommendationResult.fromJson(Map<String, dynamic> j) {
@@ -89,6 +101,7 @@ class WellnessRecommendationResult {
           .map((d) => WellnessDestination.fromJson(d as Map<String, dynamic>))
           .toList(),
       sessionId:    (j['session_id'] as num?)?.toInt(),
+      avisoCoincidencia: j['aviso_coincidencia'] as String?,
     );
   }
 }

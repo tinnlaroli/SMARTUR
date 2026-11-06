@@ -87,7 +87,9 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   bool _feedbackSent = false;
   final WellnessService _service = WellnessService();
   _Pss10? _pss;
-  bool _usarPss = false;
+  // Un solo cuestionario: la PSS-10 (instrumento validado). Las seis preguntas breves solo
+  // quedan como respaldo si una compilación no trae el texto licenciado de la PSS-10.
+  bool get _usarPss => _pss != null;
   final Map<int, int> _respuestasPss = {};
 
   @override
@@ -289,17 +291,6 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       subtitle: const Text('Usaremos lo que la mayoría prefiere en la región.', style: TextStyle(fontSize: 12)),
       onChanged: (v) => setState(() { _omitirEstres = v; _formError = null; }),
     ),
-    if (!_omitirEstres && _pss != null) ...[
-      const SizedBox(height: 6),
-      SegmentedButton<bool>(
-        segments: const [
-          ButtonSegment(value: false, label: Text('Breve · 6')),
-          ButtonSegment(value: true, label: Text('PSS-10 · 10')),
-        ],
-        selected: {_usarPss},
-        onSelectionChanged: (s) => setState(() { _usarPss = s.first; _formError = null; }),
-      ),
-    ],
     if (!_omitirEstres && _usarPss && _pss != null) ...[
       const SizedBox(height: 12),
       Text(_pss!.instruccion, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
@@ -412,8 +403,10 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         ]),
       )),
       const Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 8), child: Text('Lugares sugeridos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+      if (result.avisoCoincidencia != null)
+        Padding(padding: const EdgeInsets.fromLTRB(20, 0, 20, 8), child: _infoBox(scheme, result.avisoCoincidencia!, Icons.info_outline_rounded)),
       if (result.destinations.isEmpty)
-        Padding(padding: const EdgeInsets.all(24), child: _infoBox(scheme, 'Aún no hay lugares que coincidan con este municipio y esfuerzo. Prueba con toda la región.', Icons.search_off_rounded))
+        Padding(padding: const EdgeInsets.all(24), child: _infoBox(scheme, 'Por ahora no hay lugares aprobados en el catálogo. Inténtalo más tarde.', Icons.search_off_rounded))
       else
         ...result.destinations.map((place) => WellnessPoiCard(destination: place, onTap: () => _openDestination(place))),
       if (result.sessionId != null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 4), child: Card(

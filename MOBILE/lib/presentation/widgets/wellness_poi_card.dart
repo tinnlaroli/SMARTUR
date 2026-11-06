@@ -162,6 +162,21 @@ class WellnessPoiCard extends StatelessWidget {
               ]),
             ),
 
+            // Lugares que no cumplen todo lo pedido: se dice el nivel y por qué.
+            if (destination.coincidencia != 'alta')
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(Icons.info_outline_rounded, size: 14, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(
+                    'Coincidencia ${destination.coincidencia}'
+                    '${destination.motivoCoincidencia != null ? ': ${destination.motivoCoincidencia}' : ''}',
+                    style: TextStyle(fontSize: 11, height: 1.35, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant),
+                  )),
+                ]),
+              ),
+
             if (destination.explicacion.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
