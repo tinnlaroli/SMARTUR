@@ -440,14 +440,16 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ── WellTur wellness section ────────────────────────────────────────────
 
   static const _modoLabels = {
-    'modo_calma':        'Modo Calma',
-    'modo_restauracion': 'Modo Restauración',
-    'modo_equilibrio':   'Modo Equilibrio',
+    'modo_calma':        'Preferencia tranquila',
+    'modo_restauracion': 'Preferencia de descanso',
+    'modo_equilibrio':   'Preferencia de equilibrio',
+    'preferencias_wellness': 'Tus preferencias',
   };
   static const _modoDescriptions = {
-    'modo_calma':        'Necesitas desconectarte y recargar energía',
-    'modo_restauracion': 'Tu cuerpo pide descanso activo y recuperación',
-    'modo_equilibrio':   'Buscas silencio y espacio para centrarte',
+    'modo_calma':        'Lugares asociados a una experiencia tranquila',
+    'modo_restauracion': 'Lugares asociados a descanso y recuperación',
+    'modo_equilibrio':   'Lugares asociados a una experiencia equilibrada',
+    'preferencias_wellness': 'Lugares ordenados según tus prioridades de viaje',
   };
   static const _modoColors = {
     'modo_calma':        Color(0xFF10B981),
@@ -467,7 +469,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     final modoLabel = modo != null ? (_modoLabels[modo] ?? modo) : null;
     final modoDesc = modo != null
         ? (_modoDescriptions[modo] ?? '')
-        : 'Descubre tu modo de viaje';
+        : 'Descubre lugares según tus preferencias';
     final modoColor = modo != null ? (_modoColors[modo] ?? sem.leaf) : const Color(0xFF10B981);
     final modoIcon = modo != null ? (_modoIcons[modo] ?? Icons.eco_outlined) : Icons.eco_outlined;
 
@@ -943,5 +945,4 @@ class _DiaryFavoritesTab extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Historial tab (moved from DiaryScreen)
 // ─────────────────────────────────────────────────────────────────────────────
-
 

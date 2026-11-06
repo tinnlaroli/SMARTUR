@@ -116,7 +116,7 @@ class ApiClient {
         final newToken = await future;
         if (newToken != null) {
           // Retry with fresh token now stored in secure storage.
-          return _send(factory, timeout: timeout, isRetry: true);
+          return await _send(factory, timeout: timeout, isRetry: true);
         }
         _sessionExpiredCtrl.add(null);
         return response;

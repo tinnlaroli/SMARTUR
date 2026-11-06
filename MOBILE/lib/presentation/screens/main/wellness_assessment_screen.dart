@@ -7,6 +7,7 @@ import '../../../data/services/wellness_service.dart';
 import '../explore/detail_view_page.dart';
 import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/wellness_poi_card.dart';
+import 'wellness_trip_preferences_screen.dart';
 import '../../../core/theme/welltur_theme.dart';
 
 /// Preguntas propias de la encuesta WELLTUR (oct-2026). Producen un índice continuo
@@ -225,6 +226,11 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         ),
         const SizedBox(height: 20),
         _primaryButton('Empezar · $_pasos pasos', _next),
+        const SizedBox(height: 8),
+        // WELLTUR v2 recomienda en las Altas Montañas; para otros estados queda la búsqueda nacional.
+        Center(child: TextButton(
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const WellnessTripPreferencesScreen())),
+          child: Text('¿Viajas a otro estado? Busca en todo México', style: TextStyle(color: _green, fontWeight: FontWeight.w600)))),
       ]),
     ),
   );

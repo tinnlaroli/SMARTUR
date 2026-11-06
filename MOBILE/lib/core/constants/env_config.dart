@@ -1,5 +1,5 @@
 class EnvConfig {
-  /// Base URL del backend SMARTUR (por ejemplo: https://api-smartur.fly.dev/api/v2)
+  /// Base URL del backend SMARTUR (por ejemplo: https://api.smartur.online/api/v2)
   static const String apiBaseUrl =
       String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.smartur.online/api/v2');
 

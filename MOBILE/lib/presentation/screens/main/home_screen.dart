@@ -1599,7 +1599,7 @@ class HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.only(right: 20),
                     itemCount: _recommendedPlaces.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (ctx, i) => SizedBox(
                       width: 140,
                       child: _PlaceCard(
@@ -1927,10 +1927,10 @@ class _PlaceCardState extends State<_PlaceCard>
                         filterQuality: FilterQuality.high,
                         memCacheWidth: cacheW,
                         fadeInDuration: const Duration(milliseconds: 200),
-                        placeholder: (_, __) => Container(
+                        placeholder: (_, _) => Container(
                           color: scheme.outlineVariant.withValues(alpha: 0.3),
                         ),
-                        errorWidget: (_, __, ___) => Container(
+                        errorWidget: (_, _, _) => Container(
                           color: scheme.outlineVariant,
                           child: Icon(Icons.image_not_supported_outlined,
                               color: semantic.onImageMuted, size: 36),
@@ -2066,7 +2066,7 @@ class _PlaceCardState extends State<_PlaceCard>
                 // ── Double-tap heart burst animation ──
                 AnimatedBuilder(
                   animation: _heartCtrl,
-                  builder: (_, __) {
+                  builder: (_, _) {
                     if (_heartCtrl.value == 0.0) return const SizedBox.shrink();
                     return Center(
                       child: Opacity(
@@ -2248,8 +2248,11 @@ class _HomePlaceSwipeViewState extends State<_HomePlaceSwipeView> {
     HapticFeedback.lightImpact();
     setState(() { _favs[place.id] = !was; _favBusy[place.id] = true; });
     try {
-      if (was) await UserContentService().removeFavorite(ref.$1, ref.$2);
-      else     await UserContentService().addFavorite(ref.$1, ref.$2);
+      if (was) {
+        await UserContentService().removeFavorite(ref.$1, ref.$2);
+      } else {
+        await UserContentService().addFavorite(ref.$1, ref.$2);
+      }
     } catch (_) {
       if (mounted) setState(() => _favs[place.id] = was);
     } finally {
@@ -2452,7 +2455,7 @@ class _WellnessBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '8 preguntas rápidas · recomendaciones de bienestar',
+                    'Personaliza tus recomendaciones de bienestar',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.white.withValues(alpha: 0.8),

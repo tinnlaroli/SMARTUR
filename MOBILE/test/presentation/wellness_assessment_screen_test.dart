@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +27,13 @@ Future<void> empezar(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(startButton);
   await tester.pumpAndSettle();
+}
+
+/// El texto de la PSS-10 está licenciado y el repo público solo trae la plantilla vacía;
+/// el release lo escribe desde el secreto PSS10_JSON_B64. Sin texto, la app oculta la PSS-10.
+bool _pssDisponible() {
+  final datos = jsonDecode(File('assets/instrumentos/pss10_es_mx.json').readAsStringSync()) as Map<String, dynamic>;
+  return (datos['items'] as List).every((t) => (t as String).trim().isNotEmpty);
 }
 
 void main() {
@@ -56,7 +66,7 @@ void main() {
     expect(find.text('PASO 2 DE 4'), findsOneWidget);
   });
 
-  testWidgets('muestra la PSS-10 completa con su aviso de copyright', (tester) async {
+  testWidgets('muestra la PSS-10 completa con su aviso de copyright', skip: !_pssDisponible(), (tester) async {
     usePhoneViewport(tester);
     await empezar(tester);
 

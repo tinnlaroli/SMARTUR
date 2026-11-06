@@ -43,6 +43,20 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      # El texto de la PSS-10 está licenciado (Mapi Research Trust n.º 153824): el repo
+      # público solo trae la plantilla vacía y el APK lo recibe desde este secreto.
+      - name: Instrumento PSS-10 (texto licenciado)
+        env:
+          PSS10_JSON_B64: ${{ secrets.PSS10_JSON_B64 }}
+        run: |
+          if [ -n "$PSS10_JSON_B64" ]; then
+            echo "$PSS10_JSON_B64" | base64 --decode > assets/instrumentos/pss10_es_mx.json
+            python3 -c "import json; d = json.load(open('assets/instrumentos/pss10_es_mx.json', encoding='utf-8')); assert len(d['items']) == 10 and all(d['items']) and len(d['opciones']) == 5 and d['instruccion'] and d['copyright']"
+            echo "PSS-10 incluida en el build"
+          else
+            echo "::warning::Sin secreto PSS10_JSON_B64: la app se compila sin la PSS-10 (usa las 6 preguntas breves)."
+          fi
+
       - name: Validate release secrets
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}

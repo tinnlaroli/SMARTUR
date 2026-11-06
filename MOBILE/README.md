@@ -41,7 +41,7 @@ Este documento describe la estructura del repositorio, el flujo de la aplicació
    O de forma manual:
 
    ```bash
-   flutter run --dart-define=API_BASE_URL_DEV=http://192.168.1.94:4000/api/v2
+   flutter run --dart-define=API_BASE_URL_DEV=http://192.168.1.94/api/v2
    ```
 
 5. Generar un release (APK o App Bundle):
@@ -90,7 +90,9 @@ La base del API y otras claves se inyectan mediante **`--dart-define`** (o a tra
 
 | Variable | Archivo | Uso |
 |----------|---------|-----|
-| `API_BASE_URL_DEV` | `env_config.dart` | URL base del API. Valor por defecto: `https://api-smartur.fly.dev/api/v2`. |
+| `API_BASE_URL` | `env_config.dart` | URL base del API de producción. Valor por defecto: `https://api.smartur.online/api/v2`. |
+| `API_BASE_URL_DEV` | `env_config.dart` | URL base del API para desarrollo local/LAN. Si usas `docker compose`, entra por nginx. |
+| `AI_ENGINE_URL` | `env_config.dart` | URL del motor ML. La app normalmente consume ML a través del API backend. |
 | `GOOGLE_SERVER_CLIENT_ID` | `env_config.dart` | Server Client ID de Google Sign-In (OAuth). Sin valor por defecto. |
 | `OPENWEATHER_API_KEY` | `env_config.dart` | Clave para datos meteorológicos. Sin valor por defecto. |
 
@@ -99,8 +101,9 @@ La base del API y otras claves se inyectan mediante **`--dart-define`** (o a tra
 ### Archivo `.env`
 
 ```dotenv
-API_BASE_URL=https://api-smartur.fly.dev/api/v2
-API_BASE_URL_DEV=http://192.168.1.94:4000/api/v2
+API_BASE_URL=https://api.smartur.online/api/v2
+API_BASE_URL_DEV=http://192.168.1.94/api/v2
+AI_ENGINE_URL=https://ml.smartur.online
 GOOGLE_SERVER_CLIENT_ID=tu-client-id.apps.googleusercontent.com
 # OPENWEATHER_API_KEY=tu-api-key
 ```
