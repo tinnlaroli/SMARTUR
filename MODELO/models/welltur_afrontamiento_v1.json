@@ -1,0 +1,136 @@
+{
+  "modelo": "welltur_afrontamiento_v1",
+  "entrenado": "2026-11-06",
+  "fuente": "COVIDiSTRESS Global Survey ronda 1 (OSF z39us), México; Expl_Coping 1-6 relativo a la persona",
+  "n": 6224,
+  "n_mexico_total": 6224,
+  "entrada": "items_pss10_puntuados_0a4",
+  "objetivos": {
+    "descanso_pasivo": {
+      "items_expl_coping": [
+        9
+      ],
+      "motivos": {
+        "M1": 1.0
+      }
+    },
+    "convivencia": {
+      "items_expl_coping": [
+        2,
+        3
+      ],
+      "motivos": {
+        "M5": 1.0
+      }
+    },
+    "actividad_pasatiempo": {
+      "items_expl_coping": [
+        14
+      ],
+      "motivos": {
+        "M2": 0.5,
+        "M4": 0.5
+      }
+    },
+    "espiritualidad": {
+      "items_expl_coping": [
+        15
+      ],
+      "motivos": {
+        "M9": 1.0
+      }
+    }
+  },
+  "coeficientes": {
+    "descanso_pasivo": {
+      "intercepto": 0.5184386432687458,
+      "pesos": [
+        -0.0007174487565032152,
+        0.012709743521364735,
+        0.050299798962376255,
+        0.07065032595348632,
+        0.04425045908554076,
+        -0.04300055499578695,
+        -0.030127660721943186,
+        0.01646897871905572,
+        0.00608599902250424,
+        -0.0035811044917791034
+      ]
+    },
+    "convivencia": {
+      "intercepto": 0.11801612109419102,
+      "pesos": [
+        0.034684290884624276,
+        -0.011446539352152767,
+        0.05089982482494241,
+        0.008590235349324637,
+        -0.014435323618560016,
+        0.046910623325527284,
+        -0.043526705349160845,
+        0.03580819380344148,
+        0.010622453579260182,
+        -0.05743980827394314
+      ]
+    },
+    "actividad_pasatiempo": {
+      "intercepto": 0.9613554950555885,
+      "pesos": [
+        0.030746697399098237,
+        0.03486142417748109,
+        -0.04099886817875594,
+        -0.016767810937148627,
+        0.005238250883079035,
+        -0.009124376310500388,
+        -0.07279468911133584,
+        0.04746586407620176,
+        0.0027328358250844277,
+        -0.043655838583970576
+      ]
+    },
+    "espiritualidad": {
+      "intercepto": -0.7806893793438683,
+      "pesos": [
+        -0.01831200871663124,
+        -0.06363379458349988,
+        0.02365639777512007,
+        -0.03197848551051903,
+        -0.1740341145190885,
+        0.04493410605974292,
+        0.02900389948148531,
+        0.005793313868773436,
+        0.053825143385601446,
+        0.03148534228906403
+      ]
+    }
+  },
+  "promedio_poblacional": {
+    "descanso_pasivo": 0.7427,
+    "convivencia": 0.3307,
+    "actividad_pasatiempo": 0.9107,
+    "espiritualidad": -0.8849
+  },
+  "de_poblacional": {
+    "descanso_pasivo": 1.1371,
+    "convivencia": 0.901,
+    "actividad_pasatiempo": 0.9898,
+    "espiritualidad": 1.7436
+  },
+  "validacion": {
+    "ndcg_media": 0.9113,
+    "ndcg_ee": 0.0006,
+    "dif_vs_base": 0.001,
+    "dif_ic95": [
+      -0.0007,
+      0.003
+    ],
+    "pliegues_mejor_que_base": 20,
+    "r2_por_objetivo": {
+      "descanso_pasivo": 0.0064,
+      "convivencia": 0.0084,
+      "actividad_pasatiempo": 0.0056,
+      "espiritualidad": 0.0049
+    },
+    "acierto_top1": 0.6499
+  },
+  "algoritmo_elegido": "ridge_10_items"
+}

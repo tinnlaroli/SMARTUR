@@ -1,11 +1,15 @@
-"""Ranker WELLTUR v2 (Etapa A): modelo de la encuesta + preferencias declaradas + MiPyME.
+"""Ranker WELLTUR (Etapa A): un solo formulario = PSS-10 + motivos M + modalidades W.
 
 1. Pesos por modalidad W1-W7:
-   - `w_modelo`: P(tipo de experiencia | estrés) del artefacto `welltur_preferencias_v1.json`
-     (estimado con la encuesta real; solo usa efectos de estrés con evidencia FDR),
-     convertido a W1-W7.
-   - `w_usuario`: modalidades que la persona eligió en la app, por prioridad (3, 2, 1).
-   - `w = ALFA_USUARIO * w_usuario + (1 - ALFA_USUARIO) * w_modelo` si hay ambos.
+   - `w_modelo` (perfil por estrés):
+       a) P(tipo de experiencia | estrés) del artefacto `welltur_preferencias_v1.json`
+          (encuesta real; solo efectos de estrés con evidencia FDR), convertido a W1-W7;
+       b) ajustado con el modelo `welltur_afrontamiento_v1.json` (PSS-10 ítem por ítem ->
+          qué actividad le ayuda más a la persona; COVIDiSTRESS México, n = 6,224). Su efecto
+          es pequeño a propósito: en validación cruzada apenas supera al promedio.
+   - `w_usuario`: lo que la persona declara. Modalidades W por prioridad (3, 2, 1) y motivos
+     M1-M9 por prioridad, llevados a W con `MOTIVO_A_W` (mitad y mitad si hay ambos).
+   - `w = ALFA_USUARIO * w_usuario + (1 - ALFA_USUARIO) * w_modelo` si hay declaración.
 2. Puntaje del lugar: similitud coseno entre los pesos y sus modalidades W revisadas.
 3. Filtros: aprobado con evidencia (siempre), región, accesibilidad y esfuerzo máximo.
    Nunca se devuelve una lista vacía: si los lugares que cumplen todo no alcanzan, se
@@ -40,7 +44,25 @@ ALFA_USUARIO = 0.6
 MAX_POR_CATEGORIA = 2
 MAX_POR_MUNICIPIO = 2  # reparte la exposición entre municipios de la región
 MIN_MIPYME = 2
-ALGORITMO = "welltur_ranker_v2"
+ALGORITMO = "welltur_ranker_v3"
+AFRONTAMIENTO_PATH = Path(__file__).resolve().parents[1] / "models" / "welltur_afrontamiento_v1.json"
+MOTIVOS = [f"M{i}" for i in range(1, 10)]
+# Motivo del viaje -> modalidades que lo satisfacen. Criterio experto del protocolo M/W: la
+# primera de cada lista (intensidad 1.0) es la modalidad principal del motivo.
+MOTIVO_A_W = {
+    "M1": {"W1": 1.0, "W7": 0.5},             # descansar o hacer una pausa
+    "M2": {"W3": 1.0, "W2": 0.5},             # mantenerse activo
+    "M3": {"W2": 1.0, "W3": 0.3},             # conectar con la naturaleza
+    "M4": {"W6": 1.0, "W5": 0.3},             # aprender
+    "M5": {"W5": 1.0, "W6": 0.6},             # compartir o conectar
+    "M6": {"W6": 1.0, "W5": 0.5, "W3": 0.5},  # probar algo nuevo
+    "M7": {"W7": 1.0, "W4": 0.5},             # autocuidado
+    "M8": {"W5": 1.0},                        # explorar alimentos o bebidas
+    "M9": {"W4": 1.0, "W2": 0.4},             # reflexionar o practicar atención plena
+}
+# Máximo cambio relativo que el modelo de afrontamiento puede aplicar a un peso W.
+TOPE_AFRONTAMIENTO = 0.5
+PSS10_INVERTIDOS = {4, 5, 7, 8}
 
 
 @lru_cache(maxsize=1)
@@ -90,18 +112,81 @@ def estres_desde_pss10(pss10_total: float, artefacto: dict[str, Any] | None = No
     return round(min(100.0, max(0.0, valor)), 1)
 
 
-def pesos_usuario(modalidades: list[str]) -> dict[str, float]:
-    crudos = {code: 3 - i for i, code in enumerate(modalidades)}
-    total = sum(crudos.values()) or 1
-    return {w: crudos.get(w, 0) / total for w in MODALIDADES}
+@lru_cache(maxsize=1)
+def cargar_afrontamiento(ruta: str = str(AFRONTAMIENTO_PATH)) -> dict[str, Any] | None:
+    ruta_p = Path(ruta)
+    return json.loads(ruta_p.read_text(encoding="utf-8")) if ruta_p.exists() else None
+
+
+def _pss10_puntuados(items: list[int | None]) -> list[float]:
+    """Ítems 0-4 con los positivos invertidos; los faltantes (máx. 2) toman el promedio."""
+    puntuados = [None if v is None else float(4 - v if i in PSS10_INVERTIDOS else v)
+                 for i, v in enumerate(items, start=1)]
+    respondidos = [v for v in puntuados if v is not None]
+    media = sum(respondidos) / len(respondidos)
+    return [media if v is None else v for v in puntuados]
+
+
+def afinidad_afrontamiento(items: list[int | None], modelo: dict[str, Any] | None = None) -> dict[str, float]:
+    """Por actividad (descanso, convivencia, ...): cuánto más que el promedio poblacional le
+    ayudaría a esta persona, en desviaciones estándar. Valores cercanos a 0 son lo esperado."""
+    modelo = modelo or cargar_afrontamiento()
+    if not modelo:
+        return {}
+    x = _pss10_puntuados(items)
+    if modelo["entrada"] == "total_pss10":
+        x = [sum(x)]
+    salida = {}
+    for objetivo, c in modelo["coeficientes"].items():
+        pred = c["intercepto"] + sum(p * v for p, v in zip(c["pesos"], x))
+        salida[objetivo] = (pred - modelo["promedio_poblacional"][objetivo]) / modelo["de_poblacional"][objetivo]
+    return salida
+
+
+def ajustar_por_afrontamiento(pesos: dict[str, float], afinidad: dict[str, float],
+                              modelo: dict[str, Any] | None = None) -> dict[str, float]:
+    if not afinidad:
+        return pesos
+    modelo = modelo or cargar_afrontamiento()
+    factor = {w: 0.0 for w in MODALIDADES}
+    for objetivo, z in afinidad.items():
+        for motivo, peso_m in modelo["objetivos"][objetivo]["motivos"].items():
+            for w, intensidad in MOTIVO_A_W[motivo].items():
+                factor[w] += z * peso_m * intensidad
+    ajustados = {w: pesos[w] * (1 + max(-TOPE_AFRONTAMIENTO, min(TOPE_AFRONTAMIENTO, factor[w])))
+                 for w in MODALIDADES}
+    total = sum(ajustados.values()) or 1.0
+    return {w: v / total for w, v in ajustados.items()}
+
+
+def _por_prioridad(codigos: list[str]) -> dict[str, float]:
+    return {code: float(3 - i) for i, code in enumerate(codigos)}
+
+
+def pesos_usuario(modalidades: list[str], motivos: list[str] | None = None) -> dict[str, float]:
+    partes = []
+    if modalidades:
+        crudos = _por_prioridad(modalidades)
+        partes.append({w: crudos.get(w, 0.0) for w in MODALIDADES})
+    if motivos:
+        desde_m = {w: 0.0 for w in MODALIDADES}
+        for m, prioridad in _por_prioridad(motivos).items():
+            for w, intensidad in MOTIVO_A_W[m].items():
+                desde_m[w] += prioridad * intensidad
+        partes.append(desde_m)
+    if not partes:
+        return {w: 0.0 for w in MODALIDADES}
+    normalizadas = [{w: v / (sum(p.values()) or 1.0) for w, v in p.items()} for p in partes]
+    return {w: sum(p[w] for p in normalizadas) / len(normalizadas) for w in MODALIDADES}
 
 
 def combinar_pesos(estres_0_100: float | None, modalidades: list[str],
-                   artefacto: dict[str, Any] | None = None, alfa: float = ALFA_USUARIO) -> dict[str, float]:
-    modelo = pesos_modelo(artefacto or cargar_artefacto(), estres_0_100)
-    if not modalidades:
+                   artefacto: dict[str, Any] | None = None, alfa: float = ALFA_USUARIO,
+                   motivos: list[str] | None = None, afinidad: dict[str, float] | None = None) -> dict[str, float]:
+    modelo = ajustar_por_afrontamiento(pesos_modelo(artefacto or cargar_artefacto(), estres_0_100), afinidad or {})
+    if not modalidades and not motivos:
         return modelo
-    usuario = pesos_usuario(modalidades)
+    usuario = pesos_usuario(modalidades, motivos)
     return {w: alfa * usuario[w] + (1 - alfa) * modelo[w] for w in MODALIDADES}
 
 
@@ -129,6 +214,27 @@ def _validar(preferencias: dict[str, Any], top_n: int) -> tuple[float | None, li
         raise ValueError("top_n debe estar entre 1 y 10.")
     return (estres, modalidades, max_esfuerzo, bool(preferencias.get("needs_accessible", False)),
             _normalizar(preferencias.get("region_filter")))
+
+
+def _validar_extra(preferencias: dict[str, Any]) -> tuple[list[str], list[int | None] | None]:
+    """Motivos M1-M9 y las 10 respuestas crudas de la PSS-10 (0-4, máx. 2 sin responder)."""
+    motivos = preferencias.get("motive_priorities") or []
+    if (not isinstance(motivos, list) or len(motivos) > 3 or len(set(motivos)) != len(motivos)
+            or not set(motivos).issubset(MOTIVOS)):
+        raise ValueError("motive_priorities: hasta tres códigos M1-M9 sin repetir.")
+    items = preferencias.get("pss10_items")
+    if items is not None:
+        if (not isinstance(items, list) or len(items) != 10
+                or any(v is not None and (isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 4)
+                       for v in items)
+                or sum(v is None for v in items) > 2):
+            raise ValueError("pss10_items: 10 respuestas 0-4, con máximo 2 sin responder.")
+    return motivos, items
+
+
+def _pedidas(modalidades: list[str], motivos: list[str]) -> set[str]:
+    """Modalidades que la persona pidió: las W elegidas y la principal de cada motivo M."""
+    return set(modalidades) | {next(iter(MOTIVO_A_W[m])) for m in motivos}
 
 
 def _es_mipyme(lugar: dict[str, Any]) -> bool:
@@ -185,12 +291,13 @@ def _reordenar(candidatos: list[dict[str, Any]], top_n: int) -> list[dict[str, A
 ETAPAS = (
     ("todo", None),
     ("esfuerzo", "Pide algo más de esfuerzo físico del que indicaste."),
-    ("region", "Está fuera del municipio que elegiste."),
+    ("region", "Está fuera de la zona que elegiste."),
     ("accesibilidad", "No tenemos confirmada su accesibilidad."),
 )
 
 
-def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list[str]) -> dict[str, Any] | None:
+def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list[str],
+               motivos: list[str] | None = None) -> dict[str, Any] | None:
     """Puntaje y explicación de un lugar aprobado con evidencia; None si no es recomendable."""
     if lugar.get("is_wellness") is not True or lugar.get("wellness_status") != "approved":
         return None
@@ -206,9 +313,16 @@ def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list
     puntaje = sum(aportes.values()) / math.sqrt(len(lugar_w))
     if puntaje <= 0:
         return None
+    motivos = motivos or []
+    # Los lugares del inventario nacional traen motivos M revisados: si coinciden con los
+    # pedidos suben un 15 %.
+    motivos_lugar = set(lugar.get("wellness_motives") or [])
+    if motivos_lugar & set(motivos):
+        puntaje *= 1.15
     principal = max(aportes, key=aportes.get)
     # Coincide con lo que la persona pidió (o no pidió nada): alta. Solo por el modelo: media.
-    comparte = not modalidades or bool(set(modalidades) & set(lugar_w))
+    pedidas = _pedidas(modalidades, motivos)
+    comparte = not pedidas or bool(pedidas & set(lugar_w)) or bool(motivos_lugar & set(motivos))
     return {
         "id_destino": str(lugar["id_destino"]),
         "nombre_lugar": str(lugar.get("nombre_lugar") or ""),
@@ -221,7 +335,7 @@ def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list
         "aporte_por_modalidad": {w: round(v, 4) for w, v in sorted(aportes.items(), key=lambda kv: -kv[1])},
         "explicacion": f"Porque buscas {NOMBRES_W[principal]}: {evidencia[principal].strip()}",
         "coincidencia": "alta" if comparte else "media",
-        "motivo_coincidencia": None if comparte else "No es de las modalidades que elegiste; te la sugerimos por tu perfil.",
+        "motivo_coincidencia": None if comparte else "No es de lo que elegiste; te la sugerimos por tu perfil.",
         "demanda_fisica": _nivel_esfuerzo(lugar.get("demanda_fisica")),
         "image_url": lugar.get("image_url"),
         "lat": lugar.get("lat"),
@@ -259,11 +373,13 @@ def _motivos(c: dict[str, Any], max_esfuerzo: int, accesible: bool, region: str)
 def recomendar(destinos: list[dict[str, Any]], preferencias: dict[str, Any], top_n: int = 5,
                artefacto: dict[str, Any] | None = None, alfa: float = ALFA_USUARIO) -> dict[str, Any]:
     estres, modalidades, max_esfuerzo, accesible, region = _validar(preferencias, top_n)
+    motivos, items_pss = _validar_extra(preferencias)
     top_n = int(top_n)
     artefacto = artefacto or cargar_artefacto()
-    pesos = combinar_pesos(estres, modalidades, artefacto, alfa)
+    afinidad = afinidad_afrontamiento(items_pss) if items_pss is not None else {}
+    pesos = combinar_pesos(estres, modalidades, artefacto, alfa, motivos=motivos, afinidad=afinidad)
 
-    todos = [c for c in (_candidato(lugar, pesos, modalidades) for lugar in destinos) if c]
+    todos = [c for c in (_candidato(lugar, pesos, modalidades, motivos) for lugar in destinos) if c]
     # Primero lo que coincide con lo pedido; dentro de cada nivel, por puntaje.
     todos.sort(key=lambda c: (c["coincidencia"] != "alta", -c["score"],
                               _normalizar(c["nombre_lugar"]), c["id_destino"]))
@@ -292,7 +408,9 @@ def recomendar(destinos: list[dict[str, Any]], preferencias: dict[str, Any], top
     for c in todos:
         c.pop("_accesible", None)
     aviso = None
-    if any(c["coincidencia"] != "alta" for c in elegidos):
+    # Solo se avisa cuando hubo que relajar un filtro; las sugerencias "media" (por perfil o
+    # por diversidad) ya cumplen todo lo pedido y cada tarjeta lo explica.
+    if any(c["coincidencia"] == "baja" for c in elegidos):
         aviso = ("No encontramos suficientes lugares que cumplan todo lo que pediste. Te mostramos "
                  "también opciones con menor relación con tus respuestas; cada una indica por qué.")
     return {
@@ -302,7 +420,10 @@ def recomendar(destinos: list[dict[str, Any]], preferencias: dict[str, Any], top
         "uses_stress": estres is not None,
         "estres_0_100_usado": estres,
         "weights": {w: round(v, 4) for w, v in pesos.items()},
-        "alpha_user": alfa if modalidades else 0.0,
+        "alpha_user": alfa if (modalidades or motivos) else 0.0,
+        "motivos_usados": motivos,
+        "afinidad_afrontamiento": {k: round(v, 3) for k, v in afinidad.items()} or None,
+        "modelo_afrontamiento": (cargar_afrontamiento() or {}).get("modelo") if afinidad else None,
         "candidates": estrictos,
         "mipyme_in_top": sum(1 for c in elegidos if c["es_mipyme"]),
         "destinations": elegidos,

@@ -23,7 +23,7 @@ for f in preference_context_model.joblib algorithm_metrics.json; do
 done
 
 # Artefactos versionados en el repo: siempre se actualizan desde la imagen.
-for f in welltur_preferencias_v1.json; do
+for f in welltur_preferencias_v1.json welltur_afrontamiento_v1.json; do
     if [ -f "$SEED_MODELS/$f" ]; then
         cp "$SEED_MODELS/$f" "$MODELS/$f"
     fi

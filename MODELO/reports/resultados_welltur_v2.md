@@ -171,6 +171,34 @@ Todo se mide **fuera de muestra**, con validación cruzada.
 - Cada lugar indica su **coincidencia**: alta (cumple lo pedido), media (no es de tus modalidades; viene por tu perfil) o baja (se relajó un filtro), con el motivo. Arriba se avisa que hay opciones con menor relación.
 - Se corrigió además un límite que dejaba fuera del recomendador y del home a los lugares por encima de los primeros 1,000 (orden alfabético) y 500 (home).
 
+## 4j. Un solo formulario y modelo PSS-10 → afrontamiento (ranker v3)
+**Formulario único en la app:** PSS-10 → motivos del viaje (M1–M9) → modalidades (W1–W7) → esfuerzo → zona. La zona es las Altas Montañas (toda la región o un municipio) o todo México (todo el país o un estado). Antes eran dos formularios separados: uno con estrés y modalidades, y otro con motivos y modalidades, sin estrés. Ahora una sola solicitud pondera todo.
+
+**Dataset con objetivo:** COVIDiSTRESS sí trae una medida de qué le sirve a cada persona: 16 reactivos *Expl_Coping*, "I have found the following helpful for reducing feelings of discomfort", en escala de 1 a 6. La redacción se verificó en el archivo oficial de Qualtrics del proyecto (OSF 2ftma).
+- Se usa la submuestra de México con PSS-10 y afrontamiento completos (n = 6,224).
+- Objetivos, como puntaje **relativo a la persona**:
+  - descanso pasivo: ver series o películas → M1;
+  - convivencia: con amistades y familia → M5;
+  - actividad o pasatiempo → M2 y M4;
+  - espiritualidad → M9.
+- La asociación de cada actividad con un motivo es de criterio experto y está documentada en `modelo_afrontamiento.py`.
+
+**Validación** (5 pliegues × 5 repeticiones, nDCG por persona del orden de las 4 actividades):
+
+| Modelo | nDCG | Diferencia vs. promedio (IC 95 %) | R² máximo |
+|---|---|---|---|
+| Promedio (línea base) | 0.9103 | — | 0 |
+| Ridge, total PSS-10 | 0.9106 | +0.0003 (−0.0014 a 0.0021) | 0.006 |
+| **Ridge, 10 ítems (elegido)** | **0.9113** | **+0.0010 (−0.0007 a 0.0030)**; mejor en 20 de 25 pliegues | 0.008 |
+| Gradient Boosting, 10 ítems | 0.9100 | −0.0003 | <0 |
+| Ridge, 10 ítems + edad + sexo | — | +0.0009 (−0.0009 a 0.0028) | 0.033 |
+
+**Hallazgo honesto:** el estrés, y también la edad y el sexo, casi no predicen **qué** actividad le ayuda más a cada persona. La mejora sobre el promedio es mínima y su IC incluye 0. Lo que sí es consistente es la **dirección**: a más estrés se valora relativamente más descansar (ρ = +0.08) y convivir (ρ = +0.05), y menos los pasatiempos, ayudar a otros o la espiritualidad. Esto coincide con nuestra encuesta (OR 1.74 hacia relajación).
+- **Implicación para el diseño:** preguntar a la persona qué busca (M/W) es indispensable; el estrés solo puede ajustar el orden.
+- En el ranker v3, lo declarado pesa 60 % (α = 0.6; motivos y modalidades mitad y mitad). El perfil por estrés pesa 40 %: modelo de la encuesta, ajustado por el modelo de afrontamiento con un tope de ±50 % por modalidad. En la práctica, con estos coeficientes el ajuste ronda ±10 %.
+- Artefactos: `models/welltur_afrontamiento_v1.json` (coeficientes) y `reports/modelo_afrontamiento_v1.json` (comparación). Pruebas: `tests/test_welltur_ranker_v2.py::FormularioUnicoTests`.
+- Límites: datos de 2020 (pandemia) sobre afrontamiento cotidiano, no sobre viajes; la transferencia a turismo es un supuesto. Para validarla hacen falta respuestas de la app (PSS-10 + motivos + calificación).
+
 ## 4g. Contexto GWI
 | Dato | Valor | Fuente |
 |---|---|---|

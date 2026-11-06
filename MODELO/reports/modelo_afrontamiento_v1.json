@@ -1,0 +1,74 @@
+{
+  "comparacion": {
+    "linea_base_promedio": {
+      "ndcg_media": 0.9103,
+      "ndcg_ee": 0.0006,
+      "dif_vs_base": 0.0,
+      "dif_ic95": [
+        0.0,
+        0.0
+      ],
+      "pliegues_mejor_que_base": 0,
+      "r2_por_objetivo": {
+        "descanso_pasivo": 0.0,
+        "convivencia": 0.0,
+        "actividad_pasatiempo": 0.0,
+        "espiritualidad": 0.0
+      },
+      "acierto_top1": 0.6427
+    },
+    "ridge_total_pss": {
+      "ndcg_media": 0.9106,
+      "ndcg_ee": 0.0006,
+      "dif_vs_base": 0.0003,
+      "dif_ic95": [
+        -0.0014,
+        0.0021
+      ],
+      "pliegues_mejor_que_base": 14,
+      "r2_por_objetivo": {
+        "descanso_pasivo": 0.0056,
+        "convivencia": 0.0026,
+        "actividad_pasatiempo": 0.0013,
+        "espiritualidad": 0.0007
+      },
+      "acierto_top1": 0.6477
+    },
+    "ridge_10_items": {
+      "ndcg_media": 0.9113,
+      "ndcg_ee": 0.0006,
+      "dif_vs_base": 0.001,
+      "dif_ic95": [
+        -0.0007,
+        0.003
+      ],
+      "pliegues_mejor_que_base": 20,
+      "r2_por_objetivo": {
+        "descanso_pasivo": 0.0064,
+        "convivencia": 0.0084,
+        "actividad_pasatiempo": 0.0056,
+        "espiritualidad": 0.0049
+      },
+      "acierto_top1": 0.6499
+    },
+    "gradient_boosting_10_items": {
+      "ndcg_media": 0.91,
+      "ndcg_ee": 0.0007,
+      "dif_vs_base": -0.0003,
+      "dif_ic95": [
+        -0.0023,
+        0.0025
+      ],
+      "pliegues_mejor_que_base": 9,
+      "r2_por_objetivo": {
+        "descanso_pasivo": -0.0059,
+        "convivencia": -0.0022,
+        "actividad_pasatiempo": -0.0027,
+        "espiritualidad": 0.0004
+      },
+      "acierto_top1": 0.645
+    }
+  },
+  "elegido": "ridge_10_items",
+  "n": 6224
+}

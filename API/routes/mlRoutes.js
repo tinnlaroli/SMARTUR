@@ -4,6 +4,7 @@ import { requireRole } from '../middleware/rbacMiddleware.js';
 import db from '../config/db.js';
 import { hasCompleteWellnessEvidence } from '../utils/wellnessEvidence.js';
 import { hasCompleteWellnessMWEvidence, WELLTUR_MW_MOTIVES, WELLTUR_MW_MODALITIES } from '../utils/wellnessMWEvidence.js';
+import { enAltasMontanas } from '../utils/altasMontanas.js';
 
 const router = express.Router();
 const WELLNESS_DIMENSIONS = new Set(['physical', 'mental', 'emotional', 'spiritual', 'social', 'environmental']);
@@ -803,6 +804,17 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
         modalities.some((code) => !WELLTUR_MODALITY_SET.has(code))) {
         return res.status(400).json({ message: 'Elige hasta tres modalidades W1–W7 sin repetidas.' });
     }
+    // Un solo formulario: motivos del viaje M1–M9 junto con las modalidades W y la PSS-10.
+    const motives = preferences.motive_priorities ?? [];
+    if (!Array.isArray(motives) || motives.length > 3 || new Set(motives).size !== motives.length ||
+        motives.some((code) => !WELLTUR_MOTIVE_SET.has(code))) {
+        return res.status(400).json({ message: 'Elige hasta tres motivos M1–M9 sin repetidos.' });
+    }
+    // Zona: las Altas Montañas (catálogo DENUE regional) o todo México (inventario nacional).
+    const scope = preferences.scope ?? 'altas_montanas';
+    if (!['altas_montanas', 'mexico'].includes(scope)) {
+        return res.status(400).json({ message: 'scope debe ser "altas_montanas" o "mexico".' });
+    }
     let stressIndex = null;
     let pssTotal = null;
     let stressSource = null;
@@ -849,7 +861,7 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
             `SELECT 'poi:' || p.id::text AS id_destino,
                     p.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
                     COALESCE(l.municipality, '') AS municipio,
-                    p.categoria_wellness, p.wellness_modalities, p.wellness_mw_evidence,
+                    p.categoria_wellness, p.wellness_modalities, p.wellness_motives, p.wellness_mw_evidence,
                     p.wellness_status, p.is_wellness, p.is_accessible, p.es_mipyme,
                     p.demanda_fisica, p.descripcion_bienestar, p.image_url,
                     COALESCE(p.latitude, l.latitude)::float8 AS lat,
@@ -864,7 +876,7 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
              SELECT 'service:' || s.id_service::text AS id_destino,
                     s.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
                     COALESCE(l.municipality, '') AS municipio,
-                    s.categoria_wellness, s.wellness_modalities, s.wellness_mw_evidence,
+                    s.categoria_wellness, s.wellness_modalities, s.wellness_motives, s.wellness_mw_evidence,
                     s.wellness_status, s.is_wellness, FALSE AS is_accessible, TRUE AS es_mipyme,
                     s.demanda_fisica, s.descripcion_bienestar, s.image_url,
                     COALESCE(s.latitude, l.latitude)::float8 AS lat,
@@ -878,10 +890,15 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
               ORDER BY nombre_lugar
               LIMIT 5000`,
         );
+        const catalogo = scope === 'altas_montanas'
+            ? catalogRows.filter((row) => enAltasMontanas(row.estado, row.municipio))
+            : catalogRows;
         const preferencesForModel = {
             modality_preferences: modalities,
+            motive_priorities: motives,
             estres_0_100: pssTotal == null ? stressIndex : null,
             pss10_total: pssTotal,
+            pss10_items: pssTotal == null ? null : pssItems,
             max_effort: maxEffort,
             needs_accessible: preferences.needs_accessible === true,
             region_filter: regionFilter || null,
@@ -889,7 +906,7 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
         const modeloRes = await fetch(`${MODELO_URL}/wellness/recommend-v2`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ preferences: preferencesForModel, destinations: catalogRows, top_n: topN }),
+            body: JSON.stringify({ preferences: preferencesForModel, destinations: catalogo, top_n: topN }),
             signal: AbortSignal.timeout(15_000),
         });
         if (!modeloRes.ok) {
@@ -898,27 +915,28 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
         }
         const data = await modeloRes.json();
         if (pssTotal != null && typeof data.estres_0_100_usado === 'number') stressIndex = data.estres_0_100_usado;
-        const stressInfo = { estres_0_100: stressIndex, pss10_total: pssTotal, estres_fuente: stressSource };
+        const stressInfo = { estres_0_100: stressIndex, pss10_total: pssTotal, estres_fuente: stressSource, scope };
         if (!consent_given) return res.json({ ...data, ...stressInfo });
-        if (modalities.length === 0 && stressIndex == null) return res.json(data);
+        if (modalities.length === 0 && motives.length === 0 && stressIndex == null) return res.json({ ...data, ...stressInfo });
 
         client = await db.connect();
         await client.query('BEGIN');
+        const regionGuardada = scope === 'mexico' ? `mexico:${regionFilter}` : (regionFilter || null);
         const { rows: assessmentRows } = await client.query(
             `INSERT INTO wellness_trip_preference_assessment
-               (user_id, modality_preferences, max_effort, needs_accessible, region_filter,
+               (user_id, motive_priorities, modality_preferences, max_effort, needs_accessible, region_filter,
                 consent_given, questionnaire_version, estres_0_100, pss10_total)
-             VALUES ($1,$2,$3,$4,$5,TRUE,$6,$7,$8)
+             VALUES ($1,$2,$3,$4,$5,$6,TRUE,$7,$8,$9)
              RETURNING trip_preference_id`,
-            [userId, modalities, maxEffort, preferences.needs_accessible === true, regionFilter || null,
-                pssTotal == null ? 'welltur-v2' : 'welltur-v2-pss10', stressIndex, pssTotal],
+            [userId, motives, modalities, maxEffort, preferences.needs_accessible === true, regionGuardada,
+                pssTotal == null ? 'welltur-v3' : 'welltur-v3-pss10', stressIndex, pssTotal],
         );
         const tripPreferenceId = assessmentRows[0].trip_preference_id;
         const displayedDestinations = data.destinations ?? [];
         const { rows: sessionRows } = await client.query(
             `INSERT INTO wellness_recommendation_session
                (user_id, trip_preference_id, modo_viaje, recommended_ids, top_n, algorithm_version)
-             VALUES ($1,$2,'preferencias_v2',$3,$4,'welltur-ranker-v2')
+             VALUES ($1,$2,'preferencias_v3',$3,$4,'welltur-ranker-v3')
              RETURNING session_id`,
             [userId, tripPreferenceId, JSON.stringify(displayedDestinations.map((d) => d.id_destino)), topN],
         );

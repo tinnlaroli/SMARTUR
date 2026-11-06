@@ -86,7 +86,7 @@ class WelltuRankerV2Tests(unittest.TestCase):
         self.assertIsNotNone(res["aviso_coincidencia"])
         self.assertEqual(por_id["poi:1"]["coincidencia"], "baja")
         self.assertIn("esfuerzo", por_id["poi:1"]["motivo_coincidencia"])
-        self.assertIn("municipio", por_id["poi:3"]["motivo_coincidencia"])
+        self.assertIn("zona", por_id["poi:3"]["motivo_coincidencia"])
         # Relajar el esfuerzo va antes que salir de la región.
         self.assertLess(por_id["poi:1"]["rank"], por_id["poi:3"]["rank"])
 
@@ -95,7 +95,8 @@ class WelltuRankerV2Tests(unittest.TestCase):
         res = recomendar(destinos, {"modality_preferences": ["W5"]}, artefacto=ARTEFACTO)
         self.assertEqual([d["id_destino"] for d in res["destinations"]], ["poi:2", "poi:1"])
         self.assertEqual([d["coincidencia"] for d in res["destinations"]], ["alta", "media"])
-        self.assertIsNotNone(res["aviso_coincidencia"])
+        # "media" ya cumple todos los filtros: no lleva aviso de menor relación.
+        self.assertIsNone(res["aviso_coincidencia"])
 
     def test_pss10_se_equipara_con_normas(self):
         from welltur_ranker_v2 import estres_desde_pss10
@@ -128,3 +129,46 @@ class WelltuRankerV2Tests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FormularioUnicoTests(unittest.TestCase):
+    """PSS-10 + motivos M + modalidades W en una sola solicitud (ranker v3)."""
+
+    def test_motivo_sin_modalidades_prioriza_su_modalidad_principal(self):
+        destinos = [lugar("a", "Café", ["W5"], mipyme=True), lugar("b", "Temazcal", ["W4"], mipyme=True),
+                    lugar("c", "Hotel", ["W1"], mipyme=True)]
+        res = recomendar(destinos, {"motive_priorities": ["M9"]}, top_n=3, artefacto=ARTEFACTO)
+        self.assertEqual(res["destinations"][0]["id_destino"], "b")
+        self.assertEqual(res["destinations"][0]["coincidencia"], "alta")
+        self.assertEqual(res["motivos_usados"], ["M9"])
+
+    def test_motivos_y_modalidades_se_combinan(self):
+        solo_w = combinar_pesos(None, ["W5"], ARTEFACTO)
+        con_m = combinar_pesos(None, ["W5"], ARTEFACTO, motivos=["M1"])
+        self.assertGreater(con_m["W1"], solo_w["W1"])
+        self.assertAlmostEqual(sum(con_m.values()), 1.0, places=6)
+
+    def test_pss10_por_items_aplica_modelo_de_afrontamiento_acotado(self):
+        destinos = [lugar("a", "Hotel", ["W1"], mipyme=True), lugar("b", "Café", ["W5"], mipyme=True)]
+        alto = [4, 4, 4, 0, 0, 4, 0, 0, 4, 4]
+        res = recomendar(destinos, {"pss10_total": 40, "pss10_items": alto, "modality_preferences": ["W5"]},
+                         top_n=2, artefacto=ARTEFACTO)
+        self.assertIsNotNone(res["afinidad_afrontamiento"])
+        self.assertEqual(set(res["afinidad_afrontamiento"]),
+                         {"descanso_pasivo", "convivencia", "actividad_pasatiempo", "espiritualidad"})
+        # El ajuste está acotado: nunca cambia un peso más de lo permitido.
+        self.assertAlmostEqual(sum(res["weights"].values()), 1.0, places=3)
+
+    def test_pss10_items_invalidos(self):
+        for items in ([5] * 10, [1] * 9, [None, None, None, 1, 1, 1, 1, 1, 1, 1]):
+            with self.assertRaises(ValueError):
+                recomendar([], {"pss10_items": items}, artefacto=ARTEFACTO)
+        with self.assertRaises(ValueError):
+            recomendar([], {"motive_priorities": ["M10"]}, artefacto=ARTEFACTO)
+
+    def test_motivo_etiquetado_en_lugar_cuenta_como_alta(self):
+        nacional = lugar("n", "Spa nacional", ["W7"], mipyme=False)
+        nacional["wellness_motives"] = ["M1"]
+        res = recomendar([nacional], {"motive_priorities": ["M1"], "modality_preferences": ["W3"]},
+                         top_n=1, artefacto=ARTEFACTO)
+        self.assertEqual(res["destinations"][0]["coincidencia"], "alta")
