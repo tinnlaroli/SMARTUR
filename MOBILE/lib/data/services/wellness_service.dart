@@ -15,6 +15,9 @@ class WellnessDestination {
   final double? lat;
   final double? lon;
   final String descripcionBienestar;
+  final String municipio;
+  final String explicacion;
+  final bool esMipyme;
 
   /// Canonical reference consumed by DetailViewPage and existing place tracking.
   String? get detailPagePlaceId {
@@ -39,6 +42,9 @@ class WellnessDestination {
     this.lat,
     this.lon,
     required this.descripcionBienestar,
+    this.municipio = '',
+    this.explicacion = '',
+    this.esMipyme = false,
   });
 
   factory WellnessDestination.fromJson(Map<String, dynamic> j) {
@@ -54,6 +60,9 @@ class WellnessDestination {
       lat:                    (j['lat'] as num?)?.toDouble(),
       lon:                    (j['lon'] as num?)?.toDouble(),
       descripcionBienestar:   j['descripcion_bienestar'] as String? ?? '',
+      municipio:              j['municipio'] as String? ?? '',
+      explicacion:            j['explicacion'] as String? ?? '',
+      esMipyme:               j['es_mipyme'] as bool? ?? false,
     );
   }
 }
@@ -111,6 +120,42 @@ class WellnessService {
       throw Exception('Error en recomendación wellness: ${response.statusCode}');
     }
     return WellnessRecommendationResult.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  /// WELLTUR v2: las respuestas de estrés (opcionales) ajustan qué modalidades se
+  /// priorizan según el modelo calibrado con la encuesta; no es un diagnóstico.
+  Future<WellnessRecommendationResult> recommendV2({
+    Map<String, int>? stressItems,
+    List<int?>? pssItems,
+    required List<String> modalities,
+    required int maxEffort,
+    required bool saveHistory,
+    String? regionFilter,
+    int topN = 5,
+  }) async {
+    final response = await ApiClient.post(
+      _uri('/ml/wellness/recommend-v2'),
+      body: jsonEncode({
+        'preferences': {
+          'modality_preferences': modalities,
+          'max_effort': maxEffort,
+          if (regionFilter != null && regionFilter.isNotEmpty) 'region_filter': regionFilter,
+        },
+        'pss_items': ?pssItems,
+        if (pssItems == null && stressItems != null) 'stress_items': stressItems,
+        'top_n': topN,
+        'consent_given': saveHistory,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error en recomendación WELLTUR: ${response.statusCode}');
+    }
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    return WellnessRecommendationResult.fromJson({
+      ...data,
+      'modo_viaje_label': 'Lugares para tu viaje',
+      'modo_viaje_description': data['notice'] ?? '',
+    });
   }
 
   /// Registra satisfacción 1-5 post-recomendación.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartur/presentation/screens/main/wellness_assessment_screen.dart';
 
@@ -9,83 +10,87 @@ void usePhoneViewport(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
+/// La PSS-10 se lee de un asset con E/S real: se deja avanzar fuera del reloj simulado.
+Future<void> cargarPantalla(WidgetTester tester) async {
+  await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+  await tester.pumpAndSettle();
+}
+
+Future<void> empezar(WidgetTester tester) async {
+  await cargarPantalla(tester);
+  final startButton = find.text('Empezar · 4 pasos');
+  await tester.ensureVisible(startButton);
+  await tester.pumpAndSettle();
+  await tester.tap(startButton);
+  await tester.pumpAndSettle();
+}
+
 void main() {
-  testWidgets('permite continuar sin guardar historial y mantiene tres pasos breves', (tester) async {
+  // Cada prueba lee el asset de nuevo; una lectura en caché de otra prueba queda ligada a su reloj simulado.
+  setUp(() => rootBundle.clear());
+
+  testWidgets('explica que las preguntas de estrés son opcionales y no diagnósticas', (tester) async {
     usePhoneViewport(tester);
-    await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
+    await cargarPantalla(tester);
 
-    expect(find.text('Arma una experiencia a tu manera'), findsOneWidget);
-    expect(find.textContaining('no una prueba de estrés'), findsOneWidget);
-    expect(find.text('Empezar · 3 pasos'), findsOneWidget);
-
-    final startButton = find.text('Empezar · 3 pasos');
-    await tester.ensureVisible(startButton);
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 3 pasos')).onPressed,
-      isNotNull,
-    );
-    await tester.tap(startButton);
-    await tester.pumpAndSettle();
-    expect(find.text('PASO 1 DE 3'), findsOneWidget);
-    expect(find.text('0 de 3 seleccionadas'), findsOneWidget);
-    expect(
-      tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Continuar')).onPressed,
-      isNull,
-    );
-
-    await tester.tap(find.text('Física'));
-    await tester.pumpAndSettle();
-    expect(find.text('1 de 3 seleccionadas'), findsOneWidget);
-    expect(
-      tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Continuar')).onPressed,
-      isNotNull,
-    );
-    await tester.tap(find.text('Continuar'));
-    await tester.pumpAndSettle();
-    expect(find.text('PASO 2 DE 3'), findsOneWidget);
-
-    await tester.tap(find.text('Continuar'));
-    await tester.pumpAndSettle();
-    expect(find.text('PASO 3 DE 3'), findsOneWidget);
-    expect(find.text('Todos los estados'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.text('Descansa en las Altas Montañas'), findsOneWidget);
+    expect(find.textContaining('no son un diagnóstico'), findsOneWidget);
+    expect(find.textContaining('Opcional: guardar esta búsqueda'), findsOneWidget);
+    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 4 pasos')).onPressed, isNotNull);
   });
 
-  testWidgets('no permite seleccionar más de tres dimensiones', (tester) async {
+  testWidgets('exige las seis preguntas breves o permite omitirlas', (tester) async {
     usePhoneViewport(tester);
-    await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
-    final consent = find.byType(Checkbox).first;
-    await tester.ensureVisible(consent);
+    await empezar(tester);
+    expect(find.text('PASO 1 DE 4'), findsOneWidget);
+
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
-    await tester.tap(consent);
+    expect(find.textContaining('Responde las seis preguntas'), findsOneWidget);
+
+    await tester.tap(find.text('Prefiero no responder'));
     await tester.pumpAndSettle();
-    final startButton = find.text('Empezar · 3 pasos');
-    await tester.ensureVisible(startButton);
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
-    await tester.tap(startButton);
+    expect(find.text('PASO 2 DE 4'), findsOneWidget);
+  });
+
+  testWidgets('muestra la PSS-10 completa con su aviso de copyright', (tester) async {
+    usePhoneViewport(tester);
+    await empezar(tester);
+
+    expect(find.text('PSS-10 · 10'), findsOneWidget);
+    await tester.tap(find.text('PSS-10 · 10'));
     await tester.pumpAndSettle();
 
-    for (final label in ['Física', 'Mental', 'Emocional', 'Espiritual']) {
+    for (var i = 1; i <= 10; i++) {
+      final item = find.textContaining(RegExp('^$i\\. Durante el último mes'));
+      await tester.scrollUntilVisible(item, 200, scrollable: find.byType(Scrollable).last);
+      expect(item, findsOneWidget);
+    }
+    expect(find.textContaining('RST Assessments'), findsOneWidget);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('al menos 8 de las 10'), findsOneWidget);
+  });
+
+  testWidgets('limita las modalidades a tres y muestra su orden', (tester) async {
+    usePhoneViewport(tester);
+    await empezar(tester);
+    await tester.tap(find.text('Prefiero no responder'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    for (final label in ['Mente-cuerpo', 'Autocuidado', 'Pausa y descanso', 'Movimiento']) {
       await tester.ensureVisible(find.text(label));
       await tester.tap(find.text(label));
       await tester.pumpAndSettle();
     }
-
-    expect(find.text('Puedes elegir hasta tres prioridades.'), findsOneWidget);
-    expect(find.text('3 de 3 seleccionadas'), findsOneWidget);
-    expect(find.text('Emocional'), findsOneWidget);
-  });
-
-  testWidgets('explica que guardar el historial es opcional', (tester) async {
-    usePhoneViewport(tester);
-    await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
-
-    expect(find.textContaining('Opcional: guardar esta búsqueda'), findsOneWidget);
-    expect(find.textContaining('no guardaremos la sesión'), findsOneWidget);
-    expect(
-      tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Empezar · 3 pasos')).onPressed,
-      isNotNull,
-    );
+    expect(find.text('Puedes elegir hasta tres.'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
   });
 }

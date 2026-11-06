@@ -59,6 +59,7 @@ flutter:
     - assets/lottie/
     - assets/svg/
     - assets/fonts/
+    - assets/instrumentos/
 
   fonts:
       - family: CalSans

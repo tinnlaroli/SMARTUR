@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 import 'package:smartur/l10n/app_localizations.dart';
@@ -28,6 +29,11 @@ bool kFirebaseAvailable = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Las pantallas están diseñadas en vertical: en horizontal un teléfono deja
+  // ~360 px de alto y la bienvenida, el home y la encuesta se enciman.
+  await SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   // Captura errores del framework Flutter para evitar pantallas en blanco
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -93,8 +99,8 @@ class SmarturApp extends StatelessWidget {
               title: 'Welltur',
               debugShowCheckedModeBanner: false,
               themeMode: flutterThemeMode,
-              theme: isWelltur ? buildWellturTheme() : _buildLightTheme(),
-              darkTheme: isWelltur ? buildWellturTheme() : _buildDarkTheme(),
+              theme: isWelltur ? buildWellturTheme() : buildSmarturLightTheme(),
+              darkTheme: isWelltur ? buildWellturTheme() : buildSmarturDarkTheme(),
               locale: appSettings.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -313,7 +319,7 @@ ThemeData _baseTheme(ColorScheme scheme) {
   );
 }
 
-ThemeData _buildLightTheme() {
+ThemeData buildSmarturLightTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: SmarturStyle.purple,
     primary: SmarturStyle.purple,
@@ -323,7 +329,7 @@ ThemeData _buildLightTheme() {
   return _baseTheme(scheme);
 }
 
-ThemeData _buildDarkTheme() {
+ThemeData buildSmarturDarkTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: SmarturStyle.purple,
     primary: SmarturStyle.purple,

@@ -104,24 +104,33 @@
   --color-border: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Modo Welltur ── paleta rosa viejo / verde salvia / mostaza ─────────── */
+/* ── Modo Welltur ── crema / verde botánico / verde pino / arena / terracota ─
+   Proporción de marca: crema 60 % (fondos) · botánico 20 % (primario) ·
+   pino 10 % (texto y estructura) · arena 7 % (secundario) · terracota 3 % (acento).
+   La terracota #c97e5d es la del pin del logo: úsala en rellenos e ilustración.
+   Para botones y texto va la terracota profunda #9c4f2e (la de logo no da contraste).
+   Contraste AA (WCAG) sobre crema: pino 8.8 · texto-alt 5.8 · terracota profunda 5.1.
+   El botánico (4.1) va en rellenos con texto blanco (4.7), no en texto pequeño;
+   la arena (1.5) y la terracota de logo (2.8) son solo relleno, nunca texto. */
 [data-theme="welltur"] {
-  --rgb-pink-primary: 205, 97, 132;    /* #cd6184 rosa viejo */
-  --rgb-purple-accent: 134, 43, 72;    /* #862b48 vino — estados activos */
-  --rgb-cyan-accent: 84, 94, 52;       /* #545e34 verde oliva oscuro */
-  --rgb-green-accent: 151, 162, 115;   /* #97a273 verde salvia */
-  --rgb-orange-cta: 184, 114, 5;       /* #b87205 ámbar oscuro — CTA */
+  --rgb-pink-primary: 88, 124, 104;    /* #587c68 verde botánico — primario */
+  --rgb-purple-accent: 41, 72, 59;     /* #29483b verde pino — estados activos */
+  --rgb-cyan-accent: 70, 99, 79;       /* #46634f botánico profundo — acentos con texto */
+  --rgb-green-accent: 216, 198, 163;   /* #d8c6a3 arena — secundario */
+  --rgb-orange-cta: 156, 79, 46;       /* #9c4f2e terracota profunda — CTA y texto */
+  --rgb-terracota: 201, 126, 93;       /* #c97e5d terracota del logo — acento de relleno */
+  --color-terracota: rgb(var(--rgb-terracota));
 
-  --rgb-bg: 255, 236, 242;             /* #ffecf2 rosa pastel */
-  --rgb-bg-alt: 255, 224, 236;         /* #ffe0ec ligeramente más profundo */
-  --rgb-text: 30, 10, 20;              /* casi-negro con tono cálido */
-  --rgb-text-alt: 171, 67, 100;        /* #ab4364 rosa viejo oscuro */
+  --rgb-bg: 244, 239, 229;             /* #f4efe5 crema */
+  --rgb-bg-alt: 235, 227, 211;         /* #ebe3d3 crema más profunda */
+  --rgb-text: 41, 72, 59;              /* #29483b verde pino */
+  --rgb-text-alt: 70, 99, 79;          /* #46634f botánico profundo */
 
   --color-bg: rgb(var(--rgb-bg));
   --color-bg-alt: rgb(var(--rgb-bg-alt));
   --color-text: rgb(var(--rgb-text));
   --color-text-alt: rgb(var(--rgb-text-alt));
-  --color-border: rgba(205, 97, 132, 0.18);
+  --color-border: rgba(41, 72, 59, 0.14);
 }
 
 @media (prefers-reduced-motion: reduce) {

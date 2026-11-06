@@ -1,0 +1,29 @@
+{
+  "edicion_denue": "0526",
+  "registros_entidad": 356724,
+  "registros_region": 69995,
+  "municipios_sin_registros": [],
+  "seleccionados_por_regla": {
+    "scian": 1028,
+    "nombre": 96
+  },
+  "excluidos_sin_coordenadas_validas": 0,
+  "excluidos_duplicados": 3,
+  "catalogo_final": 1121,
+  "por_categoria": {
+    "Gastronomia": 591,
+    "Hospedaje": 196,
+    "Artesania": 143,
+    "Spa_Temazcal": 71,
+    "Balneario": 60,
+    "Cultura": 29,
+    "Mente_Cuerpo": 13,
+    "Naturaleza": 7,
+    "Hospedaje_Naturaleza": 4,
+    "Naturaleza_Aventura": 4,
+    "Cafe_de_Altura": 3
+  },
+  "mipyme_pct": 100.0,
+  "municipios_con_oferta": 48,
+  "fuente": "49_denue_30_csv.zip"
+}

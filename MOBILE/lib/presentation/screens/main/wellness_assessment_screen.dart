@@ -1,20 +1,63 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../data/services/wellness_service.dart';
 import '../explore/detail_view_page.dart';
 import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/wellness_poi_card.dart';
+import '../../../core/theme/welltur_theme.dart';
 
-const _green = Color(0xFF16845B);
-
-const _wellnessDimensions = <({String key, String title, String subtitle, IconData icon})>[
-  (key: 'physical', title: 'Física', subtitle: 'Movimiento, alimentación, sueño o cuidado corporal.', icon: Icons.directions_walk_outlined),
-  (key: 'mental', title: 'Mental', subtitle: 'Aprender, resolver problemas o explorar la creatividad.', icon: Icons.psychology_outlined),
-  (key: 'emotional', title: 'Emocional', subtitle: 'Reconocer, expresar y comprender emociones.', icon: Icons.favorite_border_rounded),
-  (key: 'spiritual', title: 'Espiritual', subtitle: 'Reflexionar sobre sentido, valores o propósito.', icon: Icons.spa_outlined),
-  (key: 'social', title: 'Social', subtitle: 'Convivir y conectar con personas o comunidad.', icon: Icons.groups_outlined),
-  (key: 'environmental', title: 'Ambiental', subtitle: 'Relacionarse con la naturaleza y el entorno.', icon: Icons.forest_outlined),
+/// Preguntas propias de la encuesta WELLTUR (oct-2026). Producen un índice continuo
+/// 0-100 que solo ajusta qué tipo de experiencia se prioriza.
+const _escalaMes = ['Nunca', 'Casi nunca', 'Algunas veces', 'Frecuentemente', 'Muy frecuentemente'];
+const _escalaSemana = ['Nunca', 'A veces', 'Frecuentemente', 'Casi siempre'];
+const _preguntasEstres = <({String key, String texto, List<String> opciones})>[
+  (key: 'p3', texto: 'Durante el último mes, ¿con qué frecuencia te has sentido estresado(a), sobrecargado(a) o con dificultades para manejar tus responsabilidades?', opciones: _escalaMes),
+  (key: 'p4', texto: 'Durante el último mes, ¿con qué frecuencia has sentido que no tienes suficiente control sobre situaciones importantes de tu vida?', opciones: _escalaMes),
+  (key: 'p5a', texto: 'En la última semana: dificultad para relajarte', opciones: _escalaSemana),
+  (key: 'p5b', texto: 'En la última semana: nerviosismo o inquietud', opciones: _escalaSemana),
+  (key: 'p5c', texto: 'En la última semana: irritabilidad o tensión', opciones: _escalaSemana),
+  (key: 'p5d', texto: 'En la última semana: dificultad para concentrarte', opciones: _escalaSemana),
 ];
+
+const _modalidades = <({String key, String title, String subtitle, IconData icon})>[
+  (key: 'W1', title: 'Pausa y descanso', subtitle: 'Hospedaje tranquilo, bajar el ritmo.', icon: Icons.bedtime_outlined),
+  (key: 'W2', title: 'Naturaleza y aire libre', subtitle: 'Cascadas, bosques, miradores.', icon: Icons.forest_outlined),
+  (key: 'W3', title: 'Movimiento', subtitle: 'Caminatas, senderismo, aventura.', icon: Icons.hiking_outlined),
+  (key: 'W4', title: 'Mente-cuerpo', subtitle: 'Yoga, meditación, temazcal.', icon: Icons.self_improvement_outlined),
+  (key: 'W5', title: 'Experiencia culinaria', subtitle: 'Cocina local, café de altura.', icon: Icons.restaurant_outlined),
+  (key: 'W6', title: 'Aprendizaje y cultura', subtitle: 'Museos, artesanía, comunidades.', icon: Icons.museum_outlined),
+  (key: 'W7', title: 'Autocuidado', subtitle: 'Spa, masajes, balnearios.', icon: Icons.spa_outlined),
+];
+
+/// PSS-10 con licencia (Mapi Research Trust n.º 153824). Los textos se leen del asset que el equipo
+/// llena textualmente desde el instrumento; si falta alguno, la opción no se muestra.
+class _Pss10 {
+  final String instruccion;
+  final List<String> opciones;
+  final List<String> items;
+  final String copyright;
+  const _Pss10(this.instruccion, this.opciones, this.items, this.copyright);
+
+  static Future<_Pss10?> cargar() async {
+    try {
+      final j = jsonDecode(await rootBundle.loadString('assets/instrumentos/pss10_es_mx.json')) as Map<String, dynamic>;
+      final opciones = (j['opciones'] as List).cast<String>();
+      final items = (j['items'] as List).cast<String>();
+      final instruccion = j['instruccion'] as String? ?? '';
+      if (opciones.length != 5 || items.length != 10 || [...opciones, ...items, instruccion].any((t) => t.trim().isEmpty)) {
+        return null;
+      }
+      return _Pss10(instruccion, opciones, items, j['copyright'] as String? ?? '');
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+const _regiones = ['', 'Orizaba', 'Córdoba', 'Fortín', 'Huatusco', 'Coscomatepec', 'Ixhuatlán del Café', 'Ixtaczoquitlán'];
 
 class WellnessAssessmentScreen extends StatefulWidget {
   const WellnessAssessmentScreen({super.key});
@@ -24,11 +67,16 @@ class WellnessAssessmentScreen extends StatefulWidget {
 }
 
 class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
-  int _step = 0; // intro, priorities, activity, region, result
+  // Acento de la paleta WELLTUR, legible en modo claro y oscuro.
+  Color get _green => WellturPalette.acento(context);
+  Color get _onGreen => WellturPalette.sobreAcento(context);
+  static const _pasos = 4; // estrés, modalidades, esfuerzo, región
+  int _step = 0; // 0 intro, 1-4 preguntas, 5 resultados
   bool _consentGiven = false;
-  final Set<String> _dimensions = {};
-  String _activityLevel = 'moderate';
-  // Avoid silently favoring a region before the user has chosen one.
+  bool _omitirEstres = false;
+  final Map<String, int> _respuestas = {};
+  final List<String> _seleccion = [];
+  int _maxEffort = 2;
   String _region = '';
   bool _loading = false;
   String? _loadError;
@@ -37,18 +85,35 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   int? _fitRating;
   bool _feedbackSent = false;
   final WellnessService _service = WellnessService();
+  _Pss10? _pss;
+  bool _usarPss = false;
+  final Map<int, int> _respuestasPss = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _Pss10.cargar().then((pss) {
+      if (mounted && pss != null) setState(() => _pss = pss);
+    });
+  }
+
+  bool get _estresCompleto => _usarPss
+      ? _respuestasPss.length >= 8 // la puntuación oficial acepta hasta 2 ítems sin responder
+      : _preguntasEstres.every((p) => _respuestas.containsKey(p.key));
 
   void _next() {
-    if (_step == 1 && _dimensions.isEmpty) {
-      setState(() => _formError = 'Elige al menos una prioridad para tu viaje.');
+    if (_step == 1 && !_omitirEstres && !_estresCompleto) {
+      setState(() => _formError = _usarPss
+          ? 'Responde al menos 8 de las 10 preguntas o elige "Prefiero no responder".'
+          : 'Responde las seis preguntas o elige "Prefiero no responder".');
       return;
     }
-    setState(() { _formError = null; _loadError = null; _step = (_step + 1).clamp(0, 4); });
-    if (_step == 4) _submit();
+    setState(() { _formError = null; _loadError = null; _step = (_step + 1).clamp(0, _pasos + 1); });
+    if (_step == _pasos + 1) _submit();
   }
 
   void _back() {
-    if (_step == 0 || _step == 4) {
+    if (_step == 0 || _step == _pasos + 1) {
       Navigator.of(context).pop();
       return;
     }
@@ -58,19 +123,20 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   Future<void> _submit() async {
     setState(() { _loading = true; _loadError = null; });
     try {
-      final result = await _service.recommend(
-        wellnessDimensions: _dimensions.toList(),
-        activityLevel: _activityLevel,
+      final result = await _service.recommendV2(
+        stressItems: _omitirEstres || _usarPss ? null : Map.of(_respuestas),
+        pssItems: _omitirEstres || !_usarPss ? null : List.generate(10, (i) => _respuestasPss[i]),
+        modalities: List.of(_seleccion),
+        maxEffort: _maxEffort,
         saveHistory: _consentGiven,
         regionFilter: _region.isEmpty ? null : _region,
-        topN: 3,
       );
       if (!mounted) return;
       setState(() { _result = result; _loading = false; });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _loadError = 'No se pudieron cargar lugares aprobados para estos criterios. Inténtalo de nuevo.';
+        _loadError = 'No se pudieron cargar lugares para estos criterios. Inténtalo de nuevo.';
         _loading = false;
       });
     }
@@ -95,7 +161,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         heroTag: 'welltur_${destination.idDestino}',
         heroImageUrl: destination.imageUrl ?? '',
         subtitle: destination.descripcionBienestar,
-        locationLine: destination.estado,
+        locationLine: destination.municipio.isNotEmpty ? '${destination.municipio}, ${destination.estado}' : destination.estado,
         rating: 0,
         galleryUrls: const [],
         placeId: destination.detailPagePlaceId,
@@ -109,21 +175,19 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final enResultados = _step == _pasos + 1;
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: SmarturAppBar(
         showBack: true,
         onBack: _back,
-        titleWidget: SmarturAccentTitle(
-          _step == 4 ? 'Welltur · resultados' : 'Welltur · preferencias',
-          fontSize: 16,
-        ),
+        titleWidget: SmarturAccentTitle(enResultados ? 'Welltur · resultados' : 'Welltur · tu viaje', fontSize: 16),
       ),
       body: _loading
           ? _loadingView(scheme)
           : _step == 0
               ? _intro(scheme)
-              : _step == 4 && _result != null
+              : enResultados && _result != null
                   ? _results(scheme)
                   : _loadError != null
                       ? _errorView(scheme)
@@ -137,207 +201,231 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(width: 58, height: 58,
           decoration: BoxDecoration(color: _green.withValues(alpha: .1), borderRadius: BorderRadius.circular(18)),
-          child: const Icon(Icons.eco_outlined, color: _green, size: 30)),
+          child: Icon(Icons.eco_outlined, color: _green, size: 30)),
         const SizedBox(height: 22),
-        Text('Arma una experiencia a tu manera',
+        Text('Descansa en las Altas Montañas',
           style: TextStyle(fontSize: 27, height: 1.13, fontWeight: FontWeight.w800, color: scheme.onSurface)),
         const SizedBox(height: 12),
-        Text('Elige tus prioridades de viaje y te mostraremos lugares aprobados que coincidan.',
+        Text('Cuéntanos cómo te has sentido y qué buscas; te sugerimos experiencias de negocios locales de la región.',
           style: TextStyle(fontSize: 15, height: 1.5, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         _infoBox(scheme,
-          'Son preferencias de viaje, no una prueba de estrés. GWI aporta un marco conceptual; SMARTUR revisa las propuestas, no es una certificación de GWI.',
+          'Las preguntas sobre estrés son opcionales y no son un diagnóstico. En nuestra encuesta a 137 personas, quienes reportaron más estrés eligieron más experiencias de relajación; por eso tus respuestas solo ajustan qué tipo de experiencia priorizamos.',
           Icons.info_outline_rounded),
         const SizedBox(height: 12),
         InkWell(
           onTap: () => setState(() => _consentGiven = !_consentGiven),
           borderRadius: BorderRadius.circular(12),
           child: Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Checkbox(value: _consentGiven, activeColor: _green, onChanged: (v) => setState(() => _consentGiven = v ?? false)),
+            Checkbox(value: _consentGiven, activeColor: _green, checkColor: _onGreen, onChanged: (v) => setState(() => _consentGiven = v ?? false)),
             Expanded(child: Padding(padding: const EdgeInsets.only(top: 12), child: Text(
-              'Opcional: guardar esta búsqueda en mi historial y poder enviar una valoración. Si no lo activo, usaremos tus criterios solo para esta búsqueda y no guardaremos la sesión. Puedes borrar el historial desde tu perfil.',
+              'Opcional: guardar esta búsqueda (incluido tu puntaje de estrés) para mejorar las recomendaciones y poder valorarlas. Si no lo activas, tus respuestas se usan solo para esta búsqueda. Puedes borrar el historial desde tu perfil.',
               style: TextStyle(fontSize: 12, height: 1.45, color: scheme.onSurfaceVariant)))),
           ])),
         ),
         const SizedBox(height: 20),
-        _primaryButton('Empezar · 3 pasos', _next),
+        _primaryButton('Empezar · $_pasos pasos', _next),
       ]),
     ),
   );
 
   Widget _question(ColorScheme scheme) {
-    final titles = {
-      1: '¿Qué quieres priorizar?',
-      2: '¿Qué ritmo prefieres?',
-      3: '¿En qué región buscas?',
+    const titles = {
+      1: '¿Cómo te has sentido?',
+      2: '¿Qué te gustaría vivir?',
+      3: '¿Cuánto esfuerzo físico?',
+      4: '¿Dónde buscas?',
     };
-    final hints = {
-      1: 'Elige de una a tres dimensiones. Son criterios de búsqueda, no una evaluación personal.',
-      2: 'En lugares con la misma coincidencia de dimensiones, priorizaremos el esfuerzo más cercano al ritmo que prefieres.',
-      3: 'Puedes cambiar la región o ver lugares de todos los estados.',
+    const hints = {
+      1: 'Seis preguntas breves. Puedes omitirlas.',
+      2: 'Opcional: elige hasta tres, en orden de importancia.',
+      3: 'Ocultaremos experiencias más exigentes que esto.',
+      4: 'Municipio de las Altas Montañas, o toda la región.',
+    };
+    final body = switch (_step) {
+      1 => _stressQuestions(scheme),
+      2 => _modalityChoices(scheme),
+      3 => _effortChoices(scheme),
+      _ => _regionChoices(scheme),
     };
     return SafeArea(child: Column(children: [
       Padding(padding: const EdgeInsets.fromLTRB(24, 20, 24, 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [1, 2, 3].map((step) => Expanded(child: Container(
+        Row(children: List.generate(_pasos, (i) => Expanded(child: Container(
           height: 4, margin: const EdgeInsets.only(right: 6),
-          decoration: BoxDecoration(color: _step >= step ? _green : scheme.outlineVariant, borderRadius: BorderRadius.circular(4)),
-        ))).toList()),
+          decoration: BoxDecoration(color: _step >= i + 1 ? _green : scheme.outlineVariant, borderRadius: BorderRadius.circular(4)),
+        )))),
         const SizedBox(height: 20),
-        Text('PASO $_step DE 3', style: const TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        Text('PASO $_step DE $_pasos', style: TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
         const SizedBox(height: 7),
         Text(titles[_step]!, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: scheme.onSurface)),
         const SizedBox(height: 6),
         Text(hints[_step]!, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
-        if (_step == 1) ...[
-          const SizedBox(height: 7),
-          Semantics(
-            liveRegion: true,
-            label: '${_dimensions.length} de 3 prioridades seleccionadas',
-            child: Text(
-              '${_dimensions.length} de 3 seleccionadas',
-              style: const TextStyle(color: _green, fontSize: 12, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
       ])),
-      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(20, 0, 20, 16), child: _step == 1
-          ? _dimensionChoices(scheme)
-          : _step == 2 ? _activityChoices(scheme) : _regionChoice(scheme))),
+      Expanded(child: SingleChildScrollView(padding: const EdgeInsets.fromLTRB(20, 0, 20, 16), child: body)),
       if (_formError != null) Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: Text(_formError!, style: TextStyle(color: scheme.error, fontSize: 12))),
       Padding(padding: const EdgeInsets.fromLTRB(20, 8, 20, 18), child: Row(children: [
         Expanded(child: OutlinedButton(onPressed: _back, child: const Text('Atrás'))),
         const SizedBox(width: 12),
         Expanded(child: FilledButton(
-          onPressed: _step == 1 && _dimensions.isEmpty ? null : _next,
-          style: FilledButton.styleFrom(backgroundColor: _green),
-          child: Text(_step == 3 ? 'Ver lugares' : 'Continuar'))),
+          onPressed: _next,
+          style: FilledButton.styleFrom(backgroundColor: _green, foregroundColor: _onGreen),
+          child: Text(_step == _pasos ? 'Ver lugares' : 'Continuar'))),
       ])),
     ]));
   }
 
-  Widget _dimensionChoices(ColorScheme scheme) => Column(children: _wellnessDimensions.map((dimension) {
-    final selected = _dimensions.contains(dimension.key);
-    return Padding(padding: const EdgeInsets.only(bottom: 9), child: Material(
-      color: selected ? _green.withValues(alpha: .08) : scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(16),
-      child: CheckboxListTile(
-        value: selected,
-        activeColor: _green,
-        controlAffinity: ListTileControlAffinity.trailing,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: selected ? _green : scheme.outlineVariant.withValues(alpha: .6), width: selected ? 1.5 : 1),
-        ),
-        title: Row(children: [
-          Icon(dimension.icon, color: selected ? _green : scheme.onSurfaceVariant, size: 20),
-          const SizedBox(width: 9),
-          Expanded(child: Text(dimension.title, style: TextStyle(fontWeight: FontWeight.w700, color: scheme.onSurface))),
-        ]),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(dimension.subtitle, style: TextStyle(fontSize: 11, height: 1.3, color: scheme.onSurfaceVariant)),
-        ),
-        onChanged: (_) => setState(() {
-          _formError = null;
-          if (selected) { _dimensions.remove(dimension.key); }
-          else if (_dimensions.length < 3) { _dimensions.add(dimension.key); }
-          else { _formError = 'Puedes elegir hasta tres prioridades.'; }
-        }),
+  Widget _stressQuestions(ColorScheme scheme) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    SwitchListTile(
+      value: _omitirEstres,
+      activeThumbColor: _green,
+      contentPadding: EdgeInsets.zero,
+      title: const Text('Prefiero no responder', style: TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: const Text('Usaremos lo que la mayoría prefiere en la región.', style: TextStyle(fontSize: 12)),
+      onChanged: (v) => setState(() { _omitirEstres = v; _formError = null; }),
+    ),
+    if (!_omitirEstres && _pss != null) ...[
+      const SizedBox(height: 6),
+      SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment(value: false, label: Text('Breve · 6')),
+          ButtonSegment(value: true, label: Text('PSS-10 · 10')),
+        ],
+        selected: {_usarPss},
+        onSelectionChanged: (s) => setState(() { _usarPss = s.first; _formError = null; }),
       ),
+    ],
+    if (!_omitirEstres && _usarPss && _pss != null) ...[
+      const SizedBox(height: 12),
+      Text(_pss!.instruccion, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
+      ...List.generate(10, (i) => Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('${i + 1}. ${_pss!.items[i]}', style: TextStyle(fontSize: 14, height: 1.35, fontWeight: FontWeight.w600, color: scheme.onSurface)),
+          const SizedBox(height: 8),
+          Wrap(spacing: 6, runSpacing: 6, children: List.generate(5, (v) => ChoiceChip(
+            label: Text(_pss!.opciones[v], style: const TextStyle(fontSize: 12)),
+            selected: _respuestasPss[i] == v,
+            selectedColor: _green.withValues(alpha: .16),
+            onSelected: (_) => setState(() { _respuestasPss[i] = v; _formError = null; }),
+          ))),
+        ]),
+      )),
+      const SizedBox(height: 10),
+      Text(_pss!.copyright, style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant)),
+    ],
+    if (!_omitirEstres && !_usarPss)
+      ..._preguntasEstres.map((p) => Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(p.texto, style: TextStyle(fontSize: 14, height: 1.35, fontWeight: FontWeight.w600, color: scheme.onSurface)),
+          const SizedBox(height: 8),
+          Wrap(spacing: 6, runSpacing: 6, children: List.generate(p.opciones.length, (i) => ChoiceChip(
+            label: Text(p.opciones[i], style: const TextStyle(fontSize: 12)),
+            selected: _respuestas[p.key] == i,
+            selectedColor: _green.withValues(alpha: .16),
+            onSelected: (_) => setState(() { _respuestas[p.key] = i; _formError = null; }),
+          ))),
+        ]),
+      )),
+    const SizedBox(height: 14),
+    Text('Si te sientes rebasado(a), la Línea de la Vida atiende 24 h: 800 911 2000.',
+      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+  ]);
+
+  Widget _modalityChoices(ColorScheme scheme) => Column(children: _modalidades.map((m) {
+    final index = _seleccion.indexOf(m.key);
+    final selected = index >= 0;
+    return Padding(padding: const EdgeInsets.only(bottom: 9), child: ListTile(
+      onTap: () => setState(() {
+        _formError = null;
+        if (selected) {
+          _seleccion.remove(m.key);
+        } else if (_seleccion.length < 3) {
+          _seleccion.add(m.key);
+        } else {
+          _formError = 'Puedes elegir hasta tres.';
+        }
+      }),
+      leading: Icon(m.icon, color: selected ? _green : scheme.onSurfaceVariant),
+      title: Text(m.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      subtitle: Text(m.subtitle, style: const TextStyle(fontSize: 12)),
+      trailing: selected
+          ? CircleAvatar(radius: 13, backgroundColor: _green, child: Text('${index + 1}', style: TextStyle(fontSize: 12, color: _onGreen, fontWeight: FontWeight.w800)))
+          : const Icon(Icons.circle_outlined),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: selected ? _green : scheme.outlineVariant)),
+      tileColor: selected ? _green.withValues(alpha: .08) : scheme.surfaceContainerLow,
     ));
   }).toList());
 
-  Widget _activityChoices(ColorScheme scheme) {
+  Widget _effortChoices(ColorScheme scheme) {
     const choices = [
-      ('low', 'Suave', 'Poco esfuerzo físico', Icons.self_improvement_outlined),
-      ('moderate', 'Intermedio', 'Un ritmo equilibrado', Icons.directions_walk_outlined),
-      ('high', 'Activo', 'Me gustan los retos físicos', Icons.hiking_outlined),
+      (1, 'Suave', 'Poco esfuerzo físico', Icons.self_improvement_outlined),
+      (2, 'Intermedio', 'Caminar un rato está bien', Icons.directions_walk_outlined),
+      (3, 'Activo', 'Me gustan los retos físicos', Icons.hiking_outlined),
     ];
-    return RadioGroup<String>(
-      groupValue: _activityLevel,
-      onChanged: (value) {
-        if (value != null) setState(() => _activityLevel = value);
-      },
-      child: Column(children: choices.map((choice) {
-      final selected = _activityLevel == choice.$1;
-      return Padding(padding: const EdgeInsets.only(bottom: 10), child: RadioListTile<String>(
-        value: choice.$1,
-        activeColor: _green, tileColor: selected ? _green.withValues(alpha: .08) : scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: selected ? _green : scheme.outlineVariant.withValues(alpha: .5))),
-        secondary: Icon(choice.$4, color: selected ? _green : scheme.onSurfaceVariant),
-        title: Text(choice.$2, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(choice.$3, style: const TextStyle(fontSize: 12)),
-      ));
-      }).toList()),
-    );
+    return Column(children: choices.map((c) => Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: _choiceTile(scheme, c.$2, c.$3, c.$4, selected: _maxEffort == c.$1, onTap: () => setState(() => _maxEffort = c.$1)),
+    )).toList());
   }
 
-  Widget _regionChoice(ColorScheme scheme) => Column(children: [
-    _choiceTile(scheme, 'Veracruz', 'Priorizar sitios dentro del estado', Icons.place_outlined, selected: _region == 'Veracruz', onTap: () => setState(() => _region = 'Veracruz')),
-    const SizedBox(height: 10),
-    _choiceTile(scheme, 'Todos los estados', 'Incluir todo el catálogo aprobado', Icons.map_outlined, selected: _region.isEmpty, onTap: () => setState(() => _region = '')),
-  ]);
+  Widget _regionChoices(ColorScheme scheme) => Column(children: _regiones.map((r) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: _choiceTile(scheme, r.isEmpty ? 'Toda la región' : r,
+      r.isEmpty ? '57 municipios de las Altas Montañas' : 'Solo experiencias en $r',
+      r.isEmpty ? Icons.map_outlined : Icons.place_outlined,
+      selected: _region == r, onTap: () => setState(() => _region = r)),
+  )).toList());
 
   Widget _choiceTile(ColorScheme scheme, String title, String subtitle, IconData icon, {required bool selected, required VoidCallback onTap}) =>
       ListTile(onTap: onTap, leading: Icon(icon, color: selected ? _green : scheme.onSurfaceVariant),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: selected ? const Icon(Icons.check_circle, color: _green) : const Icon(Icons.circle_outlined),
+        trailing: selected ? Icon(Icons.check_circle, color: _green) : Icon(Icons.circle_outlined),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: selected ? _green : scheme.outlineVariant)),
         tileColor: selected ? _green.withValues(alpha: .08) : scheme.surfaceContainerLow);
 
   Widget _results(ColorScheme scheme) {
     final result = _result!;
+    final elegidas = _seleccion.map((k) => _modalidades.firstWhere((m) => m.key == k).title).join(', ');
+    final mipymes = result.destinations.where((d) => d.esMipyme).length;
     return SafeArea(child: ListView(padding: const EdgeInsets.fromLTRB(0, 14, 0, 28), children: [
       Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Container(
         padding: const EdgeInsets.all(18), decoration: BoxDecoration(color: _green.withValues(alpha: .08), borderRadius: BorderRadius.circular(20)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('TU EXPERIENCIA', style: TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+          Text('TU EXPERIENCIA', style: TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
           const SizedBox(height: 5),
           Text(result.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: scheme.onSurface)),
           const SizedBox(height: 5),
-          Text('Prioridades: ${_dimensions.map((key) => _wellnessDimensions.firstWhere((d) => d.key == key).title).join(', ')} · ritmo ${_activityLabel(_activityLevel)}',
-              style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+          Text([
+            if (elegidas.isNotEmpty) 'Buscas: $elegidas',
+            _omitirEstres ? 'Sin preguntas de estrés' : 'Ajustado con tus respuestas de estrés',
+            if (result.destinations.isNotEmpty) '$mipymes de ${result.destinations.length} son negocios locales (MiPyME)',
+          ].join(' · '), style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
           const SizedBox(height: 8),
-          Text(result.description, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
+          Text(result.description, style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
         ]),
       )),
-      const Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 3), child: Text('Lugares que coinciden', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
-      Padding(padding: const EdgeInsets.fromLTRB(20, 0, 20, 8), child: Text('El orden refleja coincidencia con tus criterios; no es una probabilidad de beneficio para la salud.', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant))),
+      const Padding(padding: EdgeInsets.fromLTRB(20, 20, 20, 8), child: Text('Lugares sugeridos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
       if (result.destinations.isEmpty)
-        Padding(padding: const EdgeInsets.all(24), child: _infoBox(scheme, 'Aún no hay lugares aprobados que coincidan con esta región y preferencias. Prueba con todos los estados.', Icons.search_off_rounded))
+        Padding(padding: const EdgeInsets.all(24), child: _infoBox(scheme, 'Aún no hay lugares que coincidan con este municipio y esfuerzo. Prueba con toda la región.', Icons.search_off_rounded))
       else
-        ...result.destinations.map((place) => WellnessPoiCard(
-          destination: place,
-          onTap: () => _openDestination(place),
-        )),
+        ...result.destinations.map((place) => WellnessPoiCard(destination: place, onTap: () => _openDestination(place))),
       if (result.sessionId != null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 4), child: Card(
         child: Padding(padding: const EdgeInsets.all(16), child: Column(children: [
-          Text(_feedbackSent ? '¡Gracias! Usaremos tu valoración para evaluar el ajuste de las recomendaciones.' : '¿Qué tan bien coincidieron con lo que buscabas?', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(_feedbackSent ? '¡Gracias! Tu valoración ayuda a mejorar las recomendaciones.' : '¿Qué tan bien coincidieron con lo que buscabas?', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
           if (!_feedbackSent) ...[
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                5,
-                (i) => IconButton(
-                  tooltip: '${i + 1} de 5',
-                  onPressed: () => _sendFeedback(i + 1),
-                  icon: Icon(
-                    _fitRating != null && i < _fitRating!
-                        ? Icons.star_rounded
-                        : Icons.star_outline_rounded,
-                    color: _green,
-                  ),
-                ),
-              ),
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(5, (i) => IconButton(
+              tooltip: '${i + 1} de 5',
+              onPressed: () => _sendFeedback(i + 1),
+              icon: Icon(_fitRating != null && i < _fitRating! ? Icons.star_rounded : Icons.star_outline_rounded, color: _green),
+            ))),
           ],
         ])),
       )),
       Padding(padding: const EdgeInsets.fromLTRB(20, 16, 20, 0), child: OutlinedButton.icon(
         onPressed: () => setState(() { _step = 1; _result = null; _feedbackSent = false; _fitRating = null; }),
-        icon: const Icon(Icons.tune_rounded), label: const Text('Cambiar preferencias'))),
+        icon: const Icon(Icons.tune_rounded), label: const Text('Cambiar respuestas'))),
     ]));
   }
 
@@ -346,13 +434,13 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       Icon(Icons.cloud_off_outlined, size: 42, color: scheme.error),
       const SizedBox(height: 12), Text(_loadError ?? 'No se pudieron cargar las recomendaciones.', textAlign: TextAlign.center),
       const SizedBox(height: 18), FilledButton(onPressed: _submit, child: const Text('Reintentar')),
-      TextButton(onPressed: _back, child: const Text('Cambiar criterios')),
+      TextButton(onPressed: _back, child: const Text('Cambiar respuestas')),
     ],
   )));
 
   Widget _loadingView(ColorScheme scheme) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-    const CircularProgressIndicator(color: _green),
-    const SizedBox(height: 16), Text('Buscando lugares aprobados que coincidan…', style: TextStyle(color: _green, fontWeight: FontWeight.w600)),
+    CircularProgressIndicator(color: _green),
+    const SizedBox(height: 16), Text('Buscando experiencias para ti…', style: TextStyle(color: _green, fontWeight: FontWeight.w600)),
     const SizedBox(height: 4), Text('Tomará solo un momento', style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12)),
   ]));
 
@@ -362,9 +450,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   );
 
   Widget _primaryButton(String label, VoidCallback? onPressed) => SizedBox(width: double.infinity, height: 50,
-    child: FilledButton(onPressed: onPressed, style: FilledButton.styleFrom(backgroundColor: _green), child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700))));
-
-  String _activityLabel(String value) => switch (value) { 'low' => 'suave', 'high' => 'activo', _ => 'intermedio' };
+    child: FilledButton(onPressed: onPressed, style: FilledButton.styleFrom(backgroundColor: _green, foregroundColor: _onGreen), child: Text(label, style: TextStyle(fontWeight: FontWeight.w700))));
 }
 
 /// Explicación breve enlazada desde otros puntos de la app.
@@ -379,9 +465,9 @@ void showWellnessInfoSheet(BuildContext context) {
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Sobre Welltur', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: scheme.onSurface)),
         const SizedBox(height: 12),
-        Text('Welltur ordena lugares aprobados por SMARTUR según tus prioridades de viaje y el esfuerzo físico informado para cada experiencia. No mide ni diagnostica estrés y no predice resultados de salud.', style: TextStyle(fontSize: 13, height: 1.5, color: scheme.onSurfaceVariant)),
+        Text('Welltur sugiere experiencias de negocios locales de las Altas Montañas según lo que buscas. Las preguntas de estrés son opcionales: con nuestra encuesta a 137 personas estimamos cómo cambian las preferencias con el estrés, y eso solo ajusta qué tipo de experiencia priorizamos.', style: TextStyle(fontSize: 13, height: 1.5, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 10),
-        Text('El marco de seis dimensiones de GWI es conceptual: no constituye una rúbrica de puntuación ni una certificación para los lugares.', style: TextStyle(fontSize: 13, height: 1.5, color: scheme.onSurfaceVariant)),
+        Text('No mide ni diagnostica estrés y no promete resultados de salud. Los negocios provienen del DENUE (INEGI) y del registro de SMARTUR.', style: TextStyle(fontSize: 13, height: 1.5, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 18),
         SizedBox(width: double.infinity, child: FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('Entendido'))),
       ]),

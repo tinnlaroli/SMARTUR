@@ -1557,6 +1557,36 @@ def wellness_recommend_from_mw_preferences(payload: WellnessMWPreferenceRequest)
         raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones M/W.") from exc
 
 
+@app.post("/wellness/recommend-v2")
+def wellness_recommend_v2(payload: WellnessMWPreferenceRequest):
+    """WELLTUR v2: pesos W1-W7 del modelo calibrado con la encuesta real + preferencias + cuota MiPyME."""
+    from welltur_ranker_v2 import recomendar
+
+    if len(payload.destinations) > 1000:
+        raise HTTPException(status_code=422, detail="El catálogo por solicitud no puede superar 1000 destinos.")
+    try:
+        return recomendar(payload.destinations, payload.preferences, top_n=payload.top_n)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail="El modelo welltur_preferencias_v1 no está disponible.") from exc
+    except Exception as exc:
+        logger.exception("[wellness/recommend-v2] Error al ordenar el catálogo")
+        raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones.") from exc
+
+
+@app.get("/wellness/model-v2")
+def wellness_model_v2():
+    """Resumen del modelo v2 para el dashboard: efectos del estrés y evaluación contra baseline."""
+    from welltur_ranker_v2 import cargar_artefacto
+
+    try:
+        artefacto = cargar_artefacto()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Modelo v2 aún no entrenado.") from exc
+    return {k: artefacto[k] for k in ("modelo", "entrenado_en", "fuente", "n", "estres", "tipos", "evaluacion_ml")}
+
+
 @app.get("/wellness/destinations")
 def wellness_destinations_retired():
     """The static CSV is not the approved SMARTUR catalog and is no longer served."""

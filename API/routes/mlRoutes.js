@@ -752,6 +752,199 @@ router.post('/ml/wellness/recommend-mw', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * Índice de estrés 0-100 con la misma fórmula del ETL de la encuesta (MODELO/src/encuesta_etl.py):
+ * P3 y P4 (0-4) y P5a-d (0-3, tolera un faltante). Devuelve null si las respuestas no son válidas.
+ */
+function stressIndexFromItems(items) {
+    if (!items || typeof items !== 'object' || Array.isArray(items)) return null;
+    const inRange = (value, max) => Number.isInteger(value) && value >= 0 && value <= max;
+    if (!inRange(items.p3, 4) || !inRange(items.p4, 4)) return null;
+    const p5 = ['p5a', 'p5b', 'p5c', 'p5d'].map((key) => items[key]).filter((value) => value != null);
+    if (p5.length < 3 || p5.some((value) => !inRange(value, 3))) return null;
+    const p5Mean = p5.reduce((sum, value) => sum + value, 0) / p5.length / 3;
+    const index = ((items.p3 / 4) + (items.p4 / 4) + 4 * p5Mean) / 6 * 100;
+    return Math.round(index * 10) / 10;
+}
+
+/**
+ * PSS-10 (licencia Mapi Research Trust n.º 153824), puntuación oficial "Scaling and Scoring v2.0":
+ * 10 ítems 0-4, se invierten los ítems 4, 5, 7 y 8, total 0-40; se acepta si faltan ≤ 2 ítems
+ * (promedio de los respondidos × 10). No tiene puntos de corte: se usa como puntaje continuo.
+ */
+const PSS10_INVERTIDOS = new Set([4, 5, 7, 8]);
+function pss10Total(items) {
+    if (!Array.isArray(items) || items.length !== 10) return null;
+    let suma = 0;
+    let respondidos = 0;
+    for (const [index, value] of items.entries()) {
+        if (value == null) continue;
+        if (!Number.isInteger(value) || value < 0 || value > 4) return null;
+        suma += PSS10_INVERTIDOS.has(index + 1) ? 4 - value : value;
+        respondidos += 1;
+    }
+    if (respondidos < 8) return null;
+    return Math.round((suma / respondidos) * 10 * 10) / 10;
+}
+
+/**
+ * WELLTUR v2: el estrés (opcional, con consentimiento) ajusta los pesos W1–W7 según
+ * el modelo calibrado con la encuesta real; se combina con las modalidades elegidas
+ * y se garantiza presencia de MiPyMEs en el top.
+ */
+router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
+    const userId = req.user.id;
+    const { preferences = {}, stress_items: stressItems, pss_items: pssItems, top_n = 5, consent_given } = req.body ?? {};
+    if (!preferences || typeof preferences !== 'object' || Array.isArray(preferences)) {
+        return res.status(400).json({ message: 'preferences debe ser un objeto válido.' });
+    }
+    const modalities = preferences.modality_preferences ?? [];
+    if (!Array.isArray(modalities) || modalities.length > 3 || new Set(modalities).size !== modalities.length ||
+        modalities.some((code) => !WELLTUR_MODALITY_SET.has(code))) {
+        return res.status(400).json({ message: 'Elige hasta tres modalidades W1–W7 sin repetidas.' });
+    }
+    let stressIndex = null;
+    let pssTotal = null;
+    let stressSource = null;
+    if (pssItems != null) {
+        pssTotal = pss10Total(pssItems);
+        if (pssTotal == null) {
+            return res.status(400).json({ message: 'PSS-10 incompleta (máximo 2 ítems sin responder) o fuera de rango.' });
+        }
+        // Equivalencia provisional a la escala 0-100 del modelo (porcentaje del máximo) hasta
+        // calibrar PSS-10 contra el índice de la encuesta en el siguiente estudio.
+        stressIndex = Math.round((pssTotal / 40) * 1000) / 10;
+        stressSource = 'pss10_provisional';
+    } else if (stressItems != null) {
+        stressIndex = stressIndexFromItems(stressItems);
+        if (stressIndex == null) {
+            return res.status(400).json({ message: 'Respuestas de estrés incompletas o fuera de rango.' });
+        }
+        stressSource = 'encuesta_welltur_6_items';
+    }
+    if (typeof consent_given !== 'boolean') {
+        return res.status(400).json({ message: 'Indica si deseas guardar tus respuestas para mejorar la evaluación.' });
+    }
+    const maxEffort = Number(preferences.max_effort ?? 3);
+    if (!Number.isInteger(maxEffort) || maxEffort < 1 || maxEffort > 3) {
+        return res.status(400).json({ message: 'max_effort debe ser 1, 2 o 3.' });
+    }
+    if (preferences.needs_accessible != null && typeof preferences.needs_accessible !== 'boolean') {
+        return res.status(400).json({ message: 'needs_accessible debe ser booleano.' });
+    }
+    if (preferences.region_filter != null && typeof preferences.region_filter !== 'string') {
+        return res.status(400).json({ message: 'region_filter debe ser texto.' });
+    }
+    const regionFilter = (preferences.region_filter ?? '').trim();
+    if (regionFilter.length > 100) {
+        return res.status(400).json({ message: 'region_filter no debe superar 100 caracteres.' });
+    }
+    const topN = Number(top_n);
+    if (!Number.isInteger(topN) || topN < 1 || topN > 10) {
+        return res.status(400).json({ message: 'top_n debe ser un entero entre 1 y 10.' });
+    }
+
+    let client;
+    try {
+        const { rows: catalogRows } = await db.query(
+            `SELECT 'poi:' || p.id::text AS id_destino,
+                    p.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    COALESCE(l.municipality, '') AS municipio,
+                    p.categoria_wellness, p.wellness_modalities, p.wellness_mw_evidence,
+                    p.wellness_status, p.is_wellness, p.is_accessible, p.es_mipyme,
+                    p.demanda_fisica, p.descripcion_bienestar, p.image_url,
+                    COALESCE(p.latitude, l.latitude) AS lat,
+                    COALESCE(p.longitude, l.longitude) AS lon
+               FROM point_of_interest p
+               LEFT JOIN location l ON l.id_location = p.id_location
+              WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
+                AND p.is_active = TRUE AND p.validation_status = 'active'
+                AND l.is_active = TRUE AND p.wellness_mw_reviewed_at IS NOT NULL
+                AND cardinality(p.wellness_modalities) > 0
+             UNION ALL
+             SELECT 'service:' || s.id_service::text AS id_destino,
+                    s.name AS nombre_lugar, COALESCE(l.state, '') AS estado,
+                    COALESCE(l.municipality, '') AS municipio,
+                    s.categoria_wellness, s.wellness_modalities, s.wellness_mw_evidence,
+                    s.wellness_status, s.is_wellness, FALSE AS is_accessible, TRUE AS es_mipyme,
+                    s.demanda_fisica, s.descripcion_bienestar, s.image_url,
+                    COALESCE(s.latitude, l.latitude) AS lat,
+                    COALESCE(s.longitude, l.longitude) AS lon
+               FROM tourist_service s
+               LEFT JOIN location l ON l.id_location = s.id_location
+              WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
+                AND s.active = TRUE AND s.status = 'active'
+                AND l.is_active = TRUE AND s.wellness_mw_reviewed_at IS NOT NULL
+                AND cardinality(s.wellness_modalities) > 0
+              ORDER BY nombre_lugar
+              LIMIT 1000`,
+        );
+        const preferencesForModel = {
+            modality_preferences: modalities,
+            estres_0_100: stressIndex,
+            max_effort: maxEffort,
+            needs_accessible: preferences.needs_accessible === true,
+            region_filter: regionFilter || null,
+        };
+        const modeloRes = await fetch(`${MODELO_URL}/wellness/recommend-v2`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferences: preferencesForModel, destinations: catalogRows, top_n: topN }),
+            signal: AbortSignal.timeout(15_000),
+        });
+        if (!modeloRes.ok) {
+            const detail = await modeloRes.text().catch(() => '');
+            return res.status(502).json({ message: 'Servicio de recomendaciones WELLTUR no disponible.', detail });
+        }
+        const data = await modeloRes.json();
+        const stressInfo = { estres_0_100: stressIndex, pss10_total: pssTotal, estres_fuente: stressSource };
+        if (!consent_given) return res.json({ ...data, ...stressInfo });
+        if (modalities.length === 0 && stressIndex == null) return res.json(data);
+
+        client = await db.connect();
+        await client.query('BEGIN');
+        const { rows: assessmentRows } = await client.query(
+            `INSERT INTO wellness_trip_preference_assessment
+               (user_id, modality_preferences, max_effort, needs_accessible, region_filter,
+                consent_given, questionnaire_version, estres_0_100, pss10_total)
+             VALUES ($1,$2,$3,$4,$5,TRUE,$6,$7,$8)
+             RETURNING trip_preference_id`,
+            [userId, modalities, maxEffort, preferences.needs_accessible === true, regionFilter || null,
+                pssTotal == null ? 'welltur-v2' : 'welltur-v2-pss10', stressIndex, pssTotal],
+        );
+        const tripPreferenceId = assessmentRows[0].trip_preference_id;
+        const displayedDestinations = data.destinations ?? [];
+        const { rows: sessionRows } = await client.query(
+            `INSERT INTO wellness_recommendation_session
+               (user_id, trip_preference_id, modo_viaje, recommended_ids, top_n, algorithm_version)
+             VALUES ($1,$2,'preferencias_v2',$3,$4,'welltur-ranker-v2')
+             RETURNING session_id`,
+            [userId, tripPreferenceId, JSON.stringify(displayedDestinations.map((d) => d.id_destino)), topN],
+        );
+        const sessionId = sessionRows[0].session_id;
+        for (const [index, destination] of displayedDestinations.entries()) {
+            await client.query(
+                `INSERT INTO wellness_recommendation_item_feedback
+                   (session_id, user_id, item_id, event_type, position, modality_tags_snapshot)
+                 VALUES ($1,$2,$3,'impression',$4,$5)
+                 ON CONFLICT (session_id, item_id, event_type) DO NOTHING`,
+                [sessionId, userId, destination.id_destino, index + 1, destination.place_modalities ?? []],
+            );
+        }
+        await client.query('COMMIT');
+        return res.json({ ...data, ...stressInfo, trip_preference_id: tripPreferenceId, session_id: sessionId });
+    } catch (err) {
+        if (client) await client.query('ROLLBACK').catch(() => {});
+        if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+            return res.status(504).json({ message: 'La recomendación WELLTUR tardó demasiado.' });
+        }
+        console.error('[wellness/recommend-v2] error:', err.message);
+        return res.status(500).json({ message: 'Error al generar recomendaciones WELLTUR.' });
+    } finally {
+        client?.release();
+    }
+});
+
 /** Voluntary item-level feedback for an M/W recommendation session. */
 router.post('/ml/wellness/item-feedback', verifyToken, async (req, res) => {
     const userId = req.user.id;

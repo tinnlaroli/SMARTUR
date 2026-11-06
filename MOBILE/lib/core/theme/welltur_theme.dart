@@ -2,47 +2,79 @@ import 'package:flutter/material.dart';
 import '../motion/smartur_routes.dart';
 import 'smartur_theme_extensions.dart';
 
-// ── Paleta WellTur ──────────────────────────────────────────────────────────
-const Color _rosaViejo    = Color(0xFFCD6184); // primary
-const Color _vinoProf     = Color(0xFF862B48); // onPrimaryContainer
-const Color _verdeSalvia  = Color(0xFF97A273); // secondary / outline
-const Color _oliva        = Color(0xFF545E34); // onSecondaryContainer / text muted
-const Color _mostaza      = Color(0xFFFFBD59); // tertiary / warning
-const Color _rosaPastel   = Color(0xFFFFECF2); // surface / scaffold bg
-const Color _rosaOscuro   = Color(0xFFAB4364); // onSurface / main text
-const Color _verdeBosque  = Color(0xFFB2CF9A); // surfaceContainerHighest
-const Color _verdeMenta   = Color(0xFF5EB03C); // success / active
+/// Paleta oficial WELLTUR. Es la única fuente de estos colores en la app: el tema
+/// Welltur y las pantallas de bienestar (banner, encuesta, tarjetas) la usan.
+///
+/// Proporción de marca: crema 60 % (fondos) · verde botánico 20 % (primario) ·
+/// verde pino 10 % (texto y estructura) · arena 7 % (secundario) · terracota 3 % (acento).
+///
+/// Contraste WCAG sobre crema: pino 8.8 · botánico profundo 5.8 · terracota profunda 5.1.
+/// El botánico (4.1) va en rellenos con texto blanco (4.7), no en texto pequeño;
+/// la arena (1.5) y la terracota del logo (2.8) son solo relleno, nunca texto.
+abstract final class WellturPalette {
+  static const Color crema = Color(0xFFF4EFE5);
+  static const Color botanico = Color(0xFF587C68);
+  static const Color pino = Color(0xFF29483B);
+  static const Color arena = Color(0xFFD8C6A3);
+
+  /// Acento de marca (≈ 3 %): la terracota del pin del logo. Solo rellenos e ilustración.
+  static const Color terracota = Color(0xFFC97E5D);
+
+  /// Terracota legible para llamadas a la acción y texto (blanco encima: 5.9).
+  static const Color terracotaProfunda = Color(0xFF9C4F2E);
+
+  // Tonos derivados para texto legible y superficies.
+  static const Color botanicoProfundo = Color(0xFF46634F);
+  static const Color botanicoClaro = Color(0xFF8DB39C);
+  static const Color cremaProfunda = Color(0xFFEBE3D3);
+  static const Color cremaClara = Color(0xFFFBF8F2);
+  static const Color arenaClara = Color(0xFFEFE5D2);
+  static const Color verdeNiebla = Color(0xFFDDE7DF);
+  static const Color tintaOscura = Color(0xFF10201A);
+
+  static bool _oscuro(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
+  /// Acento de bienestar legible en el modo activo (texto, íconos, rellenos).
+  static Color acento(BuildContext context) => _oscuro(context) ? botanicoClaro : botanicoProfundo;
+
+  /// Texto sobre un relleno [acento].
+  static Color sobreAcento(BuildContext context) => _oscuro(context) ? tintaOscura : Colors.white;
+}
 
 const _scheme = ColorScheme(
   brightness: Brightness.light,
-  primary: _rosaViejo,
+  primary: WellturPalette.botanico,
   onPrimary: Colors.white,
-  primaryContainer: Color(0xFFF2C4D3),
-  onPrimaryContainer: _vinoProf,
-  secondary: _verdeSalvia,
-  onSecondary: Colors.white,
-  secondaryContainer: Color(0xFFE4ECDA),
-  onSecondaryContainer: _oliva,
-  tertiary: _mostaza,
-  onTertiary: Color(0xFF3D2400),
-  tertiaryContainer: Color(0xFFFFF4DE),
-  onTertiaryContainer: Color(0xFFB87205),
+  primaryContainer: WellturPalette.verdeNiebla,
+  onPrimaryContainer: WellturPalette.pino,
+  secondary: WellturPalette.arena,
+  onSecondary: WellturPalette.pino,
+  secondaryContainer: WellturPalette.arenaClara,
+  onSecondaryContainer: WellturPalette.pino,
+  tertiary: WellturPalette.terracotaProfunda,
+  onTertiary: Colors.white,
+  tertiaryContainer: Color(0xFFF3DFD3),
+  onTertiaryContainer: Color(0xFF6B3219),
   error: Color(0xFFBA1A1A),
   onError: Colors.white,
   errorContainer: Color(0xFFFFDAD6),
   onErrorContainer: Color(0xFF410002),
-  surface: _rosaPastel,
-  onSurface: _rosaOscuro,
-  surfaceContainerHighest: _verdeBosque,
-  onSurfaceVariant: _oliva,
-  outline: _verdeSalvia,
-  outlineVariant: Color(0xFFD0DBB8),
+  surface: WellturPalette.crema,
+  onSurface: WellturPalette.pino,
+  surfaceContainerLowest: WellturPalette.cremaClara,
+  surfaceContainerLow: Color(0xFFF0EADD),
+  surfaceContainer: WellturPalette.cremaProfunda,
+  surfaceContainerHigh: Color(0xFFE6DCC8),
+  surfaceContainerHighest: Color(0xFFE0D4BC),
+  onSurfaceVariant: WellturPalette.botanicoProfundo,
+  outline: WellturPalette.botanico,
+  outlineVariant: WellturPalette.arena,
   shadow: Colors.black,
   scrim: Colors.black,
-  inverseSurface: Color(0xFF3B2028),
-  onInverseSurface: Color(0xFFFFECF2),
-  inversePrimary: Color(0xFFFFB1C8),
-  surfaceTint: _rosaViejo,
+  inverseSurface: WellturPalette.pino,
+  onInverseSurface: WellturPalette.crema,
+  inversePrimary: Color(0xFFA9C7B5),
+  surfaceTint: WellturPalette.botanico,
 );
 
 ThemeData buildWellturTheme() {
@@ -54,46 +86,46 @@ ThemeData buildWellturTheme() {
         imageScrimSoft: Colors.black.withValues(alpha: 0.22),
         imageScrimStrong: Colors.black.withValues(alpha: 0.52),
         overlayBorder: Colors.white.withValues(alpha: 0.20),
-        success: _verdeMenta,
-        warning: _mostaza,
-        danger: _vinoProf,
-        info: _verdeSalvia,
-        panelBackground: const Color(0xFFF5E0EA),
+        success: WellturPalette.botanicoProfundo,
+        warning: const Color(0xFF8A6A2F),
+        danger: const Color(0xFFBA1A1A),
+        info: WellturPalette.pino,
+        panelBackground: WellturPalette.cremaProfunda,
         // Brand palette — WellTur overrides
-        accent: _rosaViejo,
-        altAccent: _vinoProf,
-        sea: _verdeSalvia,
-        leaf: _verdeMenta,
-        ember: _mostaza,
+        accent: WellturPalette.botanico,
+        altAccent: WellturPalette.pino,
+        sea: WellturPalette.botanicoProfundo,
+        leaf: WellturPalette.botanico,
+        ember: WellturPalette.terracotaProfunda,
       ),
     ],
     useMaterial3: true,
     fontFamily: 'Outfit',
     colorScheme: _scheme,
-    scaffoldBackgroundColor: _rosaPastel,
+    scaffoldBackgroundColor: WellturPalette.crema,
     textTheme: const TextTheme(
       displayLarge: TextStyle(
-        fontFamily: 'CalSans', fontWeight: FontWeight.bold, color: _rosaOscuro),
+        fontFamily: 'CalSans', fontWeight: FontWeight.bold, color: WellturPalette.pino),
       displayMedium: TextStyle(
-        fontFamily: 'CalSans', fontWeight: FontWeight.bold, color: _rosaOscuro),
+        fontFamily: 'CalSans', fontWeight: FontWeight.bold, color: WellturPalette.pino),
       titleLarge: TextStyle(
-        fontFamily: 'CalSans', fontWeight: FontWeight.w600, color: _rosaOscuro),
-      bodyMedium: TextStyle(color: _rosaOscuro),
+        fontFamily: 'CalSans', fontWeight: FontWeight.w600, color: WellturPalette.pino),
+      bodyMedium: TextStyle(color: WellturPalette.pino),
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: _rosaPastel,
+      backgroundColor: WellturPalette.crema,
       elevation: 0,
       centerTitle: true,
       titleTextStyle: TextStyle(
-          fontFamily: 'CalSans', fontSize: 20, color: _rosaOscuro),
-      iconTheme: IconThemeData(color: _rosaOscuro),
+          fontFamily: 'CalSans', fontSize: 20, color: WellturPalette.pino),
+      iconTheme: IconThemeData(color: WellturPalette.pino),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: _rosaViejo,
+        backgroundColor: WellturPalette.botanico,
         foregroundColor: Colors.white,
         elevation: 4,
-        shadowColor: _rosaViejo.withValues(alpha: 0.30),
+        shadowColor: WellturPalette.pino.withValues(alpha: 0.25),
         minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
@@ -102,8 +134,8 @@ ThemeData buildWellturTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: _rosaViejo,
-        side: const BorderSide(color: _rosaViejo, width: 2),
+        foregroundColor: WellturPalette.pino,
+        side: const BorderSide(color: WellturPalette.botanico, width: 2),
         minimumSize: const Size(double.infinity, 56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
@@ -112,7 +144,7 @@ ThemeData buildWellturTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: _rosaViejo,
+        backgroundColor: WellturPalette.botanico,
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -131,17 +163,17 @@ ThemeData buildWellturTheme() {
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: const Color(0xFFF8E0EC).withValues(alpha: 0.7),
+      color: WellturPalette.cremaClara,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFFE8C4D4)),
+        side: const BorderSide(color: Color(0xFFE2D7C2)),
       ),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
     ),
     tabBarTheme: const TabBarThemeData(
       indicatorSize: TabBarIndicatorSize.tab,
-      labelColor: _rosaViejo,
-      unselectedLabelColor: _oliva,
+      labelColor: WellturPalette.pino,
+      unselectedLabelColor: WellturPalette.botanicoProfundo,
       labelStyle: TextStyle(
           fontFamily: 'Outfit', fontWeight: FontWeight.w700, fontSize: 13),
       dividerColor: Colors.transparent,
@@ -152,20 +184,20 @@ ThemeData buildWellturTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFFADFEB),
+      fillColor: WellturPalette.cremaClara,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: _verdeSalvia),
+        borderSide: const BorderSide(color: WellturPalette.botanico),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: _verdeSalvia),
+        borderSide: const BorderSide(color: WellturPalette.botanico),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: _rosaViejo, width: 2),
+        borderSide: const BorderSide(color: WellturPalette.pino, width: 2),
       ),
-      labelStyle: const TextStyle(fontFamily: 'Outfit', color: _oliva),
+      labelStyle: const TextStyle(fontFamily: 'Outfit', color: WellturPalette.botanicoProfundo),
     ),
   );
 }

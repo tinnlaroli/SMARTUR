@@ -58,3 +58,9 @@ data/data_negocios_limpio.csv
 data/data_reviews_limpio.csv
 data/yelp_academic_dataset_business.json
 data/yelp_academic_dataset_review.json
+
+# Entorno local del laboratorio Jupyter
+.venv-lab/
+# Respuestas crudas de encuesta (solo se versiona la versión anonimizada)
+data/encuesta/raw/
+data/encuesta/encuesta_limpia.csv

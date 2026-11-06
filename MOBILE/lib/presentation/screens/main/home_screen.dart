@@ -13,6 +13,7 @@ import '../../../core/motion/smartur_motion.dart';
 import '../../../core/motion/smartur_routes.dart';
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
+import '../../../core/theme/welltur_theme.dart';
 import '../../../core/constants/env_config.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/utils/notifications.dart';
@@ -2414,12 +2415,12 @@ class _WellnessBanner extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF254117), Color(0xFF1a3010)],
+            colors: [WellturPalette.pino, WellturPalette.botanicoProfundo],
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF254117).withValues(alpha: 0.30),
+              color: WellturPalette.pino.withValues(alpha: 0.30),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

@@ -1,0 +1,21 @@
+{
+  "filas_crudas": 139,
+  "excluidas_menores": 1,
+  "excluidas_duplicadas": 1,
+  "excluidas_sin_p10": 0,
+  "indice_estres_vacio": 11,
+  "indice_bienestar_vacio": 10,
+  "respuestas_abiertas_no_mapeadas": {
+    "p7_manifestaciones": [
+      "Ninguna de las anteriores"
+    ],
+    "p8_estresores": [
+      "No identifico situaciones que me generen estrés"
+    ],
+    "p10_experiencias": [
+      "Orar"
+    ]
+  },
+  "filas_limpias": 137,
+  "sha256_crudo": "27c3830c9523005d257a017c3ec30acb4b32f1e44d908b18004d1d7b05b70c5d"
+}

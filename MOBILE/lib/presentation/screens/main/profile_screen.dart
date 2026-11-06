@@ -4,6 +4,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../../core/theme/style_guide.dart';
+import '../../../core/theme/welltur_theme.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../../data/services/user_content_service.dart';
@@ -484,12 +485,12 @@ class _ProfileScreenState extends State<ProfileScreen>
           // ── Header: título + chip de modo actual ──
           Row(
             children: [
-              const Icon(Icons.eco_outlined, size: 14, color: Color(0xFF254117)),
+              Icon(Icons.eco_outlined, size: 14, color: WellturPalette.acento(context)),
               const SizedBox(width: 5),
               Text(
                 'SMARTUR Wellness',
                 style: SmarturStyle.calSansTitle.copyWith(
-                    fontSize: 14, color: const Color(0xFF254117)),
+                    fontSize: 14, color: WellturPalette.acento(context)),
               ),
               const Spacer(),
               if (modoLabel != null)
@@ -546,8 +547,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                     icon: const Icon(Icons.refresh_rounded, size: 14),
                     label: Text(last != null ? 'Actualizar' : 'Comenzar'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF254117),
-                      side: const BorderSide(color: Color(0xFF254117)),
+                      foregroundColor: WellturPalette.acento(context),
+                      side: BorderSide(color: WellturPalette.acento(context)),
                       textStyle: const TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 12,

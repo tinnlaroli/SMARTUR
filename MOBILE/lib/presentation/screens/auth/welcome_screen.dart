@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
@@ -1208,7 +1209,46 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     return Scaffold(
       backgroundColor: scheme.surface,
       body: SmarturBackground(
-        child: Stack(
+        child: LayoutBuilder(builder: (context, constraints) {
+          // Distribución según el alto real de la pantalla. El logo se queda
+          // centrado (coincide con el SVG del loader) y el resto se acomoda al
+          // espacio libre: así el eslogan nunca se encima con el logo ni con
+          // los botones, en teléfonos chicos, grandes o tablets.
+          final alto = constraints.maxHeight;
+          final ancho = constraints.maxWidth;
+          final compacto = alto < 700;
+          // En tablets el contenido no se estira de lado a lado.
+          final lado = math.max(SmarturStyle.spacingLg, (ancho - 480) / 2);
+
+          // En pantallas bajas el logo termina más chico. Arranca al 100 % (igual que
+          // el loader) y se reduce durante su propia animación de entrada.
+          final escalaLogo = alto < 600 ? 0.75 : (compacto ? 0.85 : 1.0);
+          // Parte visible del logo (~176 px; el PNG trae margen transparente).
+          final logoVisible = 176.0 * escalaLogo;
+          final logoAbajo = alto / 2 + 25 + logoVisible / 2;
+
+          const botonAlto = 56.0;
+          final botonAbajo = math.max(50.0, MediaQuery.paddingOf(context).bottom + 24);
+          // En pantallas bajas la huella va junto al botón en vez de apilarse encima.
+          final huellaApilada = _isBiometricActive && !compacto;
+          const huellaAlto = 110.0;
+          final huellaAbajo = botonAbajo + botonAlto + 12;
+          final controlesArriba = huellaApilada
+              ? alto - huellaAbajo - huellaAlto
+              : alto - botonAbajo - botonAlto;
+
+          // El eslogan ocupa el hueco entre el logo y los controles; si el hueco es
+          // muy chico (pantallas bajas con huella), se sube un poco sobre el logo.
+          const sloganMin = 40.0;
+          var sloganArriba = logoAbajo + 12;
+          var sloganAlto = controlesArriba - 16 - sloganArriba;
+          if (sloganAlto < sloganMin) {
+            sloganAlto = sloganMin;
+            sloganArriba = controlesArriba - 16 - sloganMin;
+          }
+          sloganAlto = math.min(sloganAlto, 96);
+
+          return Stack(
           children: [
             // Logo principal EXACTAMENTE centrado (mismas dimensiones que el SVG del loader)
             // Mientras corre el loader, este logo permanece invisible; solo se muestra
@@ -1222,8 +1262,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   child: AnimatedBuilder(
                     animation: _logoZoom,
                     builder: (_, child) {
+                      // escalaLogo se aplica de forma gradual: en t = 0 coincide con el loader.
+                      final ajuste = 1 + (escalaLogo - 1) * _controller.value;
                       return Transform.scale(
-                        scale: _logoZoom.value,
+                        scale: _logoZoom.value * ajuste,
                         child: child,
                       );
                     },
@@ -1242,34 +1284,46 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
               ),
             ),
-            // Tagline: posición FIJA alta
+            // Eslogan: debajo del logo, dentro del espacio libre. Se envuelve al ancho
+            // disponible y, si aun así no cabe (pantalla baja, idioma largo o letra
+            // grande del sistema), se reduce en vez de encimarse.
             Positioned(
-              left: SmarturStyle.spacingLg,
-              right: SmarturStyle.spacingLg,
-              bottom: 280,
+              left: lado,
+              right: lado,
+              top: sloganArriba,
+              height: sloganAlto,
               child: SlideTransition(
                 position: _textSlide,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Text(
-                    l10n.tagline,
-                    style: TextStyle(
-                      fontFamily: 'CalSans',
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: scheme.onSurface,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox(
+                        width: ancho - 2 * lado,
+                        child: Text(
+                          l10n.tagline,
+                          style: TextStyle(
+                            fontFamily: 'CalSans',
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: scheme.onSurface,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
             ),
-            // Huella: solo si está activa, posicionada arriba del botón Comenzar
-            if (_isBiometricActive)
+            // Huella: solo si está activa, apilada arriba del botón Comenzar
+            // (en pantallas bajas va junto al botón, más abajo).
+            if (huellaApilada)
               Positioned(
-                left: SmarturStyle.spacingLg,
-                right: SmarturStyle.spacingLg,
-                bottom: 155,
+                left: lado,
+                right: lado,
+                bottom: huellaAbajo,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1314,33 +1368,60 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
               ),
             Positioned(
-              bottom: 50,
-              left: SmarturStyle.spacingLg,
-              right: SmarturStyle.spacingLg,
+              bottom: botonAbajo,
+              left: lado,
+              right: lado,
               child: FadeTransition(
                 opacity: _buttonFade,
                 child: SlideTransition(
                   position: _buttonSlide,
                   child: ScaleTransition(
                     scale: _buttonScale,
-                    child: ElevatedButton(
-                      onPressed: () => _showAuthModal(context, isLogin: true),
-                      child: Text(
-                        l10n.start,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'CalSans',
-                          fontSize: 18,
+                    child: Row(
+                      children: [
+                        if (_isBiometricActive && !huellaApilada) ...[
+                          Tooltip(
+                            message: l10n.loginWithBiometrics,
+                            child: SizedBox.square(
+                              dimension: botonAlto,
+                              child: OutlinedButton(
+                                onPressed: () => _checkBiometrics(context),
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.square(botonAlto),
+                                  padding: EdgeInsets.zero,
+                                  shape: const CircleBorder(),
+                                  side: BorderSide(color: scheme.primary, width: 2),
+                                ),
+                                child: Icon(Icons.fingerprint, size: 30, color: scheme.primary,
+                                    semanticLabel: l10n.loginWithBiometrics),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _showAuthModal(context, isLogin: true),
+                            child: Text(
+                              l10n.start,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'CalSans',
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ],
-        ),
+        );
+        }),
       ),
     );
   }

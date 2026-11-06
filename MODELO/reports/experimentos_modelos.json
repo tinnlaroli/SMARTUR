@@ -1,0 +1,156 @@
+{
+  "n_personas": 137,
+  "repeticiones": 10,
+  "tarea_a_arranque_en_frio": {
+    "knn_usuarios_estres_k15": {
+      "ndcg@3": 0.6501,
+      "precision@3": 0.5513,
+      "dif_vs_popularidad": 0.0024,
+      "ic95": [
+        -0.0157,
+        0.0207
+      ],
+      "supera_baseline": false
+    },
+    "popularidad": {
+      "ndcg@3": 0.6477,
+      "precision@3": 0.5384
+    },
+    "logistica_L2_estres": {
+      "ndcg@3": 0.6391,
+      "precision@3": 0.5431,
+      "dif_vs_popularidad": -0.0086,
+      "ic95": [
+        -0.0272,
+        0.0099
+      ],
+      "supera_baseline": false
+    },
+    "random_forest_encogido_50": {
+      "ndcg@3": 0.6366,
+      "precision@3": 0.5433,
+      "dif_vs_popularidad": -0.0111,
+      "ic95": [
+        -0.0252,
+        0.0023
+      ],
+      "supera_baseline": false
+    },
+    "random_forest_perfil": {
+      "ndcg@3": 0.6291,
+      "precision@3": 0.5448,
+      "dif_vs_popularidad": -0.0186,
+      "ic95": [
+        -0.0389,
+        0.0027
+      ],
+      "supera_baseline": false
+    },
+    "knn_usuarios_perfil_k15": {
+      "ndcg@3": 0.6247,
+      "precision@3": 0.5353,
+      "dif_vs_popularidad": -0.023,
+      "ic95": [
+        -0.0408,
+        -0.007
+      ],
+      "supera_baseline": false
+    },
+    "logistica_L1_perfil": {
+      "ndcg@3": 0.6067,
+      "precision@3": 0.5309,
+      "dif_vs_popularidad": -0.0409,
+      "ic95": [
+        -0.0705,
+        -0.0126
+      ],
+      "supera_baseline": false
+    },
+    "gradient_boosting_perfil": {
+      "ndcg@3": 0.5978,
+      "precision@3": 0.5182,
+      "dif_vs_popularidad": -0.0499,
+      "ic95": [
+        -0.0799,
+        -0.0212
+      ],
+      "supera_baseline": false
+    },
+    "logistica_L2_perfil": {
+      "ndcg@3": 0.5932,
+      "precision@3": 0.5207,
+      "dif_vs_popularidad": -0.0545,
+      "ic95": [
+        -0.0903,
+        -0.021
+      ],
+      "supera_baseline": false
+    },
+    "naive_bayes_perfil": {
+      "ndcg@3": 0.5211,
+      "precision@3": 0.4633,
+      "dif_vs_popularidad": -0.1266,
+      "ic95": [
+        -0.1699,
+        -0.0845
+      ],
+      "supera_baseline": false
+    },
+    "red_neuronal_mlp_perfil": {
+      "ndcg@3": 0.5162,
+      "precision@3": 0.4511,
+      "dif_vs_popularidad": -0.1315,
+      "ic95": [
+        -0.1727,
+        -0.0909
+      ],
+      "supera_baseline": false
+    }
+  },
+  "tarea_b_completar_preferencias": {
+    "coocurrencia_item_item": {
+      "hitrate@2": 0.6094,
+      "mrr": 0.6111,
+      "dif_vs_popularidad": 0.0187,
+      "ic95": [
+        -0.0065,
+        0.0444
+      ],
+      "supera_baseline": false
+    },
+    "logistica_tipos": {
+      "hitrate@2": 0.6055,
+      "mrr": 0.6079,
+      "dif_vs_popularidad": 0.0148,
+      "ic95": [
+        -0.0335,
+        0.0613
+      ],
+      "supera_baseline": false
+    },
+    "logistica_tipos_mas_estres": {
+      "hitrate@2": 0.6013,
+      "mrr": 0.6078,
+      "dif_vs_popularidad": 0.0106,
+      "ic95": [
+        -0.04,
+        0.0609
+      ],
+      "supera_baseline": false
+    },
+    "popularidad": {
+      "hitrate@2": 0.5907,
+      "mrr": 0.6119
+    },
+    "knn_usuario_usuario": {
+      "hitrate@2": 0.5839,
+      "mrr": 0.6069,
+      "dif_vs_popularidad": -0.0068,
+      "ic95": [
+        -0.0277,
+        0.0139
+      ],
+      "supera_baseline": false
+    }
+  }
+}

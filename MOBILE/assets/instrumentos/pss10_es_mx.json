@@ -1,0 +1,25 @@
+{
+  "_instrucciones_para_el_equipo": "Plantilla: el texto de la PSS-10 está licenciado (Mapi Research Trust n.º 153824) y no se publica en este repo. Para compilar la app, llénalo localmente con: python MODELO/src/extraer_pss10.py <ruta al .docx licenciado>. Mientras algún campo esté vacío, la app no muestra la PSS-10.",
+  "version": "PSS-10_AU2.0_spa-MX_09OCT2024",
+  "instruccion": "",
+  "opciones": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "copyright": ""
+}

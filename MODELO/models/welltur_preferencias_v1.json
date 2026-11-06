@@ -1,0 +1,186 @@
+{
+  "modelo": "welltur_preferencias_v1",
+  "tipo": "logistica_por_tipo_con_seleccion_fdr",
+  "entrenado_en": "2026-11-04T20:52:48+00:00",
+  "fuente": "encuesta_real_oct_2026",
+  "datos": "encuesta_limpia.csv",
+  "sha256_datos": "6780e419232967964595d9dc62571a2b56c574615410420fbc901f97a7557a78",
+  "n": 126,
+  "estres": {
+    "media": 50.779,
+    "de": 18.027
+  },
+  "q_umbral": 0.05,
+  "tipos": {
+    "pref_cascadas_rios": {
+      "intercepto": 0.6234,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.651,
+      "or_por_de": 1.145,
+      "ic95_or": [
+        0.791,
+        1.656
+      ],
+      "p": 0.4738,
+      "q_fdr": 0.716,
+      "usa_estres": false
+    },
+    "pref_caminatas": {
+      "intercepto": 0.3847,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.595,
+      "or_por_de": 1.035,
+      "ic95_or": [
+        0.724,
+        1.48
+      ],
+      "p": 0.8484,
+      "q_fdr": 0.8484,
+      "usa_estres": false
+    },
+    "pref_relajacion": {
+      "intercepto": -0.3088,
+      "beta_estres_z": 0.5537,
+      "prevalencia": 0.429,
+      "or_por_de": 1.74,
+      "ic95_or": [
+        1.181,
+        2.563
+      ],
+      "p": 0.0051,
+      "q_fdr": 0.0408,
+      "usa_estres": true
+    },
+    "pref_hospedaje_tranquilo": {
+      "intercepto": -0.3187,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.421,
+      "or_por_de": 1.194,
+      "ic95_or": [
+        0.834,
+        1.709
+      ],
+      "p": 0.334,
+      "q_fdr": 0.716,
+      "usa_estres": false
+    },
+    "pref_cultural": {
+      "intercepto": -0.7309,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.325,
+      "or_por_de": 1.213,
+      "ic95_or": [
+        0.83,
+        1.772
+      ],
+      "p": 0.3177,
+      "q_fdr": 0.716,
+      "usa_estres": false
+    },
+    "pref_gastronomia": {
+      "intercepto": -1.1201,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.246,
+      "or_por_de": 1.152,
+      "ic95_or": [
+        0.764,
+        1.736
+      ],
+      "p": 0.4992,
+      "q_fdr": 0.716,
+      "usa_estres": false
+    },
+    "pref_baja_intensidad": {
+      "intercepto": -1.254,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.222,
+      "or_por_de": 1.143,
+      "ic95_or": [
+        0.748,
+        1.747
+      ],
+      "p": 0.537,
+      "q_fdr": 0.716,
+      "usa_estres": false
+    },
+    "pref_comunidades": {
+      "intercepto": -1.6657,
+      "beta_estres_z": 0.0,
+      "prevalencia": 0.159,
+      "or_por_de": 0.919,
+      "ic95_or": [
+        0.569,
+        1.485
+      ],
+      "p": 0.7306,
+      "q_fdr": 0.835,
+      "usa_estres": false
+    }
+  },
+  "pref_a_w": {
+    "pref_cascadas_rios": {
+      "W2": 2,
+      "W3": 1
+    },
+    "pref_caminatas": {
+      "W2": 2,
+      "W3": 2
+    },
+    "pref_relajacion": {
+      "W4": 2,
+      "W1": 1,
+      "W7": 1
+    },
+    "pref_hospedaje_tranquilo": {
+      "W1": 2,
+      "W7": 1
+    },
+    "pref_cultural": {
+      "W6": 2
+    },
+    "pref_gastronomia": {
+      "W5": 2,
+      "W6": 1
+    },
+    "pref_baja_intensidad": {
+      "W1": 1,
+      "W2": 1,
+      "W3": 1
+    },
+    "pref_comunidades": {
+      "W6": 2,
+      "W2": 1
+    }
+  },
+  "evaluacion_ml": {
+    "n_personas": 137,
+    "k": 3,
+    "repeticiones": 20,
+    "metodos": {
+      "perfil_completo": {
+        "ndcg@3": 0.591,
+        "precision@3": 0.5178,
+        "dif_vs_popularidad": -0.054,
+        "ic95_dif": [
+          -0.0861,
+          -0.0234
+        ],
+        "wilcoxon_p": 0.0014
+      },
+      "solo_estres_bienestar": {
+        "ndcg@3": 0.6409,
+        "precision@3": 0.5465,
+        "dif_vs_popularidad": -0.0041,
+        "ic95_dif": [
+          -0.0208,
+          0.012
+        ],
+        "wilcoxon_p": 0.8299
+      },
+      "popularidad": {
+        "ndcg@3": 0.645,
+        "precision@3": 0.5375
+      }
+    }
+  }
+}

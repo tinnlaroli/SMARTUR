@@ -11,3 +11,7 @@ venv
 tests
 *.md
 modelo
+.venv-lab
+data/encuesta/raw
+notebooks
+reports

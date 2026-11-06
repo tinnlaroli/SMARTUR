@@ -4,6 +4,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/settings/app_settings_scope.dart';
 import '../../../core/theme/style_guide.dart';
+import '../../../core/theme/welltur_theme.dart';
 import '../../../core/utils/notifications.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/notification_service.dart';
@@ -434,11 +435,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ...options.map((opt) {
               final (mode, label, icon) = opt;
               final isWelltur = mode == AppThemeMode.welltur;
-              const wellturRosa = Color(0xFFCD6184);
+              const wellturMarca = WellturPalette.botanico;
               return ListTile(
                 leading: Icon(
                   icon,
-                  color: isWelltur ? wellturRosa : SmarturStyle.purple,
+                  color: isWelltur ? wellturMarca : SmarturStyle.purple,
                 ),
                 title: Text(label, style: const TextStyle(fontFamily: 'Outfit')),
                 subtitle: isWelltur
@@ -449,7 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : null,
                 trailing: _themeMode == mode
                     ? Icon(Icons.check_circle,
-                        color: isWelltur ? wellturRosa : SmarturStyle.purple)
+                        color: isWelltur ? wellturMarca : SmarturStyle.purple)
                     : null,
                 onTap: () {
                   AppSettingsScope.of(context).setThemeMode(mode);

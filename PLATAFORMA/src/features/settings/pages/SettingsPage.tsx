@@ -261,18 +261,19 @@ export const SettingsPage = () => {
                                 onClick={() => handleThemeSelect('welltur')}
                                 className="rounded-2xl border p-4 text-left transition-colors"
                                 style={{
-                                    background: theme === 'welltur' ? 'rgba(134, 43, 72, 0.10)' : 'var(--color-bg-alt)',
-                                    borderColor: theme === 'welltur' ? '#cd6184' : 'var(--color-border)',
+                                    background: theme === 'welltur' ? 'rgba(88, 124, 104, 0.12)' : 'var(--color-bg-alt)',
+                                    borderColor: theme === 'welltur' ? '#587c68' : 'var(--color-border)',
                                 }}
                             >
                                 <div className="flex items-center gap-2">
-                                    <Leaf className="size-4" style={{ color: '#97a273' }} />
+                                    {/* Muestra fija de la marca: se ve igual desde cualquier tema. */}
+                                    <Leaf className="size-4" style={{ color: '#587c68' }} />
                                     <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                                         Modo Welltur
                                     </p>
                                 </div>
                                 <p className="mt-2 text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                                    Paleta rosa y salvia — identidad de marca
+                                    Crema, verde botánico y arena — identidad de marca
                                 </p>
                             </button>
                         </div>
