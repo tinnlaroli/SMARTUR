@@ -92,7 +92,7 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border shadow-2xl" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
                 <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--color-border)' }}>
                     <h2 className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--color-text)' }}>
                         <Star className="size-4" style={{ color: 'var(--color-pink)' }} />
@@ -103,7 +103,10 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto p-5">
+                <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+                    {/* Izquierda: datos del lugar · Derecha: bienestar (Welltur) */}
+                    <div className="grid min-h-0 flex-1 gap-6 overflow-y-auto p-5 md:grid-cols-2">
+                    <div className="space-y-4">
                     <div>
                         <label className="mb-1.5 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>Nombre *</label>
                         <input
@@ -193,6 +196,8 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                         )}
                     </div>
 
+                    </div>
+                    <div className="md:border-l md:pl-6" style={{ borderColor: 'var(--color-border)' }}>
                     <WellnessPlaceFields
                         values={{
                             isWellness,
@@ -215,10 +220,11 @@ export default function CreatePOIModal({ onClose, onSubmit }: Props) {
                             if (patch.descripcionBienestar !== undefined) setDescripcionBienestar(patch.descripcionBienestar);
                         }}
                     />
+                    </div>
+                    </div>
 
-                    {error && <p className="text-xs text-rose-500">{error}</p>}
-
-                    <div className="flex justify-end gap-3 pt-2">
+                    <div className="flex shrink-0 items-center justify-end gap-3 border-t px-5 py-4" style={{ borderColor: 'var(--color-border)' }}>
+                        {error && <p className="mr-auto text-xs text-rose-500">{error}</p>}
                         <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
                             Cancelar
                         </button>

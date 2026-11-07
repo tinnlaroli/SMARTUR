@@ -42,7 +42,11 @@ export const POIPage = () => {
     const [searchTerm, setSearchTerm] = useState(urlSearch);
     const [sort, setSort] = useState<SortState | null>(null);
     const handleSort = (key: string) => setSort(prev => nextSort(prev, key));
-    const displayData = useMemo(() => sortRows(points, sort), [points, sort]);
+    // "Bienestar" ordena con una clave numérica: aprobado en Welltur, en revisión, estándar.
+    const displayData = useMemo(() => sortRows(
+        points.map((p) => ({ ...p, orden_bienestar: !p.is_wellness ? 2 : p.wellness_status === 'approved' ? 0 : 1 })),
+        sort,
+    ), [points, sort]);
 
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -142,12 +146,12 @@ export const POIPage = () => {
                                     </DataTableHeadCell>
                                     <SortableHeadCell sortKey="name" sort={sort} onSort={handleSort}>{m.poi.colName}</SortableHeadCell>
                                     <DataTableHeadCell>{m.poi.colDescription}</DataTableHeadCell>
-                                    <DataTableHeadCell>
+                                    <SortableHeadCell sortKey="orden_bienestar" sort={sort} onSort={handleSort}>
                                         <span className="flex items-center gap-1.5">
                                             <Leaf className="h-3.5 w-3.5" />
                                             Bienestar
                                         </span>
-                                    </DataTableHeadCell>
+                                    </SortableHeadCell>
                                 </tr>
                             </DataTableHead>
                             <DataTableBody>
@@ -181,9 +185,11 @@ export const POIPage = () => {
                                             </DataTableCell>
                                             <DataTableCell>
                                                 {poi.is_wellness ? (
-                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${TABLE_BADGE_COLORS.emerald}`}>
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                                        poi.wellness_status === 'approved' ? TABLE_BADGE_COLORS.emerald : TABLE_BADGE_COLORS.neutral
+                                                    }`}>
                                                         <Leaf className="size-3" />
-                                                        WellTur
+                                                        {poi.wellness_status === 'approved' ? 'WellTur' : 'WellTur · en revisión'}
                                                     </span>
                                                 ) : (
                                                     <TableBadge text="Estándar" color={TABLE_BADGE_COLORS.neutral} />

@@ -1,4 +1,4 @@
-import { Leaf } from 'lucide-react';
+import { Check, CircleDashed, Leaf, MapPin } from 'lucide-react';
 import { isWellnessEvidenceComplete, parseWellnessEvidence, serializeWellnessEvidence } from './wellnessEvidence';
 
 export const WELLNESS_CATEGORIES = [
@@ -23,6 +23,7 @@ export const WELLNESS_PHYSICAL_EFFORT_LEVELS = [
 
 const inputClass =
     'w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 focus:ring-emerald-500 disabled:opacity-50';
+const inputStyle = { borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' };
 
 export interface WellnessPlaceValues {
     isWellness: boolean;
@@ -39,9 +40,34 @@ export interface WellnessPlaceValues {
 interface Props {
     values: WellnessPlaceValues;
     onChange: (patch: Partial<WellnessPlaceValues>) => void;
+    /** Estado de revisión actual del lugar (solo al editar). */
+    estado?: string | null;
 }
 
-export default function WellnessPlaceFields({ values, onChange }: Props) {
+const ESTADO_TEXTO: Record<string, { texto: string; clase: string }> = {
+    approved: { texto: 'Aprobado: aparece en Welltur', clase: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+    pending: { texto: 'En revisión: aún no aparece en Welltur', clase: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+    rejected: { texto: 'Rechazado: corrige y vuelve a enviar', clase: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' },
+};
+
+/** Encabezado numerado de cada paso, con palomita cuando ya está completo. */
+function Paso({ n, titulo, listo, children }: { n: number; titulo: string; listo: boolean; children: React.ReactNode }) {
+    return (
+        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}>
+            <div className="mb-3 flex items-center gap-2">
+                <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    listo ? 'bg-emerald-600 text-white' : 'border'
+                }`} style={listo ? undefined : { borderColor: 'var(--color-border)', color: 'var(--color-text-alt)' }}>
+                    {listo ? <Check className="size-3.5" /> : n}
+                </span>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{titulo}</p>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+export default function WellnessPlaceFields({ values, onChange, estado }: Props) {
     const evidence = parseWellnessEvidence(values.wellnessEvidence);
     const selectedEffort = WELLNESS_PHYSICAL_EFFORT_LEVELS.reduce((nearest, level) =>
         Math.abs(level.value - values.demandaFisica) < Math.abs(nearest.value - values.demandaFisica) ? level : nearest,
@@ -62,154 +88,186 @@ export default function WellnessPlaceFields({ values, onChange }: Props) {
         onChange({ wellnessDimensions: [...selected] });
     };
 
+    const tipoListo = values.categoriaWellness !== '';
+    const dimensionesListas = values.wellnessDimensions.length > 0;
+    const evidenciaLista = isWellnessEvidenceComplete(values.wellnessEvidence, values.wellnessDimensions);
+    const listos = [tipoListo, dimensionesListas, evidenciaLista].filter(Boolean).length;
+    const estadoInfo = estado ? ESTADO_TEXTO[estado] : undefined;
+
     return (
-        <section className="rounded-xl border" style={{ borderColor: 'var(--color-border)' }}>
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
-                <input
-                    type="checkbox"
-                    checked={values.isWellness}
-                    onChange={(e) => onChange({ isWellness: e.target.checked })}
-                    className="size-4 rounded accent-emerald-600"
-                />
-                <Leaf className="size-4 text-emerald-600" />
-                <span>
-                    <span className="block text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                        Proponer como experiencia de bienestar
-                    </span>
-                    <span className="block text-xs" style={{ color: 'var(--color-text-alt)' }}>
-                        Quedará pendiente de revisión antes de aparecer en Welltur.
-                    </span>
-                </span>
-            </label>
+        <section className="flex flex-col gap-3">
+            {/* ── ¿Es una experiencia de bienestar? ── */}
+            <div>
+                <p className="mb-2 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>¿Cómo se usa este lugar en la app?</p>
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de lugar">
+                    {[
+                        { valor: false, titulo: 'Lugar estándar', detalle: 'Aparece en explorar y en rutas.', Icono: MapPin },
+                        { valor: true, titulo: 'Experiencia de bienestar', detalle: 'También puede recomendarse en Welltur.', Icono: Leaf },
+                    ].map(({ valor, titulo, detalle, Icono }) => {
+                        const activo = values.isWellness === valor;
+                        return (
+                            <button
+                                key={titulo}
+                                type="button"
+                                role="radio"
+                                aria-checked={activo}
+                                onClick={() => onChange({ isWellness: valor })}
+                                className={`flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-all ${
+                                    activo
+                                        ? (valor ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/30 dark:bg-emerald-900/20' : 'border-violet-500 bg-violet-50 ring-2 ring-violet-500/30 dark:bg-violet-900/20')
+                                        : 'hover:border-zinc-300 dark:hover:border-zinc-600'
+                                }`}
+                                style={{ borderColor: activo ? '' : 'var(--color-border)' }}
+                            >
+                                <Icono className={`size-4 ${activo ? (valor ? 'text-emerald-600' : 'text-violet-600') : ''}`} style={activo ? undefined : { color: 'var(--color-text-alt)' }} />
+                                <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{titulo}</span>
+                                <span className="text-[11px] leading-snug" style={{ color: 'var(--color-text-alt)' }}>{detalle}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
             {values.isWellness && (
-                <div className="space-y-4 border-t px-3 pb-4 pt-4" style={{ borderColor: 'var(--color-border)' }}>
-                    <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-100">
-                        Marco orientador: dimensiones de bienestar descritas por GWI. Esta selección no es una certificación de GWI ni una afirmación de beneficio clínico.
+                <>
+                    {/* Estado y avance */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {estadoInfo && (
+                            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${estadoInfo.clase}`}>{estadoInfo.texto}</span>
+                        )}
+                        <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}>
+                            {listos === 3 ? 'Listo para revisión' : `${listos} de 3 requisitos completos`}
+                        </span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
+                        Al guardar queda <strong>en revisión</strong>: solo aparece en las recomendaciones de bienestar cuando un admin lo aprueba.
+                        Las dimensiones siguen el marco de GWI como guía; no son una certificación ni una promesa de beneficio para la salud.
                     </p>
 
-                    <div>
-                        <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                            Tipo de experiencia en SMARTUR
-                        </label>
-                        <p className="mb-1 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                            Esta categoría organiza el catálogo de SMARTUR; GWI aporta las dimensiones orientadoras, no esta lista de categorías.
-                        </p>
+                    {/* 1. Tipo */}
+                    <Paso n={1} titulo="Tipo de experiencia" listo={tipoListo}>
                         <select
                             required
                             value={values.categoriaWellness}
                             onChange={(e) => onChange({ categoriaWellness: e.target.value })}
                             className={inputClass}
-                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                            style={inputStyle}
                         >
                             <option value="">Seleccionar…</option>
                             {WELLNESS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
                         </select>
-                    </div>
+                    </Paso>
 
-                    <fieldset>
-                        <legend className="mb-2 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                            ¿Qué dimensiones apoya la experiencia?
-                        </legend>
-                        <p className="mb-2 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                            Marca solo dimensiones respaldadas por una actividad o característica concreta del lugar. Son categorías orientativas de GWI, no una puntuación de calidad ni una promesa de resultados.
+                    {/* 2. Dimensiones */}
+                    <Paso n={2} titulo="¿Qué dimensiones de bienestar apoya?" listo={dimensionesListas}>
+                        <p className="mb-2 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                            Marca solo las que respalde una actividad concreta del lugar.
                         </p>
-                        <div className="space-y-2">
-                            {WELLNESS_DIMENSIONS.map(({ key, label, description }) => (
-                                <label key={key} className="flex cursor-pointer items-start gap-2 rounded-lg border p-2.5" style={{ borderColor: 'var(--color-border)' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={values.wellnessDimensions.includes(key)}
-                                        onChange={() => toggleDimension(key)}
-                                        className="mt-0.5 size-4 accent-emerald-600"
-                                    />
-                                    <span>
-                                        <span className="block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</span>
-                                        <span className="block text-[11px] leading-snug" style={{ color: 'var(--color-text-alt)' }}>{description}</span>
-                                    </span>
-                                </label>
-                            ))}
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {WELLNESS_DIMENSIONS.map(({ key, label, description }) => {
+                                const marcada = values.wellnessDimensions.includes(key);
+                                return (
+                                    <label
+                                        key={key}
+                                        className={`flex cursor-pointer items-start gap-2 rounded-lg border p-2.5 transition-colors ${marcada ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : ''}`}
+                                        style={marcada ? undefined : { borderColor: 'var(--color-border)' }}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={marcada}
+                                            onChange={() => toggleDimension(key)}
+                                            className="mt-0.5 size-4 accent-emerald-600"
+                                        />
+                                        <span>
+                                            <span className="block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>{label}</span>
+                                            <span className="block text-[11px] leading-snug" style={{ color: 'var(--color-text-alt)' }}>{description}</span>
+                                        </span>
+                                    </label>
+                                );
+                            })}
                         </div>
-                    </fieldset>
+                    </Paso>
 
-                    <div className="space-y-3">
-                        <div>
-                            <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                                ¿Dónde comprobaste que ofrecen esta actividad? <span className="font-normal">(10–180 caracteres)</span>
-                            </label>
-                            <p className="mb-1 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                                Anota el enlace o documento que consultaste. Si lo comprobaste en persona, escribe el lugar y la fecha. Ej.: “Sitio oficial del establecimiento, consultado el dd/mm/aaaa” o “Visita al lugar, localidad, dd/mm/aaaa”. Abajo describe la actividad concreta; no afirmes que trata o cura problemas de salud.
-                            </p>
-                            <input
-                                required
-                                minLength={10}
-                                maxLength={180}
-                                value={evidence.source}
-                                onChange={(e) => updateEvidence({ source: e.target.value })}
-                                placeholder="Enlace o documento consultado, o lugar y fecha de la visita"
-                                className={inputClass}
-                                style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                            />
-                        </div>
-                        <fieldset className="space-y-2">
-                            <legend className="mb-1 text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
-                                Evidencia de cada dimensión marcada <span className="font-normal">(12–80 caracteres por dimensión)</span>
-                            </legend>
-                            {WELLNESS_DIMENSIONS.filter(({ key }) => values.wellnessDimensions.includes(key)).map(({ key, label }) => (
-                                <label key={key} className="block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
-                                    {label}: ¿qué ofrece realmente el lugar?
-                                    <textarea
-                                        required
-                                        minLength={12}
-                                        maxLength={80}
-                                        rows={2}
-                                        value={evidence.dimensions[key] ?? ''}
-                                        onChange={(e) => updateEvidence({ dimensions: { ...evidence.dimensions, [key]: e.target.value } })}
-                                        placeholder="Actividad concreta y relación observable con esta dimensión"
-                                        className={`${inputClass} mt-1 font-normal`}
-                                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                                    />
-                                </label>
-                            ))}
-                        </fieldset>
-                        <p className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>
-                            Registro estructurado: {values.wellnessEvidence.length}/1000 caracteres
-                            {isWellnessEvidenceComplete(values.wellnessEvidence, values.wellnessDimensions) ? ' · campos listos para revisión interna' : ' · falta información'}
-                        </p>
-                    </div>
-
-                    <div>
-                        <label htmlFor="wellness-physical-demand" className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Esfuerzo físico aproximado</label>
-                        <p className="mb-2 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>
-                            Elige una categoría sencilla según la actividad ofrecida. Se usa solo para desempatar recomendaciones con igual coincidencia de preferencias.
-                        </p>
-                        <select
-                            id="wellness-physical-demand"
-                            value={selectedEffort.value}
-                            onChange={(e) => onChange({ demandaFisica: Number(e.target.value) })}
+                    {/* 3. Evidencia */}
+                    <Paso n={3} titulo="Evidencia" listo={evidenciaLista}>
+                        <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                            ¿Dónde comprobaste la actividad? <span className="font-normal">(10–180 caracteres)</span>
+                        </label>
+                        <input
+                            required
+                            minLength={10}
+                            maxLength={180}
+                            value={evidence.source}
+                            onChange={(e) => updateEvidence({ source: e.target.value })}
+                            placeholder="Ej.: Sitio oficial, consultado el 07/11/2026 · o · Visita a Fortín, 05/11/2026"
                             className={inputClass}
-                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                        >
-                            {WELLNESS_PHYSICAL_EFFORT_LEVELS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
-                        </select>
-                        <p className="mt-1 text-[10px] leading-relaxed" style={{ color: 'var(--color-text-alt)' }}>{selectedEffort.detail}</p>
-                    </div>
+                            style={inputStyle}
+                        />
+                        {values.wellnessDimensions.length === 0 ? (
+                            <p className="mt-3 flex items-center gap-1.5 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>
+                                <CircleDashed className="size-3.5" /> Marca al menos una dimensión en el paso 2 para describir su evidencia.
+                            </p>
+                        ) : (
+                            <div className="mt-3 space-y-2">
+                                {WELLNESS_DIMENSIONS.filter(({ key }) => values.wellnessDimensions.includes(key)).map(({ key, label }) => (
+                                    <label key={key} className="block text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
+                                        {label}: ¿qué ofrece el lugar? <span className="font-normal" style={{ color: 'var(--color-text-alt)' }}>(12–80 caracteres)</span>
+                                        <textarea
+                                            required
+                                            minLength={12}
+                                            maxLength={80}
+                                            rows={2}
+                                            value={evidence.dimensions[key] ?? ''}
+                                            onChange={(e) => updateEvidence({ dimensions: { ...evidence.dimensions, [key]: e.target.value } })}
+                                            placeholder="Actividad concreta, sin afirmar que cura o trata la salud"
+                                            className={`${inputClass} mt-1 font-normal`}
+                                            style={{ ...inputStyle, resize: 'none' }}
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                    </Paso>
 
-                    <div>
+                    {/* 4. Detalles opcionales */}
+                    <Paso n={4} titulo="Detalles para la recomendación" listo={values.descripcionBienestar.trim() !== ''}>
+                        <label htmlFor="wellness-physical-demand" className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
+                            Esfuerzo físico
+                        </label>
+                        <div className="grid grid-cols-3 gap-2" id="wellness-physical-demand" role="radiogroup" aria-label="Esfuerzo físico">
+                            {WELLNESS_PHYSICAL_EFFORT_LEVELS.map(({ value, label }) => {
+                                const activo = selectedEffort.value === value;
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={activo}
+                                        onClick={() => onChange({ demandaFisica: value })}
+                                        className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors ${activo ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : ''}`}
+                                        style={activo ? undefined : { borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className="mt-1 mb-3 text-[11px]" style={{ color: 'var(--color-text-alt)' }}>{selectedEffort.detail}</p>
+
                         <label className="mb-1 block text-xs font-semibold" style={{ color: 'var(--color-text-alt)' }}>
                             Descripción para visitantes <span className="font-normal">(opcional)</span>
                         </label>
-                        <input
-                            type="text"
+                        <textarea
                             maxLength={500}
+                            rows={2}
                             value={values.descripcionBienestar}
                             onChange={(e) => onChange({ descripcionBienestar: e.target.value })}
                             placeholder="¿Qué puede vivir o hacer la persona en este lugar?"
                             className={inputClass}
-                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
+                            style={{ ...inputStyle, resize: 'none' }}
                         />
-                    </div>
-                </div>
+                    </Paso>
+                </>
             )}
         </section>
     );
