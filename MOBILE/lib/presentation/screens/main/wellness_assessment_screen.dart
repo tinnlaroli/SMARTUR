@@ -422,7 +422,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         ]),
         const SizedBox(height: 6),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Flexible(child: Text(_titulos[_step]!, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, height: 1.12, color: scheme.onSurface))),
+          Expanded(child: Text(_titulos[_step]!, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, height: 1.12, color: scheme.onSurface))),
           // Instrucciones oficiales de la PSS-10: se muestran u ocultan con la "i".
           if (_step == 1 && _usarPss && !_omitirEstres)
             IconButton(
@@ -433,8 +433,11 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
               icon: Icon(_verInstruccion ? Icons.info_rounded : Icons.info_outline_rounded, size: 24),
             ),
         ]),
-        const SizedBox(height: 5),
-        Text(hints[_step]!, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
+        // En la PSS-10 la descripción vive dentro de la "i".
+        if (!(_step == 1 && _usarPss)) ...[
+          const SizedBox(height: 5),
+          Text(hints[_step]!, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
+        ],
       ])),
       // La llave por paso hace que cada paso empiece arriba.
       Expanded(child: SingleChildScrollView(key: ValueKey('paso_$_step'), padding: const EdgeInsets.fromLTRB(20, 4, 20, 16), child: body)),
@@ -488,7 +491,12 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
                     margin: const EdgeInsets.only(top: 4),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: _green.withValues(alpha: .07), borderRadius: BorderRadius.circular(12)),
-                    child: Text(_pss!.instruccion, style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)))
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Escala de estrés percibido (PSS-10). Toca una respuesta y avanzamos solos.',
+                        style: TextStyle(fontSize: 12.5, height: 1.4, fontWeight: FontWeight.w700, color: scheme.onSurface)),
+                      const SizedBox(height: 6),
+                      Text(_pss!.instruccion, style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+                    ]))
                 : const SizedBox(width: double.infinity),
           ),
         ],
@@ -508,6 +516,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
                 niveles: opciones.length,
                 seleccionada: _respuesta(i) == v,
                 acento: _green,
+                sobreAcento: _onGreen,
                 onTap: () => _responder(i, v),
               ),
             )),
@@ -602,9 +611,10 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   });
 
   /// Un solo valor, mismas tarjetas que motivos y modalidades.
-  Widget _gridUnico(List<_Opcion> opciones, String? elegida, ValueChanged<String> onElegir, {double altoMin = 138}) =>
+  Widget _gridUnico(List<_Opcion> opciones, String? elegida, ValueChanged<String> onElegir,
+          {double altoMin = 138, int? columnasFijas}) =>
       LayoutBuilder(builder: (context, c) {
-        final columnas = c.maxWidth >= 560 ? 3 : 2;
+        final columnas = columnasFijas ?? (c.maxWidth >= 560 ? 3 : 2);
         final ancho = (c.maxWidth - 10 * (columnas - 1)) / columnas;
         return Wrap(spacing: 10, runSpacing: 10, children: opciones.map((m) => SizedBox(width: ancho, child: _TarjetaOpcion(
           opcion: m,
@@ -622,6 +632,9 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     [for (final e in _esfuerzos) (key: '${e.nivel}', title: e.titulo, subtitle: e.detalle, icon: e.icon)],
     '$_maxEffort',
     (k) => setState(() => _maxEffort = int.parse(k)),
+    // Una sobre otra: es una escala de menos a más.
+    columnasFijas: 1,
+    altoMin: 0,
   );
 
   Widget _subtitulo(ColorScheme scheme, String texto) => Padding(
@@ -688,7 +701,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Center(child: _OrbeWelltur(color: _green, tamano: 128, pensando: true)),
         const SizedBox(height: 28),
-        Center(child: Text('WELLTUR está pensando…', style: TextStyle(fontFamily: 'CalSans', fontSize: 24, color: scheme.onSurface))),
+        Center(child: Text('WELLTUR está analizando…', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'CalSans', fontSize: 24, color: scheme.onSurface))),
         const SizedBox(height: 6),
         Center(child: Text('Combinando tus respuestas con el modelo', style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant))),
         const SizedBox(height: 28),
@@ -818,50 +831,65 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15))));
 }
 
-/// Respuesta de escala: barra de intensidad a la izquierda, se llena según el nivel.
+/// Respuesta de escala. A la izquierda, un medidor circular que se llena según la frecuencia
+/// (vacío = "Nunca", lleno = "Muy a menudo"). La elegida se rellena del color de acento.
 class _OpcionRespuesta extends StatelessWidget {
   final String texto;
   final int nivel;
   final int niveles;
   final bool seleccionada;
   final Color acento;
+  final Color sobreAcento;
   final VoidCallback onTap;
   const _OpcionRespuesta({required this.texto, required this.nivel, required this.niveles,
-    required this.seleccionada, required this.acento, required this.onTap});
+    required this.seleccionada, required this.acento, required this.sobreAcento, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final tinta = seleccionada ? sobreAcento : scheme.onSurface;
+    final fraccion = niveles <= 1 ? 0.0 : nivel / (niveles - 1);
     return Semantics(button: true, selected: seleccionada, label: texto, child: GestureDetector(
       onTap: onTap,
       child: AnimatedScale(
-        scale: seleccionada ? 1.0 : .985,
+        scale: seleccionada ? 1.0 : .98,
         duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutBack,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: seleccionada ? acento.withValues(alpha: .14) : scheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: seleccionada ? acento : scheme.outlineVariant.withValues(alpha: .7), width: seleccionada ? 1.8 : 1),
+            color: seleccionada ? acento : scheme.surface,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: seleccionada ? acento : scheme.outlineVariant.withValues(alpha: .8), width: 1.2),
+            boxShadow: seleccionada
+                ? [BoxShadow(color: acento.withValues(alpha: .28), blurRadius: 14, offset: const Offset(0, 5))]
+                : [BoxShadow(color: scheme.shadow.withValues(alpha: .04), blurRadius: 6, offset: const Offset(0, 2))],
           ),
           child: Row(children: [
-            // Intensidad: de 1 a N barritas.
-            Row(children: List.generate(niveles - 1, (k) => Container(
-              width: 4, height: 8.0 + k * 3, margin: const EdgeInsets.only(right: 3),
-              decoration: BoxDecoration(
-                color: k < nivel ? acento.withValues(alpha: seleccionada ? 1 : .8) : scheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2)),
-            ))),
-            const SizedBox(width: 12),
-            Expanded(child: Text(texto, style: TextStyle(fontSize: 15, fontWeight: seleccionada ? FontWeight.w700 : FontWeight.w500, color: scheme.onSurface))),
+            // Medidor de frecuencia.
+            SizedBox(width: 30, height: 30, child: Stack(alignment: Alignment.center, children: [
+              CircularProgressIndicator(
+                value: 1, strokeWidth: 3.5,
+                color: (seleccionada ? sobreAcento : acento).withValues(alpha: .18),
+              ),
+              CircularProgressIndicator(
+                value: fraccion, strokeWidth: 3.5, strokeCap: StrokeCap.round,
+                color: seleccionada ? sobreAcento : acento,
+              ),
+              Text('$nivel', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tinta.withValues(alpha: .8))),
+            ])),
+            const SizedBox(width: 14),
+            Expanded(child: Text(texto, style: TextStyle(
+              fontSize: 15.5, fontWeight: seleccionada ? FontWeight.w800 : FontWeight.w600, color: tinta))),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
               child: seleccionada
-                  ? Icon(Icons.check_circle_rounded, key: const ValueKey('si'), color: acento, size: 22)
-                  : Icon(Icons.circle_outlined, key: const ValueKey('no'), color: scheme.outlineVariant, size: 22),
+                  ? Icon(Icons.check_rounded, key: const ValueKey('si'), color: sobreAcento, size: 24)
+                  : const SizedBox(key: ValueKey('no'), width: 24),
             ),
           ]),
         ),
