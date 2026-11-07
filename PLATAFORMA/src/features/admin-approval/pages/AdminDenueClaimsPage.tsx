@@ -1,320 +1,369 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Building2, CheckCircle, FileSearch, Loader2, MapPin, Store, X, XCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { TableSkeleton } from '../../../components/ui/TableSkeleton';
-import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import {
-    DataTableShell, DataTableScroll, DataTable,
-    DataTableHead, DataTableHeadCell,
-    DataTableBody, DataTableRow, DataTableCell,
-} from '../../../components/ui/DataTable';
+    AlertCircle, Building2, CheckCircle, Loader2, MapPin, RefreshCw, ShieldCheck, ShieldX, Store, X,
+} from 'lucide-react';
+import { useEscapeKey } from '../../../shared/hooks/useEscapeKey';
 import { wellturApi, type ReclamoDenue } from '../../ml-observability/api/wellturApi';
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
 type Estado = 'pending' | 'approved' | 'rejected';
-const ETIQUETAS: Record<Estado, string> = { pending: 'Pendientes', approved: 'Aprobados', rejected: 'Rechazados' };
 
-// ── Modal de revisión ─────────────────────────────────────────────────────────
+const ESTADOS: Record<Estado, { lista: string; insignia: string }> = {
+    pending:  { lista: 'Pendientes', insignia: 'En revisión' },
+    approved: { lista: 'Aprobados',  insignia: 'Aprobado' },
+    rejected: { lista: 'Rechazados', insignia: 'Rechazado' },
+};
 
-interface ClaimReviewModalProps {
-    reclamo: ReclamoDenue;
-    onClose: () => void;
-    onReviewed: (id: number) => void;
+function formatDate(iso: string) {
+    return new Date(iso).toLocaleString('es-MX', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
 }
 
-function ClaimReviewModal({ reclamo, onClose, onReviewed }: ClaimReviewModalProps) {
-    const [action, setAction]         = useState<'approve' | 'reject' | null>(null);
-    const [reason, setReason]         = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError]           = useState<string | null>(null);
-    const pendiente = reclamo.status === 'pending';
+// ── Resolve Modal ──────────────────────────────────────────────────────────────
 
+interface ResolveModalProps {
+    reclamo: ReclamoDenue;
+    onClose: () => void;
+    onResolve: (id: number, decision: 'approved' | 'rejected', nota: string) => Promise<void>;
+}
+
+function ResolveModal({ reclamo, onClose, onResolve }: ResolveModalProps) {
     useEscapeKey(onClose);
+    const [decision, setDecision] = useState<'approved' | 'rejected' | null>(null);
+    const [nota, setNota] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = async () => {
-        if (!action) return;
-        if (action === 'reject' && !reason.trim()) { setError('Ingresa el motivo.'); return; }
-        setSubmitting(true);
-        setError(null);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!decision) { setError('Selecciona una resolución.'); return; }
+        if (decision === 'rejected' && !nota.trim()) { setError('Explica a la empresa por qué se rechaza.'); return; }
+        setLoading(true);
+        setError('');
         try {
-            await wellturApi.revisarReclamo(reclamo.claim_id, action === 'approve' ? 'approved' : 'rejected', reason.trim());
-            onReviewed(reclamo.claim_id);
+            await onResolve(reclamo.claim_id, decision, nota.trim());
             onClose();
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            setError(msg ?? 'Error al procesar. Intenta de nuevo.');
+            setError(msg ?? 'Error al resolver el reclamo. Intenta de nuevo.');
         } finally {
-            setSubmitting(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div
-            style={{
-                position: 'fixed', inset: 0, zIndex: 50,
-                background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-            }}
-            onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-            <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: 12 }}
-                transition={{ duration: 0.18 }}
-                style={{
-                    background: 'var(--color-bg)', borderRadius: 16,
-                    width: '100%', maxWidth: 560,
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                    overflow: 'hidden',
-                }}
-            >
-                {/* Header */}
-                <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '18px 24px',
-                    borderBottom: '1px solid var(--color-border)',
-                }}>
-                    <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--color-text)' }}>
-                        Revisar reclamo de ficha DENUE
-                    </h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
-                        <X size={20} />
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="rounded-xl shadow-2xl w-full max-w-lg border" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+                <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <h3 className="text-base font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+                        <ShieldCheck className="size-4 text-violet-500" />
+                        Resolver reclamo #{reclamo.claim_id}
+                    </h3>
+                    <button onClick={onClose} className="rounded-lg p-1.5 transition-colors nav-item-idle">
+                        <X className="size-4" />
                     </button>
                 </div>
 
-                {/* Body */}
-                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--color-text)' }}>
-                        {reclamo.poi_nombre}
-                    </h3>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                        <MapPin size={14} />
-                        <span>{[reclamo.municipio, reclamo.estado].filter(Boolean).join(', ')} · CLEE {reclamo.denue_clee}</span>
+                <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-y-5 max-h-[80vh] overflow-y-auto">
+                    {/* Ficha reclamada */}
+                    <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="px-4 py-2 text-xs font-bold uppercase tracking-widest" style={{ background: 'var(--color-bg-alt)', color: 'var(--color-text-alt)' }}>
+                            Ficha del DENUE
+                        </div>
+                        <div className="px-4 py-3 text-xs space-y-1">
+                            <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{reclamo.poi_nombre}</p>
+                            <p style={{ color: 'var(--color-text-alt)' }}>
+                                {[reclamo.municipio, reclamo.estado].filter(Boolean).join(', ')} · CLEE {reclamo.denue_clee}
+                            </p>
+                            {reclamo.poi_descripcion && <p style={{ color: 'var(--color-text-alt)' }}>{reclamo.poi_descripcion}</p>}
+                        </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'var(--color-text-muted)' }}>
-                        <Building2 size={14} />
-                        <span>
-                            Reclamado por <strong>{reclamo.empresa}</strong> ({reclamo.solicitante})
-                            {' · '}empresa {reclamo.empresa_status ?? 'sin estatus'}{reclamo.empresa_certificada ? ' · certificada' : ''}
-                        </span>
+                    {/* Evidencia */}
+                    <div className="rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">Evidencia de {reclamo.empresa}</p>
+                        <p className="text-xs text-zinc-700 dark:text-zinc-300">{reclamo.evidencia}</p>
                     </div>
 
-                    {reclamo.poi_descripcion && (
-                        <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                            <strong>DENUE:</strong> {reclamo.poi_descripcion}
+                    {/* Resolution choice */}
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-alt)' }}>Resolución</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setDecision('approved')}
+                                className={`flex flex-col items-center gap-1.5 rounded-xl border p-4 text-center transition-all ${
+                                    decision === 'approved'
+                                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-2 ring-emerald-500/30'
+                                        : 'hover:border-zinc-300 dark:hover:border-zinc-600'
+                                }`}
+                                style={{ borderColor: decision === 'approved' ? '' : 'var(--color-border)' }}
+                            >
+                                <ShieldCheck className={`size-5 ${decision === 'approved' ? 'text-emerald-600' : ''}`} style={{ color: decision === 'approved' ? '' : 'var(--color-text-alt)' }} />
+                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Aprobar reclamo</span>
+                                <span className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>La ficha se liga a la empresa y la app la muestra verificada</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDecision('rejected')}
+                                className={`flex flex-col items-center gap-1.5 rounded-xl border p-4 text-center transition-all ${
+                                    decision === 'rejected'
+                                        ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 ring-2 ring-violet-500/30'
+                                        : 'hover:border-zinc-300 dark:hover:border-zinc-600'
+                                }`}
+                                style={{ borderColor: decision === 'rejected' ? '' : 'var(--color-border)' }}
+                            >
+                                <ShieldX className={`size-5 ${decision === 'rejected' ? 'text-violet-600' : ''}`} style={{ color: decision === 'rejected' ? '' : 'var(--color-text-alt)' }} />
+                                <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>Rechazar reclamo</span>
+                                <span className="text-[10px]" style={{ color: 'var(--color-text-alt)' }}>La evidencia no basta; la ficha sigue sin verificar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Admin note */}
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--color-text-alt)' }}>
+                            Nota para la empresa {decision === 'rejected' ? '(obligatoria)' : '(opcional)'}
+                        </label>
+                        <textarea
+                            value={nota}
+                            onChange={(e) => setNota(e.target.value)}
+                            rows={2}
+                            placeholder="Explica la decisión tomada..."
+                            className="w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 outline-none resize-none"
+                            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
+                        />
+                    </div>
+
+                    {error && (
+                        <p className="flex items-center gap-1 text-xs text-red-500">
+                            <AlertCircle className="size-3" />{error}
                         </p>
                     )}
 
-                    <div style={{
-                        background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)',
-                        borderRadius: 12, padding: 14, fontSize: 14, color: 'var(--color-text)', lineHeight: 1.5,
-                    }}>
-                        <strong>Evidencia:</strong> {reclamo.evidencia}
+                    <div className="flex justify-end gap-3 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 rounded-lg text-sm font-medium border transition-colors nav-item-idle"
+                            style={{ borderColor: 'var(--color-border)' }}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading || !decision}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-60"
+                        >
+                            {loading && <Loader2 className="size-3.5 animate-spin" />}
+                            Confirmar resolución
+                        </button>
                     </div>
-
-                    <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
-                        Al aprobar, el lugar queda ligado a la empresa y la app lo muestra como "Verificado por SMARTUR".
-                    </p>
-
-                    {!pendiente ? (
-                        reclamo.admin_notes && (
-                            <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                                <strong>Notas:</strong> {reclamo.admin_notes}
-                            </p>
-                        )
-                    ) : (
-                        <>
-                            {/* Action selector */}
-                            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                                <button
-                                    onClick={() => setAction('approve')}
-                                    style={{
-                                        flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
-                                        cursor: 'pointer', transition: 'all 0.15s',
-                                        background: action === 'approve' ? '#10b981' : 'transparent',
-                                        color: action === 'approve' ? '#fff' : '#10b981',
-                                        border: '1.5px solid #10b981',
-                                    }}
-                                >
-                                    <CheckCircle size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-                                    Aprobar
-                                </button>
-                                <button
-                                    onClick={() => setAction('reject')}
-                                    style={{
-                                        flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
-                                        cursor: 'pointer', transition: 'all 0.15s',
-                                        background: action === 'reject' ? '#f43f5e' : 'transparent',
-                                        color: action === 'reject' ? '#fff' : '#f43f5e',
-                                        border: '1.5px solid #f43f5e',
-                                    }}
-                                >
-                                    <XCircle size={14} style={{ marginRight: 6, verticalAlign: -2 }} />
-                                    Rechazar
-                                </button>
-                            </div>
-
-                            {action === 'reject' && (
-                                <textarea
-                                    placeholder="Motivo del rechazo (visible para la empresa)…"
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    rows={3}
-                                    style={{
-                                        width: '100%', padding: '10px 12px', borderRadius: 8, fontSize: 13,
-                                        border: '1px solid var(--color-border)',
-                                        background: 'var(--color-bg)', color: 'var(--color-text)',
-                                        resize: 'none', boxSizing: 'border-box',
-                                    }}
-                                />
-                            )}
-
-                            {error && <p style={{ margin: 0, color: '#f43f5e', fontSize: 13 }}>{error}</p>}
-
-                            {action && (
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={submitting}
-                                    style={{
-                                        padding: '11px 0', borderRadius: 8, fontSize: 15, fontWeight: 700,
-                                        cursor: submitting ? 'not-allowed' : 'pointer', border: 'none',
-                                        background: action === 'approve' ? '#10b981' : '#f43f5e',
-                                        color: '#fff', opacity: submitting ? 0.7 : 1,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                    }}
-                                >
-                                    {submitting && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
-                                    {action === 'approve' ? 'Confirmar aprobación' : 'Confirmar rechazo'}
-                                </button>
-                            )}
-                        </>
-                    )}
-                </div>
-            </motion.div>
+                </form>
+            </div>
         </div>
     );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Claim Card ─────────────────────────────────────────────────────────────────
 
-/**
- * Reclamos de fichas del DENUE: una empresa registrada pide que un negocio del DENUE (INEGI)
- * se ligue a ella. Al aprobarlo, la app lo muestra como "Verificado por SMARTUR".
- */
-export function AdminDenueClaimsPage() {
-    const [estado, setEstado]       = useState<Estado>('pending');
-    const [reclamos, setReclamos]   = useState<ReclamoDenue[]>([]);
-    const [loading, setLoading]     = useState(true);
-    const [selected, setSelected]   = useState<ReclamoDenue | null>(null);
-    const [search, setSearch]       = useState('');
+interface ClaimCardProps {
+    reclamo: ReclamoDenue;
+    onResolve: (reclamo: ReclamoDenue) => void;
+}
 
-    // El estado de carga se activa al cambiar de pestaña (no dentro del efecto).
-    const cargar = useCallback(() => {
-        wellturApi.reclamos(estado)
-            .then(setReclamos)
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [estado]);
-    useEffect(() => { cargar(); }, [cargar]);
-
-    const handleReviewed = (id: number) => setReclamos((prev) => prev.filter((r) => r.claim_id !== id));
-
-    const q = search.toLowerCase();
-    const filtered = reclamos.filter((r) =>
-        r.poi_nombre.toLowerCase().includes(q) ||
-        r.empresa.toLowerCase().includes(q) ||
-        r.municipio.toLowerCase().includes(q)
-    );
-
+function ClaimCard({ reclamo, onResolve }: ClaimCardProps) {
+    const pendiente = reclamo.status === 'pending';
     return (
-        <DataTableShell>
-            {/* Page header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: 'var(--color-text)' }}>
-                        Reclamos de fichas DENUE
-                    </h1>
-                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-muted)' }}>
-                        Empresas que piden ligar un negocio del DENUE a su cuenta · {reclamos.length} {ETIQUETAS[estado].toLowerCase()}
+        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+            <div className="flex items-start justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+                <div className="flex flex-col gap-y-0.5">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="size-3.5 text-violet-500" />
+                        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{reclamo.empresa}</p>
+                    </div>
+                    <p className="text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                        {reclamo.solicitante} · empresa {reclamo.empresa_status ?? 'sin estatus'}
+                        {reclamo.empresa_certificada ? ' · certificada' : ''} · {formatDate(reclamo.created_at)}
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                    {(Object.keys(ETIQUETAS) as Estado[]).map((e) => (
-                        <button
-                            key={e}
-                            onClick={() => { if (e !== estado) { setLoading(true); setEstado(e); } }}
-                            className="rounded-xl border px-3 py-1.5 text-sm font-medium transition-colors"
-                            style={{
-                                borderColor: estado === e ? '#10b981' : 'var(--color-border)',
-                                color: estado === e ? '#10b981' : 'var(--color-text-alt)',
-                                background: estado === e ? '#10b98112' : 'transparent',
-                            }}
-                        >
-                            {ETIQUETAS[e]}
-                        </button>
-                    ))}
-                    <input
-                        type="text"
-                        placeholder="Buscar por lugar, empresa o municipio…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-64 rounded-lg border px-4 py-2 text-sm focus:outline-none"
-                        style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-                    />
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    reclamo.status === 'approved'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                        : reclamo.status === 'rejected'
+                            ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                            : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400'
+                }`}>
+                    <Store className="size-3" />
+                    {ESTADOS[reclamo.status].insignia}
+                </span>
+            </div>
+
+            {/* Ficha reclamada */}
+            <div className="px-5 py-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-alt)' }}>Ficha del DENUE reclamada</p>
+                <div className="rounded-lg p-3" style={{ background: 'var(--color-bg-alt)' }}>
+                    <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text)' }}>{reclamo.poi_nombre}</p>
+                    <p className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-alt)' }}>
+                        <MapPin className="size-3" />
+                        {[reclamo.municipio, reclamo.estado].filter(Boolean).join(', ')} · CLEE {reclamo.denue_clee}
+                    </p>
                 </div>
             </div>
 
-            {loading ? (
-                <TableSkeleton rows={6} colWidths={['30%', '20%', '25%', '15%', '10%']} />
-            ) : filtered.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
-                    <FileSearch size={40} style={{ opacity: 0.2, marginBottom: 12 }} />
-                    <p>No hay reclamos {ETIQUETAS[estado].toLowerCase()}</p>
+            {/* Evidencia */}
+            <div className="px-5 pb-4">
+                <div className="rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">Evidencia de la empresa</p>
+                    <p className="text-xs" style={{ color: 'var(--color-text)' }}>{reclamo.evidencia}</p>
                 </div>
-            ) : (
-                <DataTableScroll>
-                    <DataTable>
-                        <DataTableHead>
-                            <tr>
-                                <DataTableHeadCell>Lugar (DENUE)</DataTableHeadCell>
-                                <DataTableHeadCell>Municipio</DataTableHeadCell>
-                                <DataTableHeadCell>Empresa</DataTableHeadCell>
-                                <DataTableHeadCell>Solicitado</DataTableHeadCell>
-                                <DataTableHeadCell>Estatus</DataTableHeadCell>
-                            </tr>
-                        </DataTableHead>
-                        <DataTableBody>
-                            {filtered.map((r) => (
-                                <DataTableRow key={r.claim_id} onClick={() => setSelected(r)} className="cursor-pointer">
-                                    <DataTableCell style={{ fontWeight: 600 }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                                            <Store size={15} style={{ opacity: 0.5 }} /> {r.poi_nombre}
-                                        </span>
-                                    </DataTableCell>
-                                    <DataTableCell>{r.municipio || '—'}</DataTableCell>
-                                    <DataTableCell>{r.empresa}</DataTableCell>
-                                    <DataTableCell style={{ fontSize: 12, opacity: 0.7 }}>
-                                        {new Date(r.created_at).toLocaleDateString('es-MX')}
-                                    </DataTableCell>
-                                    <DataTableCell style={{ fontSize: 12, opacity: 0.7 }}>{ETIQUETAS[r.status]}</DataTableCell>
-                                </DataTableRow>
-                            ))}
-                        </DataTableBody>
-                    </DataTable>
-                </DataTableScroll>
-            )}
-
-            <AnimatePresence>
-                {selected && (
-                    <ClaimReviewModal
-                        reclamo={selected}
-                        onClose={() => setSelected(null)}
-                        onReviewed={handleReviewed}
-                    />
+                {!pendiente && reclamo.admin_notes && (
+                    <p className="text-xs mt-3" style={{ color: 'var(--color-text-alt)' }}>
+                        <strong>Nota del admin:</strong> {reclamo.admin_notes}
+                    </p>
                 )}
-            </AnimatePresence>
-        </DataTableShell>
+            </div>
+
+            {/* Resolve action */}
+            {pendiente && (
+                <div className="flex items-center gap-3 px-5 py-3 border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-alt)' }}>
+                    <button
+                        onClick={() => onResolve(reclamo)}
+                        className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
+                    >
+                        <CheckCircle className="size-3.5" />
+                        Resolver reclamo
+                    </button>
+                </div>
+            )}
+        </div>
     );
 }
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
+
+/**
+ * Reclamos de fichas del DENUE: una empresa registrada pide que un negocio del DENUE (INEGI)
+ * se ligue a su cuenta. Al aprobarlo, la app lo muestra como "Verificado por SMARTUR".
+ */
+export function AdminDenueClaimsPage() {
+    const [estado, setEstado] = useState<Estado>('pending');
+    const [reclamos, setReclamos] = useState<ReclamoDenue[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [resolveTarget, setResolveTarget] = useState<ReclamoDenue | null>(null);
+
+    // El estado de carga se activa al pedir otra lista (no dentro del efecto).
+    const load = useCallback(async (e: Estado) => {
+        try {
+            setReclamos(await wellturApi.reclamos(e));
+            setError('');
+        } catch {
+            setError('No se pudieron cargar los reclamos.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { void load(estado); }, [load, estado]);
+
+    const recargar = (e: Estado) => { setLoading(true); setEstado(e); if (e === estado) void load(e); };
+
+    const handleResolve = async (id: number, decision: 'approved' | 'rejected', nota: string) => {
+        await wellturApi.revisarReclamo(id, decision, nota);
+        setReclamos((prev) => prev.filter((r) => r.claim_id !== id));
+    };
+
+    const total = reclamos.length;
+
+    return (
+        <div className="flex flex-col gap-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+                <div className="flex-1">
+                    <h1 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>Reclamos DENUE</h1>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        {total} reclamo{total !== 1 ? 's' : ''} {ESTADOS[estado].lista.toLowerCase()}
+                    </p>
+                </div>
+                <button
+                    onClick={() => recargar(estado)}
+                    disabled={loading}
+                    className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors nav-item-idle"
+                    style={{ borderColor: 'var(--color-border)' }}
+                >
+                    <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    Actualizar
+                </button>
+            </div>
+
+            {/* Info banner */}
+            <div className="rounded-xl border px-5 py-4 flex items-start gap-3 shrink-0" style={{ background: 'var(--color-bg-alt)', borderColor: 'var(--color-border)' }}>
+                <Store className="size-5 mt-0.5 shrink-0" style={{ color: '#7c3aed' }} />
+                <div>
+                    <p className="text-sm font-semibold mb-0.5" style={{ color: 'var(--color-text)' }}>Fichas del DENUE reclamadas por empresas</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-alt)' }}>
+                        Los negocios del DENUE (INEGI) se muestran en la app como "por verificar". Cuando una empresa registrada reclama
+                        uno como suyo, revisa su evidencia: si lo apruebas, la ficha se liga a la empresa y aparece como "Verificado por SMARTUR".
+                    </p>
+                </div>
+            </div>
+
+            {/* Filtro por estatus */}
+            <div className="flex items-center gap-2">
+                {(Object.keys(ESTADOS) as Estado[]).map((e) => (
+                    <button
+                        key={e}
+                        onClick={() => { if (e !== estado) recargar(e); }}
+                        className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                            e === estado ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400' : 'nav-item-idle'
+                        }`}
+                        style={{ borderColor: e === estado ? '' : 'var(--color-border)' }}
+                    >
+                        {ESTADOS[e].lista}
+                    </button>
+                ))}
+            </div>
+
+            {/* Content */}
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 className="size-6 animate-spin" style={{ color: 'var(--color-text-alt)' }} />
+                </div>
+            ) : error ? (
+                <div className="flex items-center gap-2 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 dark:text-red-400">
+                    <AlertCircle className="size-4 shrink-0" />{error}
+                </div>
+            ) : reclamos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <CheckCircle className="size-10 mb-3" style={{ color: 'var(--color-border)' }} />
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-alt)' }}>
+                        Sin reclamos {ESTADOS[estado].lista.toLowerCase()}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--color-text-alt)' }}>
+                        Cuando una empresa reclame una ficha del DENUE aparecerá aquí.
+                    </p>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-y-4 max-w-3xl">
+                    {reclamos.map((r) => (
+                        <ClaimCard key={r.claim_id} reclamo={r} onResolve={setResolveTarget} />
+                    ))}
+                </div>
+            )}
+
+            {/* Resolve modal */}
+            {resolveTarget && (
+                <ResolveModal
+                    reclamo={resolveTarget}
+                    onClose={() => setResolveTarget(null)}
+                    onResolve={handleResolve}
+                />
+            )}
+        </div>
+    );
+}
+
+export default AdminDenueClaimsPage;

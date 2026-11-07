@@ -24,6 +24,10 @@ const TRAINING_LOCK_KEY = 'welltur_ml_training_lock';
 const POLL_INTERVAL_MS = 30_000;
 
 const PURPLE = DASHBOARD_COLORS.purple;
+
+/** Formatea un número; si el backend no lo envió (p. ej. un algoritmo solo con métricas de ranking), muestra "—". */
+const fmt = (v: unknown, decimales: number): string =>
+    typeof v === 'number' && Number.isFinite(v) ? v.toFixed(decimales) : '—';
 const CYAN   = DASHBOARD_COLORS.cyan;
 
 function SectionDivider({ label, color }: { label: string; color: string }) {
@@ -327,9 +331,10 @@ export const MLObservabilityPage = () => {
     const hasAlgorithms = metrics != null && Object.keys(metrics.algorithms ?? {}).length > 0;
     const localBlend    = metrics?.local_blend;
 
-    const bestRmse = hasAlgorithms
-        ? Math.min(...Object.values(metrics!.algorithms).map((a) => a.rmse))
-        : null;
+    const rmseValidos = hasAlgorithms
+        ? Object.values(metrics!.algorithms).map((a) => a.rmse).filter((r): r is number => typeof r === 'number' && Number.isFinite(r))
+        : [];
+    const bestRmse = rmseValidos.length ? Math.min(...rmseValidos) : null;
     const avgLatency = sessions.length > 0
         ? (sessions.reduce((s, d) => s + parseFloat(d.avg_latency_ms), 0) / sessions.length).toFixed(0)
         : null;
@@ -722,9 +727,9 @@ export const MLObservabilityPage = () => {
                                             <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
                                                 {copy.localBlendTitle}:&nbsp;
                                             </span>
-                                            {copy.localBlendRf} {(localBlend.rf * 100).toFixed(1)}%
+                                            {copy.localBlendRf} {fmt(localBlend.rf * 100, 1)}%
                                             &nbsp;·&nbsp;
-                                            {copy.localBlendGbm} {(localBlend.gbm * 100).toFixed(1)}%
+                                            {copy.localBlendGbm} {fmt(localBlend.gbm * 100, 1)}%
                                         </div>
                                     )}
                                 </div>
@@ -784,10 +789,10 @@ export const MLObservabilityPage = () => {
                                                             className="px-4 py-2.5 text-right font-mono text-sm"
                                                             style={{ color: isBest ? PURPLE : 'var(--color-text)', fontWeight: isBest ? 700 : 400 }}
                                                         >
-                                                            {alg.rmse.toFixed(3)}
+                                                            {fmt(alg.rmse, 3)}
                                                         </td>
                                                         <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
-                                                            {alg.mae.toFixed(3)}
+                                                            {fmt(alg.mae, 3)}
                                                         </td>
                                                         <td className="px-3 py-2.5 text-right font-mono text-sm" style={{ color: 'var(--color-text)' }}>
                                                             {alg.accuracy != null ? `${(alg.accuracy * 100).toFixed(1)}%` : '—'}
@@ -856,7 +861,7 @@ export const MLObservabilityPage = () => {
                                             )}
                                             {metrics.data_warmth != null && (
                                                 <span>
-                                                    Blend dinámico: <b style={{ color: 'var(--color-text)' }}>data_warmth = {metrics.data_warmth.toFixed(2)}</b>{' '}
+                                                    Blend dinámico: <b style={{ color: 'var(--color-text)' }}>data_warmth = {fmt(metrics.data_warmth, 2)}</b>{' '}
                                                     ({metrics.data_warmth < 0.34 ? 'frío — la preferencia declarada domina' : metrics.data_warmth < 0.67 ? 'transición' : 'maduro — modelos aprendidos al control'})
                                                 </span>
                                             )}
