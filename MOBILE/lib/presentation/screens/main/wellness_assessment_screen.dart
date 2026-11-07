@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show HapticFeedback, rootBundle;
+import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../data/services/wellness_service.dart';
 import '../explore/detail_view_page.dart';
 import '../../widgets/smartur_app_bar.dart';
 import '../../widgets/wellness_poi_card.dart';
+import '../../../core/feedback/toque_suave.dart';
 import '../../../core/theme/welltur_theme.dart';
 
 /// Preguntas propias de la encuesta WELLTUR (oct-2026): respaldo solo si la compilación no
@@ -115,6 +116,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   bool _consentGiven = false;
   bool _omitirEstres = false;
   int _pregunta = 0; // ítem visible del cuestionario de estrés
+  bool _verInstruccion = false; // instrucción oficial de la PSS-10, plegable
   final Map<String, int> _respuestas = {};
   final List<String> _motivosElegidos = [];
   final List<String> _seleccion = [];
@@ -162,7 +164,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       : _preguntasEstres.every((p) => _respuestas.containsKey(p.key));
 
   void _responder(int i, int valor) {
-    HapticFeedback.selectionClick();
+    ToqueSuave.elegir();
     setState(() {
       _formError = null;
       if (_usarPss) {
@@ -182,13 +184,13 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
 
   void _next() {
     if (_step == 1 && !_omitirEstres && !_estresCompleto) {
-      HapticFeedback.heavyImpact();
+      ToqueSuave.error();
       setState(() => _formError = _usarPss
           ? 'Responde al menos 8 de las 10 preguntas o elige "Prefiero no responder".'
           : 'Responde las seis preguntas o elige "Prefiero no responder".');
       return;
     }
-    HapticFeedback.lightImpact();
+    ToqueSuave.avanzar();
     setState(() { _formError = null; _loadError = null; _step = (_step + 1).clamp(0, _pasos + 1); });
     if (_step == _pasos + 1) _submit();
   }
@@ -225,7 +227,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     _relojPensando = Timer.periodic(const Duration(milliseconds: 650), (t) {
       if (!mounted) return t.cancel();
       if (_pasoPensando < _pasosPensando.length - 1) {
-        HapticFeedback.selectionClick();
+        ToqueSuave.pulso();
         setState(() => _pasoPensando++);
       } else {
         t.cancel();
@@ -245,14 +247,14 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       );
       await animacion.future;
       if (!mounted) return;
-      HapticFeedback.mediumImpact();
+      ToqueSuave.avanzar();
       setState(() { _pasoPensando = _pasosPensando.length; _result = result; _loading = false; });
     } catch (e, st) {
       // Se registra el motivo real para poder diagnosticarlo (adb logcat / consola).
       debugPrint('[welltur] recomendación falló: $e\n$st');
       _relojPensando?.cancel();
       if (!mounted) return;
-      HapticFeedback.heavyImpact();
+      ToqueSuave.error();
       setState(() {
         _loadError = 'No pudimos conectar con el recomendador. Revisa tu conexión e inténtalo de nuevo.';
         _loading = false;
@@ -263,7 +265,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   Future<void> _sendFeedback(int rating) async {
     final session = _result?.sessionId;
     if (_feedbackSent || session == null) return;
-    HapticFeedback.selectionClick();
+    ToqueSuave.elegir();
     setState(() => _fitRating = rating);
     try {
       await _service.submitSatisfaction(sessionId: session, fitRating: rating);
@@ -458,23 +460,41 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
           subtitle: _omitirEstres
               ? const Text('Usaremos lo que la mayoría prefiere en la región.', style: TextStyle(fontSize: 12))
               : null,
-          onChanged: (v) { HapticFeedback.selectionClick(); setState(() { _omitirEstres = v; _formError = null; }); },
+          onChanged: (v) { ToqueSuave.elegir(); setState(() { _omitirEstres = v; _formError = null; }); },
         ),
       ),
       if (!_omitirEstres) ...[
-        // La instrucción oficial va completa al inicio; después basta con recordar el periodo.
-        if (_usarPss && i == 0) ...[
-          const SizedBox(height: 14),
-          Text(_pss!.instruccion, style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
+        // La instrucción oficial completa se muestra u oculta con el botón de información.
+        if (_usarPss) ...[
+          const SizedBox(height: 6),
+          Align(alignment: Alignment.centerLeft, child: IconButton(
+            onPressed: () { ToqueSuave.pulso(); setState(() => _verInstruccion = !_verInstruccion); },
+            tooltip: _verInstruccion ? 'Ocultar instrucciones' : 'Instrucciones de la escala',
+            color: _green,
+            visualDensity: VisualDensity.compact,
+            icon: Icon(_verInstruccion ? Icons.info_rounded : Icons.info_outline_rounded, size: 22),
+          )),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topLeft,
+            child: _verInstruccion
+                ? Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: _green.withValues(alpha: .07), borderRadius: BorderRadius.circular(12)),
+                    child: Text(_pss!.instruccion, style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)))
+                : const SizedBox(width: double.infinity),
+          ),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, anim) => FadeTransition(opacity: anim,
             child: SlideTransition(position: Tween(begin: const Offset(0.12, 0), end: Offset.zero).animate(anim), child: child)),
           child: Column(key: ValueKey('pregunta_$i'), crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(_usarPss ? '${i + 1}. ${_textoPregunta(i)}' : _textoPregunta(i),
-              style: TextStyle(fontSize: 18, height: 1.35, fontWeight: FontWeight.w700, color: scheme.onSurface)),
+            _preguntaAltoFijo(scheme, i),
             const SizedBox(height: 16),
             ...List.generate(opciones.length, (v) => Padding(
               padding: const EdgeInsets.only(bottom: 9),
@@ -496,7 +516,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
             icon: const Icon(Icons.chevron_left_rounded, size: 18), label: const Text('Anterior')),
           const Spacer(),
           if (i < _totalPreguntas - 1) TextButton(
-            onPressed: () { HapticFeedback.selectionClick(); setState(() => _pregunta = i + 1); },
+            onPressed: () { ToqueSuave.pulso(); setState(() => _pregunta = i + 1); },
             child: Text(_respuesta(i) == null ? 'Omitir esta' : 'Siguiente')),
         ]),
         // Puntos: qué preguntas ya tienen respuesta.
@@ -521,6 +541,33 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     ]);
   }
 
+  String _rotuloPregunta(int i) => _usarPss ? '${i + 1}. ${_textoPregunta(i)}' : _textoPregunta(i);
+
+  /// La pregunta ocupa siempre el alto de la más larga (para este ancho y tamaño de letra),
+  /// así las respuestas quedan en el mismo lugar en todas las preguntas.
+  Widget _preguntaAltoFijo(ColorScheme scheme, int i) {
+    final estilo = TextStyle(fontSize: 18, height: 1.35, fontWeight: FontWeight.w700, color: scheme.onSurface);
+    return LayoutBuilder(builder: (context, c) {
+      final escala = MediaQuery.textScalerOf(context);
+      final direccion = Directionality.of(context);
+      var alto = 0.0;
+      for (var k = 0; k < _totalPreguntas; k++) {
+        final medidor = TextPainter(
+          text: TextSpan(text: _rotuloPregunta(k), style: DefaultTextStyle.of(context).style.merge(estilo)),
+          textDirection: direccion,
+          textScaler: escala,
+        )..layout(maxWidth: c.maxWidth);
+        alto = math.max(alto, medidor.height);
+        medidor.dispose();
+      }
+      return SizedBox(
+        height: alto,
+        width: double.infinity,
+        child: Align(alignment: Alignment.topLeft, child: Text(_rotuloPregunta(i), style: estilo)),
+      );
+    });
+  }
+
   /// Tarjetas en cuadrícula con prioridad (1, 2, 3) para motivos M y modalidades W.
   Widget _grid(ColorScheme scheme, List<_Opcion> opciones, List<String> elegidas) => LayoutBuilder(builder: (context, c) {
     final columnas = c.maxWidth >= 560 ? 3 : 2;
@@ -536,13 +583,13 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         onTap: () => setState(() {
           _formError = null;
           if (index >= 0) {
-            HapticFeedback.selectionClick();
+            ToqueSuave.elegir();
             elegidas.remove(m.key);
           } else if (elegidas.length < 3) {
-            HapticFeedback.lightImpact();
+            ToqueSuave.elegir();
             elegidas.add(m.key);
           } else {
-            HapticFeedback.heavyImpact();
+            ToqueSuave.error();
             _formError = 'Puedes elegir hasta tres.';
           }
         }),
@@ -550,131 +597,84 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     }).toList());
   });
 
-  Widget _effortChoices(ColorScheme scheme) {
-    final actual = _esfuerzos.firstWhere((e) => e.nivel == _maxEffort);
-    return Column(children: [
-      const SizedBox(height: 10),
-      AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: FadeTransition(opacity: anim, child: child)),
-        child: Container(
-          key: ValueKey(actual.nivel),
-          width: 132, height: 132,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(colors: [_green.withValues(alpha: .22), _green.withValues(alpha: .04)]),
-          ),
-          child: Icon(actual.icon, size: 62, color: _green),
-        ),
-      ),
-      const SizedBox(height: 16),
-      Text(actual.titulo, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, color: scheme.onSurface)),
-      const SizedBox(height: 4),
-      Text(actual.detalle, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
-      const SizedBox(height: 24),
-      SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-          trackHeight: 8,
-          activeTrackColor: _green,
-          inactiveTrackColor: _green.withValues(alpha: .15),
-          thumbColor: _green,
-          overlayColor: _green.withValues(alpha: .12),
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
-          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 4),
-          activeTickMarkColor: _onGreen,
-          inactiveTickMarkColor: _green.withValues(alpha: .5),
-        ),
-        child: Slider(
-          value: _maxEffort.toDouble(), min: 1, max: 3, divisions: 2,
-          semanticFormatterCallback: (v) => _esfuerzos[v.round() - 1].titulo,
-          onChanged: (v) {
-            if (v.round() != _maxEffort) {
-              HapticFeedback.selectionClick();
-              setState(() => _maxEffort = v.round());
-            }
-          },
-        ),
-      ),
-      // Alineado con los extremos del slider (su relleno interno es de ~24 px).
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 14), child: Row(
-        children: _esfuerzos.map((e) => Expanded(child: GestureDetector(
-          onTap: () { HapticFeedback.selectionClick(); setState(() => _maxEffort = e.nivel); },
-          child: Text(e.titulo, maxLines: 1, overflow: TextOverflow.ellipsis,
-            textAlign: e.nivel == 1 ? TextAlign.start : (e.nivel == 3 ? TextAlign.end : TextAlign.center),
-            style: TextStyle(
-              fontSize: 12, fontWeight: e.nivel == _maxEffort ? FontWeight.w800 : FontWeight.w500,
-              color: e.nivel == _maxEffort ? _green : scheme.onSurfaceVariant)),
-        ))).toList(),
-      )),
-    ]);
-  }
+  /// Un solo valor, mismas tarjetas que motivos y modalidades.
+  Widget _gridUnico(List<_Opcion> opciones, String? elegida, ValueChanged<String> onElegir, {double altoMin = 138}) =>
+      LayoutBuilder(builder: (context, c) {
+        final columnas = c.maxWidth >= 560 ? 3 : 2;
+        final ancho = (c.maxWidth - 10 * (columnas - 1)) / columnas;
+        return Wrap(spacing: 10, runSpacing: 10, children: opciones.map((m) => SizedBox(width: ancho, child: _TarjetaOpcion(
+          opcion: m,
+          prioridad: m.key == elegida ? 1 : null,
+          unica: true,
+          altoMin: altoMin,
+          atenuada: false,
+          acento: _green,
+          sobreAcento: _onGreen,
+          onTap: () { ToqueSuave.elegir(); onElegir(m.key); },
+        ))).toList());
+      });
+
+  Widget _effortChoices(ColorScheme scheme) => _gridUnico(
+    [for (final e in _esfuerzos) (key: '${e.nivel}', title: e.titulo, subtitle: e.detalle, icon: e.icon)],
+    '$_maxEffort',
+    (k) => setState(() => _maxEffort = int.parse(k)),
+  );
+
+  Widget _subtitulo(ColorScheme scheme, String texto) => Padding(
+    padding: const EdgeInsets.only(top: 20, bottom: 10, left: 2),
+    child: Text(texto, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: .2, color: scheme.onSurface)),
+  );
 
   Widget _regionChoices(ColorScheme scheme) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Row(children: [
-      Expanded(child: _zonaCard(scheme, 'Altas Montañas', 'Veracruz · 57 municipios', Icons.landscape_outlined, !_todoMexico,
-        () => setState(() { _todoMexico = false; _region = ''; }))),
-      const SizedBox(width: 10),
-      Expanded(child: _zonaCard(scheme, 'Todo México', 'Inventario nacional', Icons.public_outlined, _todoMexico,
-        () => setState(() { _todoMexico = true; _region = ''; }))),
-    ]),
-    const SizedBox(height: 18),
+    _gridUnico(const [
+      (key: 'am', title: 'Altas Montañas', subtitle: 'Veracruz · 57 municipios.', icon: Icons.landscape_outlined),
+      (key: 'mx', title: 'Todo México', subtitle: 'Inventario nacional de bienestar.', icon: Icons.public_outlined),
+    ], _todoMexico ? 'mx' : 'am', (k) => setState(() { _todoMexico = k == 'mx'; _region = ''; })),
     if (!_todoMexico) ...[
-      Text('¿Algún municipio en especial?', style: TextStyle(fontWeight: FontWeight.w700, color: scheme.onSurface)),
-      const SizedBox(height: 10),
-      Wrap(spacing: 8, runSpacing: 8, children: _regiones.map((r) {
-        final sel = _region == r;
-        return ChoiceChip(
-          label: Text(r.isEmpty ? 'Toda la región' : r),
-          avatar: Icon(r.isEmpty ? Icons.map_outlined : Icons.place_outlined, size: 16, color: sel ? _green : scheme.onSurfaceVariant),
-          selected: sel,
-          showCheckmark: false,
-          selectedColor: _green.withValues(alpha: .16),
-          side: BorderSide(color: sel ? _green : scheme.outlineVariant),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          onSelected: (_) { HapticFeedback.selectionClick(); setState(() => _region = r); },
-        );
-      }).toList()),
+      _subtitulo(scheme, '¿Algún municipio en especial?'),
+      _gridUnico([
+        for (final r in _regiones)
+          (key: r, title: r.isEmpty ? 'Toda la región' : r,
+           subtitle: r.isEmpty ? 'Los 57 municipios.' : 'Primero lo de $r.',
+           icon: r.isEmpty ? Icons.map_outlined : Icons.place_outlined),
+      ], _region, (k) => setState(() => _region = k), altoMin: 112),
     ] else ...[
-      Text('Inventario nacional de bienestar revisado por SMARTUR, más el catálogo de las Altas Montañas.',
-        style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
-      const SizedBox(height: 12),
-      DropdownButtonFormField<String>(
-        initialValue: _region,
-        isExpanded: true,
-        decoration: InputDecoration(labelText: 'Estado', border: OutlineInputBorder(borderRadius: BorderRadius.circular(14))),
-        items: [
-          const DropdownMenuItem(value: '', child: Text('Todo México')),
-          ..._estadosMexico.map((e) => DropdownMenuItem(value: e, child: Text(e))),
-        ],
-        onChanged: (v) { HapticFeedback.selectionClick(); setState(() => _region = v ?? ''); },
-      ),
+      _subtitulo(scheme, '¿En qué parte del país?'),
+      _gridUnico([
+        (key: '', title: 'Todo el país', subtitle: 'Sin límite de estado.', icon: Icons.travel_explore_outlined),
+        (key: 'estado', title: _region.isEmpty ? 'Un estado' : _region,
+         subtitle: _region.isEmpty ? 'Toca para elegirlo.' : 'Toca para cambiarlo.', icon: Icons.location_city_outlined),
+      ], _region.isEmpty ? '' : 'estado', (k) {
+        if (k.isEmpty) {
+          setState(() => _region = '');
+        } else {
+          _elegirEstado(scheme);
+        }
+      }, altoMin: 112),
     ],
   ]);
 
-  Widget _zonaCard(ColorScheme scheme, String label, String detalle, IconData icon, bool selected, VoidCallback onTap) => InkWell(
-    onTap: () { HapticFeedback.lightImpact(); onTap(); },
-    borderRadius: BorderRadius.circular(20),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-      decoration: BoxDecoration(
-        gradient: selected
-            ? LinearGradient(colors: [_green.withValues(alpha: .18), _green.withValues(alpha: .05)], begin: Alignment.topLeft, end: Alignment.bottomRight)
-            : null,
-        color: selected ? null : scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: selected ? _green : scheme.outlineVariant, width: selected ? 1.8 : 1),
-      ),
-      child: Column(children: [
-        Icon(icon, size: 30, color: selected ? _green : scheme.onSurfaceVariant),
-        const SizedBox(height: 8),
-        Text(label, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: selected ? _green : scheme.onSurface)),
-        const SizedBox(height: 2),
-        Text(detalle, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
-      ]),
-    ),
-  );
+  Future<void> _elegirEstado(ColorScheme scheme) async {
+    final elegido = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(child: SizedBox(
+        height: MediaQuery.of(ctx).size.height * .7,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(padding: const EdgeInsets.fromLTRB(22, 0, 22, 8), child: Text('Elige un estado',
+            style: TextStyle(fontFamily: 'CalSans', fontSize: 22, color: scheme.onSurface))),
+          Expanded(child: ListView(children: _estadosMexico.map((e) => ListTile(
+            leading: Icon(Icons.place_outlined, color: e == _region ? _green : scheme.onSurfaceVariant),
+            title: Text(e, style: TextStyle(fontWeight: e == _region ? FontWeight.w800 : FontWeight.w500)),
+            trailing: e == _region ? Icon(Icons.check_circle_rounded, color: _green) : null,
+            onTap: () { ToqueSuave.elegir(); Navigator.pop(ctx, e); },
+          )).toList())),
+        ]),
+      )),
+    );
+    if (elegido != null && mounted) setState(() => _region = elegido);
+  }
 
   // ── "La IA está pensando" ────────────────────────────────────────────────
   Widget _pensandoView(ColorScheme scheme) {
@@ -773,6 +773,24 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       Padding(padding: const EdgeInsets.fromLTRB(20, 16, 20, 0), child: OutlinedButton.icon(
         onPressed: () => setState(() { _step = 1; _pregunta = 0; _result = null; _feedbackSent = false; _fitRating = null; }),
         icon: const Icon(Icons.tune_rounded), label: const Text('Cambiar respuestas'))),
+      // Aviso: no es un servicio médico.
+      Padding(padding: const EdgeInsets.fromLTRB(20, 18, 20, 0), child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: scheme.outlineVariant.withValues(alpha: .7)),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.health_and_safety_outlined, color: _green, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(
+            'WELLTUR no es un servicio médico ni psicológico. Estas sugerencias de viaje no diagnostican, '
+            'tratan ni sustituyen la atención profesional. Si el estrés te rebasa, busca ayuda: '
+            'Línea de la Vida, 800 911 2000 (24 h, gratuita).',
+            style: TextStyle(fontSize: 12, height: 1.45, color: scheme.onSurfaceVariant))),
+        ]),
+      )),
     ]));
   }
 
@@ -856,8 +874,10 @@ class _TarjetaOpcion extends StatelessWidget {
   final Color acento;
   final Color sobreAcento;
   final VoidCallback onTap;
+  final bool unica;
+  final double altoMin;
   const _TarjetaOpcion({required this.opcion, required this.prioridad, required this.atenuada,
-    required this.acento, required this.sobreAcento, required this.onTap});
+    required this.acento, required this.sobreAcento, required this.onTap, this.unica = false, this.altoMin = 138});
 
   @override
   Widget build(BuildContext context) {
@@ -871,7 +891,7 @@ class _TarjetaOpcion extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minHeight: 138),
+          constraints: BoxConstraints(minHeight: altoMin),
           padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
           decoration: BoxDecoration(
             gradient: sel
@@ -893,7 +913,9 @@ class _TarjetaOpcion extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-                child: sel
+                child: sel && unica
+                    ? Icon(Icons.check_circle_rounded, key: const ValueKey('unica'), color: acento, size: 24)
+                    : sel
                     ? CircleAvatar(key: ValueKey('p$prioridad'), radius: 12, backgroundColor: acento,
                         child: Text('$prioridad', style: TextStyle(fontSize: 12, color: sobreAcento, fontWeight: FontWeight.w800)))
                     : const SizedBox(key: ValueKey('vacio'), width: 24, height: 24),
@@ -927,8 +949,8 @@ class _OrbeWellturState extends State<_OrbeWelltur> with SingleTickerProviderSta
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Respeta "reducir movimiento" del sistema: el orbe se queda quieto.
-    if (MediaQuery.of(context).disableAnimations) {
+    // Fijo en reposo; solo se anima mientras "piensa". También respeta "reducir movimiento".
+    if (!widget.pensando || MediaQuery.of(context).disableAnimations) {
       _c.stop();
     } else if (!_c.isAnimating) {
       _c.repeat();
@@ -948,7 +970,7 @@ class _OrbeWellturState extends State<_OrbeWelltur> with SingleTickerProviderSta
       animation: _c,
       builder: (context, _) {
         final fase = _c.value * 2 * math.pi;
-        final respiro = 1 + .06 * math.sin(fase);
+        final respiro = widget.pensando ? 1 + .06 * math.sin(fase) : 1.0;
         return Stack(alignment: Alignment.center, children: [
           if (widget.pensando)
             for (var k = 0; k < 2; k++)

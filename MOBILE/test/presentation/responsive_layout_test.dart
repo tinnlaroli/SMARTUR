@@ -153,7 +153,7 @@ void main() {
         expect(find.text('Altas Montañas'), findsOneWidget);
         await tester.tap(find.text('Todo México'));
         await tester.pumpAndSettle();
-        expect(find.text('Estado'), findsOneWidget);
+        expect(find.text('Un estado'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }
