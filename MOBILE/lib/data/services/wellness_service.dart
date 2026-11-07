@@ -29,6 +29,9 @@ class WellnessDestination {
   final String coincidencia;
   final String? motivoCoincidencia;
 
+  /// Modalidades W1-W7 revisadas del lugar (las que explican por qué se recomienda).
+  final List<String> modalidades;
+
   /// Canonical reference consumed by DetailViewPage and existing place tracking.
   String? get detailPagePlaceId {
     final separator = idDestino.indexOf(':');
@@ -57,6 +60,7 @@ class WellnessDestination {
     this.esMipyme = false,
     this.coincidencia = 'alta',
     this.motivoCoincidencia,
+    this.modalidades = const [],
   });
 
   factory WellnessDestination.fromJson(Map<String, dynamic> j) {
@@ -77,6 +81,7 @@ class WellnessDestination {
       esMipyme:               _aBool(j['es_mipyme']) ?? false,
       coincidencia:           _aTexto(j['coincidencia']) ?? 'alta',
       motivoCoincidencia:     _aTexto(j['motivo_coincidencia']),
+      modalidades:            ((j['place_modalities'] as List<dynamic>?) ?? const []).whereType<String>().toList(),
     );
   }
 }

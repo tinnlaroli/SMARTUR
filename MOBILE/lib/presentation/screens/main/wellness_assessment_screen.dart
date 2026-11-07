@@ -848,7 +848,6 @@ class _OpcionRespuesta extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final tinta = seleccionada ? sobreAcento : scheme.onSurface;
-    final fraccion = niveles <= 1 ? 0.0 : nivel / (niveles - 1);
     return Semantics(button: true, selected: seleccionada, label: texto, child: GestureDetector(
       onTap: onTap,
       child: AnimatedScale(
@@ -869,18 +868,15 @@ class _OpcionRespuesta extends StatelessWidget {
                 : [BoxShadow(color: scheme.shadow.withValues(alpha: .04), blurRadius: 6, offset: const Offset(0, 2))],
           ),
           child: Row(children: [
-            // Medidor de frecuencia.
-            SizedBox(width: 30, height: 30, child: Stack(alignment: Alignment.center, children: [
-              CircularProgressIndicator(
-                value: 1, strokeWidth: 3.5,
-                color: (seleccionada ? sobreAcento : acento).withValues(alpha: .18),
-              ),
-              CircularProgressIndicator(
-                value: fraccion, strokeWidth: 3.5, strokeCap: StrokeCap.round,
-                color: seleccionada ? sobreAcento : acento,
-              ),
-              Text('$nivel', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tinta.withValues(alpha: .8))),
-            ])),
+            // Intensidad: barritas que crecen con la frecuencia.
+            Row(children: List.generate(niveles - 1, (k) => Container(
+              width: 4, height: 8.0 + k * 3, margin: const EdgeInsets.only(right: 3),
+              decoration: BoxDecoration(
+                color: seleccionada
+                    ? sobreAcento.withValues(alpha: k < nivel ? 1 : .35)
+                    : (k < nivel ? acento.withValues(alpha: .8) : scheme.outlineVariant),
+                borderRadius: BorderRadius.circular(2)),
+            ))),
             const SizedBox(width: 14),
             Expanded(child: Text(texto, style: TextStyle(
               fontSize: 15.5, fontWeight: seleccionada ? FontWeight.w800 : FontWeight.w600, color: tinta))),
