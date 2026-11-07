@@ -15,7 +15,10 @@ void usePhoneViewport(WidgetTester tester) {
 
 /// La PSS-10 se lee de un asset con E/S real: se deja avanzar fuera del reloj simulado.
 Future<void> cargarPantalla(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
+  await tester.pumpWidget(MaterialApp(
+      // Como "reducir movimiento": el orbe animado no gira y pumpAndSettle puede asentarse.
+      builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(disableAnimations: true), child: child!),
+      home: const WellnessAssessmentScreen()));
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
   await tester.pumpAndSettle();
 }
@@ -75,16 +78,25 @@ void main() {
     usePhoneViewport(tester);
     await empezar(tester);
 
-    for (var i = 1; i <= 10; i++) {
-      final item = find.textContaining(RegExp('^$i\\. Durante el último mes'));
-      await tester.scrollUntilVisible(item, 200, scrollable: find.byType(Scrollable).last);
-      expect(item, findsOneWidget);
-    }
     expect(find.textContaining('RST Assessments'), findsOneWidget);
-
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(find.textContaining('al menos 8 de las 10'), findsOneWidget);
+
+    // Un ítem por pantalla: al responder, avanza solo al siguiente.
+    for (var i = 1; i <= 10; i++) {
+      expect(find.textContaining(RegExp('^$i\\. Durante el último mes')), findsOneWidget);
+      expect(find.text('Pregunta $i de 10'), findsOneWidget);
+      final opcion = find.byWidgetPredicate((w) => w is Semantics && w.properties.label == 'Algunas veces');
+      await tester.ensureVisible(opcion);
+      await tester.tap(opcion);
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+    }
+    expect(find.textContaining(RegExp('^10\\. Durante el último mes')), findsOneWidget);
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('PASO 2 DE 5'), findsOneWidget);
   });
 
   testWidgets('limita las modalidades a tres y muestra su orden', (tester) async {

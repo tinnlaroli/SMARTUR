@@ -119,7 +119,10 @@ void main() {
     for (final MapEntry(key: nombre, value: size) in _pantallas.entries) {
       testWidgets(nombre, (tester) async {
         usarPantalla(tester, size);
-        await tester.pumpWidget(const MaterialApp(home: WellnessAssessmentScreen()));
+        await tester.pumpWidget(MaterialApp(
+      // Como "reducir movimiento": el orbe animado no gira y pumpAndSettle puede asentarse.
+      builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(disableAnimations: true), child: child!),
+      home: const WellnessAssessmentScreen()));
         await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
