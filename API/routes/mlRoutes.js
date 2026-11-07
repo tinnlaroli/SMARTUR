@@ -826,6 +826,15 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
         // MODELO lleva la PSS-10 a la escala del modelo con normas mexicanas (COVIDiSTRESS,
         // ponderadas por la edad de la encuesta); el valor equivalente vuelve en la respuesta.
         stressSource = 'pss10_normas_mx';
+    } else if (preferences.pss10_total != null) {
+        // La licencia permite una sola aplicación por persona: si ya la contestó, la app
+        // reenvía el puntaje guardado en lugar de volver a aplicar el cuestionario.
+        const total = Number(preferences.pss10_total);
+        if (!Number.isFinite(total) || total < 0 || total > 40) {
+            return res.status(400).json({ message: 'pss10_total debe estar entre 0 y 40.' });
+        }
+        pssTotal = Math.round(total * 10) / 10;
+        stressSource = 'pss10_guardada';
     } else if (stressItems != null) {
         stressIndex = stressIndexFromItems(stressItems);
         if (stressIndex == null) {
@@ -865,7 +874,10 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
                     p.wellness_status, p.is_wellness, p.is_accessible, p.es_mipyme,
                     p.demanda_fisica, p.descripcion_bienestar, p.image_url,
                     COALESCE(p.latitude, l.latitude)::float8 AS lat,
-                    COALESCE(p.longitude, l.longitude)::float8 AS lon
+                    COALESCE(p.longitude, l.longitude)::float8 AS lon,
+                    -- Verificado por una persona: los del DENUE son propuestas por regla hasta
+                    -- que su empresa reclama la ficha y un admin lo aprueba.
+                    (p.denue_clee IS NULL OR p.submitted_by_company_id IS NOT NULL) AS verificado
                FROM point_of_interest p
                LEFT JOIN location l ON l.id_location = p.id_location
               WHERE p.is_wellness = TRUE AND p.wellness_status = 'approved'
@@ -880,7 +892,8 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
                     s.wellness_status, s.is_wellness, FALSE AS is_accessible, TRUE AS es_mipyme,
                     s.demanda_fisica, s.descripcion_bienestar, s.image_url,
                     COALESCE(s.latitude, l.latitude)::float8 AS lat,
-                    COALESCE(s.longitude, l.longitude)::float8 AS lon
+                    COALESCE(s.longitude, l.longitude)::float8 AS lon,
+                    TRUE AS verificado -- servicios publicados y revisados en SMARTUR
                FROM tourist_service s
                LEFT JOIN location l ON l.id_location = s.id_location
               WHERE s.is_wellness = TRUE AND s.wellness_status = 'approved'
@@ -929,7 +942,7 @@ router.post('/ml/wellness/recommend-v2', verifyToken, async (req, res) => {
              VALUES ($1,$2,$3,$4,$5,$6,TRUE,$7,$8,$9)
              RETURNING trip_preference_id`,
             [userId, motives, modalities, maxEffort, preferences.needs_accessible === true, regionGuardada,
-                pssTotal == null ? 'welltur-v3' : 'welltur-v3-pss10', stressIndex, pssTotal],
+                pssTotal == null ? 'welltur-v3' : (stressSource === 'pss10_guardada' ? 'welltur-v3-pss10-g' : 'welltur-v3-pss10'), stressIndex, pssTotal],
         );
         const tripPreferenceId = assessmentRows[0].trip_preference_id;
         const displayedDestinations = data.destinations ?? [];

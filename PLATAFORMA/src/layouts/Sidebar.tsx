@@ -3,7 +3,7 @@ import {
     X, Users, Building2, Wrench, Settings, MapPin, Map,
     ChevronLeft, ChevronRight, Home, LogOut, UserCircle,
     Award, BarChart3, FileText, MessageSquare, Mail, BrainCircuit, Bell,
-    ShieldCheck, ClipboardCheck, Route, MessageSquareDiff,
+    ShieldCheck, ClipboardCheck, Route, MessageSquareDiff, HeartPulse, Store,
 } from 'lucide-react';
 import { memo, useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,10 +27,10 @@ interface MenuItem {
 const MENU_GROUPS = [
     { label: 'Principal',             items: ['home'] },
     { label: 'Gestión',               items: ['users', 'companies', 'poi', 'services', 'locations'] },
-    { label: 'Monitoreo y Control',   items: ['company-verification', 'approval', 'disputes'] },
+    { label: 'Monitoreo y Control',   items: ['company-verification', 'approval', 'denue-claims', 'disputes'] },
     { label: 'Móvil y Comunidad',     items: ['community', 'itineraries', 'contacts', 'profiles'] },
     { label: 'Auditoría y Soporte',   items: ['certifications', 'instruments'] },
-    { label: 'Reportes',              items: ['stats', 'ml'] },
+    { label: 'Reportes',              items: ['stats', 'welltur', 'ml'] },
     { label: 'Sistema',               items: ['notifications', 'settings'] },
 ];
 
@@ -71,6 +71,8 @@ const Sidebar = memo(function Sidebar({ isOpen, onClose }: SidebarProps) {
         { id: 'certifications',       label: 'Modelos Operativos',     icon: Award,            path: '/dashboard/certificaciones',                  roles: [1] },
         { id: 'instruments',          label: 'Métricas Cuali/Cuanti',  icon: FileText,         path: '/dashboard/instrumentos',                     roles: [1] },
         { id: 'stats',                label: 'Estadísticas',           icon: BarChart3,        path: '/dashboard/estadisticas',                     roles: [1] },
+        { id: 'welltur',              label: 'Campaña WELLTUR',        icon: HeartPulse,       path: '/dashboard/welltur',                          roles: [1, 4] },
+        { id: 'denue-claims',         label: 'Reclamos DENUE',         icon: Store,            path: '/dashboard/reclamos-denue',                   roles: [1] },
         { id: 'ml',                   label: 'Modelo Predictivo',      icon: BrainCircuit,     path: '/dashboard/modelo',                           roles: [1] },
         { id: 'notifications',        label: 'Notificaciones',         icon: Bell,             path: '/dashboard/notificaciones',                   roles: [1] },
         { id: 'settings',             label: 'Configuración',          icon: Settings,         path: '/dashboard/configuracion',                    roles: [1] },

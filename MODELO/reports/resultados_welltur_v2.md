@@ -199,6 +199,23 @@ Todo se mide **fuera de muestra**, con validación cruzada.
 - Artefactos: `models/welltur_afrontamiento_v1.json` (coeficientes) y `reports/modelo_afrontamiento_v1.json` (comparación). Pruebas: `tests/test_welltur_ranker_v2.py::FormularioUnicoTests`.
 - Límites: datos de 2020 (pandemia) sobre afrontamiento cotidiano, no sobre viajes; la transferencia a turismo es un supuesto. Para validarla hacen falta respuestas de la app (PSS-10 + motivos + calificación).
 
+## 4k. Datos reales, verificación y rutas (nov-2026)
+- **Verificación honesta del catálogo:** los 1,121 lugares del DENUE son propuestas por reglas (SCIAN + nombre). En la app aparecen como "DENUE (INEGI) · por verificar". Solo se marcan como "Verificado por SMARTUR" los que revisó una persona:
+  - el inventario nacional SECTUR/GWI;
+  - las experiencias verificadas en campo;
+  - las fichas del DENUE reclamadas por su empresa y aprobadas por un admin.
+- **Reclamo de fichas (B2B):** una empresa registrada busca su negocio en el DENUE y lo reclama con evidencia. El admin aprueba o rechaza, y al aprobar el lugar queda ligado a la empresa (tabla `poi_claim`).
+- **Licencia PSS-10, una aplicación por persona:** la app guarda las respuestas en el teléfono, y en la cuenta si hay consentimiento. Si la persona ya contestó, no se vuelve a aplicar y se reutiliza el puntaje.
+- **Campaña de datos reales:** el dashboard ("Campaña WELLTUR") muestra el avance hacia 200 sesiones con PSS-10 y calificación, la satisfacción, la tasa de apertura del detalle, la distribución de la PSS-10 en bloques de 5 (sin puntos de corte) y los motivos y modalidades elegidos. La app registra cuándo se abre el detalle ("opened") y cuándo se pide "Cómo llegar" ("selected").
+- **Etapa B:** se evalúa con datos reales y nunca se activa sola (`src/etapa_b.py`).
+  - Compara por validación cruzada agrupada por persona el modelo actual contra uno que aprende "estrés × modalidad".
+  - Con menos de 30 sesiones solo reporta descriptivos.
+  - Sugiere promover el modelo nuevo únicamente si hay 200 sesiones o más y mejora el log-loss en todos los pliegues.
+  - En pruebas con datos simulados detecta un efecto real (OR > 1.2) y no inventa uno cuando no existe.
+- **Rutas con distancias por carretera:** el optimizador usa OSRM (OpenStreetMap) para kilómetros y minutos reales y optimiza tiempo, no kilómetros. Sin conexión, estima con un factor de sinuosidad de montaña de 1.45 a 38 km/h.
+  - Ejemplo Orizaba → Huatusco: el modelo anterior daba 36 km en línea recta y 72 min a 30 km/h. Con OSRM son 55 km por carretera y 54 min. OSRM tiende a ser optimista en sierra.
+- **`bd.sql` vuelve a ser la fuente de verdad:** los 108 lugares del inventario nacional, que solo existían en producción, se exportaron con un workflow de solo lectura y se integraron de forma idempotente.
+
 ## 4g. Contexto GWI
 | Dato | Valor | Fuente |
 |---|---|---|

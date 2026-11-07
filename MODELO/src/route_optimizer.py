@@ -1,9 +1,27 @@
-import math
-import random
-from typing import Any, Dict, List, Optional
+"""Orden óptimo de paradas (colonia de hormigas) con tiempos de manejo reales.
 
-# Average city travel speed used to convert km → travel minutes
-_CITY_SPEED_KMH = 30.0
+Los tiempos y distancias por carretera se piden a OSRM (motor de ruteo libre sobre
+OpenStreetMap; servicio `table`). Si OSRM no responde, se estiman: distancia en línea recta
+x factor de sinuosidad de carreteras de montaña, a velocidad media de sierra. Así las
+Altas Montañas (curvas y desniveles) no se tratan como una ciudad plana a 30 km/h.
+"""
+import json
+import math
+import os
+import random
+import urllib.request
+from functools import lru_cache
+from typing import Any, Dict, List, Optional, Tuple
+
+# Servidor OSRM. Vacío desactiva la consulta (pruebas, sin red). El demo público es gratuito,
+# con límite de uso razonable: se cachea y se usa solo al optimizar un itinerario.
+OSRM_URL = os.environ.get("OSRM_URL", "https://router.project-osrm.org")
+_OSRM_TIMEOUT_S = 5.0
+# Respaldo sin OSRM: las carreteras de montaña recorren ~1.45x la distancia en línea recta y
+# se circula a ~38 km/h de promedio (curvas, poblados, desniveles).
+_SINUOSIDAD_MONTANA = 1.45
+_VELOCIDAD_SIERRA_KMH = 38.0
+_CITY_SPEED_KMH = _VELOCIDAD_SIERRA_KMH  # compatibilidad con _travel_minutes
 # Large penalty added to effective distance when a stop violates its time window
 _TIME_VIOLATION_PENALTY = 500.0
 
@@ -18,6 +36,46 @@ def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
+@lru_cache(maxsize=256)
+def _osrm_tabla(coords: Tuple[Tuple[float, float], ...]):
+    """Matrices (km, minutos) por carretera desde OSRM, o None si no está disponible."""
+    if not OSRM_URL or len(coords) < 2:
+        return None
+    puntos = ";".join(f"{lon:.6f},{lat:.6f}" for lat, lon in coords)
+    url = f"{OSRM_URL.rstrip('/')}/table/v1/driving/{puntos}?annotations=duration,distance"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "smartur-route-optimizer"})
+        with urllib.request.urlopen(req, timeout=_OSRM_TIMEOUT_S) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        return None
+    if data.get("code") != "Ok" or not data.get("durations") or not data.get("distances"):
+        return None
+    if any(v is None for fila in data["durations"] + data["distances"] for v in fila):
+        return None  # algún punto sin ruta por carretera: mejor usar la estimación completa
+    km = tuple(tuple(v / 1000.0 for v in fila) for fila in data["distances"])
+    minutos = tuple(tuple(v / 60.0 for v in fila) for fila in data["durations"])
+    return km, minutos
+
+
+def matrices_viaje(stops: List[Dict[str, Any]]) -> Tuple[List[List[float]], List[List[float]], str]:
+    """(km, minutos, fuente) entre todas las paradas. fuente = 'osrm' o 'estimada'."""
+    coords = tuple((round(float(s.get("lat", 0.0)), 6), round(float(s.get("lng", 0.0)), 6)) for s in stops)
+    osrm = _osrm_tabla(coords)
+    if osrm is not None:
+        km, minutos = osrm
+        return [list(f) for f in km], [list(f) for f in minutos], "osrm"
+    n = len(stops)
+    km = [[0.0] * n for _ in range(n)]
+    minutos = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = _haversine(coords[i][0], coords[i][1], coords[j][0], coords[j][1]) * _SINUOSIDAD_MONTANA
+            km[i][j] = km[j][i] = d
+            minutos[i][j] = minutos[j][i] = d / _VELOCIDAD_SIERRA_KMH * 60.0
+    return km, minutos, "estimada"
+
+
 def _path_distance(order: List[int], dist_matrix: List[List[float]]) -> float:
     return sum(dist_matrix[order[i]][order[i + 1]] for i in range(len(order) - 1))
 
@@ -29,15 +87,15 @@ def _travel_minutes(dist_km: float) -> float:
 
 def _effective_distance(
     order: List[int],
-    dist_matrix: List[List[float]],
+    time_matrix: List[List[float]],
     durations: List[int],
     open_min: List[Optional[int]],
     close_min: List[Optional[int]],
     start_minutes: int,
 ) -> float:
     """
-    Compute effective path cost adding time-window violation penalties.
-    Simulates accumulated clock time (travel + dwell) along the path.
+    Costo del recorrido en minutos de manejo, más penalizaciones por horarios.
+    Simula el reloj acumulado (manejo + estancia) a lo largo del recorrido.
     """
     total = 0.0
     clock = float(start_minutes)
@@ -45,9 +103,9 @@ def _effective_distance(
     for step in range(len(order)):
         idx = order[step]
         if step > 0:
-            seg_km = dist_matrix[order[step - 1]][idx]
-            total += seg_km
-            clock += _travel_minutes(seg_km)
+            seg_min = time_matrix[order[step - 1]][idx]
+            total += seg_min
+            clock += seg_min
 
         # Check operating hours
         if open_min[idx] is not None and clock < open_min[idx]:
@@ -104,7 +162,10 @@ def optimize_route(
         "optimized_order": list(range(n)),
         "original_distance_km": 0.0,
         "optimized_distance_km": 0.0,
+        "original_duration_min": 0.0,
+        "optimized_duration_min": 0.0,
         "savings_pct": 0,
+        "fuente_tiempos": "ninguna",
     }
     if n <= 1:
         return trivial
@@ -121,24 +182,23 @@ def optimize_route(
     ]
     has_time_windows = any(o is not None or c is not None for o, c in zip(open_min, close_min))
 
-    # ── Distance matrix ───────────────────────────────────────────────────────
-    dist: List[List[float]] = [[0.0] * n for _ in range(n)]
+    # ── Matrices por carretera (OSRM) o estimadas para montaña ────────────────
+    dist, tiempo, fuente = matrices_viaje(stops)
+    # OSRM puede dar tiempos distintos de ida y vuelta; el ACO usa el promedio simétrico.
     for i in range(n):
-        li, oi = stops[i].get("lat", 0.0), stops[i].get("lng", 0.0)
         for j in range(i + 1, n):
-            lj, oj = stops[j].get("lat", 0.0), stops[j].get("lng", 0.0)
-            d = _haversine(li, oi, lj, oj)
-            dist[i][j] = d
-            dist[j][i] = d
+            tiempo[i][j] = tiempo[j][i] = (tiempo[i][j] + tiempo[j][i]) / 2.0
+            dist[i][j] = dist[j][i] = (dist[i][j] + dist[j][i]) / 2.0
 
     original_order = list(range(n))
     original_dist = _path_distance(original_order, dist)
+    original_min = _path_distance(original_order, tiempo)
 
-    # Cost function: pure distance or time-window-penalised distance
+    # Se optimiza el tiempo de manejo (no los km): en sierra no son proporcionales.
     def path_cost(order: List[int]) -> float:
         if has_time_windows:
-            return _effective_distance(order, dist, durations, open_min, close_min, start_minutes)
-        return _path_distance(order, dist)
+            return _effective_distance(order, tiempo, durations, open_min, close_min, start_minutes)
+        return _path_distance(order, tiempo)
 
     original_cost = path_cost(original_order)
 
@@ -147,7 +207,10 @@ def optimize_route(
             "optimized_order": original_order,
             "original_distance_km": round(original_dist, 2),
             "optimized_distance_km": round(original_dist, 2),
+            "original_duration_min": round(original_min, 1),
+            "optimized_duration_min": round(original_min, 1),
             "savings_pct": 0,
+            "fuente_tiempos": fuente,
         }
 
     # ── ACO setup ─────────────────────────────────────────────────────────────
@@ -158,7 +221,7 @@ def optimize_route(
     eta: List[List[float]] = [[0.0] * n for _ in range(n)]
     for i in range(n):
         for j in range(n):
-            eta[i][j] = 1.0 / max(dist[i][j], 0.01)
+            eta[i][j] = 1.0 / max(tiempo[i][j], 0.01)  # visibilidad: 1/minutos de manejo
 
     best_order = original_order[:]
     best_cost = original_cost
@@ -220,17 +283,23 @@ def optimize_route(
 
     # ── Result ────────────────────────────────────────────────────────────────
     best_dist = _path_distance(best_order, dist)
+    best_min = _path_distance(best_order, tiempo)
 
     if best_cost >= original_cost:
         best_order = original_order
         best_dist = original_dist
+        best_min = original_min
         savings_pct = 0
     else:
-        savings_pct = max(0, round((1.0 - best_dist / original_dist) * 100))
+        # Ahorro en tiempo de manejo, que es lo que se optimiza.
+        savings_pct = max(0, round((1.0 - best_min / original_min) * 100)) if original_min > 0 else 0
 
     return {
         "optimized_order": best_order,
         "original_distance_km": round(original_dist, 2),
         "optimized_distance_km": round(best_dist, 2),
+        "original_duration_min": round(original_min, 1),
+        "optimized_duration_min": round(best_min, 1),
         "savings_pct": savings_pct,
+        "fuente_tiempos": fuente,
     }

@@ -330,6 +330,8 @@ def _candidato(lugar: dict[str, Any], pesos: dict[str, float], modalidades: list
         "municipio": str(lugar.get("municipio") or ""),
         "categoria_wellness": str(lugar.get("categoria_wellness") or "sin_categoria"),
         "es_mipyme": _es_mipyme(lugar),
+        # Verificado por una persona (no una propuesta por regla del DENUE).
+        "verificado": lugar.get("verificado") is True,
         "score": round(puntaje, 6),
         "place_modalities": lugar_w,
         "aporte_por_modalidad": {w: round(v, 4) for w, v in sorted(aportes.items(), key=lambda kv: -kv[1])},

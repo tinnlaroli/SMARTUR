@@ -28,6 +28,9 @@ const InstrumentBuilderPage = lazy(() => import('../features/instrument-builder/
 const InstrumentEditorPage  = lazy(() => import('../features/instrument-builder/pages/InstrumentEditorPage').then(m => ({ default: m.InstrumentEditorPage })));
 const CommunityPage       = lazy(() => import('../features/community/pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
 const ContactsPage        = lazy(() => import('../features/contacts/pages/ContactsPage').then(m => ({ default: m.ContactsPage })));
+const WellturCampaignPage = lazy(() => import('../features/ml-observability/pages/WellturCampaignPage').then(m => ({ default: m.WellturCampaignPage })));
+const AdminDenueClaimsPage = lazy(() => import('../features/admin-approval/pages/AdminDenueClaimsPage').then(m => ({ default: m.AdminDenueClaimsPage })));
+const EmpresaReclamarDenuePage = lazy(() => import('../features/empresa/pages/EmpresaReclamarDenuePage').then(m => ({ default: m.EmpresaReclamarDenuePage })));
 const MLObservabilityPage = lazy(() => import('../features/ml-observability/pages/MLObservabilityPage').then(m => ({ default: m.MLObservabilityPage })));
 const NotificacionesPage  = lazy(() => import('../features/dashboard/pages/NotificacionesPage').then(m => ({ default: m.NotificacionesPage })));
 const SettingsPage        = lazy(() => import('../features/settings/pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -109,6 +112,8 @@ export const router = createBrowserRouter([
                                     { path: 'comunidad',            element: <S><CommunityPage /></S> },
                                     { path: 'contactos',            element: <S><ContactsPage /></S> },
                                     { path: 'modelo',               element: <S><MLObservabilityPage /></S> },
+                                    { path: 'welltur',              element: <S><WellturCampaignPage /></S> },
+                                    { path: 'reclamos-denue',       element: <S><AdminDenueClaimsPage /></S> },
                                     { path: 'notificaciones',       element: <S><NotificacionesPage /></S> },
                                     { path: 'configuracion',        element: <S><SettingsPage /></S> },
                                     { path: 'aclaraciones',         element: <S><AdminDisputasPage /></S> },
@@ -148,6 +153,7 @@ export const router = createBrowserRouter([
                             { path: 'mensajes',       element: <S><EmpresaMensajesPage /></S> },
                             { path: 'cambios',        element: <S><EmpresaCambiosPage /></S> },
                             { path: 'faqs',           element: <S><EmpresaFAQsPage /></S> },
+                            { path: 'reclamar-negocio', element: <S><EmpresaReclamarDenuePage /></S> },
                             { index: true,           element: <Navigate to="dashboard" replace /> },
                         ],
                     },

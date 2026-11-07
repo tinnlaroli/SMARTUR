@@ -1561,6 +1561,22 @@ def wellness_recommend_from_mw_preferences(payload: WellnessMWPreferenceRequest)
         raise HTTPException(status_code=500, detail="No se pudieron generar recomendaciones M/W.") from exc
 
 
+class EtapaBRequest(BaseModel):
+    sesiones: List[Dict[str, Any]] = Field(default_factory=list)
+    meta: int = Field(default=200, ge=1, le=100000)
+
+
+@app.post("/wellness/etapa-b")
+def wellness_etapa_b(payload: EtapaBRequest):
+    """Etapa B: evalúa (sin promover) si los datos reales justifican reentrenar el efecto del estrés."""
+    from etapa_b import evaluar
+
+    try:
+        return evaluar(payload.sesiones, meta=payload.meta)
+    except (TypeError, ValueError, KeyError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 @app.post("/wellness/recommend-v2")
 def wellness_recommend_v2(payload: WellnessMWPreferenceRequest):
     """WELLTUR v2: pesos W1-W7 del modelo calibrado con la encuesta real + preferencias + cuota MiPyME."""

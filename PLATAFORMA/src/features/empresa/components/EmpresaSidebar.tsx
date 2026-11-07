@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     X, Wrench, ChevronLeft, ChevronRight, Home, LogOut, UserCircle, BarChart3, Settings,
-    Calendar, MessageSquare, MessageSquareDiff, ShieldCheck, HelpCircle,
+    Calendar, MessageSquare, MessageSquareDiff, ShieldCheck, HelpCircle, Store,
 } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +27,7 @@ const MENU_GROUPS = [
     { label: 'Principal',          items: ['home'] },
     { label: 'Gestión Comercial',  items: ['services', 'calendar', 'messages', 'faqs'] },
     { label: 'Analíticas',         items: ['analytics'] },
-    { label: 'Estatus',            items: ['verificacion', 'changes'] },
+    { label: 'Estatus',            items: ['verificacion', 'denue', 'changes'] },
     { label: 'Mi Cuenta',          items: ['profile', 'settings'] },
 ];
 
@@ -50,6 +50,7 @@ const EmpresaSidebar = memo(function EmpresaSidebar({ isOpen, onClose }: Sidebar
         { id: 'messages',     label: 'Mensajes',             icon: MessageSquare,    path: '/empresa/mensajes' },
         { id: 'analytics',    label: 'Estadísticas',         icon: BarChart3,        path: '/empresa/analytics' },
         { id: 'faqs',         label: 'Preguntas Frecuentes', icon: HelpCircle,       path: '/empresa/faqs' },
+        { id: 'denue',        label: 'Reclamar mi negocio',  icon: Store,            path: '/empresa/reclamar-negocio' },
         { id: 'verificacion', label: 'Oficio SMARTUR',       icon: ShieldCheck,      path: '/empresa/verificacion' },
         { id: 'changes',      label: 'Aclaraciones',         icon: MessageSquareDiff,path: '/empresa/cambios' },
         { id: 'profile',      label: 'Perfil',               icon: UserCircle,       path: '/empresa/perfil' },
