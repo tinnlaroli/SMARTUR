@@ -332,16 +332,17 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   Widget _intro(ColorScheme scheme) => SafeArea(
     child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         _OrbeWelltur(color: _green, tamano: 96),
         const SizedBox(height: 22),
-        Text('Tu viaje de bienestar',
+        Text('Tu viaje de bienestar', textAlign: TextAlign.center,
           style: TextStyle(fontFamily: 'CalSans', fontSize: 30, height: 1.1, color: scheme.onSurface)),
         const SizedBox(height: 10),
         Text('Un solo cuestionario: cómo te has sentido, qué buscas en el viaje y dónde. Te sugerimos experiencias de negocios locales de las Altas Montañas o de todo México.',
+          textAlign: TextAlign.center,
           style: TextStyle(fontSize: 15, height: 1.5, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 18),
-        Wrap(spacing: 8, runSpacing: 8, children: [
+        Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
           _pastilla(scheme, Icons.timer_outlined, '≈ 2 minutos'),
           _pastilla(scheme, Icons.psychology_alt_outlined, 'PSS-10 opcional'),
           _pastilla(scheme, Icons.storefront_outlined, 'Negocios locales'),
@@ -420,7 +421,18 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
               style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.w600))),
         ]),
         const SizedBox(height: 6),
-        Text(_titulos[_step]!, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, height: 1.12, color: scheme.onSurface)),
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Flexible(child: Text(_titulos[_step]!, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, height: 1.12, color: scheme.onSurface))),
+          // Instrucciones oficiales de la PSS-10: se muestran u ocultan con la "i".
+          if (_step == 1 && _usarPss && !_omitirEstres)
+            IconButton(
+              onPressed: () { ToqueSuave.pulso(); setState(() => _verInstruccion = !_verInstruccion); },
+              tooltip: _verInstruccion ? 'Ocultar instrucciones' : 'Instrucciones de la escala',
+              color: _green,
+              visualDensity: VisualDensity.compact,
+              icon: Icon(_verInstruccion ? Icons.info_rounded : Icons.info_outline_rounded, size: 24),
+            ),
+        ]),
         const SizedBox(height: 5),
         Text(hints[_step]!, style: TextStyle(fontSize: 13, height: 1.4, color: scheme.onSurfaceVariant)),
       ])),
@@ -466,14 +478,6 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       if (!_omitirEstres) ...[
         // La instrucción oficial completa se muestra u oculta con el botón de información.
         if (_usarPss) ...[
-          const SizedBox(height: 6),
-          Align(alignment: Alignment.centerLeft, child: IconButton(
-            onPressed: () { ToqueSuave.pulso(); setState(() => _verInstruccion = !_verInstruccion); },
-            tooltip: _verInstruccion ? 'Ocultar instrucciones' : 'Instrucciones de la escala',
-            color: _green,
-            visualDensity: VisualDensity.compact,
-            icon: Icon(_verInstruccion ? Icons.info_rounded : Icons.info_outline_rounded, size: 22),
-          )),
           AnimatedSize(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
@@ -992,8 +996,14 @@ class _OrbeWellturState extends State<_OrbeWelltur> with SingleTickerProviderSta
             width: t * .62, height: t * .62,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [widget.color.withValues(alpha: .95), widget.color.withValues(alpha: .55)]),
-              boxShadow: [BoxShadow(color: widget.color.withValues(alpha: .35), blurRadius: 24 * respiro, spreadRadius: 2)],
+              // En reposo: color sólido, sin degradado ni resplandor. Al "pensar": con brillo.
+              color: widget.pensando ? null : widget.color,
+              gradient: widget.pensando
+                  ? RadialGradient(colors: [widget.color.withValues(alpha: .95), widget.color.withValues(alpha: .55)])
+                  : null,
+              boxShadow: widget.pensando
+                  ? [BoxShadow(color: widget.color.withValues(alpha: .35), blurRadius: 24 * respiro, spreadRadius: 2)]
+                  : null,
             ),
             child: Icon(Icons.eco_rounded, color: Colors.white.withValues(alpha: .95), size: t * .3),
           )),
