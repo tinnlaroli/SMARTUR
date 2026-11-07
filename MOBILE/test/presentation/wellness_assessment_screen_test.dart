@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/presentation/screens/main/wellness_assessment_screen.dart';
 
 void usePhoneViewport(WidgetTester tester) {
@@ -131,5 +132,20 @@ void main() {
     expect(find.text('Puedes elegir hasta tres.'), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('no vuelve a aplicar la PSS-10 si ya se contestó (licencia: una vez por persona)', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'welltur_pss10_v1': jsonEncode({'items': [3, 3, 2, 1, 1, 3, 1, 1, 3, 2], 'total': 27.0, 'fecha': '2026-11-06T10:00:00'}),
+    });
+    usePhoneViewport(tester);
+    await empezar(tester);
+    expect(find.text('PASO 1 DE 5'), findsOneWidget);
+    expect(find.text('Ya contestaste la PSS-10 el 6/11/2026'), findsOneWidget);
+    expect(find.text('Puntaje: 27 de 40'), findsOneWidget);
+    expect(find.textContaining('Durante el último mes'), findsNothing);
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('PASO 2 DE 5'), findsOneWidget);
   });
 }

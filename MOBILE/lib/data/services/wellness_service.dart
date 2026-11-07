@@ -32,6 +32,10 @@ class WellnessDestination {
   /// Modalidades W1-W7 revisadas del lugar (las que explican por qué se recomienda).
   final List<String> modalidades;
 
+  /// Revisado por una persona (inventario nacional, verificado en campo, o ficha del DENUE
+  /// reclamada por su empresa y aprobada). Los del DENUE son propuestas por regla.
+  final bool verificado;
+
   /// Canonical reference consumed by DetailViewPage and existing place tracking.
   String? get detailPagePlaceId {
     final separator = idDestino.indexOf(':');
@@ -61,6 +65,7 @@ class WellnessDestination {
     this.coincidencia = 'alta',
     this.motivoCoincidencia,
     this.modalidades = const [],
+    this.verificado = false,
   });
 
   factory WellnessDestination.fromJson(Map<String, dynamic> j) {
@@ -82,6 +87,7 @@ class WellnessDestination {
       coincidencia:           _aTexto(j['coincidencia']) ?? 'alta',
       motivoCoincidencia:     _aTexto(j['motivo_coincidencia']),
       modalidades:            ((j['place_modalities'] as List<dynamic>?) ?? const []).whereType<String>().toList(),
+      verificado:             _aBool(j['verificado']) ?? false,
     );
   }
 }
@@ -152,6 +158,7 @@ class WellnessService {
     Map<String, int>? stressItems,
     List<int?>? pssItems,
     List<String> motives = const [],
+    double? pss10TotalGuardado,
     required List<String> modalities,
     required int maxEffort,
     required bool saveHistory,
@@ -168,6 +175,7 @@ class WellnessService {
           'max_effort': maxEffort,
           'scope': scope,
           if (regionFilter != null && regionFilter.isNotEmpty) 'region_filter': regionFilter,
+          if (pssItems == null && pss10TotalGuardado != null) 'pss10_total': pss10TotalGuardado,
         },
         'pss_items': ?pssItems,
         if (pssItems == null && stressItems != null) 'stress_items': stressItems,
@@ -184,6 +192,32 @@ class WellnessService {
       'modo_viaje_label': 'Lugares para tu viaje',
       'modo_viaje_description': data['notice'] ?? '',
     });
+  }
+
+  /// Evento de un lugar mostrado: 'opened' (vio el detalle) o 'selected' (pidió cómo llegar).
+  /// Solo existe la sesión si la persona aceptó guardar su búsqueda; si falla, no interrumpe.
+  Future<void> itemFeedback({required int sessionId, required String itemId, required String evento}) async {
+    try {
+      await ApiClient.post(
+        _uri('/ml/wellness/item-feedback'),
+        body: jsonEncode({'session_id': sessionId, 'item_id': itemId, 'event_type': evento}),
+      );
+    } catch (_) {}
+  }
+
+  /// PSS-10 ya contestada por esta persona (licencia: una sola aplicación por persona).
+  Future<({double total, DateTime? fecha})?> pss10Previa() async {
+    try {
+      final r = await ApiClient.get(_uri('/ml/wellness/pss10/me'));
+      if (r.statusCode != 200) return null;
+      final j = jsonDecode(r.body) as Map<String, dynamic>;
+      if (j['respondida'] != true) return null;
+      final total = _aDouble(j['pss10_total']);
+      if (total == null) return null;
+      return (total: total, fecha: DateTime.tryParse(_aTexto(j['fecha']) ?? ''));
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Registra satisfacción 1-5 post-recomendación.

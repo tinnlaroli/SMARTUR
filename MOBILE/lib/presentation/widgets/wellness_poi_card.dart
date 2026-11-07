@@ -39,11 +39,15 @@ class WellnessPoiCard extends StatelessWidget {
   final WellnessDestination destination;
   final VoidCallback? onTap;
 
-  const WellnessPoiCard({super.key, required this.destination, this.onTap});
+  /// Se avisa antes de abrir el mapa (para registrar el interés en el lugar).
+  final VoidCallback? onComoLlegar;
+
+  const WellnessPoiCard({super.key, required this.destination, this.onTap, this.onComoLlegar});
 
   Future<void> _comoLlegar() async {
     final lat = destination.lat, lon = destination.lon;
     if (lat == null || lon == null) return;
+    onComoLlegar?.call();
     await launchUrl(Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon'),
         mode: LaunchMode.externalApplication);
   }
@@ -157,7 +161,11 @@ class WellnessPoiCard extends StatelessWidget {
                 Wrap(spacing: 6, runSpacing: 6, children: [
                   if (d.esMipyme) _chip(Icons.storefront_rounded, 'Negocio local', acento, relleno: true),
                   ...d.modalidades.map((w) => _chip(null, _nombresW[w] ?? w, acento)),
-                  _chip(Icons.verified_rounded, 'Aprobado por SMARTUR', scheme.onSurfaceVariant),
+                  // Solo lo revisado por una persona se presenta como verificado.
+                  if (d.verificado)
+                    _chip(Icons.verified_rounded, 'Verificado por SMARTUR', acento, relleno: true)
+                  else
+                    _chip(Icons.info_outline_rounded, 'DENUE (INEGI) · por verificar', scheme.onSurfaceVariant),
                 ]),
               ])),
 

@@ -19,6 +19,7 @@ WellnessDestination _lugar(String coincidencia) => WellnessDestination(
   coincidencia: coincidencia,
   motivoCoincidencia: coincidencia == 'alta' ? null : 'Está fuera de la zona que elegiste.',
   modalidades: const ['W1', 'W4', 'W7'],
+  verificado: coincidencia == 'alta',
 );
 
 void main() {
@@ -40,6 +41,7 @@ void main() {
         expect(find.text('Cómo llegar'), findsOneWidget);
         expect(find.text('Mente-cuerpo'), findsOneWidget);
         if (c != 'alta') expect(find.text('Está fuera de la zona que elegiste.'), findsOneWidget);
+        expect(find.text(c == 'alta' ? 'Verificado por SMARTUR' : 'DENUE (INEGI) · por verificar'), findsOneWidget);
       });
     }
   }

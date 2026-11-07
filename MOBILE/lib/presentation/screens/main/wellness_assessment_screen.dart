@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/services/wellness_service.dart';
 import '../explore/detail_view_page.dart';
@@ -138,13 +139,64 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   final Map<int, int> _respuestasPss = {};
   Timer? _avance;
 
+  /// PSS-10 ya aplicada a esta persona. La licencia (Mapi n.º 153824) permite una sola
+  /// aplicación por sujeto: se guarda en el teléfono y, si la persona dio consentimiento,
+  /// también en su cuenta; después se reutiliza en lugar de volver a preguntar.
+  ({List<int?>? items, double total, DateTime? fecha})? _pssPrevia;
+  static const _clavePss = 'welltur_pss10_v1';
+
   @override
   void initState() {
     super.initState();
     _Pss10.cargar().then((pss) {
       if (mounted && pss != null) setState(() => _pss = pss);
     });
+    _cargarPssPrevia();
   }
+
+  Future<void> _cargarPssPrevia() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final crudo = prefs.getString(_clavePss);
+      if (crudo != null) {
+        final j = jsonDecode(crudo) as Map<String, dynamic>;
+        final items = (j['items'] as List).map((v) => v as int?).toList();
+        if (mounted) {
+          setState(() => _pssPrevia = (items: items, total: (j['total'] as num).toDouble(),
+            fecha: DateTime.tryParse(j['fecha'] as String? ?? '')));
+        }
+        return;
+      }
+    } catch (_) {}
+    final enCuenta = await _service.pss10Previa();
+    if (enCuenta != null && mounted) {
+      setState(() => _pssPrevia = (items: null, total: enCuenta.total, fecha: enCuenta.fecha));
+    }
+  }
+
+  /// Puntaje oficial: ítems 4, 5, 7 y 8 invertidos; promedio de los respondidos x 10.
+  static double _totalPss(List<int?> items) {
+    var suma = 0, n = 0;
+    for (var i = 0; i < items.length; i++) {
+      final v = items[i];
+      if (v == null) continue;
+      suma += const {3, 4, 6, 7}.contains(i) ? 4 - v : v;
+      n++;
+    }
+    return n == 0 ? 0 : (suma / n * 10 * 10).roundToDouble() / 10;
+  }
+
+  Future<void> _guardarPss(List<int?> items) async {
+    final total = _totalPss(items);
+    final ahora = DateTime.now();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_clavePss, jsonEncode({'items': items, 'total': total, 'fecha': ahora.toIso8601String()}));
+    } catch (_) {}
+    if (mounted) setState(() => _pssPrevia = (items: items, total: total, fecha: ahora));
+  }
+
+  bool get _usaPssPrevia => _pssPrevia != null && !_omitirEstres;
 
   @override
   void dispose() {
@@ -159,9 +211,9 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   List<String> _opcionesPregunta(int i) => _usarPss ? _pss!.opciones : _preguntasEstres[i].opciones;
   int? _respuesta(int i) => _usarPss ? _respuestasPss[i] : _respuestas[_preguntasEstres[i].key];
 
-  bool get _estresCompleto => _usarPss
+  bool get _estresCompleto => _pssPrevia != null || (_usarPss
       ? _respuestasPss.length >= 8 // la puntuación oficial acepta hasta 2 ítems sin responder
-      : _preguntasEstres.every((p) => _respuestas.containsKey(p.key));
+      : _preguntasEstres.every((p) => _respuestas.containsKey(p.key)));
 
   void _responder(int i, int valor) {
     ToqueSuave.elegir();
@@ -234,10 +286,13 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         if (!animacion.isCompleted) animacion.complete();
       }
     });
+    final previa = _usaPssPrevia ? _pssPrevia : null;
+    final nuevaPss = previa == null && !_omitirEstres && _usarPss ? List.generate(10, (i) => _respuestasPss[i]) : null;
     try {
       final result = await _service.recommendV2(
-        stressItems: _omitirEstres || _usarPss ? null : Map.of(_respuestas),
-        pssItems: _omitirEstres || !_usarPss ? null : List.generate(10, (i) => _respuestasPss[i]),
+        stressItems: _omitirEstres || _usarPss || previa != null ? null : Map.of(_respuestas),
+        pssItems: previa?.items ?? nuevaPss,
+        pss10TotalGuardado: previa != null && previa.items == null ? previa.total : null,
         motives: List.of(_motivosElegidos),
         modalities: List.of(_seleccion),
         maxEffort: _maxEffort,
@@ -249,6 +304,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       if (!mounted) return;
       ToqueSuave.avanzar();
       setState(() { _pasoPensando = _pasosPensando.length; _result = result; _loading = false; });
+      if (nuevaPss != null) _guardarPss(nuevaPss);
     } catch (e, st) {
       // Se registra el motivo real para poder diagnosticarlo (adb logcat / consola).
       debugPrint('[welltur] recomendación falló: $e\n$st');
@@ -275,7 +331,14 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
     }
   }
 
+  void _registrar(WellnessDestination destination, String evento) {
+    final session = _result?.sessionId;
+    if (session == null) return;
+    _service.itemFeedback(sessionId: session, itemId: destination.idDestino, evento: evento);
+  }
+
   void _openDestination(WellnessDestination destination) {
+    _registrar(destination, 'opened');
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => DetailViewPage(
         title: destination.nombreLugar,
@@ -395,7 +458,9 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
       _ => _regionChoices(scheme),
     };
     // Avance global, incluido el avance dentro del cuestionario de estrés.
-    final dentroEstres = _step == 1 && !_omitirEstres ? _respondidas / _totalPreguntas : (_step > 1 ? 1.0 : 0.0);
+    final dentroEstres = _step == 1 && !_omitirEstres && !_usaPssPrevia
+        ? _respondidas / _totalPreguntas
+        : (_step > 1 || _usaPssPrevia ? 1.0 : 0.0);
     return SafeArea(child: Column(children: [
       Padding(padding: const EdgeInsets.fromLTRB(24, 14, 24, 10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: List.generate(_pasos, (i) {
@@ -415,7 +480,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
           Expanded(child: Text('PASO $_step DE $_pasos', maxLines: 1, overflow: TextOverflow.ellipsis,
             style: TextStyle(color: _green, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2))),
           const SizedBox(width: 8),
-          if (_step == 1 && !_omitirEstres)
+          if (_step == 1 && !_omitirEstres && !_usaPssPrevia)
             Flexible(child: Text('Pregunta ${_pregunta + 1} de $_totalPreguntas', maxLines: 1, overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,
               style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.w600))),
@@ -424,7 +489,7 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
           Expanded(child: Text(_titulos[_step]!, style: TextStyle(fontFamily: 'CalSans', fontSize: 26, height: 1.12, color: scheme.onSurface))),
           // Instrucciones oficiales de la PSS-10: se muestran u ocultan con la "i".
-          if (_step == 1 && _usarPss && !_omitirEstres)
+          if (_step == 1 && _usarPss && !_omitirEstres && !_usaPssPrevia)
             IconButton(
               onPressed: () { ToqueSuave.pulso(); setState(() => _verInstruccion = !_verInstruccion); },
               tooltip: _verInstruccion ? 'Ocultar instrucciones' : 'Instrucciones de la escala',
@@ -458,6 +523,31 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
   }
 
   /// Un ítem por pantalla, con respuestas grandes y avance automático.
+  Widget _pssYaContestada(ColorScheme scheme) {
+    final previa = _pssPrevia!;
+    final f = previa.fecha;
+    final fecha = f == null ? '' : ' el ${f.day}/${f.month}/${f.year}';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(color: _green.withValues(alpha: .08), borderRadius: BorderRadius.circular(18)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.task_alt_rounded, color: _green),
+          const SizedBox(width: 10),
+          Expanded(child: Text('Ya contestaste la PSS-10$fecha',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: scheme.onSurface))),
+        ]),
+        const SizedBox(height: 10),
+        Text('Puntaje: ${previa.total.toStringAsFixed(previa.total % 1 == 0 ? 0 : 1)} de 40',
+          style: TextStyle(fontFamily: 'CalSans', fontSize: 24, color: _green)),
+        const SizedBox(height: 8),
+        Text('La escala se aplica una sola vez por persona, así que usaremos esa respuesta para ordenar tus recomendaciones.',
+          style: TextStyle(fontSize: 13, height: 1.45, color: scheme.onSurfaceVariant)),
+      ]),
+    );
+  }
+
   Widget _stressQuestions(ColorScheme scheme) {
     final i = _pregunta.clamp(0, _totalPreguntas - 1);
     final opciones = _opcionesPregunta(i);
@@ -478,7 +568,11 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
           onChanged: (v) { ToqueSuave.elegir(); setState(() { _omitirEstres = v; _formError = null; }); },
         ),
       ),
-      if (!_omitirEstres) ...[
+      if (_usaPssPrevia) ...[
+        const SizedBox(height: 16),
+        _pssYaContestada(scheme),
+      ],
+      if (!_omitirEstres && !_usaPssPrevia) ...[
         // La instrucción oficial completa se muestra u oculta con el botón de información.
         if (_usarPss) ...[
           AnimatedSize(
@@ -773,7 +867,8 @@ class _WellnessAssessmentScreenState extends State<WellnessAssessmentScreen> {
         Padding(padding: const EdgeInsets.all(24), child: _infoBox(scheme, 'Por ahora no hay lugares aprobados en el catálogo. Inténtalo más tarde.', Icons.search_off_rounded))
       else
         ...result.destinations.indexed.map((e) => _Entrada(orden: e.$1 + 1,
-          child: WellnessPoiCard(destination: e.$2, onTap: () => _openDestination(e.$2)))),
+          child: WellnessPoiCard(destination: e.$2, onTap: () => _openDestination(e.$2),
+            onComoLlegar: () => _registrar(e.$2, 'selected')))),
       if (result.sessionId != null) Padding(padding: const EdgeInsets.fromLTRB(20, 12, 20, 4), child: Card(
         child: Padding(padding: const EdgeInsets.all(16), child: Column(children: [
           Text(_feedbackSent ? '¡Gracias! Tu valoración ayuda a mejorar las recomendaciones.' : '¿Qué tan bien coincidieron con lo que buscabas?', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
