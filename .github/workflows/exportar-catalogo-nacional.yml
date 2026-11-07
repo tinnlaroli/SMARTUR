@@ -1,0 +1,39 @@
+name: Exportar catálogo nacional (solo lectura)
+
+# Manual. Genera, desde la BD de producción, los INSERT idempotentes de los lugares de
+# bienestar que no vienen del DENUE (inventario SECTUR/GWI y verificados en campo) para
+# integrarlos en API/bd.sql. No modifica nada en el VPS.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exportar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Consultar producción (solo lectura)
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          HOST: ${{ secrets.VPS_HOST }}
+          USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null ~/llave
+          printf '%s\n' "$SSH_KEY" > ~/llave
+          ssh -i ~/llave -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 "$USER@$HOST" \
+            "docker exec -i smartur-postgres psql -U postgres -d smartur -tA -v ON_ERROR_STOP=1 -c 'BEGIN READ ONLY' -f -" \
+            < .github/scripts/exportar_catalogo_nacional.sql | grep -E '^INSERT INTO' > catalogo_nacional.sql
+          rm -f ~/llave
+          echo "ubicaciones: $(grep -c '^INSERT INTO location' catalogo_nacional.sql)"
+          echo "lugares:     $(grep -c '^INSERT INTO point_of_interest' catalogo_nacional.sql)"
+          test -s catalogo_nacional.sql
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: catalogo-nacional
+          path: catalogo_nacional.sql
+          retention-days: 3
