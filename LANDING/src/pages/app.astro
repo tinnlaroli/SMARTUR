@@ -1,6 +1,6 @@
 ---
 // Página del QR de SMARTUR (expo 22 aniversario UTCV y eventos).
-// Android: descarga directa del APK más reciente + instrucciones de instalación.
+// Android: avisa que es compatible y ofrece instalar (descarga + pasos) o seguir a la demo.
 // iPhone/iPad: abre la demo web de la app (no hay App Store todavía).
 // Computadora: muestra ambas opciones.
 const APK_URL = "https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk";
@@ -57,6 +57,13 @@ const DEMO_URL = "/demo/";
       }
       .nota { font-size: 12.5px; color: var(--tenue); margin-top: 12px; line-height: 1.45; }
       .oculto { display: none; }
+      .exito { text-align: center; margin-bottom: 18px; }
+      .exito h2 { font-size: 20px; margin: 12px 0 6px; }
+      .exito-icono {
+        width: 56px; height: 56px; margin: 0 auto; border-radius: 50%;
+        background: var(--botanico); color: #fff; font-size: 30px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+      }
       .estado { font-size: 13px; color: var(--botanico); font-weight: 600; margin: 10px 0 0; text-align: center; }
       footer { text-align: center; font-size: 12px; color: var(--tenue); margin-top: 26px; }
     </style>
@@ -69,11 +76,20 @@ const DEMO_URL = "/demo/";
         <p class="sub">Turismo inteligente y bienestar en las Altas Montañas de Veracruz.</p>
       </div>
 
-      <!-- Android -->
+      <!-- Android: primero se elige, luego se descarga con pasos -->
       <section id="android" class="tarjeta oculto">
-        <h2>Instala la app en tu Android</h2>
-        <a class="boton" id="descargar" href={APK_URL} download>Descargar SMARTUR (APK)</a>
-        <p class="estado" id="estado-descarga">La descarga empezará en un momento…</p>
+        <div class="exito">
+          <div class="exito-icono" aria-hidden="true">✓</div>
+          <h2>¡Felicidades! Tu dispositivo es compatible</h2>
+          <p class="sub">Puedes instalar SMARTUR en tu Android o probarla al momento desde el navegador.</p>
+        </div>
+        <a class="boton" id="instalar" href={APK_URL}>Instalar la app</a>
+        <a class="boton secundario" href={DEMO_URL}>Seguir a la demo</a>
+      </section>
+
+      <section id="android-pasos" class="tarjeta oculto">
+        <h2>Descargando SMARTUR…</h2>
+        <p class="estado" id="estado-descarga">La descarga empezó. Sigue estos pasos:</p>
         <ol>
           <li>Cuando termine la descarga, toca la notificación o abre <strong>Descargas</strong> y elige <strong>app-release.apk</strong>.</li>
           <li>Si aparece “Por tu seguridad no se permite instalar apps de esta fuente”, toca <strong>Configuración</strong> y activa <strong>Permitir de esta fuente</strong>.</li>
@@ -81,7 +97,8 @@ const DEMO_URL = "/demo/";
           <li>Abre <strong>SMARTUR</strong> y crea tu cuenta o explora el modo bienestar.</li>
         </ol>
         <p class="nota">Es la versión oficial publicada por el equipo en GitHub (tinnlaroli/smartur-movil). Pesa unos 85 MB; si puedes, usa Wi-Fi.</p>
-        <a class="boton secundario" href={DEMO_URL}>Prefiero probarla sin instalar</a>
+        <a class="boton" href={APK_URL}>¿No empezó? Descargar de nuevo</a>
+        <a class="boton secundario" href={DEMO_URL}>Mejor sigo a la demo</a>
       </section>
 
       <!-- iPhone / iPad -->
@@ -115,12 +132,13 @@ const DEMO_URL = "/demo/";
         setTimeout(() => location.replace(DEMO_URL), 900);
       } else if (esAndroid) {
         mostrar("android");
-        const estado = document.getElementById("estado-descarga");
-        // Descarga automática una sola vez por visita; el botón queda para reintentar.
-        setTimeout(() => {
-          location.href = APK_URL;
-          estado.textContent = "Si la descarga no empezó, toca el botón de arriba.";
-        }, 1200);
+        // La descarga sale del toque en "Instalar" (Chrome bloquea descargas sin gesto):
+        // el enlace sigue su curso hacia GitHub y la tarjeta cambia a los pasos.
+        document.getElementById("instalar").addEventListener("click", () => {
+          document.getElementById("android").classList.add("oculto");
+          mostrar("android-pasos");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       } else {
         mostrar("otros");
       }
