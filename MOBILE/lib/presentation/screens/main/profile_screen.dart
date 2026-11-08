@@ -1,5 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/theme/smartur_theme_extensions.dart';
@@ -873,8 +873,8 @@ class _DiaryFavoritesTab extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     if (url.isNotEmpty)
-                      CachedNetworkImage(
-                        imageUrl: url, fit: BoxFit.cover,
+                      ImagenRed(
+                        url: url, fit: BoxFit.cover,
                         // Grilla de 2 columnas — decodificar al ancho real de
                         // la celda evita cargar el bitmap completo en memoria
                         // por cada miniatura (inconsistente con el resto de
@@ -882,12 +882,12 @@ class _DiaryFavoritesTab extends StatelessWidget {
                         memCacheWidth: ((MediaQuery.sizeOf(context).width / 2) *
                                 MediaQuery.devicePixelRatioOf(context))
                             .round(),
-                        errorWidget: (_, __, ___) => Container(
+                        errorWidget: (_) => Container(
                           color: scheme.outlineVariant,
                           child: Icon(Icons.place_outlined,
                               color: scheme.onSurfaceVariant),
                         ),
-                        placeholder: (_, __) =>
+                        placeholder: (_) =>
                             Container(color: scheme.outlineVariant),
                       )
                     else

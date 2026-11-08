@@ -1,5 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/welltur_theme.dart';
@@ -85,8 +85,8 @@ class WellnessPoiCard extends StatelessWidget {
               // ── Encabezado: imagen o color de la categoría ───────────────
               SizedBox(height: 104, child: Stack(fit: StackFit.expand, children: [
                 if (tieneImagen)
-                  CachedNetworkImage(imageUrl: d.imageUrl!, fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => const SizedBox.shrink())
+                  ImagenRed(url: d.imageUrl!, fit: BoxFit.cover,
+                    errorWidget: (context) => const SizedBox.shrink())
                 else
                   DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(
                     colors: [acento.withValues(alpha: .22), acento.withValues(alpha: .06)],

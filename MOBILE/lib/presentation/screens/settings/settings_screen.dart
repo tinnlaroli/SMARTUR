@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
@@ -247,7 +248,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                     fontFamily: 'Outfit', color: scheme.onSurfaceVariant)),
           ),
-          ListTile(
+          // La demo web no se actualiza por APK.
+          if (!kIsWeb) ListTile(
             leading: _checkingUpdate
                 ? const SizedBox(
                     width: 24, height: 24,

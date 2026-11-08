@@ -1,11 +1,17 @@
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/itinerary_model.dart';
 
+/// Caché local de rutas (el servidor es la fuente de verdad).
+///
+/// En el navegador no hay sistema de archivos ni SQLite: la caché vive en memoria.
+/// Las escrituras nunca lanzan: un fallo de caché no debe romper crear/editar rutas.
 class ItineraryDB {
   static Database? _db;
+  static final Map<int, Itinerary> _memoria = {};
 
   static Future<Database> get _database async {
     _db ??= await _open();
@@ -75,6 +81,18 @@ class ItineraryDB {
   // ─── Write ─────────────────────────────────────────────────────────────────
 
   static Future<void> saveItinerary(Itinerary it) async {
+    if (kIsWeb) {
+      _memoria[it.id] = it;
+      return;
+    }
+    try {
+      await _guardar(it);
+    } catch (e) {
+      debugPrint('[ItineraryDB] no se guardó la caché: $e');
+    }
+  }
+
+  static Future<void> _guardar(Itinerary it) async {
     final db = await _database;
     await db.insert(
       'itineraries',
@@ -100,15 +118,24 @@ class ItineraryDB {
   }
 
   static Future<void> deleteItinerary(int id) async {
-    final db = await _database;
-    await db.delete('itinerary_stops',
-        where: 'itinerary_id = ?', whereArgs: [id]);
-    await db.delete('itineraries', where: 'id = ?', whereArgs: [id]);
+    if (kIsWeb) {
+      _memoria.remove(id);
+      return;
+    }
+    try {
+      final db = await _database;
+      await db.delete('itinerary_stops',
+          where: 'itinerary_id = ?', whereArgs: [id]);
+      await db.delete('itineraries', where: 'id = ?', whereArgs: [id]);
+    } catch (e) {
+      debugPrint('[ItineraryDB] no se borró de la caché: $e');
+    }
   }
 
   // ─── Read ──────────────────────────────────────────────────────────────────
 
   static Future<Itinerary?> getItinerary(int id) async {
+    if (kIsWeb) return _memoria[id];
     final db = await _database;
     final rows = await db.query('itineraries', where: 'id = ?', whereArgs: [id]);
     if (rows.isEmpty) return null;
@@ -118,6 +145,10 @@ class ItineraryDB {
   }
 
   static Future<List<Itinerary>> getMyItineraries(int userId) async {
+    if (kIsWeb) {
+      return _memoria.values.where((it) => it.userId == userId).toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    }
     final db = await _database;
     final rows = await db.query(
       'itineraries',

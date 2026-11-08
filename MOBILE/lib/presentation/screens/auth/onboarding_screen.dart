@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 import '../../../data/models/onboarding_model.dart';
 import '../../../core/motion/smartur_motion.dart';
-import '../../../core/theme/smartur_theme_extensions.dart';
 import '../../widgets/smartur_ui_kit.dart';
 import 'welcome_screen.dart';
 import '../../widgets/smartur_background.dart';
@@ -24,10 +23,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   late PageController _controller;
   double _pageOffset = 0.0;
 
-  // Color animado sincronizado con el fondo (misma secuencia que SmarturBackground)
-  late AnimationController _colorController;
-  Animation<Color?>? _colorAnim;
-
   // Bob vertical sutil de las ilustraciones
   late AnimationController _floatController;
 
@@ -40,10 +35,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         _pageOffset = _controller.page ?? 0.0;
       });
     });
-    _colorController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 25),
-    )..repeat();
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
@@ -51,22 +42,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final sem = SmarturSemanticColors.of(context);
-    _colorAnim = TweenSequence<Color?>([
-      TweenSequenceItem(tween: ColorTween(begin: sem.leaf, end: sem.accent), weight: 1),
-      TweenSequenceItem(tween: ColorTween(begin: sem.accent, end: sem.ember), weight: 1),
-      TweenSequenceItem(tween: ColorTween(begin: sem.ember, end: sem.sea), weight: 1),
-      TweenSequenceItem(tween: ColorTween(begin: sem.sea, end: sem.altAccent), weight: 1),
-      TweenSequenceItem(tween: ColorTween(begin: sem.altAccent, end: sem.leaf), weight: 1),
-    ]).animate(_colorController);
-  }
-
-  @override
   void dispose() {
     _floatController.dispose();
-    _colorController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -160,8 +137,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           AnimatedBuilder(
-                            animation: Listenable.merge(
-                                [_colorController, _floatController]),
+                            animation: _floatController,
                             builder: (context, _) {
                               final bob = (_floatController.value - 0.5) * 14;
                               final pageScale =
@@ -176,8 +152,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     height: (MediaQuery.sizeOf(context).height *
                                             0.32)
                                         .clamp(180.0, 340.0),
-                                    tintColor:
-                                        _colorAnim?.value ?? scheme.primary,
+                                    // Color fijo: si el tinte cambia en cada cuadro, flutter_svg
+                                    // vuelve a cargar el SVG sin parar y en web nunca se ve.
+                                    tintColor: scheme.primary,
                                   ),
                                 ),
                               );

@@ -1,5 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:smartur/l10n/app_localizations.dart';
 
 import '../../../core/motion/smartur_routes.dart';
@@ -364,14 +364,14 @@ class _RouteCard extends StatelessWidget {
                   width: 60,
                   height: 60,
                   child: it.coverImageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: it.coverImageUrl!,
+                      ? ImagenRed(
+                          url: it.coverImageUrl!,
                           fit: BoxFit.cover,
                           // Miniatura fija de 60x60 — decodificar al tamaño
                           // real evita cargar el bitmap completo en memoria.
                           memCacheWidth:
                               (60 * MediaQuery.devicePixelRatioOf(context)).round(),
-                          errorWidget: (_, __, ___) => _defaultCover(),
+                          errorWidget: (_) => _defaultCover(),
                         )
                       : _defaultCover(),
                 ),

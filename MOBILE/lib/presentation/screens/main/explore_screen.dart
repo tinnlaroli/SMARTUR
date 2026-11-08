@@ -45,6 +45,21 @@ class _ExploreScreenState extends State<ExploreScreen>
     super.dispose();
   }
 
+  Future<void> _abrirNuevaPublicacion() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => _CreatePostPage(
+          onPublished: () {
+            Navigator.pop(ctx);
+            _communityKey.currentState?._load();
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -60,7 +75,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                 bottom: 60 + MediaQuery.of(context).padding.bottom,
               ),
               child: FloatingActionButton(
-                onPressed: () => _communityKey.currentState?._showCreateSheet(),
+                onPressed: _abrirNuevaPublicacion,
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 child: const Icon(Icons.add_rounded, color: Colors.white),
               ),
@@ -147,9 +162,11 @@ class _RoutesTabState extends State<_RoutesTab>
       ]);
       if (mounted) {
         setState(() {
-          _predefined = results[0];
-          _community = results[1];
-          _following = results[2];
+          // Una ruta pública sin paradas no tiene nada que mostrar ni copiar.
+          List<Itinerary> conParadas(List<Itinerary> l) => l.where((it) => it.stops.isNotEmpty).toList();
+          _predefined = conParadas(results[0]);
+          _community = conParadas(results[1]);
+          _following = conParadas(results[2]);
           _loading = false;
         });
       }
@@ -1523,40 +1540,6 @@ class _CreatePostPageState extends State<_CreatePostPage> {
           icon: Icon(Icons.close_rounded, color: scheme.onSurface),
           onPressed: _loading ? null : () => Navigator.pop(context),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              // Siempre visible con contorno, aunque esté deshabilitado —
-              // antes el fondo desvanecido (alpha 0.35, sin borde) lo hacía
-              // casi invisible y parecía que no había botón de publicar.
-              child: FilledButton(
-                onPressed: _canPublish ? _publish : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: _canPublish ? scheme.primary : Colors.transparent,
-                  disabledBackgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: scheme.onSurfaceVariant,
-                  side: _canPublish
-                      ? BorderSide.none
-                      : BorderSide(color: scheme.outlineVariant, width: 1.4),
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                ),
-                child: _loading
-                    ? SizedBox(
-                        width: 16, height: 16,
-                        child: CircularProgressIndicator(
-                            color: _canPublish ? Colors.white : scheme.onSurfaceVariant,
-                            strokeWidth: 2))
-                    : Text(l10n.communityPublish,
-                        style: TextStyle(
-                            fontFamily: 'Outfit', fontWeight: FontWeight.w700,
-                            color: _canPublish ? Colors.white : scheme.onSurfaceVariant)),
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -1626,8 +1609,8 @@ class _CreatePostPageState extends State<_CreatePostPage> {
             ),
             // Barra inferior estilo Twitter/X: ícono de imagen + contador.
             Container(
-              padding: EdgeInsets.fromLTRB(
-                  16, 8, 16, 8 + MediaQuery.viewInsetsOf(context).bottom),
+              // El Scaffold ya sube el contenido sobre el teclado.
+              padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
               decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4))),
               ),
@@ -1637,11 +1620,30 @@ class _CreatePostPageState extends State<_CreatePostPage> {
                     icon: Icon(Icons.image_outlined, color: scheme.primary),
                     onPressed: _loading ? null : _pickImage,
                   ),
-                  const Spacer(),
                   Text(
                     '${_ctrl.text.length}/500',
                     style: TextStyle(
                         fontFamily: 'Outfit', fontSize: 12, color: scheme.onSurfaceVariant),
+                  ),
+                  const Spacer(),
+                  FilledButton.icon(
+                    onPressed: _canPublish ? _publish : null,
+                    style: FilledButton.styleFrom(
+                      // El tema global pide ancho infinito: aquí va su tamaño propio.
+                      minimumSize: const Size(0, 44),
+                      backgroundColor: scheme.primary,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: scheme.primary.withValues(alpha: 0.18),
+                      disabledForegroundColor: scheme.onSurfaceVariant,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                    ),
+                    icon: _loading
+                        ? const SizedBox(width: 16, height: 16,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.send_rounded, size: 18),
+                    label: Text(l10n.communityPublish,
+                        style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),

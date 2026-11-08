@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 
 /// Shared image widget with proper caching, quality and placeholder.
 /// Use instead of [Image.network] or bare [CachedNetworkImage] throughout the app.
@@ -64,8 +65,8 @@ class SmarturImage extends StatelessWidget {
     if (empty) {
       child = _error(scheme);
     } else {
-      child = CachedNetworkImage(
-        imageUrl: url!,
+      child = ImagenRed(
+        url: url!,
         width: width,
         height: height,
         fit: fit,
@@ -74,8 +75,8 @@ class SmarturImage extends StatelessWidget {
         memCacheHeight: _cacheH,
         fadeInDuration: const Duration(milliseconds: 200),
         fadeOutDuration: const Duration(milliseconds: 100),
-        placeholder: (_, __) => placeholder ?? _shimmer(scheme),
-        errorWidget: (_, __, ___) => errorWidget ?? _error(scheme),
+        placeholder: (_) => placeholder ?? _shimmer(scheme),
+        errorWidget: (_) => errorWidget ?? _error(scheme),
       );
     }
 

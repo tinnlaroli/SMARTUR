@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
@@ -1735,7 +1735,7 @@ class HomeScreenState extends State<HomeScreen> {
   void _openPlaceDetail(List<Place> allPlaces, int initialIndex) {
     final place = allPlaces[initialIndex];
     if (place.imageUrl.isNotEmpty) {
-      precacheImage(NetworkImage(place.imageUrl), context);
+      ImagenRed.precargar(place.imageUrl, context);
     }
     Navigator.push(
       context,
@@ -1751,7 +1751,7 @@ class HomeScreenState extends State<HomeScreen> {
   void _openPlaceDetailModal(List<Place> allPlaces, int initialIndex) {
     final place = allPlaces[initialIndex];
     if (place.imageUrl.isNotEmpty) {
-      precacheImage(NetworkImage(place.imageUrl), context);
+      ImagenRed.precargar(place.imageUrl, context);
     }
     showModalBottomSheet(
       context: context,
@@ -1923,16 +1923,16 @@ class _PlaceCardState extends State<_PlaceCard>
                         child: Icon(Icons.image_not_supported_outlined,
                             color: semantic.onImageMuted, size: 36),
                       )
-                    : CachedNetworkImage(
-                        imageUrl: place.imageUrl,
+                    : ImagenRed(
+                        url: place.imageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
                         memCacheWidth: cacheW,
                         fadeInDuration: const Duration(milliseconds: 200),
-                        placeholder: (_, _) => Container(
+                        placeholder: (_) => Container(
                           color: scheme.outlineVariant.withValues(alpha: 0.3),
                         ),
-                        errorWidget: (_, _, _) => Container(
+                        errorWidget: (_) => Container(
                           color: scheme.outlineVariant,
                           child: Icon(Icons.image_not_supported_outlined,
                               color: semantic.onImageMuted, size: 36),

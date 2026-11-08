@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
@@ -273,8 +273,8 @@ class _DetailViewPageState extends State<DetailViewPage>
                         child: Icon(Icons.image_not_supported_outlined,
                             color: semantic.onImageMuted, size: 48),
                       )
-                    : CachedNetworkImage(
-                        imageUrl: widget.heroImageUrl,
+                    : ImagenRed(
+                        url: widget.heroImageUrl,
                         fit: BoxFit.cover,
                         filterQuality: FilterQuality.high,
                         // Antes 800px fijos — en pantallas de 1080-1440px de
@@ -286,8 +286,8 @@ class _DetailViewPageState extends State<DetailViewPage>
                                 MediaQuery.devicePixelRatioOf(context))
                             .round(),
                         fadeInDuration: const Duration(milliseconds: 300),
-                        placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
-                        errorWidget: (_, __, ___) => Container(
+                        placeholder: (_) => Container(color: scheme.surfaceContainerHighest),
+                        errorWidget: (_) => Container(
                           color: scheme.surfaceContainerHighest,
                           child: Icon(Icons.image_not_supported_outlined,
                               color: semantic.onImageMuted, size: 48),
@@ -1127,12 +1127,12 @@ class _MiniThumb extends StatelessWidget {
         border: Border.all(color: semantic.overlayBorder.withValues(alpha: 0.9), width: 2),
       ),
       child: ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url,
+        child: ImagenRed(
+          url: url,
           fit: BoxFit.cover,
           filterQuality: FilterQuality.medium,
-          placeholder: (_, __) => Container(color: scheme.surfaceContainerHighest),
-          errorWidget: (_, __, ___) => Container(
+          placeholder: (_) => Container(color: scheme.surfaceContainerHighest),
+          errorWidget: (_) => Container(
             color: scheme.surfaceContainerHighest,
             child: Icon(Icons.image_not_supported_outlined, color: semantic.onImageMuted, size: 20),
           ),

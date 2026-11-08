@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:smartur/presentation/widgets/imagen_red.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -191,13 +191,13 @@ class _ItineraryDetailScreenState extends State<ItineraryDetailScreen> {
       surfaceTintColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
         background: _it.coverImageUrl != null
-            ? CachedNetworkImage(
-                imageUrl: _it.coverImageUrl!,
+            ? ImagenRed(
+                url: _it.coverImageUrl!,
                 fit: BoxFit.cover,
                 filterQuality: FilterQuality.high,
                 memCacheWidth: 800,
                 fadeInDuration: const Duration(milliseconds: 200),
-                errorWidget: (_, __, ___) => _gradientHeader(),
+                errorWidget: (_) => _gradientHeader(),
               )
             : _gradientHeader(),
       ),

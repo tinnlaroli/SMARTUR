@@ -9,6 +9,7 @@ import 'package:smartur/l10n/app_localizations.dart';
 import 'package:smartur/main.dart' show buildSmarturLightTheme;
 import 'package:smartur/presentation/screens/auth/welcome_screen.dart';
 import 'package:smartur/presentation/screens/main/wellness_assessment_screen.dart';
+import 'package:smartur/presentation/screens/preferences/preferences_screen.dart';
 
 /// Pantallas reales (tamaño lógico): de un iPhone SE a una tablet.
 const _pantallas = <String, Size>{
@@ -154,6 +155,60 @@ void main() {
         await tester.tap(find.text('Todo México'));
         await tester.pumpAndSettle();
         expect(find.text('Un estado'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
+  group('Preferencias: una pregunta por pantalla, sin desbordes', () {
+    for (final MapEntry(key: nombre, value: size) in _pantallas.entries) {
+      testWidgets(nombre, (tester) async {
+        usarPantalla(tester, size);
+        simularHuella(false); // sin sesión guardada
+        await tester.pumpWidget(MaterialApp(
+          theme: buildSmarturLightTheme(),
+          locale: const Locale('es'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PreferencesScreen(userName: 'Prueba'),
+        ));
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('PASO 1 DE 7'), findsOneWidget);
+
+        // Sin fecha no avanza y lo dice.
+        await tester.tap(find.text('Siguiente'));
+        await tester.pumpAndSettle();
+        expect(find.text('Selecciona tu fecha de nacimiento'), findsOneWidget);
+        expect(find.text('PASO 1 DE 7'), findsOneWidget);
+
+        await tester.tap(find.byIcon(Icons.cake_outlined));
+        await tester.pumpAndSettle();
+        await tester.tap(find.descendant(of: find.byType(Dialog), matching: find.byType(TextButton)).last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Femenino'));
+        await tester.pump();
+        await tester.tap(find.text('Siguiente'));
+        await tester.pumpAndSettle();
+        expect(find.text('PASO 2 DE 7'), findsOneWidget);
+
+        await tester.tap(find.text('Cultura'));
+        await tester.pump();
+        await tester.tap(find.text('Siguiente'));
+        await tester.pumpAndSettle();
+        expect(find.text('PASO 3 DE 7'), findsOneWidget);
+
+        // Respuesta única: avanza sola.
+        for (final (opcion, siguiente) in [('Moderado', 4), ('Familiar', 5), ('Medio', 6), ('Montaña', 7)]) {
+          await tester.ensureVisible(find.text(opcion));
+          await tester.tap(find.text(opcion));
+          await tester.pump(const Duration(milliseconds: 500));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          expect(find.text('PASO $siguiente DE 7'), findsOneWidget, reason: 'tras elegir $opcion');
+        }
+        expect(find.text('Guardar'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }

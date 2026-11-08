@@ -38,6 +38,8 @@ void main() async {
   // Captura errores del framework Flutter para evitar pantallas en blanco
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    // En release presentError no imprime nada: deja rastro en consola / logcat.
+    debugPrint('[FlutterError] ${details.exceptionAsString()} · ${details.stack}');
   };
 
   try {
