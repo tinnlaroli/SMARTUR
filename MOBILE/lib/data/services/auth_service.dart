@@ -367,6 +367,24 @@ class AuthService {
 
   // ── LOGIN PASO 2 (OTP) ────────────────────────────────────────────────
 
+  /// Demo web: crea una cuenta de turista temporal y entra sin código 2FA.
+  Future<String?> loginAsGuest() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}/auth/invitado');
+    final response = await http.post(url, headers: {'Content-Type': 'application/json'});
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = _parseBody(response);
+      final String? token = data['token'] as String?;
+      final String? refresh = data['refreshToken'] as String?;
+      if (token != null) await saveToken(token);
+      if (refresh != null) await saveRefreshToken(refresh);
+      await setRememberMe(true);
+      if (data['user'] != null) await saveUserData(data['user'] as Map<String, dynamic>);
+      return token;
+    }
+    if (response.statusCode == 429) throw AuthRateLimitException();
+    return null;
+  }
+
   Future<String?> verifyOTP(String email, String otpCode, {bool rememberMe = false}) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.twoFactor}');
     final response = await http.post(

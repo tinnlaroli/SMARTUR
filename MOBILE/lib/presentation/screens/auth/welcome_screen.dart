@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:smartur/l10n/app_localizations.dart';
@@ -28,6 +29,27 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen>
     with SingleTickerProviderStateMixin {
   final LocalAuthentication _auth = LocalAuthentication();
+  bool _entrandoInvitado = false;
+
+  /// Demo web: crea una cuenta de turista temporal y abre la app.
+  Future<void> _entrarComoInvitado() async {
+    setState(() => _entrandoInvitado = true);
+    try {
+      final token = await _authService.loginAsGuest();
+      if (!mounted) return;
+      if (token == null) {
+        SmarturNotifications.showError(context, 'No pudimos abrir la demo. Inténtalo de nuevo.');
+        return;
+      }
+      Navigator.pushReplacement(context, smarturFadeRoute(const MainScreen(userName: 'Invitado', isNewLogin: true)));
+    } on AuthRateLimitException {
+      if (mounted) SmarturNotifications.showError(context, 'Muchas personas entrando a la vez. Espera un minuto.');
+    } catch (_) {
+      if (mounted) SmarturNotifications.showError(context, 'Sin conexión con SMARTUR. Revisa tu internet.');
+    } finally {
+      if (mounted) setState(() => _entrandoInvitado = false);
+    }
+  }
   final AuthService _authService = AuthService();
 
   late AnimationController _controller;
@@ -1367,6 +1389,22 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   ],
                 ),
               ),
+            if (kIsWeb)
+              Positioned(
+                bottom: botonAbajo + 58,
+                left: lado,
+                right: lado,
+                child: FadeTransition(
+                  opacity: _buttonFade,
+                  child: Center(
+                    child: TextButton(
+                      onPressed: () => _showAuthModal(context, isLogin: true),
+                      child: Text('Ya tengo cuenta · Iniciar sesión',
+                        style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600, color: scheme.onSurface)),
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
               bottom: botonAbajo,
               left: lado,
@@ -1401,9 +1439,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         ],
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => _showAuthModal(context, isLogin: true),
+                            // Demo web (iPhone sin App Store): se entra como invitado, sin 2FA.
+                            onPressed: kIsWeb
+                                ? (_entrandoInvitado ? null : _entrarComoInvitado)
+                                : () => _showAuthModal(context, isLogin: true),
                             child: Text(
-                              l10n.start,
+                              kIsWeb ? (_entrandoInvitado ? 'Entrando…' : 'Probar la demo') : l10n.start,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -294,6 +295,7 @@ class HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    if (kIsWeb) return; // la demo web no ofrece huella
     final canAuth = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
     if (!canAuth) {
       _biometricSetupOfferedThisSession = true;

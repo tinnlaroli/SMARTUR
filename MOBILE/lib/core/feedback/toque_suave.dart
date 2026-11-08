@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:vibration/vibration.dart';
 
@@ -15,7 +15,7 @@ abstract final class ToqueSuave {
   static const _asset = 'sonidos/toque_suave.wav';
   static const _volumen = 0.9;
   static AudioPlayer? _player;
-  static final bool _enPruebas = Platform.environment.containsKey('FLUTTER_TEST');
+  static final bool _enPruebas = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
   static bool _sinAudio = false;
   static bool? _tieneVibrador;
 
@@ -60,7 +60,7 @@ abstract final class ToqueSuave {
   }
 
   static Future<bool> _vibrador() async =>
-      _tieneVibrador ??= await Vibration.hasVibrator().catchError((_) => false);
+      _tieneVibrador ??= kIsWeb ? false : await Vibration.hasVibrator().catchError((_) => false);
 
   static Future<void> _vibrar({required int duracion, required int amplitud}) async {
     if (_enPruebas) return;

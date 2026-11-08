@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -91,7 +92,7 @@ class UpdateService {
   /// Call once after login. Shows dialog only if update available and not yet
   /// shown this session.
   static Future<void> checkAndPromptIfNeeded(BuildContext context) async {
-    if (_shownThisSession) return;
+    if (kIsWeb || _shownThisSession) return; // la demo web no se actualiza por APK
     final result = await check();
     if (!result.hasUpdate) return;
     if (!context.mounted) return;

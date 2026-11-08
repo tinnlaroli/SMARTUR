@@ -1,0 +1,129 @@
+---
+// Página del QR de SMARTUR (expo 22 aniversario UTCV y eventos).
+// Android: descarga directa del APK más reciente + instrucciones de instalación.
+// iPhone/iPad: abre la demo web de la app (no hay App Store todavía).
+// Computadora: muestra ambas opciones.
+const APK_URL = "https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk";
+const DEMO_URL = "/demo/";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Descarga SMARTUR</title>
+    <meta name="description" content="Descarga la app SMARTUR para Android o pruébala desde tu iPhone." />
+    <meta name="theme-color" content="#29483B" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --crema: #f4efe5;
+        --botanico: #587c68;
+        --pino: #29483b;
+        --arena: #d8c6a3;
+        --tinta: #1f2a24;
+        --tenue: #5b6b62;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--crema);
+        color: var(--tinta);
+        display: flex;
+        justify-content: center;
+      }
+      main { width: 100%; max-width: 440px; padding: 32px 20px 40px; }
+      .marca { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+      .marca img { width: 84px; height: 84px; border-radius: 22px; background: #fff; padding: 10px; box-shadow: 0 8px 24px rgba(41, 72, 59, 0.15); }
+      h1 { font-size: 28px; line-height: 1.1; margin: 8px 0 0; color: var(--pino); }
+      .sub { margin: 0; color: var(--tenue); font-size: 15px; line-height: 1.45; }
+      .tarjeta { background: #fff; border-radius: 20px; padding: 20px; margin-top: 22px; box-shadow: 0 6px 20px rgba(41, 72, 59, 0.08); }
+      .tarjeta h2 { margin: 0 0 6px; font-size: 18px; color: var(--pino); }
+      .boton {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 15px 18px; border-radius: 16px; border: 0;
+        background: var(--pino); color: #fff; font-size: 16px; font-weight: 700; text-decoration: none;
+      }
+      .boton.secundario { background: transparent; color: var(--pino); border: 2px solid var(--pino); margin-top: 10px; }
+      ol { margin: 14px 0 0; padding-left: 0; list-style: none; counter-reset: paso; }
+      ol li { counter-increment: paso; display: flex; gap: 12px; margin-bottom: 12px; font-size: 14.5px; line-height: 1.45; }
+      ol li::before {
+        content: counter(paso); flex: 0 0 26px; height: 26px; border-radius: 50%;
+        background: var(--botanico); color: #fff; font-weight: 700; font-size: 13px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .nota { font-size: 12.5px; color: var(--tenue); margin-top: 12px; line-height: 1.45; }
+      .oculto { display: none; }
+      .estado { font-size: 13px; color: var(--botanico); font-weight: 600; margin: 10px 0 0; text-align: center; }
+      footer { text-align: center; font-size: 12px; color: var(--tenue); margin-top: 26px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="marca">
+        <img src="/logo.png" alt="SMARTUR" width="84" height="84" />
+        <h1>SMARTUR</h1>
+        <p class="sub">Turismo inteligente y bienestar en las Altas Montañas de Veracruz.</p>
+      </div>
+
+      <!-- Android -->
+      <section id="android" class="tarjeta oculto">
+        <h2>Instala la app en tu Android</h2>
+        <a class="boton" id="descargar" href={APK_URL} download>Descargar SMARTUR (APK)</a>
+        <p class="estado" id="estado-descarga">La descarga empezará en un momento…</p>
+        <ol>
+          <li>Cuando termine la descarga, toca la notificación o abre <strong>Descargas</strong> y elige <strong>app-release.apk</strong>.</li>
+          <li>Si aparece “Por tu seguridad no se permite instalar apps de esta fuente”, toca <strong>Configuración</strong> y activa <strong>Permitir de esta fuente</strong>.</li>
+          <li>Regresa y toca <strong>Instalar</strong>. Si Play Protect pregunta, elige <strong>Instalar de todas formas</strong>.</li>
+          <li>Abre <strong>SMARTUR</strong> y crea tu cuenta o explora el modo bienestar.</li>
+        </ol>
+        <p class="nota">Es la versión oficial publicada por el equipo en GitHub (tinnlaroli/smartur-movil). Pesa unos 85 MB; si puedes, usa Wi-Fi.</p>
+        <a class="boton secundario" href={DEMO_URL}>Prefiero probarla sin instalar</a>
+      </section>
+
+      <!-- iPhone / iPad -->
+      <section id="ios" class="tarjeta oculto">
+        <h2>Abriendo la demo para iPhone…</h2>
+        <p class="sub">SMARTUR todavía no está en la App Store, así que te abrimos la versión web de la app: funciona igual, sin instalar nada.</p>
+        <a class="boton" href={DEMO_URL} style="margin-top:14px">Abrir la demo</a>
+        <p class="nota">Tip: en Safari toca <strong>Compartir</strong> → <strong>Añadir a pantalla de inicio</strong> para usarla como una app.</p>
+      </section>
+
+      <!-- Computadora u otros -->
+      <section id="otros" class="tarjeta oculto">
+        <h2>Elige cómo probar SMARTUR</h2>
+        <a class="boton" href={APK_URL} download>Descargar para Android (APK)</a>
+        <a class="boton secundario" href={DEMO_URL}>Abrir la demo web</a>
+        <p class="nota">En iPhone, escanea el QR con la cámara y se abrirá la demo automáticamente.</p>
+      </section>
+
+      <footer>Proyecto de la Universidad Tecnológica del Centro de Veracruz · smartur.online</footer>
+    </main>
+
+    <script is:inline define:vars={{ APK_URL, DEMO_URL }}>
+      const ua = navigator.userAgent || "";
+      // iPadOS se presenta como Mac: se distingue por la pantalla táctil.
+      const esIOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      const esAndroid = /Android/i.test(ua);
+      const mostrar = (id) => document.getElementById(id).classList.remove("oculto");
+
+      if (esIOS) {
+        mostrar("ios");
+        setTimeout(() => location.replace(DEMO_URL), 900);
+      } else if (esAndroid) {
+        mostrar("android");
+        const estado = document.getElementById("estado-descarga");
+        // Descarga automática una sola vez por visita; el botón queda para reintentar.
+        setTimeout(() => {
+          location.href = APK_URL;
+          estado.textContent = "Si la descarga no empezó, toca el botón de arriba.";
+        }, 1200);
+      } else {
+        mostrar("otros");
+      }
+    </script>
+  </body>
+</html>

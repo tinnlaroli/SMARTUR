@@ -1,0 +1,25 @@
+{
+  "_instrucciones_para_el_equipo": "Plantilla: el texto de la PSS-10 está licenciado (Mapi Research Trust n.º 153824) y no se publica en el repo. El workflow de release lo escribe desde el secreto PSS10_JSON_B64. Para compilar en local, llénalo con MODELO/src/extraer_pss10.py del monorepo SMARTUR (necesita el .docx licenciado). Mientras algún campo esté vacío, la app no muestra la PSS-10.",
+  "version": "PSS-10_AU2.0_spa-MX_09OCT2024",
+  "instruccion": "",
+  "opciones": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "copyright": ""
+}

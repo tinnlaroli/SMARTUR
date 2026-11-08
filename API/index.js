@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
 import { swaggerSpec, swaggerUi } from './docs/swagger.js';
 import { securitySwaggerSpec } from './docs/swagger.security.js';
 
@@ -32,6 +33,7 @@ import ContactRouter from './routes/contactRoutes.js';
 import InteractionRouter from './routes/interactionRoutes.js';
 import MLRouter from './routes/mlRoutes.js';
 import WellturCampaignRouter from './routes/wellturCampaignRoutes.js';
+import GuestRouter from './routes/guestRoutes.js';
 import EmpresaRouter from './routes/empresaRoutes.js';
 import NotificationRouter from './routes/notificationRoutes.js';
 import KycRouter from './routes/kycRoutes.js';
@@ -144,10 +146,24 @@ app.use('/api/v2', (req, res, next) => {
 
 // ── Rate limiting ────────────────────────────────────────────────────────────
 
+// Con sesión válida se cuenta por usuario; sin sesión, por IP. En un evento muchas
+// personas salen por la misma IP del Wi-Fi y no deben agotar el cupo entre todas.
+const claveCliente = (req) => {
+    const auth = req.headers.authorization;
+    if (auth?.startsWith('Bearer ')) {
+        try {
+            const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET);
+            if (payload?.id) return `u:${payload.id}`;
+        } catch { /* token inválido o vencido: se cuenta por IP */ }
+    }
+    return ipKeyGenerator(req.ip);
+};
+
 // 1. Global: 200 req / 15 min por IP — frena abuso general sin molestar uso normal
 const globalApiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
+    keyGenerator: claveCliente,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -160,6 +176,7 @@ app.use('/api/v2', globalApiLimiter);
 const writeLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 30,
+    keyGenerator: claveCliente,
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method),
@@ -168,6 +185,16 @@ const writeLimiter = rateLimit({
     },
 });
 app.use('/api/v2', writeLimiter);
+
+// Demo web (invitados): en un evento muchas personas comparten la IP del Wi-Fi, así que
+// el límite es más holgado que el de login, pero sigue evitando la creación masiva.
+const guestLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 40,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiadas sesiones de invitado desde esta red. Intenta en un minuto.' },
+});
 
 // 3. Auth: 5 req / min por IP — anti brute-force en login y 2FA
 const authLimiter = rateLimit({
@@ -207,6 +234,7 @@ app.use('/api/v2/contact', contactLimiter);
 
 app.use('/api/v2/login', authLimiter);
 app.use('/api/v2/two-factor', authLimiter);
+app.use('/api/v2/auth/invitado', guestLimiter);
 app.use('/api/v2/resend-otp', authLimiter);
 app.use('/api/v2/resend-otp', otpLimiter);
 app.use('/api/v2/auth/register-empresa', authLimiter);
@@ -305,6 +333,7 @@ app.use('/api/v2', ContactRouter);
 app.use('/api/v2', InteractionRouter);
 app.use('/api/v2', MLRouter);
 app.use('/api/v2', WellturCampaignRouter);
+app.use('/api/v2', GuestRouter);
 app.use('/api/v2', EmpresaRouter);
 app.use('/api/v2', NotificationRouter);
 app.use('/api/v2', KycRouter);
