@@ -417,8 +417,12 @@ class HomeScreenState extends State<HomeScreen> {
 
     final apiKey = EnvConfig.openWeatherApiKey;
     if (apiKey.isEmpty) {
+      // Sin clave (demo web, compilación local): Open-Meteo, gratuito y sin clave.
+      final resumen = await _climaOpenMeteo(city.lat, city.lon);
+      if (resumen != null) _weatherSummaryCache[cityName] = resumen;
+      if (!mounted) return;
       setState(() {
-        _weatherSummary = null;
+        _weatherSummary = resumen;
         _weatherLoading = false;
       });
       return;
@@ -467,13 +471,48 @@ class HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (_) {
+      final resumen = await _climaOpenMeteo(city.lat, city.lon);
       if (!mounted) return;
       setState(() {
-        _weatherSummary = null;
+        _weatherSummary = resumen;
         _weatherLoading = false;
       });
     }
   }
+
+  /// Clima de respaldo con Open-Meteo (sin clave y con CORS abierto, sirve en web).
+  static Future<String?> _climaOpenMeteo(double lat, double lon) async {
+    try {
+      final r = await http
+          .get(Uri.parse('https://api.open-meteo.com/v1/forecast'
+              '?latitude=${lat.toStringAsFixed(4)}&longitude=${lon.toStringAsFixed(4)}'
+              '&current=temperature_2m,weather_code'))
+          .timeout(const Duration(seconds: 8));
+      if (r.statusCode != 200) return null;
+      final actual = (jsonDecode(r.body) as Map<String, dynamic>)['current'] as Map<String, dynamic>?;
+      final temp = (actual?['temperature_2m'] as num?)?.toDouble();
+      if (temp == null) return null;
+      final desc = _descripcionWmo((actual?['weather_code'] as num?)?.toInt());
+      return desc == null ? '${temp.toStringAsFixed(1)}°C' : '${temp.toStringAsFixed(1)}°C · $desc';
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Códigos WMO de Open-Meteo → descripción breve.
+  static String? _descripcionWmo(int? codigo) => switch (codigo ?? -1) {
+        0 => 'Despejado',
+        1 => 'Mayormente despejado',
+        2 => 'Parcialmente nublado',
+        3 => 'Nublado',
+        45 || 48 => 'Niebla',
+        >= 51 && <= 57 => 'Llovizna',
+        >= 61 && <= 67 => 'Lluvia',
+        >= 71 && <= 77 => 'Nieve',
+        >= 80 && <= 82 => 'Chubascos',
+        >= 95 && <= 99 => 'Tormenta',
+        _ => null,
+      };
 
   Future<void> _loadHeaderAvatar() async {
     try {
