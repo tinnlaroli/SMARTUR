@@ -1,3 +1,4 @@
+import 'package:smartur/core/utils/nombre_lugar.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../core/constants/api_constants.dart';
@@ -230,7 +231,7 @@ class ExploreService {
     final rawUrl = (s['image_url'] as String?) ?? '';
     return Place(
       id: 'svc_${s['id_service']}',
-      name: (s['name'] ?? '') as String,
+      name: nombreLugar((s['name'] ?? '') as String),
       city: cityName,
       category: cat,
       imageUrl: rawUrl.isNotEmpty ? rawUrl : _fallbackForCategory(cat, cityName),
@@ -250,7 +251,7 @@ class ExploreService {
     final rawUrl = (p['image_url'] as String?) ?? '';
     return Place(
       id: 'poi_${p['id_point']}',
-      name: (p['name'] ?? '') as String,
+      name: nombreLugar((p['name'] ?? '') as String),
       city: cityName,
       category: cat,
       imageUrl: _resolvePoiUrl(rawUrl, cityName),

@@ -1,3 +1,4 @@
+import 'package:smartur/core/utils/nombre_lugar.dart' as nombres;
 import 'dart:convert';
 import '../../core/constants/api_constants.dart';
 import 'api_client.dart';
@@ -71,7 +72,7 @@ class WellnessDestination {
   factory WellnessDestination.fromJson(Map<String, dynamic> j) {
     return WellnessDestination(
       idDestino:              _aTexto(j['id_destino']) ?? '',
-      nombreLugar:            _aTexto(j['nombre_lugar']) ?? '',
+      nombreLugar:            nombres.nombreLugar(_aTexto(j['nombre_lugar']) ?? ''),
       estado:                 _aTexto(j['estado']) ?? '',
       categoriaWellness:      _aTexto(j['categoria_wellness']) ?? '',
       matchPct:               _aDouble(j['match_pct']) ?? 0,
