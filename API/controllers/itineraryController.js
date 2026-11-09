@@ -339,6 +339,10 @@ export class ItineraryController {
                 original_distance_km: modeloData.original_distance_km,
                 optimized_distance_km: modeloData.optimized_distance_km,
                 savings_pct: modeloData.savings_pct,
+                // Tiempos por carretera (OSRM) o estimados si OSRM no respondió.
+                original_duration_min: modeloData.original_duration_min ?? null,
+                optimized_duration_min: modeloData.optimized_duration_min ?? null,
+                fuente_tiempos: modeloData.fuente_tiempos ?? null,
             });
         } catch (e) {
             if (e.name === 'AbortError') {

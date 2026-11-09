@@ -158,11 +158,15 @@ const claveCliente = (req) => {
     }
     return ipKeyGenerator(req.ip);
 };
+const conSesion = (req) => claveCliente(req).startsWith('u:');
 
-// 1. Global: 200 req / 15 min por IP — frena abuso general sin molestar uso normal
+
+// 1. Global por 15 min. Con sesión el cupo es amplio: la app hace muchas lecturas (lista,
+//    favoritos, mensajes cada 10 s) y en la expo varias tabletas pueden compartir cuenta;
+//    sin sesión (por IP) se mantiene bajo para frenar abuso.
 const globalApiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: (req) => (conSesion(req) ? 3000 : 300),
     keyGenerator: claveCliente,
     standardHeaders: true,
     legacyHeaders: false,
@@ -172,10 +176,11 @@ const globalApiLimiter = rateLimit({
 });
 app.use('/api/v2', globalApiLimiter);
 
-// 2. Escrituras: 30 req / min por IP (POST / PUT / PATCH / DELETE) — evita spam de mutaciones
+// 2. Escrituras por minuto (POST / PUT / PATCH / DELETE): telemetría, rutas y Welltur
+//    suman varias por pantalla; con sesión 150, sin sesión 30.
 const writeLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    max: 30,
+    max: (req) => (conSesion(req) ? 150 : 30),
     keyGenerator: claveCliente,
     standardHeaders: true,
     legacyHeaders: false,
