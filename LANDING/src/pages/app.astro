@@ -1,10 +1,13 @@
 ---
-// Página del QR de SMARTUR (expo 22 aniversario UTCV y eventos).
+// Página del QR de SMARTUR (ExpoCiencias, aniversario UTCV y eventos).
 // Android: avisa que es compatible y ofrece instalar (descarga + pasos) o seguir a la demo.
 // iPhone/iPad: abre la demo web de la app (no hay App Store todavía).
 // Computadora: muestra ambas opciones.
 const APK_URL = "https://github.com/tinnlaroli/smartur-movil/releases/latest/download/app-release.apk";
 const DEMO_URL = "/demo/";
+const TITULO = "SMARTUR · Welltur";
+const DESCRIPCION =
+  "Turismo inteligente y de bienestar en las Altas Montañas de Veracruz. Instala la app en Android o pruébala desde tu iPhone.";
 ---
 
 <!doctype html>
@@ -12,130 +15,298 @@ const DEMO_URL = "/demo/";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Descarga SMARTUR</title>
-    <meta name="description" content="Descarga la app SMARTUR para Android o pruébala desde tu iPhone." />
-    <meta name="theme-color" content="#29483B" />
+    <title>{TITULO}</title>
+    <meta name="description" content={DESCRIPCION} />
+    <meta name="theme-color" content="#1f3a2f" />
+    <meta property="og:title" content={TITULO} />
+    <meta property="og:description" content={DESCRIPCION} />
+    <meta property="og:image" content="https://smartur.online/welltur-logo.png" />
+    <meta property="og:url" content="https://smartur.online/app/" />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Outfit:wght@400;500;600;700&display=swap"
+    />
     <style>
       :root {
-        --crema: #f4efe5;
+        --pino: #1f3a2f;
+        --pino-2: #29483b;
         --botanico: #587c68;
-        --pino: #29483b;
         --arena: #d8c6a3;
-        --tinta: #1f2a24;
+        --terracota: #c47a57;
+        --crema: #f6f1e7;
+        --tinta: #1c2721;
         --tenue: #5b6b62;
+        --borde: #e6dfd1;
       }
       * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
       body {
         margin: 0;
         min-height: 100dvh;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         background: var(--crema);
         color: var(--tinta);
-        display: flex;
-        justify-content: center;
       }
-      main { width: 100%; max-width: 440px; padding: 32px 20px 40px; }
-      .marca { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
-      .marca img { width: 84px; height: 84px; border-radius: 22px; background: #fff; padding: 10px; box-shadow: 0 8px 24px rgba(41, 72, 59, 0.15); }
-      h1 { font-size: 28px; line-height: 1.1; margin: 8px 0 0; color: var(--pino); }
-      .sub { margin: 0; color: var(--tenue); font-size: 15px; line-height: 1.45; }
-      .tarjeta { background: #fff; border-radius: 20px; padding: 20px; margin-top: 22px; box-shadow: 0 6px 20px rgba(41, 72, 59, 0.08); }
-      .tarjeta h2 { margin: 0 0 6px; font-size: 18px; color: var(--pino); }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        padding: 28px 20px 92px;
+        text-align: center;
+        background:
+          radial-gradient(120% 80% at 85% -10%, rgba(216, 198, 163, 0.28), transparent 60%),
+          radial-gradient(90% 70% at 0% 110%, rgba(196, 122, 87, 0.22), transparent 60%),
+          linear-gradient(160deg, var(--pino-2), var(--pino));
+      }
+      /* Silueta de montañas al pie del encabezado */
+      .hero::after {
+        content: "";
+        position: absolute; left: 0; right: 0; bottom: -1px; height: 64px;
+        background: var(--crema);
+        clip-path: polygon(0 70%, 14% 38%, 26% 62%, 42% 18%, 58% 58%, 70% 34%, 84% 64%, 100% 30%, 100% 100%, 0 100%);
+      }
+      .hero-inner { max-width: 440px; margin: 0 auto; position: relative; z-index: 1; }
+      .marcas { display: flex; align-items: center; justify-content: center; gap: 12px; }
+      .placa {
+        background: var(--crema); border-radius: 18px; padding: 8px 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); display: flex; align-items: center;
+      }
+      .placa img { display: block; height: 44px; width: auto; }
+      .placa.smartur img { height: 44px; width: 44px; }
+      .x { opacity: 0.6; font-weight: 600; }
+      h1 {
+        font-family: "Cal Sans", "Outfit", sans-serif; font-weight: 400;
+        font-size: clamp(28px, 8vw, 36px); line-height: 1.08; margin: 20px 0 10px; letter-spacing: 0.2px;
+      }
+      .lema { margin: 0 auto; max-width: 340px; font-size: 15.5px; line-height: 1.45; color: rgba(255, 255, 255, 0.86); }
+      .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 18px; }
+      .chip {
+        display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
+        font-size: 12.5px; font-weight: 600; color: #fff;
+      }
+      main { max-width: 440px; margin: -70px auto 0; padding: 0 16px 36px; position: relative; z-index: 2; }
+      .tarjeta {
+        background: #fff; border-radius: 24px; padding: 22px 20px;
+        box-shadow: 0 18px 40px rgba(31, 58, 47, 0.12); border: 1px solid var(--borde);
+      }
+      .tarjeta + .tarjeta { margin-top: 14px; }
+      .oculto { display: none !important; }
+      .icono-ok {
+        width: 56px; height: 56px; margin: 2px auto 12px; border-radius: 50%;
+        background: var(--botanico); color: #fff; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 0 8px rgba(88, 124, 104, 0.14);
+      }
+      .icono-ok svg { width: 30px; height: 30px; }
+      h2 {
+        font-family: "Cal Sans", "Outfit", sans-serif; font-weight: 400;
+        font-size: 22px; line-height: 1.2; margin: 0 0 8px; color: var(--pino); text-align: center;
+      }
+      .sub { margin: 0; color: var(--tenue); font-size: 15px; line-height: 1.5; text-align: center; }
+      .acciones { display: grid; gap: 10px; margin-top: 18px; }
       .boton {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 56px; padding: 14px 18px; border-radius: 18px; border: 0;
+        background: var(--pino-2); color: #fff; font: 700 16.5px/1.2 "Outfit", sans-serif; text-decoration: none;
+        box-shadow: 0 8px 18px rgba(41, 72, 59, 0.25);
+        -webkit-tap-highlight-color: transparent; transition: transform 0.12s ease;
+      }
+      .boton:active { transform: scale(0.98); }
+      .boton svg { width: 20px; height: 20px; flex: 0 0 auto; }
+      .boton .peso { font-weight: 500; opacity: 0.75; font-size: 14px; }
+      .boton.secundario {
+        background: transparent; color: var(--pino-2); border: 2px solid var(--pino-2); box-shadow: none;
+      }
+      .estado {
         display: flex; align-items: center; justify-content: center; gap: 8px;
-        width: 100%; padding: 15px 18px; border-radius: 16px; border: 0;
-        background: var(--pino); color: #fff; font-size: 16px; font-weight: 700; text-decoration: none;
+        font-size: 14px; color: var(--botanico); font-weight: 600; margin: 4px 0 6px;
       }
-      .boton.secundario { background: transparent; color: var(--pino); border: 2px solid var(--pino); margin-top: 10px; }
-      ol { margin: 14px 0 0; padding-left: 0; list-style: none; counter-reset: paso; }
-      ol li { counter-increment: paso; display: flex; gap: 12px; margin-bottom: 12px; font-size: 14.5px; line-height: 1.45; }
+      ol { margin: 16px 0 4px; padding: 0; list-style: none; counter-reset: paso; }
+      ol li {
+        counter-increment: paso; display: flex; gap: 12px; padding: 12px 0;
+        font-size: 15px; line-height: 1.45; border-top: 1px solid var(--borde);
+      }
+      ol li:first-child { border-top: 0; }
       ol li::before {
-        content: counter(paso); flex: 0 0 26px; height: 26px; border-radius: 50%;
-        background: var(--botanico); color: #fff; font-weight: 700; font-size: 13px;
-        display: flex; align-items: center; justify-content: center;
+        content: counter(paso); flex: 0 0 28px; height: 28px; border-radius: 50%;
+        background: var(--pino-2); color: #fff; font-weight: 700; font-size: 14px;
+        display: flex; align-items: center; justify-content: center; margin-top: 1px;
       }
-      .nota { font-size: 12.5px; color: var(--tenue); margin-top: 12px; line-height: 1.45; }
-      .oculto { display: none; }
-      .exito { text-align: center; margin-bottom: 18px; }
-      .exito h2 { font-size: 20px; margin: 12px 0 6px; }
-      .exito-icono {
-        width: 56px; height: 56px; margin: 0 auto; border-radius: 50%;
-        background: var(--botanico); color: #fff; font-size: 30px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center;
+      .nota {
+        font-size: 13px; color: var(--tenue); line-height: 1.5; margin: 14px 0 0;
+        background: #f7f4ee; border-radius: 14px; padding: 12px 14px;
       }
-      .estado { font-size: 13px; color: var(--botanico); font-weight: 600; margin: 10px 0 0; text-align: center; }
-      footer { text-align: center; font-size: 12px; color: var(--tenue); margin-top: 26px; }
+      .aviso {
+        font-size: 13.5px; line-height: 1.5; margin: 0 0 14px; padding: 12px 14px; border-radius: 14px;
+        background: #fff4ec; color: #7a3f22; border: 1px solid #f1d6c4;
+      }
+      .girando {
+        width: 18px; height: 18px; border-radius: 50%;
+        border: 2.5px solid rgba(88, 124, 104, 0.25); border-top-color: var(--botanico);
+        animation: girar 0.9s linear infinite;
+      }
+      @keyframes girar { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .girando { animation: none; } }
+      .que-es { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+      .que-es li { display: flex; gap: 12px; align-items: flex-start; font-size: 14.5px; line-height: 1.45; }
+      .que-es .ic {
+        flex: 0 0 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        background: rgba(88, 124, 104, 0.12); color: var(--pino-2);
+      }
+      .que-es .ic svg { width: 19px; height: 19px; }
+      .que-es b { display: block; color: var(--tinta); }
+      .que-es span { color: var(--tenue); }
+      h3 { margin: 0 0 14px; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--botanico); }
+      /* Teléfonos bajos: las dos opciones caben sin desplazar. */
+      @media (max-height: 720px) {
+        .hero { padding: 18px 20px 84px; }
+        .placa img, .placa.smartur img { height: 36px; }
+        .placa.smartur img { width: 36px; }
+        h1 { margin: 12px 0 6px; font-size: 26px; }
+        .lema { font-size: 14px; }
+        .chips { display: none; }
+        .icono-ok { width: 44px; height: 44px; margin-bottom: 8px; box-shadow: 0 0 0 6px rgba(88, 124, 104, 0.14); }
+        .icono-ok svg { width: 24px; height: 24px; }
+        .acciones { margin-top: 14px; }
+      }
+      footer { text-align: center; font-size: 12.5px; color: var(--tenue); margin-top: 22px; line-height: 1.6; }
+      footer strong { color: var(--pino-2); }
     </style>
   </head>
   <body>
-    <main>
-      <div class="marca">
-        <img src="/logo.png" alt="SMARTUR" width="84" height="84" />
-        <h1>SMARTUR</h1>
-        <p class="sub">Turismo inteligente y bienestar en las Altas Montañas de Veracruz.</p>
-      </div>
-
-      <!-- Android: primero se elige, luego se descarga con pasos -->
-      <section id="android" class="tarjeta oculto">
-        <div class="exito">
-          <div class="exito-icono" aria-hidden="true">✓</div>
-          <h2>¡Felicidades! Tu dispositivo es compatible</h2>
-          <p class="sub">Puedes instalar SMARTUR en tu Android o probarla al momento desde el navegador.</p>
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="marcas">
+          <span class="placa smartur"><img src="/logo.png" alt="SMARTUR" width="44" height="44" /></span>
+          <span class="x">×</span>
+          <span class="placa"><img src="/welltur-logo.png" alt="Welltur" height="44" /></span>
         </div>
-        <a class="boton" id="instalar" href={APK_URL}>Instalar la app</a>
-        <a class="boton secundario" href={DEMO_URL}>Seguir a la demo</a>
+        <h1>Tu viaje de bienestar en las Altas Montañas</h1>
+        <p class="lema">Una IA que te recomienda experiencias y negocios locales según cómo te sientes y lo que buscas.</p>
+        <div class="chips">
+          <span class="chip">IA de bienestar</span>
+          <span class="chip">Rutas optimizadas</span>
+          <span class="chip">Negocios locales</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Android: primero se elige; al instalar empieza la descarga y aparecen los pasos -->
+      <section id="android" class="tarjeta oculto" aria-live="polite">
+        <p id="aviso-webview" class="aviso oculto">
+          Estás en el navegador de otra app. Si la descarga no empieza, toca <strong>⋮</strong> y elige
+          <strong>Abrir en Chrome</strong>.
+        </p>
+        <div class="icono-ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        </div>
+        <h2>¡Tu dispositivo es compatible!</h2>
+        <p class="sub">Instala SMARTUR en tu Android o pruébala al momento desde el navegador.</p>
+        <div class="acciones">
+          <a class="boton" id="instalar" href={APK_URL}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" /></svg>
+            Instalar la app <span class="peso">· 83 MB</span>
+          </a>
+          <a class="boton secundario" href={DEMO_URL}>Probar sin instalar</a>
+        </div>
       </section>
 
-      <section id="android-pasos" class="tarjeta oculto">
+      <section id="android-pasos" class="tarjeta oculto" aria-live="polite">
         <h2>Descargando SMARTUR…</h2>
-        <p class="estado" id="estado-descarga">La descarga empezó. Sigue estos pasos:</p>
+        <p class="estado"><span class="girando" aria-hidden="true"></span> La descarga empezó. Sigue estos pasos:</p>
         <ol>
-          <li>Cuando termine la descarga, toca la notificación o abre <strong>Descargas</strong> y elige <strong>app-release.apk</strong>.</li>
-          <li>Si aparece “Por tu seguridad no se permite instalar apps de esta fuente”, toca <strong>Configuración</strong> y activa <strong>Permitir de esta fuente</strong>.</li>
-          <li>Regresa y toca <strong>Instalar</strong>. Si Play Protect pregunta, elige <strong>Instalar de todas formas</strong>.</li>
-          <li>Abre <strong>SMARTUR</strong> y crea tu cuenta o explora el modo bienestar.</li>
+          <li><span>Cuando termine, toca la notificación o abre <strong>Descargas</strong> y elige <strong>app-release.apk</strong>.</span></li>
+          <li><span>Si dice “Por tu seguridad no se permite instalar apps de esta fuente”, toca <strong>Configuración</strong> y activa <strong>Permitir de esta fuente</strong>.</span></li>
+          <li><span>Regresa y toca <strong>Instalar</strong>. Si Play Protect pregunta, elige <strong>Instalar de todas formas</strong>.</span></li>
+          <li><span>Abre <strong>SMARTUR</strong>, crea tu cuenta o entra a <strong>Welltur</strong> para tu recomendación de bienestar.</span></li>
         </ol>
-        <p class="nota">Es la versión oficial publicada por el equipo en GitHub (tinnlaroli/smartur-movil). Pesa unos 85 MB; si puedes, usa Wi-Fi.</p>
-        <a class="boton" href={APK_URL}>¿No empezó? Descargar de nuevo</a>
-        <a class="boton secundario" href={DEMO_URL}>Mejor sigo a la demo</a>
+        <p class="nota">Es la versión oficial del equipo, publicada en GitHub (tinnlaroli/smartur-movil). Si puedes, usa Wi-Fi.</p>
+        <div class="acciones">
+          <a class="boton" href={APK_URL}>¿No empezó? Descargar de nuevo</a>
+          <a class="boton secundario" href={DEMO_URL}>Mejor pruebo la demo</a>
+        </div>
       </section>
 
-      <!-- iPhone / iPad -->
-      <section id="ios" class="tarjeta oculto">
-        <h2>Abriendo la demo para iPhone…</h2>
-        <p class="sub">SMARTUR todavía no está en la App Store, así que te abrimos la versión web de la app: funciona igual, sin instalar nada.</p>
-        <a class="boton" href={DEMO_URL} style="margin-top:14px">Abrir la demo</a>
-        <p class="nota">Tip: en Safari toca <strong>Compartir</strong> → <strong>Añadir a pantalla de inicio</strong> para usarla como una app.</p>
+      <!-- iPhone / iPad: se abre la demo web -->
+      <section id="ios" class="tarjeta oculto" aria-live="polite">
+        <h2>Abriendo SMARTUR para iPhone</h2>
+        <p class="estado"><span class="girando" aria-hidden="true"></span> Un momento…</p>
+        <p class="sub">Aún no estamos en la App Store, así que abrimos la versión web de la app: funciona igual y sin instalar nada.</p>
+        <div class="acciones">
+          <a class="boton" href={DEMO_URL}>Abrir la demo</a>
+        </div>
+        <p class="nota">Tip: en Safari toca <strong>Compartir</strong> → <strong>Agregar a inicio</strong> para usarla como una app.</p>
       </section>
 
       <!-- Computadora u otros -->
       <section id="otros" class="tarjeta oculto">
         <h2>Elige cómo probar SMARTUR</h2>
-        <a class="boton" href={APK_URL} download>Descargar para Android (APK)</a>
-        <a class="boton secundario" href={DEMO_URL}>Abrir la demo web</a>
-        <p class="nota">En iPhone, escanea el QR con la cámara y se abrirá la demo automáticamente.</p>
+        <p class="sub">Escanea el QR con tu teléfono o abre la demo aquí mismo.</p>
+        <div class="acciones">
+          <a class="boton" href={APK_URL}>Descargar para Android <span class="peso">· APK</span></a>
+          <a class="boton secundario" href={DEMO_URL}>Abrir la demo web</a>
+        </div>
       </section>
 
-      <footer>Proyecto de la Universidad Tecnológica del Centro de Veracruz · smartur.online</footer>
+      <noscript>
+        <section class="tarjeta">
+          <h2>Elige cómo probar SMARTUR</h2>
+          <div class="acciones">
+            <a class="boton" href={APK_URL}>Descargar para Android</a>
+            <a class="boton secundario" href={DEMO_URL}>Abrir la demo web</a>
+          </div>
+        </section>
+      </noscript>
+
+      <section class="tarjeta">
+        <h3>Qué hace SMARTUR</h3>
+        <ul class="que-es">
+          <li>
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4-3-7-6.5-7-10.5C5 6.5 8 4 12 3c4 1 7 3.5 7 7.5 0 4-3 7.5-7 10.5z" /><path d="M12 8v8" /></svg></span>
+            <div><b>Welltur: bienestar a tu medida</b><span>Responde cómo te has sentido y qué buscas; te sugerimos experiencias que encajan contigo.</span></div>
+          </li>
+          <li>
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><path d="M8 18h6a4 4 0 000-8H10a4 4 0 010-8h6" /></svg></span>
+            <div><b>Rutas que ahorran tiempo</b><span>Arma tu ruta y la ordenamos con distancias reales por carretera.</span></div>
+          </li>
+          <li>
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l1.5-5h15L21 10M4 10v10h16V10M3 10h18M9 20v-6h6v6" /></svg></span>
+            <div><b>Impulso a MiPyMEs locales</b><span>Cafés, artesanías, temazcales y hospedajes de la región, con datos del INEGI.</span></div>
+          </li>
+        </ul>
+      </section>
+
+      <footer>
+        <strong>ExpoCiencias 2026</strong> · Universidad Tecnológica del Centro de Veracruz<br />
+        smartur.online · No sustituye atención médica.
+      </footer>
     </main>
 
-    <script is:inline define:vars={{ APK_URL, DEMO_URL }}>
+    <script is:inline define:vars={{ DEMO_URL }}>
       const ua = navigator.userAgent || "";
       // iPadOS se presenta como Mac: se distingue por la pantalla táctil.
       const esIOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
       const esAndroid = /Android/i.test(ua);
+      // Navegadores dentro de otras apps (WhatsApp, Instagram, Facebook…) a veces bloquean descargas.
+      const enOtraApp = /\bwv\)|FBAN|FBAV|Instagram|Line\/|WhatsApp|TikTok|Snapchat/i.test(ua);
       const mostrar = (id) => document.getElementById(id).classList.remove("oculto");
+      const ocultar = (id) => document.getElementById(id).classList.add("oculto");
 
       if (esIOS) {
         mostrar("ios");
-        setTimeout(() => location.replace(DEMO_URL), 900);
+        setTimeout(() => location.replace(DEMO_URL), 1200);
       } else if (esAndroid) {
         mostrar("android");
-        // La descarga sale del toque en "Instalar" (Chrome bloquea descargas sin gesto):
-        // el enlace sigue su curso hacia GitHub y la tarjeta cambia a los pasos.
+        if (enOtraApp) mostrar("aviso-webview");
+        // La descarga sale del toque (Chrome bloquea descargas sin gesto): el enlace sigue a
+        // GitHub y la tarjeta cambia a los pasos.
         document.getElementById("instalar").addEventListener("click", () => {
-          document.getElementById("android").classList.add("oculto");
+          ocultar("android");
           mostrar("android-pasos");
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
