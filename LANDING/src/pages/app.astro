@@ -175,6 +175,13 @@ const DESCRIPCION =
       }
       footer { text-align: center; font-size: 12.5px; color: var(--tenue); margin-top: 22px; line-height: 1.6; }
       footer strong { color: var(--pino-2); }
+      footer a { color: var(--pino-2); font-weight: 600; }
+      .mas {
+        display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px;
+        min-height: 48px; border-radius: 14px; background: #f7f4ee; color: var(--pino-2);
+        font-weight: 700; font-size: 15px; text-decoration: none;
+      }
+      .mas svg { width: 18px; height: 18px; }
     </style>
   </head>
   <body>
@@ -279,11 +286,15 @@ const DESCRIPCION =
             <div><b>Impulso a MiPyMEs locales</b><span>Cafés, artesanías, temazcales y hospedajes de la región, con datos del INEGI.</span></div>
           </li>
         </ul>
+        <a class="mas" href="/">
+          Conocer el proyecto completo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
       </section>
 
       <footer>
         <strong>ExpoCiencias 2026</strong> · Universidad Tecnológica del Centro de Veracruz<br />
-        smartur.online · No sustituye atención médica.
+        <a href="/">smartur.online</a> · No sustituye atención médica.
       </footer>
     </main>
 
